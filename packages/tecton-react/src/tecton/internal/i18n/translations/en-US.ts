@@ -153,8 +153,6 @@ const enUS = {
     resultsCount: { one: "{total} result", other: "{total} results" },
     // The button of a row's menu (`DataTableRowActions`).
     rowActions: "Row actions",
-    // The column of the rows' drag handles, for screen readers.
-    reorderRowsColumn: "Reorder",
     // Names the totals row.
     total: "Total",
     // Grouping: the group-by button and menu (`DataTableGroupBy`), where a
@@ -181,81 +179,6 @@ const enUS = {
     // A group row's name for screen readers: its label and its count,
     // with a pause between them ("Field: Gullfaks, 6 rows").
     groupRowLabel: "{label}, {rows}",
-    // Cell selection: announced as cells are selected, copied, pasted,
-    // cleared (Delete) and filled down (Ctrl + D); {total} is formatted.
-    cellsSelected: {
-      one: "{total} cell selected",
-      other: "{total} cells selected",
-    },
-    cellsCopied: { one: "Copied {total} cell", other: "Copied {total} cells" },
-    cellsPasted: {
-      "=0": "No cells pasted",
-      one: "Pasted {total} cell",
-      other: "Pasted {total} cells",
-    },
-    cellsCleared: {
-      "=0": "No cells cleared",
-      one: "Cleared {total} cell",
-      other: "Cleared {total} cells",
-    },
-    cellsFilled: {
-      "=0": "No cells filled",
-      one: "Filled {total} cell",
-      other: "Filled {total} cells",
-    },
-    // After one of the above, in a list with it ("Pasted 6 cells, 2 not
-    // editable, 1 not valid, Depth (m): Enter a number").
-    cellsSkipped: { other: "{total} not editable" },
-    cellsInvalid: { other: "{total} not valid" },
-    // A cell's message: its column's name and why its value was refused.
-    cellMessage: "{columnName}: {message}",
-    // A cell's message in its tooltip and description: the value refused
-    // (or not saved) and why.
-    refusedValue: "“{value}”: {message}",
-    // Copy, paste, Delete or fill down with focus off the data cells (on a
-    // header, a group row or the totals row).
-    selectCellsFirst: "Select cells first",
-    // Announced when a save of written cells fails; {message} is the
-    // application's error.
-    cellsNotSaved: {
-      one: "{total} cell not saved: {message}",
-      other: "{total} cells not saved: {message}",
-    },
-    saveFailed: "The change could not be saved",
-    // Several ranges that share neither their rows nor their columns.
-    copyMultiple:
-      "These ranges cannot be copied together: select ranges in the same rows or in the same columns",
-    pasteMultiple: "A block of cells cannot be pasted into several ranges",
-    copyFailed: "The cells could not be copied to the clipboard",
-    // Why a pasted text is refused, by the column's type ({yes} and {no}
-    // are the words above).
-    invalidValue: "Not a valid value",
-    invalidNumber: "Enter a number",
-    invalidDate: "Enter a date",
-    invalidBoolean: "Enter {yes} or {no}",
-    invalidOption: "Choose one of the options",
-    // Editing (`editable`): an editor's name, its column's and its row's
-    // ("Depth, Troll A-1"); said once a save that took a while is done;
-    // the date editor's calendar button; the options editor's list when
-    // nothing matches what was typed; an edit whose row went away (removed
-    // or disabled by new data).
-    editorLabel: "{columnName}, {rowName}",
-    cellSaved: "Saved",
-    chooseDate: "Choose a date",
-    noMatchingOptions: "No matching options",
-    editDiscarded: "Edit discarded: the row is no longer available",
-    // A text typed before the editing code loaded, refused once it did
-    // ("Later": the edits typed after it, not applied).
-    editNotSaved: "“{value}” was not saved: {message}",
-    editNotSavedLater:
-      "“{value}” was not saved: {message}. Later changes were not applied.",
-    // `DataTableCellSummary`: its name, and its figures over the selected
-    // cells ({value} is formatted).
-    cellSummary: "Selected cells",
-    summarySum: "Sum: {value}",
-    summaryAverage: "Average: {value}",
-    summaryNumericCount: "Numerical count: {value}",
-    summaryCount: "Count: {value}",
   },
   tableColumnResizer: {
     resize: "Resize {columnName}",

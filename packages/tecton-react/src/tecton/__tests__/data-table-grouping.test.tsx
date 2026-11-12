@@ -620,13 +620,6 @@ describe("DataTable grouping with other features", () => {
     expect(items()).toEqual(["Well 17", "Well 21", "Well 03", "Well 07"])
   })
 
-  it("hides the rows' drag handles while grouped", () => {
-    render(<Wells reorderableRows defaultView={{ grouping: ["field"] }} />)
-    expect(
-      document.querySelector('[data-slot="data-table-row-handle"]')
-    ).toBeNull()
-  })
-
   it("exports the items in the groups' order, without group rows", async () => {
     render(
       <Wells defaultView={{ grouping: ["field"] }}>

@@ -8,10 +8,9 @@
  */
 import * as React from "react"
 
-import { useStore, type Store } from "../store"
+import { useStore } from "../store"
 import {
   DataTableContext,
-  type CellsState,
   type DataTableActions,
   type DataTableContextValue,
   type DataTableExportOptions,
@@ -28,14 +27,11 @@ import {
   setSearch,
   setSorting,
   type DataTableAllMatching,
-  type DataTableCellPosition,
-  type DataTableCellRange,
   type DataTableFilterValue,
   type DataTableLeafColumn,
   type DataTableSort,
   type DataTableView,
 } from "./engine/index"
-import { loadFeature } from "./lazy"
 import { viewChangeReason } from "./view-reason"
 
 type UseDataTableResult<T> = {
@@ -109,71 +105,11 @@ type UseDataTableResult<T> = {
    * first. Loads the exporter the first time it is called.
    */
   exportCsv: (options?: DataTableExportOptions) => Promise<string>
-  /** The selected cells' ranges (`cellSelectionMode`), by row ids and column ids. */
-  cellSelection: ReadonlyArray<DataTableCellRange>
-  setCellSelection: (cellSelection: ReadonlyArray<DataTableCellRange>) => void
-  /** Selects every cell shown, on every page: `[{}]`, which stays every cell. */
-  selectAllCells: () => void
-  clearCellSelection: () => void
-  /**
-   * The number of cells selected, each counted once; worked out when read.
-   * `0` until the cell selection's code has loaded (soon after the table
-   * mounts; reading this asks for it): the part renders again then.
-   */
-  selectedCellCount: number
-  /**
-   * What `DataTableCellSummary` shows, worked out when read: the cells
-   * with a value, the numbers among them (of number columns), their sum
-   * and mean (`null` without numbers); `null` with no cell selected, and
-   * until the cell selection's code has loaded (as `selectedCellCount`).
-   */
-  cellSummary: DataTableCellSummaryValue | null
-  /** Drops every cell's message (a value refused, a save that failed). */
-  clearCellMessages: () => void
-  /**
-   * Copies the selected cells to the clipboard (tab-separated text and an
-   * HTML table, as Ctrl / Cmd + C does) and resolves with the text. Text
-   * that a spreadsheet would run as a formula gets a leading `'` unless
-   * `escapeFormulas` is `false`.
-   */
-  copyCells: (options?: { escapeFormulas?: boolean }) => Promise<string>
-  /** Pastes tab-separated text into the selected cells (`editable`), as Ctrl / Cmd + V does. */
-  pasteCells: (text: string) => Promise<void>
-  /** Empties the selected cells that can be written (`editable`), as Delete does. */
-  clearCells: () => Promise<void>
-  /** Fills each range down from its first row (`editable`), as Ctrl / Cmd + D does. */
-  fillCellsDown: () => Promise<void>
-  /** The cell being edited (`editable`), by its row and column ids; `null` when none is. */
-  editingCell: DataTableCellPosition | null
-  /**
-   * Edits a cell (`editable`), as F2 does: focus goes to it (scrolled into
-   * view) and into its editor, its value kept. A cell that cannot be
-   * written, or is not shown, is left as it is. Loads the editors the
-   * first time, if the table has not yet.
-   */
-  startEditing: (cell: DataTableCellPosition) => void
-  /**
-   * Ends the edit: saves the draft (`commit`, the default; a draft that is
-   * not valid keeps the editor, with its message), or drops it.
-   */
-  stopEditing: (options?: { commit?: boolean }) => void
-}
-
-/** `useDataTable().cellSummary`. */
-type DataTableCellSummaryValue = {
-  count: number
-  numericCount: number
-  sum: number | null
-  average: number | null
 }
 
 function createResult<T>(
   state: DataTableState<T>,
-  actions: DataTableActions<T>,
-  cells: Store<CellsState>,
-  editingCell: DataTableCellPosition | null,
-  /** Asks for the cell selection's code (after the render). */
-  wantCells: () => void
+  actions: DataTableActions<T>
 ): UseDataTableResult<T> {
   const { model, view } = state
   // Each builds on the view as it is now: two setters called one after the
@@ -249,43 +185,6 @@ function createResult<T>(
     columns: state.layout.columns.map((column) => column.definition),
     loading: state.loading,
     exportCsv: actions.exportCsv,
-    cellSelection: state.cellSelection,
-    setCellSelection: (cellSelection) => {
-      actions.setCellSelection(cellSelection, "none")
-    },
-    selectAllCells: () => {
-      actions.setCellSelection([{}], "none")
-    },
-    clearCellSelection: () => {
-      actions.setCellSelection([], "none")
-    },
-    // Worked out by the code on demand: until it is there, none.
-    get selectedCellCount() {
-      if (!state.cellGrid) wantCells()
-      return state.cellGrid?.count() ?? 0
-    },
-    get cellSummary() {
-      const grid = state.cellGrid
-      if (!grid) wantCells()
-      if (!grid || grid.rects.length === 0) return null
-      const { count, numericCount, sum, average } = grid.summary()
-      return { count, numericCount, sum, average }
-    },
-    clearCellMessages: () => actions.clearCellMessages(),
-    copyCells: (options) => actions.runCellCommand("copy", options),
-    pasteCells: async (text) => {
-      await actions.runCellCommand("paste", { text })
-    },
-    clearCells: async () => {
-      await actions.runCellCommand("clear")
-    },
-    fillCellsDown: async () => {
-      await actions.runCellCommand("fill")
-    },
-    editingCell,
-    // There while `DataTableContent` is, with `editable`.
-    startEditing: (cell) => cells.get().edits?.start(cell),
-    stopEditing: (options) => cells.get().edits?.stop(options?.commit ?? true),
   }
 }
 
@@ -303,33 +202,11 @@ function useDataTable<T = unknown>(): UseDataTableResult<T> {
       "useDataTable must be called in a component inside a DataTable."
     )
   const state = useStore(context.store, (current) => current)
-  // As a key: a part renders as an edit begins and ends, not as its draft
-  // or its message changes.
-  const editingKey = useStore(context.cells, ({ editing }) =>
-    editing ? JSON.stringify([editing.row, editing.column]) : null
-  )
-  const editingCell = React.useMemo(() => {
-    if (editingKey === null) return null
-    const [row, column] = JSON.parse(editingKey) as [string, string]
-    return { row, column }
-  }, [editingKey])
-  // A count or summary read before the cell selection's code came: it is
-  // asked for once rendered (never while rendering, nor on the server).
-  const wanted = React.useRef(false)
-  const mode = state.options.cellSelectionMode
-  React.useEffect(() => {
-    if (!wanted.current || mode === "none") return
-    wanted.current = false
-    loadFeature("cellSelection").catch(() => undefined)
-  })
   return React.useMemo(
-    () =>
-      createResult(state, context.actions, context.cells, editingCell, () => {
-        wanted.current = true
-      }),
-    [state, context.actions, context.cells, editingCell]
+    () => createResult(state, context.actions),
+    [state, context.actions]
   )
 }
 
 export { useDataTable }
-export type { DataTableCellSummaryValue, UseDataTableResult }
+export type { UseDataTableResult }

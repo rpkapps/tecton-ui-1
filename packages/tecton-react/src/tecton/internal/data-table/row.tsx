@@ -6,13 +6,7 @@
  * The engine keeps a row's object while nothing about the row changes, so
  * a sort, a page or another row opening renders only the rows that change;
  * a row's selection is read by its `TableRow` from the grid, so selecting a
- * row renders that row's `tr` and checkbox, not its cells. Its cells' part
- * in the cell selection, and their writes, are read from the `cells`
- * store, as text that is the same while they show the same: selecting
- * cells renders the rows whose cells change, and in them the cells' own
- * elements, not their content. The cell being edited is read there too: its
- * row draws the editor (the code on demand's, `editing/`) in place of its
- * content, which stays under it.
+ * row renders that row's `tr` and checkbox, not its cells.
  *
  * Each row passes the props a virtualized body gives it (`aria-rowindex`,
  * `data-index`) on to its `TableRow`, inside the `TableRowConfig` that tells
@@ -45,7 +39,7 @@ import { Checkbox } from "@tecton/react/components/checkbox"
 import { TableCell, TableHead, TableRow } from "@tecton/react/components/table"
 
 import { useTranslations } from "../i18n/translations"
-import { createStore, useStore, type Store } from "../store"
+import { createStore, useStore } from "../store"
 import {
   TableRowConfig,
   type RowDescription,
@@ -54,8 +48,6 @@ import {
 import {
   ALIGN,
   cellBorderClassName,
-  cellContent,
-  cellInner,
   INDENT,
   pinnedCellClassName,
   pinnedRowClassName,
@@ -68,11 +60,7 @@ import {
   type GroupCell,
   type RowShared,
 } from "./cell"
-import {
-  useDataTableContext,
-  useDataTableSelector,
-  type CellsState,
-} from "./context"
+import { useDataTableContext, useDataTableSelector } from "./context"
 import {
   selectionState,
   type BodyRow,
@@ -82,8 +70,6 @@ import {
   type GroupRow,
   type ItemRow,
 } from "./engine/index"
-import { isCellEditable, UNKNOWN } from "./cell-marks"
-import { DataTableRowHandle } from "./row-order"
 import { DataTableSelectionCheckbox } from "./selection-checkbox"
 
 type RowProps<TRow, T> = Omit<React.ComponentProps<"tr">, "children"> & {
@@ -136,55 +122,12 @@ function rowIndex<T>(
     : given
 }
 
-/** A row's marks while a selection given is still to be resolved. */
-const WAITING = "?"
-
-const NO_CELLS: Store<CellsState> = createStore<CellsState>({
-  grid: null,
-  waiting: false,
-  marks: new Map(),
-  writer: null,
-  change: null,
-  editing: null,
-  editor: null,
-  edits: null,
-})
-
 function ItemRowComponent<T>({
   row,
   shared,
   ...props
 }: RowProps<ItemRow<T>, T>) {
   const { actions } = shared
-  const cells = shared.cells ?? NO_CELLS
-  // `WAITING`: whether a cell is selected is not known yet.
-  const marks = useStore(cells, (state) =>
-    state.grid ? state.grid.rowMarks(row.id) : state.waiting ? WAITING : ""
-  )
-  const skipped = useStore(cells, (state) => state.grid?.skipped ?? "")
-  const writes = useStore(cells, (state) => state.marks.get(row.id))
-  // The cell being edited, when it is one of this row's: only its row
-  // renders as an edit begins and ends (and its editor as the user types).
-  const editing = useStore(cells, (state) =>
-    state.editing?.row === row.id ? state.editing : null
-  )
-  const editor = editing ? cells.get().editor : null
-  // Set with the first mark, never removed: there whenever `writes` is.
-  const writer = writes ? cells.get().writer : null
-  const columnCount = shared.columns.length
-  // Marks come from a grid, which reads them (the code on demand's).
-  const flags = React.useMemo(
-    () =>
-      marks && marks !== WAITING
-        ? (cells.get().grid?.decode(marks, columnCount, skipped) ?? null)
-        : null,
-    [cells, marks, columnCount, skipped]
-  )
-  // The cells' content, kept while the row and the table's state stay.
-  const inner = React.useMemo(
-    () => shared.columns.map((column) => cellInner(column, row, shared)),
-    [row, shared]
-  )
   const config = React.useMemo<TableRowGridProps>(
     () => ({
       value: row.id,
@@ -203,35 +146,11 @@ function ItemRowComponent<T>({
     <TableRowConfig value={config}>
       <TableRow
         {...props}
-        ref={shared.order?.register(row.id)}
         aria-rowindex={rowIndex(row.id, props["aria-rowindex"], shared)}
         aria-posinset={shared.levelled ? row.posinset : undefined}
         aria-setsize={shared.levelled ? row.setsize : undefined}
-        className={cn(
-          shared.pinned && pinnedRowClassName,
-          // The row being dragged, as a column's header is.
-          shared.handle && "has-data-dragging:opacity-50"
-        )}
+        className={cn(shared.pinned && pinnedRowClassName)}
       >
-        {shared.handle && (
-          <TableCell
-            className={cn(
-              "w-px pe-0",
-              shared.pinned && cellBorderClassName,
-              shared.handlePin && pinnedCellClassName
-            )}
-            style={shared.handlePin && pinStyle(shared.handlePin)}
-          >
-            {shared.order && !row.continued && (
-              <DataTableRowHandle
-                order={shared.order}
-                id={row.id}
-                label={config.textValue ?? row.id}
-                size={shared.size}
-              />
-            )}
-          </TableCell>
-        )}
         {shared.selection && (
           <TableCell
             className={cn(
@@ -244,46 +163,9 @@ function ItemRowComponent<T>({
             <DataTableSelectionCheckbox />
           </TableCell>
         )}
-        {shared.columns.map((column, index) => {
-          const edited = editing?.column === column.id ? editing : null
-          const Editor = edited && editor?.Editor
-          return renderCell(
-            column,
-            index,
-            shared,
-            Editor
-              ? cellInner(
-                  column,
-                  row,
-                  shared,
-                  <Editor
-                    key={edited.id}
-                    editing={edited}
-                    column={column as EngineColumn<unknown>}
-                    item={row.item}
-                    display={cellContent(column, row, shared.formatter)}
-                    wrap={shared.wrap && column.definition.wrap === true}
-                  />
-                )
-              : inner[index],
-            {
-              flags: marks === WAITING ? UNKNOWN : flags?.[index],
-              // While edited, the cell shows its editor's state, not its write's.
-              mark:
-                writes && !Editor
-                  ? writer?.shownMark(
-                      writes.get(column.id),
-                      column.getValue(row.item)
-                    )
-                  : undefined,
-              readOnly:
-                shared.editable &&
-                !isCellEditable(true, column, row.item, row.disabled),
-              writer,
-              editing: Editor ? { invalid: edited.error !== null } : null,
-            }
-          )
-        })}
+        {shared.columns.map((column, index) =>
+          renderCell(column, index, row, shared)
+        )}
       </TableRow>
     </TableRowConfig>
   )
@@ -547,7 +429,6 @@ function GroupRowComponent<T>({
           actions.setGroupOpen(row.key, !row.open)
         }}
       >
-        {shared.handle && controlCell(shared.handlePin)}
         {shared.selection &&
           controlCell(
             shared.selectionPin,

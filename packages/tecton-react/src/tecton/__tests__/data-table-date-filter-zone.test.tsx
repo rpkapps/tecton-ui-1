@@ -156,7 +156,7 @@ describe("DataTableFilter on a date column shown in UTC", () => {
       "grid",
       { name: /March 2024/ },
       // The popover's and the calendar's code, loaded on demand.
-      { timeout: 5000 }
+      { timeout: 10_000 }
     )
     expect(
       within(grid).getByRole("button", { name: /March 1st.*selected/ })
@@ -166,5 +166,6 @@ describe("DataTableFilter on a date column shown in UTC", () => {
     const filter = onViewChange.mock.calls.at(-1)?.[0].filters.spud
     expect(filter.from.getTime()).toBe(Date.UTC(2024, 2, 1))
     expect(filter.to.getTime()).toBe(Date.UTC(2024, 2, 5))
-  })
+    // The calendar's code loads on demand: slow under a full parallel run.
+  }, 20_000)
 })

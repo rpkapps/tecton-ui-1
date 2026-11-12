@@ -167,10 +167,7 @@ function DataTableMoreError({
 function loadingRows<T>(
   count: number,
   columns: ReadonlyArray<EngineColumn<T>>,
-  shared: Pick<
-    RowShared<T>,
-    "selection" | "handle" | "pinned" | "pins" | "selectionPin" | "handlePin"
-  >
+  shared: Pick<RowShared<T>, "selection" | "pinned" | "pins" | "selectionPin">
 ) {
   const cell = (pin: CellPin | undefined, className?: string) => ({
     className: cn(
@@ -190,7 +187,6 @@ function loadingRows<T>(
         shared.pinned && pinnedRowClassName
       )}
     >
-      {shared.handle && <TableCell {...cell(shared.handlePin, "w-px")} />}
       {shared.selection && <TableCell {...cell(shared.selectionPin, "w-px")} />}
       {columns.map((column, at) => (
         <TableCell key={column.id} {...cell(shared.pins[at])}>

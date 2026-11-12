@@ -17,22 +17,14 @@ import type { SelectionReason } from "../primitives/selection"
 import { useStore, type Store } from "../store"
 import {
   resolveLocale,
-  type CellGrid,
   type ClosedGroups,
   type ColumnLayout,
   type CsvOptions,
   type DataTableAllMatching,
-  type DataTableCellChange,
-  type DataTableCellPosition,
-  type DataTableCellRange,
-  type DataTableCellSelectionChangeReason,
-  type DataTableCellsChangeReason,
   type DataTableColumns,
   type DataTableRowModel,
-  type DataTableValue,
   type DataTableView,
   type DataTableViewChangeReason,
-  type EngineColumn,
   type Formatter,
 } from "./engine/index"
 import type { Warn } from "./warnings"
@@ -45,9 +37,6 @@ import type { Warn } from "./warnings"
 declare const process: { env: { NODE_ENV?: string } }
 
 type DataTableSelectionMode = "none" | "single" | "multiple"
-
-/** Whether cells select: one at a time, or in ranges. */
-type DataTableCellSelectionMode = "none" | "cell" | "range"
 
 /** Why the selection changed. */
 type DataTableSelectionChangeReason =
@@ -83,9 +72,6 @@ type DataTablePageChangeReason =
 
 type DataTablePageSizeChangeReason = "select" | "none"
 
-/** How rows were reordered: dragged, moved with the keyboard, or by a screen reader's drop targets. */
-type DataTableRowOrderChangeReason = "pointer" | "keyboard" | "virtual"
-
 /** The second argument of every `on…Change` of `DataTable`. */
 type DataTableChangeDetails<TReason extends string> =
   ChangeEventDetails<TReason>
@@ -115,17 +101,12 @@ type DataTableOptions = {
   readonly sortable: boolean
   readonly filterable: boolean
   readonly groupable: boolean
-  readonly editable: boolean
   readonly resizableColumns: boolean
   readonly reorderableColumns: boolean
   readonly hideableColumns: boolean
   readonly pinnableColumns: boolean
-  readonly reorderableRows: boolean
   readonly pagination: boolean
   readonly selectionMode: DataTableSelectionMode
-  readonly cellSelectionMode: DataTableCellSelectionMode
-  /** Cells are focused one by one, as in a spreadsheet: `editable` or a cell selection. */
-  readonly cellFocus: boolean
   readonly disabledBehavior: "all" | "selection"
   readonly disallowEmptySelection: boolean
   /** `itemToChildren` is set. */
@@ -178,141 +159,7 @@ type DataTableState<T> = {
    * send.
    */
   readonly clears: number
-  /** The cell selection as given (ranges set aside included). */
-  readonly cellSelection: ReadonlyArray<DataTableCellRange>
-  /**
-   * The cell selection over the rows and columns shown: resolved by the
-   * code loaded on demand (`cellSelection`), so `null` until it is there,
-   * and without a cell selection mode.
-   */
-  readonly cellGrid: CellGrid<T> | null
-  /** The breakpoints the window is below (columns' `hideBelow`), with a cell selection mode or `editable`. */
-  readonly cellBelow: ReadonlySet<string>
 }
-
-/** A cell being saved (`pending`), or whose value was refused or not saved (`error`). */
-type CellMark = {
-  /** The write saving it, while it saves. */
-  readonly pending: number | null
-  /** Why the value written was refused, or not saved. */
-  readonly error: string | null
-  /** What was written, as text, with `error`. */
-  readonly attempted: string | null
-  /**
-   * The values `error` holds for: the cell's value then, and the value
-   * written. Once the cell's value is another (changed from outside), the
-   * message is gone.
-   */
-  readonly values: ReadonlyArray<DataTableValue>
-}
-
-/**
- * How cells show their marks: the code that writes puts it in the cells'
- * store with its first mark (`cell-message.tsx`), so none of it loads up
- * front.
- */
-type CellWriter = {
-  /** A cell's mark as it shows with its value now (a message is gone once the value changes). */
-  shownMark: (
-    mark: CellMark | undefined,
-    value: DataTableValue
-  ) => CellMark | undefined
-  /** A cell's message: its description and tooltip. */
-  Message: React.ComponentType<{ message: string; attempted: string | null }>
-  /** Drops every message; the cells saving stay so. */
-  clearMessages: (cells: Store<CellsState>) => void
-}
-
-/**
- * The cell being edited (`editable`): its row and column, the editor's
- * session (the code on demand's, opaque here) and the message of a draft
- * that is not valid. A new object only when the edit begins, ends or its
- * message changes: typing renders the editor alone, not its row.
- */
-type EditingCell = {
-  readonly row: string
-  readonly column: string
-  /** The edit's own number: its editor is new for each edit. */
-  readonly id: number
-  readonly session: object
-  readonly error: string | null
-}
-
-/** What the row of the cell being edited gives its editor. */
-type CellEditorProps = {
-  editing: EditingCell
-  column: EngineColumn<unknown>
-  item: unknown
-  /** The cell's content as it shows, kept under the editor so the cell keeps its size. */
-  display: React.ReactNode
-  /** Multi-line: a `wrap` column, in a table whose rows may grow. */
-  wrap: boolean
-}
-
-/**
- * The editors (`editing/`): put in the cells' store by the code on demand
- * as it attaches, so the rows draw an editor only once it is there.
- */
-type CellEditor = {
-  Editor: React.ComponentType<CellEditorProps>
-}
-
-/**
- * The table's editing, as `useDataTable` and a boolean cell's checkbox
- * reach it (`cells.tsx`): kept until its code is there, then handed to it.
- */
-type EditRequests = {
-  /** Edits a cell (focused first), its value kept. */
-  start: (cell: DataTableCellPosition) => void
-  /** Ends the edit: saves the draft (`commit`), or drops it. */
-  stop: (commit: boolean) => void
-  /** Writes a cell's value at once (a boolean cell's checkbox). */
-  write: (
-    cell: DataTableCellPosition,
-    value: DataTableValue,
-    event?: Event
-  ) => void
-}
-
-/** What the rows' cells show of the cell selection and of writes, apart from the table's state. */
-type CellsState = {
-  /** The cell selection over the rows and columns shown. */
-  readonly grid: CellGrid<unknown> | null
-  /**
-   * A selection is given but not resolved yet (its code is still to
-   * come): whether a cell is selected is not known, so it is not said.
-   */
-  readonly waiting: boolean
-  /** The cells being saved or not saved, by row id, then column id. */
-  readonly marks: ReadonlyMap<string, ReadonlyMap<string, CellMark>>
-  /** How they show, there with the first mark. */
-  readonly writer: CellWriter | null
-  /** The last change of the cell selection the table made, and why. */
-  readonly change: {
-    readonly ranges: ReadonlyArray<DataTableCellRange>
-    readonly reason: DataTableCellSelectionChangeReason
-  } | null
-  /** The cell being edited, one at a time. */
-  readonly editing: EditingCell | null
-  /** The editors, there once their code is. */
-  readonly editor: CellEditor | null
-  /** The table's editing, while `DataTableContent` is there with `editable`. */
-  readonly edits: EditRequests | null
-}
-
-/** The second argument of `onCellsChange`. */
-type DataTableCellsChangeDetails =
-  DataTableChangeDetails<DataTableCellsChangeReason> & {
-    /**
-     * Aborted when a later write takes over any of these cells (one is
-     * enough), or this one is cancelled: a request still running can be
-     * cancelled. The cells no later write took over are still this
-     * write's: if its promise rejects, they show its message. Roll back
-     * compare-and-set (only a cell whose value is still the one written),
-     * so a cell a later write took over keeps its later value.
-     */
-    signal: AbortSignal
-  }
 
 /** What the parts do; each reads the latest props and state. */
 type DataTableActions<T> = {
@@ -404,38 +251,7 @@ type DataTableActions<T> = {
   retry: () => void
   /** The end of the rows came near: `onLoadMore`. */
   loadMore: () => void
-  /** Reports a new order of every item's id; `false` when cancelled. */
-  reorderRows: (
-    ids: ReadonlyArray<string>,
-    reason: DataTableRowOrderChangeReason,
-    event?: Event
-  ) => boolean
   exportCsv: (options?: DataTableExportOptions) => Promise<string>
-  /** Whether the cell selection changed: `false` when it is the same, or cancelled. */
-  setCellSelection: (
-    cellSelection: ReadonlyArray<DataTableCellRange>,
-    reason: DataTableCellSelectionChangeReason,
-    event?: Event
-  ) => boolean
-  /** The cell selection as it is now, changes not rendered yet included. */
-  currentCellSelection: () => ReadonlyArray<DataTableCellRange>
-  /**
-   * Reports written cells (`onCellsChange`): whether it was cancelled, and
-   * what it returned (a promise while they save).
-   */
-  changeCells: (
-    changes: Array<DataTableCellChange<T>>,
-    reason: DataTableCellsChangeReason,
-    event: Event | undefined,
-    signal: AbortSignal
-  ) => { canceled: boolean; result: unknown }
-  /** Drops every cell's message (not valid, not saved); the cells saving stay so. */
-  clearCellMessages: () => void
-  /** Runs a cell command of `useDataTable` (copy, paste, clear, fill down), its code loaded first. */
-  runCellCommand: (
-    command: "copy" | "paste" | "clear" | "fill",
-    options?: { text?: string; escapeFormulas?: boolean }
-  ) => Promise<string>
   /** Warns once in development. */
   warn: Warn
 }
@@ -443,8 +259,6 @@ type DataTableActions<T> = {
 type DataTableContextValue<T> = {
   store: Store<DataTableState<T>>
   actions: DataTableActions<T>
-  /** What the cells show of the cell selection and of writes (`CellsState`). */
-  cells: Store<CellsState>
 }
 
 const DataTableContext =
@@ -510,16 +324,7 @@ export {
   useNumberFormat,
 }
 export type {
-  CellEditor,
-  CellEditorProps,
-  CellMark,
-  CellsState,
-  CellWriter,
-  EditingCell,
-  EditRequests,
   DataTableActions,
-  DataTableCellSelectionMode,
-  DataTableCellsChangeDetails,
   DataTableChangeDetails,
   DataTableContextValue,
   DataTableExpandedChangeReason,
@@ -527,7 +332,6 @@ export type {
   DataTableOptions,
   DataTablePageChangeReason,
   DataTablePageSizeChangeReason,
-  DataTableRowOrderChangeReason,
   DataTableSelectionChangeDetails,
   DataTableSelectionChangeReason,
   DataTableSelectionMode,

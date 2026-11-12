@@ -16,11 +16,6 @@
  * - `aggregate`, `pagination`, `selection`: what group rows, the footer
  *   and selection compute.
  *
- * The cell selection over the rows and columns shown (`cells`) and its
- * cells' walk, count and summary (`cell-ranges`) are the engine's too, but
- * load on demand with the code of the cell selection: they are imported
- * by it, not through this module.
- *
  * CSV export is in the engine's csv module, left out here so the root can
  * load it on demand, as a separate chunk, when an export is first asked for.
  */
@@ -43,9 +38,6 @@ export type {
   HeaderCell,
   HeaderRow,
 } from "./columns"
-// `cells` (resolving the cell selection) loads on demand, with the code of
-// the cell selection: imported by it, not through this module.
-export type { CellGrid, CellRect } from "./cells"
 export type { CsvOptions } from "./csv"
 export { createDataTableEngine } from "./engine"
 export type {

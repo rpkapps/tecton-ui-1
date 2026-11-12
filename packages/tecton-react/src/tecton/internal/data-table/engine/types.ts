@@ -77,57 +77,6 @@ type DataTableHeaderDetails = {
   sorted: DataTableSort["direction"] | null
 }
 
-/**
- * The props of a column's `renderEditor`: an editor of its own for the
- * column's cells, drawn over the cell being edited (the cell keeps its
- * size; the editor fills it). Enter saves and moves down, Shift + Enter
- * up, Tab and Shift + Tab to the next and previous cell, Escape cancels,
- * unless the editor prevents the key's default (a list taking Enter).
- */
-type DataTableEditorProps<T> = {
-  item: T
-  /** The column's id. */
-  column: string
-  /**
-   * The value being edited: the cell's, or the text it began with
-   * (`initialText`: the character typed) read as the column's value,
-   * `null` when that text does not read as one ("-" in a number column).
-   */
-  value: DataTableValue
-  /**
-   * The text the edit began with: the character typed (an edit begun by
-   * typing), else the value as the built-in editor shows it (Enter, F2, a
-   * double click), or the text of a save that failed. Start a field from
-   * it, so a character typed is not lost.
-   */
-  initialText: string | null
-  onValueChange: (value: DataTableValue) => void
-  /**
-   * Saves the value (checked by the column's `validate` first) and ends
-   * the edit; `move`: where focus goes then (`"none"`, the cell, by
-   * default).
-   */
-  commit: (options?: {
-    move?: "down" | "up" | "next" | "previous" | "none"
-  }) => void
-  /** Ends the edit without saving. */
-  cancel: () => void
-  /** Why the value was not saved (the column's `validate`), `null` while it is valid. */
-  error: string | null
-  /**
-   * For the element that takes focus (an input): its `ref` (focused as the
-   * edit begins), its name, `aria-invalid` and `aria-describedby` with the
-   * error, and a `className` that makes a text field flush with the cell.
-   */
-  inputProps: {
-    ref: React.RefCallback<HTMLElement>
-    "aria-label": string
-    "aria-invalid": true | undefined
-    "aria-describedby": string | undefined
-    className: string
-  }
-}
-
 type DataTableLeafColumn<T> = {
   /** Unique among the table's columns and groups. */
   id: string
@@ -145,8 +94,6 @@ type DataTableLeafColumn<T> = {
   options?: ReadonlyArray<DataTableOption>
   cell?: (item: T, details: DataTableCellDetails) => React.ReactNode
   renderHeader?: (details: DataTableHeaderDetails) => React.ReactNode
-  /** The cell's editor in place of its type's (`editable`). */
-  renderEditor?: (props: DataTableEditorProps<T>) => React.ReactNode
   /** By type by default: numbers at the end, booleans centred, the rest at the start. */
   align?: "start" | "center" | "end"
   /** By type by default: `sum` for numbers, `count` for booleans, none otherwise. */
@@ -159,18 +106,6 @@ type DataTableLeafColumn<T> = {
   compare?: (a: T, b: T) => number
   /** Filters the column's rows in place of its type's filter, for any filter value. */
   filter?: (item: T, filterValue: DataTableFilterValue) => boolean
-  /**
-   * Checks a value before it is written (edited, pasted, filled,
-   * cleared): a message rejects it, `null` lets it through.
-   */
-  validate?: (value: DataTableValue, item: T) => string | null
-  /**
-   * Reads text typed in the cell's editor or pasted as the column's
-   * value, in place of its type's reading (a number in the locale, a
-   * date, Yes / No, an option's label). Throw an `Error` to reject the
-   * text: its message is shown.
-   */
-  parse?: (text: string, item: T) => DataTableValue
   /** In px. */
   width?: number
   /** In px. */
@@ -185,11 +120,6 @@ type DataTableLeafColumn<T> = {
   sortable?: false
   filterable?: false
   groupable?: false
-  /**
-   * Opts the column out of `editable`, or (a function) decides per item
-   * whether its cell can be written.
-   */
-  editable?: false | ((item: T) => boolean)
   resizable?: false
   reorderable?: false
   hideable?: false
@@ -264,52 +194,6 @@ type DataTablePartialView = {
   }
 }
 
-/** A cell, by its row's id and its column's id. */
-type DataTableCellPosition = { row: string; column: string }
-
-/**
- * Cells selected together: rows and columns, each between two ids
- * (`start`, where the range was begun, its anchor; `end`, the side that
- * moves) or, left out, every one shown. `{ rows }` is whole rows, `{
- * columns }` whole columns, `{}` every cell; whole axes follow the rows and
- * columns shown (a sort, a filter, new data). Two corners make a rectangle
- * in the order shown, between them.
- */
-type DataTableCellRange = {
-  rows?: { start: string; end: string }
-  columns?: { start: string; end: string }
-}
-
-/** Why the cell selection changed. */
-type DataTableCellSelectionChangeReason =
-  /** A click, a drag. */
-  | "item-press"
-  | "keyboard"
-  /** Ctrl / Cmd + A. */
-  | "select-all"
-  /** Escape. */
-  | "clear"
-  /** The selection became the cells a paste wrote. */
-  | "paste"
-  /** Set through `useDataTable` (`setCellSelection`, `selectAllCells`, `clearCellSelection`). */
-  | "none"
-
-/** Why cells were written. */
-type DataTableCellsChangeReason = "edit" | "paste" | "clear" | "fill"
-
-/** One cell written, for `onCellsChange`. */
-type DataTableCellChange<T> = {
-  /** The row's id. */
-  row: string
-  /** The column's id. */
-  column: string
-  item: T
-  /** The new value, as the column's type reads it (`null` for an empty cell). */
-  value: DataTableValue
-  /** The value before, from the column's `accessor`. */
-  previousValue: DataTableValue
-}
-
 type DataTableViewChangeReason =
   | "sort"
   | "search"
@@ -324,17 +208,11 @@ type DataTableViewChangeReason =
 export type {
   DataTableAggregate,
   DataTableBadgeVariant,
-  DataTableCellChange,
   DataTableCellDetails,
-  DataTableCellPosition,
-  DataTableCellRange,
-  DataTableCellSelectionChangeReason,
-  DataTableCellsChangeReason,
   DataTableColumn,
   DataTableColumnGroup,
   DataTableColumns,
   DataTableColumnType,
-  DataTableEditorProps,
   DataTableFilterValue,
   DataTableHeaderDetails,
   DataTableLeafColumn,

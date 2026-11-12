@@ -245,7 +245,7 @@ describe("DataTable", () => {
         <DataTableContent aria-label="Wells" />
       </DataTable>
     )
-    expect(cell("Gullfaks")).toHaveClass("whitespace-pre-wrap")
+    expect(cell("Gullfaks")).toHaveClass("whitespace-normal")
   })
 })
 
@@ -982,7 +982,7 @@ describe("useDataTable", () => {
 describe("DataTable on the server and on demand", () => {
   it("renders its rows on the server, loading nothing", () => {
     const html = renderToString(
-      <Wells selectionMode="multiple" pagination editable />
+      <Wells selectionMode="multiple" pagination reorderableColumns />
     )
     expect(html).toContain('role="grid"')
     expect(html).toContain("Well 04")
@@ -999,12 +999,12 @@ describe("DataTable on the server and on demand", () => {
     vi.stubGlobal("cancelIdleCallback", cancel)
     render(<Wells />).unmount()
     expect(cancel).not.toHaveBeenCalled()
-    render(<Wells editable cellSelectionMode="range" />).unmount()
+    render(<Wells reorderableColumns />).unmount()
     expect(cancel).toHaveBeenCalledTimes(1)
     vi.unstubAllGlobals()
   })
 
   it("loads a feature once, sharing the promise", () => {
-    expect(loadFeature("editing")).toBe(loadFeature("editing"))
+    expect(loadFeature("dragAndDrop")).toBe(loadFeature("dragAndDrop"))
   })
 })

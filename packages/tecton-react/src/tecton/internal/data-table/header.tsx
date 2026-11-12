@@ -19,8 +19,7 @@
  * The selection column's header holds the select-all checkbox in the last
  * row (a cell named "Select" above it, and in its place for single
  * selection), so every header row has the same columns for the grid to
- * move through; the drag handle column's cells, before it, are named
- * "Reorder". Placeholders are named after the columns below them.
+ * move through. Placeholders are named after the columns below them.
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -279,7 +278,6 @@ type HeaderShared<T> = {
   /** Each shown column's pin, by display index. */
   pins: ReadonlyArray<CellPin | undefined>
   selectionPin: CellPin | undefined
-  handlePin: CellPin | undefined
   /** With `reorderableColumns`: the columns and groups that move. */
   order: ColumnOrder | null
   movable: ReadonlySet<string>
@@ -804,7 +802,6 @@ function cellPin<T>(
 
 function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
   const t = useTranslations("table")
-  const tDataTable = useTranslations("dataTable")
   const { layout, options } = shared
   const { byId } = getColumnModel(shared.columns)
   const last = layout.headerRows.length - 1
@@ -813,9 +810,6 @@ function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
   // Cells with nothing to show are still named for the grid's keyboard,
   // which stops on every header cell.
   const selectColumn = <span className="sr-only">{t("select")}</span>
-  const handleColumn = (
-    <span className="sr-only">{tDataTable("reorderRowsColumn")}</span>
-  )
   return (
     <TableHeader>
       {layout.headerRows.map((row) => {
@@ -827,17 +821,6 @@ function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
           counts.set(cell.id, (counts.get(cell.id) ?? 0) + 1)
         return (
           <TableRow key={row.key}>
-            {options.reorderableRows && (
-              <TableHead
-                className={cn(
-                  row.level === last && "w-px",
-                  shared.handlePin && pinnedHeadClassName
-                )}
-                style={shared.handlePin && pinStyle(shared.handlePin)}
-              >
-                {handleColumn}
-              </TableHead>
-            )}
             {selection && (
               <TableHead
                 className={cn(

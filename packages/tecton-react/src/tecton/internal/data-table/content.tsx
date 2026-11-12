@@ -22,20 +22,13 @@
  *
  * The rows: detail rows under the rows that open (`renderDetail`, which
  * makes the table a treegrid: each row of level 1, its detail row of level
- * 2), a drag handle column for row reordering (its drag and drop on demand
- * too, `row-reorder.tsx`), a totals row in the footer (`totals.tsx`), and
+ * 2), a totals row in the footer (`totals.tsx`), and
  * with `hasMore` loading rows after the last row: `onLoadMore` is called
  * when they come within two views of being seen (the table's scroll area
  * in a virtualized table, the page's otherwise), once per number of items.
  * While more rows load, the table is busy and the loading rows show, not
  * the bar under the header. The status region says how many rows match
  * once the search or filters change.
- *
- * The cells: with `editable` or a cell selection, focus moves cell by cell
- * (the grid's `cellFocus`); a cell selection's keys, presses and clipboard
- * are `cells.tsx`'s, editing's keys and presses `edits.tsx`'s (first: a key
- * that edits is not the selection's), and each row draws its cells' part
- * in them.
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -90,11 +83,8 @@ import {
   type GroupRow,
 } from "./engine/index"
 import { useFeature, usePrefetchFeatures } from "./lazy"
-import { useCellSelection } from "./cells"
-import { useCellEditing } from "./edits"
 import { DataTableHeader, type HeaderShared } from "./header"
 import { describeRow, renderRow } from "./row"
-import { createRowOrder, inItemOrder, type RowOrder } from "./row-order"
 import { DataTableTotals } from "./totals"
 import {
   DataTableEmptyState,
@@ -231,39 +221,6 @@ function pinsOf(count: number, start: number, end: number) {
 }
 
 const FIRST_PIN: CellPin = { side: "start", offset: "0px" }
-
-/**
- * Row reordering (`reorderableRows`): the rows' side of it at once (the
- * handles, `row-order.tsx`), its drag and drop once loaded. The handles
- * show while the rows are in the items' order.
- */
-function useRowOrder(
-  context: DataTableContextValue<unknown>,
-  frame: React.RefObject<HTMLElement | null>,
-  grid: { current: TableGridController | null },
-  model: DataTableRowModel<unknown>,
-  on: boolean
-) {
-  const feature = useFeature("dragAndDrop", on)
-  const { load } = feature
-  const [order] = React.useState<RowOrder>(() =>
-    createRowOrder(context.actions, () => frame.current, grid, load)
-  )
-  const movable = useDataTableSelector(
-    context,
-    (state) => on && inItemOrder(state.view)
-  )
-  React.useLayoutEffect(() => {
-    order.snapshot.current = {
-      shown: model.rows.flatMap((row) =>
-        row.kind === "item" && !row.continued ? [row.id] : []
-      ),
-      all: model.matchingIds,
-      label: model.textOf,
-    }
-  }, [order, model])
-  return { order: movable ? order : null, module: feature.module }
-}
 
 /**
  * Where the loading rows after a table's last row (`element`) scroll into
@@ -643,7 +600,6 @@ function DataTableContentImpl({
   }, [actions, renderDetail, options.tree])
 
   const selection = options.selectionMode !== "none"
-  const handle = options.reorderableRows
   const rtl = useDirection() === "rtl"
   // With more rows to come, an error over loaded rows shows after them, in
   // place of the loading rows; the error state takes the rows' place only
@@ -661,7 +617,6 @@ function DataTableContentImpl({
     layout,
     widths,
     selection,
-    handle,
     fixed: hasFixedWidths(layout, options.resizableColumns),
     ready: !firstLoad,
     rows: rows.length > 0 && !loading,
@@ -680,19 +635,9 @@ function DataTableContentImpl({
     () => pinsOf(layout.columns.length, layout.pinnedStart, layout.pinnedEnd),
     [layout.columns.length, layout.pinnedStart, layout.pinnedEnd]
   )
-  // The columns of controls stick at the start while a column does: the
-  // handles first, then the checkboxes.
-  const controlsPinned = sizing?.selectionPinned === true
-  const handlePin = handle && controlsPinned ? FIRST_PIN : undefined
-  const selectionPin = React.useMemo<CellPin | undefined>(
-    () =>
-      selection && controlsPinned
-        ? handle
-          ? { side: "start", offset: `${sizer.controls.handle}px` }
-          : FIRST_PIN
-        : undefined,
-    [selection, controlsPinned, handle, sizer.controls.handle]
-  )
+  // The checkboxes stick at the start while a column does.
+  const selectionPin =
+    selection && sizing?.selectionPinned === true ? FIRST_PIN : undefined
   const fixed = sizing !== null
   const order = useColumnOrder(
     context,
@@ -727,8 +672,6 @@ function DataTableContentImpl({
   )
 
   const gridController = React.useRef<TableGridController | null>(null)
-  const rowOrder = useRowOrder(context, frame, gridController, model, handle)
-  const cellMode = options.cellSelectionMode !== "none"
 
   const rowHeader = shownColumns.find(
     (column) => column.id === layout.rowHeader
@@ -771,8 +714,6 @@ function DataTableContentImpl({
       rowHeader,
       formatter,
       selection,
-      handle,
-      order: rowOrder.order,
       size: options.size,
       detail: detail ? detailStore : null,
       levelled: options.tree || grouped || detail,
@@ -786,7 +727,7 @@ function DataTableContentImpl({
       linked: options.linked,
       wrap: !virtualized,
       virtualized,
-      columnCount: shownColumns.length + (selection ? 1 : 0) + (handle ? 1 : 0),
+      columnCount: shownColumns.length + (selection ? 1 : 0),
       rowIndexOf: options.pagination
         ? (id: string) => {
             // The engine's place, after the open detail rows before it; a
@@ -805,23 +746,14 @@ function DataTableContentImpl({
       fixed,
       pins,
       selectionPin,
-      handlePin,
       pinned,
       actions,
-      cells: cellMode || options.editable ? context.cells : null,
-      selecting: cellMode,
-      cellFocus: options.cellFocus,
-      editable: options.editable,
-      editLabel: (columnName: string, rowName: string) =>
-        tTable("editorLabel", { columnName, rowName }),
     }),
     [
       shownColumns,
       rowHeader,
       formatter,
       selection,
-      handle,
-      rowOrder.order,
       options.size,
       detail,
       detailStore,
@@ -843,14 +775,8 @@ function DataTableContentImpl({
       fixed,
       pins,
       selectionPin,
-      handlePin,
       pinned,
       actions,
-      cellMode,
-      context.cells,
-      options.cellFocus,
-      options.editable,
-      tTable,
     ]
   )
   const render = React.useCallback(
@@ -872,55 +798,6 @@ function DataTableContentImpl({
   // The body's rows as rendered, for the grid to find a closed group: set
   // before the layout effects, where the grid looks for it.
   const shownRows = React.useRef(rows)
-  // A row's place in the body (detail rows counted), for focus to go to a
-  // cell selection's corner.
-  const bodyIndex = React.useCallback(
-    (id: string) =>
-      shownRows.current.findIndex(
-        (row) => row.kind === "item" && row.id === id && !row.continued
-      ),
-    []
-  )
-  const cellSelection = useCellSelection({
-    context,
-    container,
-    grid: gridController,
-    on: cellMode,
-    bodyIndex,
-  })
-  const editing = useCellEditing({
-    context,
-    container,
-    grid: gridController,
-    on: options.editable,
-    bodyIndex,
-    positionOf: cellSelection.positionOf,
-  })
-  // Editing's keys first: a key that edits is not the cell selection's.
-  const { editable } = options
-  const onKeyDown = React.useCallback(
-    (event: React.KeyboardEvent<HTMLTableElement>) => {
-      if (editable) editing.onKeyDown(event)
-      if (cellMode && !event.isPropagationStopped())
-        cellSelection.onKeyDown(event)
-    },
-    [editable, cellMode, editing, cellSelection]
-  )
-  const onFocus = React.useCallback(
-    (event: React.FocusEvent<HTMLTableElement>) => {
-      if (editable) editing.onFocus()
-      if (cellMode) cellSelection.onFocus(event)
-    },
-    [editable, cellMode, editing, cellSelection]
-  )
-  const onMouseDown = React.useCallback(
-    (event: React.MouseEvent<HTMLTableElement>) => {
-      if (editable) editing.onMouseDown(event)
-      if (cellMode) cellSelection.onMouseDown()
-    },
-    [editable, cellMode, editing, cellSelection]
-  )
-  const cellKeys = cellMode || editable
   // A group's row to focus once the page that holds it shows
   // (`restoreFocusTo`): tried on the first render after it is asked for,
   // and given up there when the page did not change (a controlled `page`
@@ -989,12 +866,6 @@ function DataTableContentImpl({
       tree: shared.levelled,
       controller: gridController,
       rowParity,
-      cellFocus: options.cellFocus,
-      // A row is entered at its first column of data.
-      firstCell: (selection ? 1 : 0) + (handle ? 1 : 0),
-      onCellNavigate: cellMode ? cellSelection.onCellNavigate : undefined,
-      onCellAction: options.editable ? editing.onCellAction : undefined,
-      multiselectable: options.cellSelectionMode === "range",
       // Select all and the header read the engine, never the rows'
       // descriptions: no row is formatted or described for them.
       getAllValues: () => store.get().selectable(),
@@ -1056,13 +927,6 @@ function DataTableContentImpl({
       options.activatable,
       options.disabledBehavior,
       options.pagination,
-      options.cellFocus,
-      options.cellSelectionMode,
-      cellMode,
-      cellSelection.onCellNavigate,
-      editing.onCellAction,
-      selection,
-      handle,
       server,
       actions,
       describeItem,
@@ -1179,12 +1043,10 @@ function DataTableContentImpl({
     sizer,
     pins,
     selectionPin,
-    handlePin,
     order: order.order,
     movable: order.movable,
   }
   const ReorderColumns = order.module?.DataTableColumnReorder
-  const ReorderRows = rowOrder.module?.DataTableRowReorder
 
   return (
     <div
@@ -1222,15 +1084,11 @@ function DataTableContentImpl({
             aria-labelledby={ariaLabelledBy}
             aria-describedby={ariaDescribedBy}
             aria-busy={loading || undefined}
-            onKeyDown={cellKeys ? onKeyDown : undefined}
-            onFocus={cellKeys ? onFocus : undefined}
-            onMouseDown={cellKeys ? onMouseDown : undefined}
             // Left out, not undefined: a virtualized body counts its own.
             {...(rowCount === undefined ? {} : { "aria-rowcount": rowCount })}
           >
             {sizer.mode === "fixed" && sizing && (
               <colgroup data-slot="data-table-columns">
-                {handle && <col style={{ width: sizer.controls.handle }} />}
                 {selection && (
                   <col style={{ width: sizer.controls.selection }} />
                 )}
@@ -1290,7 +1148,6 @@ function DataTableContentImpl({
       </DataTableGrid>
       {refreshing && <DataTableProgress top={headerHeight} />}
       {ReorderColumns && order.order && <ReorderColumns order={order.order} />}
-      {ReorderRows && rowOrder.order && <ReorderRows order={rowOrder.order} />}
       {/* One region for the table's life, so each change is read. */}
       <span role="status" className="sr-only">
         {status}

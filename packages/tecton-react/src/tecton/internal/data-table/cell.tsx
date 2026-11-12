@@ -20,52 +20,19 @@
  * painted over the row's collapsed border (unevenly, by browser), so a
  * table with pinned columns draws each cell's border itself, in separate
  * borders.
- *
- * With cells focused one by one, each data cell carries its column's id
- * (`data-column`). With a cell selection, each says whether it is selected
- * (`aria-selected`), and a selected cell has its fill (`bg-table-active`)
- * and, on a range's edges, the range's outline: drawn by
- * the cells on its edges (a `ring` border along each, inside the cell),
- * not by an element over the table, so it is right on pinned columns and
- * under a sticky header, costs only the cells in view of a virtualized
- * table, and mirrors right to left on its own (logical sides). A cell
- * being saved is dimmed and `aria-busy`; one not saved or not valid has a
- * dashed `destructive` outline inside the range's, `aria-invalid` and its
- * message (with the value refused) as its description, in a tooltip too
- * (`cell-message.tsx`, from the code that writes, `CellWriter`). In a
- * table whose cells are written, a cell that cannot be is `aria-readonly`,
- * and a boolean cell that can be is a checkbox, written as it is toggled
- * (it has no editor). The cell being edited holds its editor in place of
- * its content (`cellInner`), outlined by the cell's focus ring.
  */
 import * as React from "react"
 import { cn } from "cn"
 import { CheckIcon, ChevronRightIcon } from "lucide-react"
 
 import { Badge } from "@tecton/react/components/badge"
-import { Checkbox } from "@tecton/react/components/checkbox"
 import { Spinner } from "@tecton/react/components/spinner"
 import { TableCell, TableHead } from "@tecton/react/components/table"
 import { Link } from "@tecton/react/tecton/link"
 
 import type { Store } from "../store"
-import {
-  BOTTOM,
-  END,
-  isCellEditable,
-  SELECTED,
-  START,
-  TOP,
-  UNKNOWN,
-} from "./cell-marks"
-import type {
-  CellMark,
-  CellsState,
-  CellWriter,
-  DataTableActions,
-} from "./context"
+import type { DataTableActions } from "./context"
 import type { EngineColumn, Formatter, GroupRow, ItemRow } from "./engine/index"
-import type { RowOrder } from "./row-order"
 
 /** What detail rows draw: `renderDetail`, kept apart so a new one renders only them. */
 type DetailStore = Store<{ render: ((item: never) => React.ReactNode) | null }>
@@ -79,10 +46,6 @@ type RowShared<T> = {
   formatter: Formatter<T>
   /** A selection checkbox column comes before the data columns. */
   selection: boolean
-  /** A drag handle column comes first (`reorderableRows`). */
-  handle: boolean
-  /** The rows' order, while they can be moved; `null` hides the handles. */
-  order: RowOrder | null
   size: "default" | "sm"
   /** Rows open to show a detail row (`renderDetail`). */
   detail: DetailStore | null
@@ -110,7 +73,7 @@ type RowShared<T> = {
   wrap: boolean
   /** Only the rows in view are rendered. */
   virtualized: boolean
-  /** Every column, the handle and selection columns included. */
+  /** Every column, the selection column included. */
   columnCount: number
   /**
    * On pages: a row's place among every page's rows (the engine's), for its
@@ -125,24 +88,9 @@ type RowShared<T> = {
   pins: ReadonlyArray<CellPin | undefined>
   /** The selection column's pin: at the start while a column is pinned there. */
   selectionPin: CellPin | undefined
-  /** The handle column's pin, likewise. */
-  handlePin: CellPin | undefined
   /** Columns are pinned: the row is opaque, each cell draws its border. */
   pinned: boolean
   actions: DataTableActions<T>
-  /**
-   * What the cells show of the cell selection, of writes and of the edit;
-   * `null` without a cell selection mode or `editable`.
-   */
-  cells: Store<CellsState> | null
-  /** Cells select (`cellSelectionMode`): each says whether it is selected. */
-  selecting: boolean
-  /** Cells are focused one by one (`editable` or a cell selection): they carry their column's id. */
-  cellFocus: boolean
-  /** Cells can be written: one that cannot is `aria-readonly`. */
-  editable: boolean
-  /** The name of a cell's editor (its checkbox): its column's and its row's ("Active, Troll A-1"). */
-  editLabel: (columnName: string, rowName: string) => string
 }
 
 /** A group row's name, and its parts: the column's name before and after the value. */
@@ -391,29 +339,16 @@ function bodyClassName<T>(
     column.type === "number" && "tabular-nums",
     shared.fixed && "overflow-hidden text-ellipsis",
     shared.pinned && cellBorderClassName,
-    // Its line breaks shown, as its editor's text area has them.
-    shared.wrap && column.definition.wrap && "break-words whitespace-pre-wrap",
-    // A checkbox centred in the cell's own padding (the table's cells drop
-    // their end padding around a selection checkbox).
-    column.type === "boolean" &&
-      shared.editable &&
-      "[&:has([role=checkbox])]:pe-4",
+    shared.wrap && column.definition.wrap && "whitespace-normal",
     pin && pinnedCellClassName
   )
-}
-
-/** A boolean cell that can be written: a checkbox, written as it is toggled. */
-type CellToggle = {
-  label: string
-  write: (checked: boolean, event: Event) => void
 }
 
 /** The cell's content: the column's `cell`, or its type's display. */
 function cellContent<T>(
   column: EngineColumn<T>,
   row: ItemRow<T>,
-  formatter: Formatter<T>,
-  toggle?: CellToggle | null
+  formatter: Formatter<T>
 ): React.ReactNode {
   const value = column.getValue(row.item)
   const text = formatter.format(column, value)
@@ -426,19 +361,6 @@ function cellContent<T>(
       text,
       depth: row.depth,
     })
-  if (toggle)
-    return (
-      <Checkbox
-        data-slot="data-table-cell-checkbox"
-        aria-label={toggle.label}
-        checked={text !== "" && text === formatter.format(column, true)}
-        onCheckedChange={(checked, details) =>
-          toggle.write(checked, details.event)
-        }
-        // Centred; dimmed with its cell while it saves.
-        className="mx-auto [[aria-busy=true]>&]:opacity-50"
-      />
-    )
   if (text === "") return null
   switch (column.type) {
     case "boolean":
@@ -462,29 +384,6 @@ function cellContent<T>(
     }
     default:
       return text
-  }
-}
-
-/** A boolean cell's checkbox, when it can be written (and draws no `cell` of its own). */
-function toggleOf<T>(
-  column: EngineColumn<T>,
-  row: ItemRow<T>,
-  shared: RowShared<T>
-): CellToggle | null {
-  const { cells } = shared
-  if (
-    column.type !== "boolean" ||
-    column.definition.cell ||
-    !cells ||
-    !isCellEditable(shared.editable, column, row.item, row.disabled)
-  )
-    return null
-  return {
-    label: shared.editLabel(column.header, rowText(row.item, shared)),
-    write: (checked, event) =>
-      cells
-        .get()
-        .edits?.write({ row: row.id, column: column.id }, checked, event),
   }
 }
 
@@ -557,73 +456,29 @@ function TreeIndent<T>({
   )
 }
 
-/** A selected cell's fill: a row header's own transparent one too. */
-const SELECTED_CELL = "bg-table-active [&[scope=row]]:bg-table-active"
-/** The outline drawn inside a cell, along the sides given. */
-const OUTLINE =
-  "before:pointer-events-none before:absolute before:inset-0 before:border-ring"
-const EDGE = {
-  top: "before:border-t-2",
-  bottom: "before:border-b-2",
-  start: "before:border-s-2",
-  end: "before:border-e-2",
-} as const
-/**
- * A refused or failed cell's outline: its own box, inset within the
- * range's (so both show where they meet), dashed so it reads apart from
- * the range's ring in either theme.
- */
-const INVALID_CELL =
-  "after:pointer-events-none after:absolute after:inset-1 after:rounded-sm after:border-2 after:border-dashed after:border-destructive"
-const PENDING_CELL = "text-muted-foreground"
-
-/** A cell's classes for its part in the selection (`flags`) and its write (`mark`). */
-function cellStateClassName(
-  flags: number,
-  mark: CellMark | undefined,
-  pinned: boolean
-) {
-  if (!flags && !mark) return undefined
-  return cn(
-    // The outline's box: a pinned cell is one already (sticky).
-    !pinned && "relative",
-    flags & SELECTED && SELECTED_CELL,
-    (flags & (TOP | BOTTOM | START | END)) !== 0 && OUTLINE,
-    flags & TOP && EDGE.top,
-    flags & BOTTOM && EDGE.bottom,
-    flags & START && EDGE.start,
-    flags & END && EDGE.end,
-    mark && mark.pending !== null && PENDING_CELL,
-    mark?.error && INVALID_CELL
-  )
-}
-
 /** A row's plain text, for type-ahead and announcements: its row header's. */
 function rowText<T>(item: T, shared: RowShared<T>) {
   return shared.rowHeader ? shared.formatter.text(shared.rowHeader, item) : ""
 }
 
-/**
- * What a body cell of an item row holds: its content, and in the row
- * header its link and tree chevron. Kept by the row while the row and the
- * table's shared state stay, so a change of the cell's selection or write
- * renders the cell's element only. `editor`, for the cell being edited,
- * takes the content's place (and the link's: the chevron and indent stay).
- */
-function cellInner<T>(
+/** A body cell of an item row; `index` is the column's place in `shared.columns`. */
+function renderCell<T>(
   column: EngineColumn<T>,
+  index: number,
   row: ItemRow<T>,
-  shared: RowShared<T>,
-  editor?: React.ReactNode
+  shared: RowShared<T>
 ): React.ReactNode {
-  let content =
-    editor ??
-    cellContent(column, row, shared.formatter, toggleOf(column, row, shared))
-  if (column !== shared.rowHeader) return content
-  const href =
-    shared.linked && editor === undefined
-      ? shared.actions.hrefOf(row.item)
-      : undefined
+  let content = cellContent(column, row, shared.formatter)
+  const pin = shared.pins[index]
+  const className = bodyClassName(column, pin, shared)
+  const style = pin && pinStyle(pin)
+  if (column !== shared.rowHeader)
+    return (
+      <TableCell key={column.id} className={className} style={style}>
+        {content}
+      </TableCell>
+    )
+  const href = shared.linked ? shared.actions.hrefOf(row.item) : undefined
   // A row disabled for everything is not followed either.
   if (href !== undefined)
     content = (
@@ -653,80 +508,9 @@ function cellInner<T>(
         {content}
       </TreeIndent>
     )
-  return content
-}
-
-/** A body cell's state, as its row reads it from the cells' store. */
-type CellState = {
-  /** Its part in the cell selection (`UNKNOWN` until a selection given is resolved). */
-  flags?: number
-  /** Its write, as `writer` shows it. */
-  mark?: CellMark
-  /** It cannot be written, in a table whose cells are (`aria-readonly`). */
-  readOnly?: boolean
-  writer?: CellWriter | null
-  /** It is being edited; `invalid`: its draft is not valid. */
-  editing?: { invalid: boolean } | null
-}
-
-/**
- * The cell being edited: outlined by the cell's own focus ring (its editor
- * has none, `editing/`), dashed in `destructive` too while its draft is not
- * valid.
- */
-const EDITING_CELL = "outline-2 -outline-offset-2 outline-ring"
-
-/**
- * A body cell of an item row; `index` is the column's place in
- * `shared.columns`, `inner` its content (`cellInner`).
- */
-function renderCell<T>(
-  column: EngineColumn<T>,
-  index: number,
-  shared: RowShared<T>,
-  inner: React.ReactNode,
-  { flags = 0, mark, readOnly = false, writer, editing }: CellState = {}
-): React.ReactNode {
-  const pin = shared.pins[index]
-  const known = flags !== UNKNOWN
-  const className = cn(
-    bodyClassName(column, pin, shared),
-    cellStateClassName(known ? flags : 0, mark, pin !== undefined),
-    editing && EDITING_CELL,
-    editing?.invalid && cn(pin === undefined && "relative", INVALID_CELL)
-  )
-  const style = pin && pinStyle(pin)
-  const props = {
-    className,
-    style,
-    "data-column": shared.cellFocus ? column.id : undefined,
-    // Every data cell can be selected: said of each, selected or not.
-    // Not said while a selection given is still to be resolved.
-    "aria-selected":
-      shared.selecting && known ? (flags & SELECTED) !== 0 : undefined,
-    "aria-readonly": readOnly || undefined,
-    "aria-busy": (mark && mark.pending !== null) || undefined,
-    "aria-invalid": mark?.error ? true : undefined,
-  } as const
-  const Message = writer?.Message
-  const content =
-    mark?.error && Message ? (
-      <>
-        {inner}
-        <Message message={mark.error} attempted={mark.attempted} />
-      </>
-    ) : (
-      inner
-    )
-  if (column !== shared.rowHeader)
-    return (
-      <TableCell key={column.id} {...props}>
-        {content}
-      </TableCell>
-    )
   // A row header takes the look of its row's cells (the table's own).
   return (
-    <TableHead key={column.id} scope="row" {...props}>
+    <TableHead key={column.id} scope="row" className={className} style={style}>
       {content}
     </TableHead>
   )
@@ -735,8 +519,6 @@ function renderCell<T>(
 export {
   ALIGN,
   cellBorderClassName,
-  cellContent,
-  cellInner,
   columnClassName,
   groupCellsOf,
   groupLabelWidth,
@@ -751,7 +533,6 @@ export {
 }
 export type {
   CellPin,
-  CellState,
   DetailStore,
   GroupCell,
   GroupCells,

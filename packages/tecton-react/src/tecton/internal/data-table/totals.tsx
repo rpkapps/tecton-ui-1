@@ -62,7 +62,7 @@ function DataTableTotals<T>({
       ? renderAggregate(value, { items: totals.items })
       : formatter.formatAggregate(column, value)
   }
-  const controlCell = (pin: RowShared<T>["handlePin"]) => (
+  const controlCell = (pin: RowShared<T>["selectionPin"]) => (
     <TableCell
       className={cn(TOTALS_CELL, pin && pinnedCellClassName)}
       style={pin && pinStyle(pin)}
@@ -77,7 +77,6 @@ function DataTableTotals<T>({
         aria-rowindex={rowIndex}
         className="bg-muted font-medium text-foreground"
       >
-        {shared.handle && controlCell(shared.handlePin)}
         {shared.selection && controlCell(shared.selectionPin)}
         {columns.map((column, index) => {
           const pin = shared.pins[index]

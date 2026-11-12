@@ -21,7 +21,7 @@ const columns = createColumns<Well>([{ id: "name", header: "Well" }])
 const ITEMS: Array<Well> = [{ id: "a", name: "A-1" }]
 
 const table = (
-  <DataTable items={ITEMS} columns={columns} cellSelectionMode="range" editable>
+  <DataTable items={ITEMS} columns={columns} pagination hasMore>
     <DataTableContent aria-label="Wells" />
   </DataTable>
 )
@@ -38,7 +38,7 @@ describe("DataTable development warnings", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
     const { unmount } = render(table)
     expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining("`editable` without `onCellsChange`")
+      expect.stringContaining("`hasMore` is off with `pagination`")
     )
     unmount()
   })
@@ -54,7 +54,7 @@ describe("DataTable development warnings", () => {
     try {
       expect(() => {
         ;({ unmount } = render(
-          <DataTable items={ITEMS} columns={columns} editable />
+          <DataTable items={ITEMS} columns={columns} pagination hasMore />
         ))
       }).not.toThrow()
       expect(() => createWarnings()("key", "message")).not.toThrow()

@@ -22,24 +22,16 @@
  *   (the later one is off).
  * - The search reaches the view (and `onViewChange`) `searchDelay` ms after
  *   the user stops typing (`search.tsx`); the field shows each key at once.
- * - Rows are reordered in a flat list only, the order being the
- *   application's (`onRowOrderChange`).
  * - Groups are open unless closed: which ones are closed is the table's
  *   own, kept for the grouping they were closed in (a new grouping opens
  *   every group). A group's checkbox selects its items that can be.
- * - The cell selection (`cellSelectionMode`) is ranges by row and column
- *   id, resolved against the rows and columns shown (`engine/cells.ts`);
- *   what the cells draw of it, and the cells being saved or not saved,
- *   are a store of their own (`cells`), which each row reads its slice of.
- *   Written cells are reported through `onCellsChange`; the table never
- *   changes `items` itself.
  */
 import * as React from "react"
 import { cn } from "cn"
 
 import { useLocale } from "@tecton/react/tecton/provider"
 
-import { useTranslations, type Translator } from "../i18n/translations"
+import { useTranslations } from "../i18n/translations"
 import {
   createChangeEventDetails,
   type ChangeEventDetails,
@@ -75,9 +67,6 @@ import {
   type ClosedGroups,
   type ColumnLayout,
   type DataTableAllMatching,
-  type DataTableCellChange,
-  type DataTableCellRange,
-  type DataTableCellSelectionChangeReason,
   type DataTableColumns,
   type DataTablePartialView,
   type DataTableRowModel,
@@ -88,10 +77,7 @@ import {
 } from "./engine/index"
 import {
   DataTableContext,
-  type CellsState,
   type DataTableActions,
-  type DataTableCellSelectionMode,
-  type DataTableCellsChangeDetails,
   type DataTableChangeDetails,
   type DataTableContextValue,
   type DataTableExpandedChangeReason,
@@ -99,19 +85,12 @@ import {
   type GroupCounts,
   type DataTablePageChangeReason,
   type DataTablePageSizeChangeReason,
-  type DataTableRowOrderChangeReason,
   type DataTableSelectionChangeDetails,
   type DataTableSelectionChangeReason,
   type DataTableSelectionMode,
   type DataTableState,
 } from "./context"
-import { useBelowBreakpoints } from "./column-sizing"
-import {
-  loadFeature,
-  useFeature,
-  usePrefetchFeatures,
-  type FeatureName,
-} from "./lazy"
+import { loadFeature, usePrefetchFeatures, type FeatureName } from "./lazy"
 import { viewChangeReason } from "./view-reason"
 import { createWarnings, type Warn } from "./warnings"
 
@@ -189,14 +168,6 @@ type DataTableProps<T> = Omit<
    * `groupable: false` opts a column out. Not in a tree.
    */
   groupable?: boolean
-  /**
-   * Cells can be written: edited in place (Enter, F2, typing, a double
-   * click), pasted into, cleared and filled down (with a
-   * `cellSelectionMode`), reported through `onCellsChange`; a column opts
-   * out with `editable: false`, or per item with a function. Cells are
-   * focused one by one.
-   */
-  editable?: boolean
   /** A resizer on each column header's end edge (`resizable: false` opts a column out). */
   resizableColumns?: boolean
   /** Column headers are dragged into order, a column among its group's. */
@@ -205,21 +176,10 @@ type DataTableProps<T> = Omit<
   hideableColumns?: boolean
   /** Columns are pinned to the start or the end, from the same menus. */
   pinnableColumns?: boolean
-  /**
-   * Rows are dragged into order by a handle at their start (flat lists
-   * only); the order is the application's: `onRowOrderChange`.
-   */
-  reorderableRows?: boolean
   /** Pages of `pageSize` rows, with the footer's page parts. */
   pagination?: boolean
   /** Whether rows select, one at a time or several (with a checkbox column). */
   selectionMode?: DataTableSelectionMode
-  /**
-   * Whether cells select (§5.8): `"cell"` one at a time, `"range"` in
-   * rectangles (Shift + arrows, Shift + click, a drag; Ctrl / Cmd adds
-   * another). Cells are focused one by one, and copied with Ctrl / Cmd + C.
-   */
-  cellSelectionMode?: DataTableCellSelectionMode
   // View
   /**
    * What the table shows (controlled): any part of the view, the rest taken
@@ -247,14 +207,6 @@ type DataTableProps<T> = Omit<
   ) => void
   /** Keeps at least one row selected. */
   disallowEmptySelection?: boolean
-  // Cell selection
-  /** The selected cells' ranges, by row id and column id (controlled). */
-  cellSelection?: ReadonlyArray<DataTableCellRange>
-  defaultCellSelection?: ReadonlyArray<DataTableCellRange>
-  onCellSelectionChange?: (
-    cellSelection: Array<DataTableCellRange>,
-    eventDetails: DataTableChangeDetails<DataTableCellSelectionChangeReason>
-  ) => void
   // Expanded
   /** The open tree rows' ids (controlled). */
   expanded?: ReadonlyArray<string>
@@ -284,24 +236,6 @@ type DataTableProps<T> = Omit<
   // Events
   /** A row activated: Enter, or a click (a double click when rows select). */
   onActivate?: (id: string, item: T) => void
-  /**
-   * Rows reordered (`reorderableRows`): every item's id, in the new order.
-   * Put `items` in that order; the table does not reorder them itself.
-   */
-  onRowOrderChange?: (
-    ids: Array<string>,
-    eventDetails: DataTableChangeDetails<DataTableRowOrderChangeReason>
-  ) => void
-  /**
-   * Cells written (`editable`): edited, pasted, cleared, filled down.
-   * Update `items`; the table does not change them itself. Return a
-   * promise to show the cells as saving until it settles, and as not
-   * saved, with the error's message, if it rejects.
-   */
-  onCellsChange?: (
-    changes: Array<DataTableCellChange<T>>,
-    eventDetails: DataTableCellsChangeDetails
-  ) => void | Promise<void>
 }
 
 /** The props and state the actions read, as of the last render. */
@@ -325,9 +259,6 @@ type Latest<T> = {
   loading: boolean
   selectionMode: DataTableSelectionMode
   disallowEmptySelection: boolean
-  cellSelectionMode: DataTableCellSelectionMode
-  cellSelection: ReadonlyArray<DataTableCellRange>
-  t: Translator<"dataTable">
   itemToHref: DataTableProps<T>["itemToHref"]
   navigate: ((href: string) => void) | undefined
   onActivate: DataTableProps<T>["onActivate"]
@@ -338,9 +269,6 @@ type Latest<T> = {
   onPageSizeChange: DataTableProps<T>["onPageSizeChange"]
   onRetry: DataTableProps<T>["onRetry"]
   onLoadMore: DataTableProps<T>["onLoadMore"]
-  onRowOrderChange: DataTableProps<T>["onRowOrderChange"]
-  onCellSelectionChange: DataTableProps<T>["onCellSelectionChange"]
-  onCellsChange: DataTableProps<T>["onCellsChange"]
   setClears: React.Dispatch<React.SetStateAction<number>>
   setView: (view: DataTablePartialView) => void
   setValue: (value: ReadonlyArray<string>) => void
@@ -349,7 +277,6 @@ type Latest<T> = {
   setCollapsed: (collapsed: Collapsed) => void
   setPage: (page: number) => void
   setPageSize: (pageSize: number) => void
-  setCellSelection: (cellSelection: ReadonlyArray<DataTableCellRange>) => void
 }
 
 /** The closed groups, and the grouping they were closed in. */
@@ -365,9 +292,6 @@ type Matching = {
 }
 
 const NO_IDS: ReadonlyArray<string> = []
-const NO_RANGES: ReadonlyArray<DataTableCellRange> = []
-const NO_BREAKPOINTS: ReadonlyArray<"sm" | "md" | "lg"> = []
-const NO_MARKS: CellsState["marks"] = new Map()
 const NO_GROUPS: Collapsed = { grouping: NO_IDS, closed: ALL_OPEN }
 
 function countGroups(
@@ -432,7 +356,6 @@ type Pending<T> = Partial<
     | "closedGroups"
     | "page"
     | "pageSize"
-    | "cellSelection"
   >
 >
 
@@ -447,40 +370,7 @@ function modifiers(event: Event | undefined) {
   }
 }
 
-type Span = { start: string; end: string } | undefined
-
-function sameSpan(a: Span, b: Span) {
-  return a === b || (!!a && !!b && a.start === b.start && a.end === b.end)
-}
-
-/** Whether two cell selections are the same ranges, in the same order. */
-function sameRanges(
-  a: ReadonlyArray<DataTableCellRange>,
-  b: ReadonlyArray<DataTableCellRange>
-) {
-  if (a === b) return true
-  if (a.length !== b.length) return false
-  return a.every(
-    (range, index) =>
-      sameSpan(range.rows, b[index].rows) &&
-      sameSpan(range.columns, b[index].columns)
-  )
-}
-
-/** A range as its own plain object, each axis given copied. */
-function copyRange(range: DataTableCellRange): DataTableCellRange {
-  const copy: DataTableCellRange = {}
-  if (range.rows) copy.rows = { start: range.rows.start, end: range.rows.end }
-  if (range.columns)
-    copy.columns = { start: range.columns.start, end: range.columns.end }
-  return copy
-}
-
-function createActions<T>(
-  latest: { current: Latest<T> },
-  warn: Warn,
-  context: () => DataTableContextValue<T>
-) {
+function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
   // Changes made one after the other before the root renders (two setters
   // in one handler) build on each other, not on the last render.
   let pending: Pending<T> = {}
@@ -763,85 +653,6 @@ function createActions<T>(
     loadMore() {
       now().onLoadMore?.()
     },
-    reorderRows(ids, reason, event) {
-      const details = createChangeEventDetails(reason, event)
-      now().onRowOrderChange?.([...ids], details)
-      return !details.isCanceled
-    },
-    setCellSelection(next, reason, event) {
-      const current = now()
-      if (current.cellSelectionMode === "none") return false
-      // One range in "cell" mode, of one cell: the last range's moving
-      // corner. Whole rows or columns have none: such a selection is not
-      // one cell, and is ignored.
-      let ranges = next
-      if (current.cellSelectionMode === "cell") {
-        const last = next.filter((range) => range.rows && range.columns).at(-1)
-        if (next.length && !last) {
-          try {
-            if (process.env.NODE_ENV !== "production")
-              warn(
-                "cell-mode-whole-axis",
-                'DataTable: `cellSelectionMode="cell"` selects one cell, not whole rows, columns or every cell: the selection is left as it was.'
-              )
-          } catch {
-            // No `process` (no bundler): no warning.
-          }
-          return false
-        }
-        ranges =
-          last?.rows && last.columns
-            ? [
-                {
-                  rows: { start: last.rows.end, end: last.rows.end },
-                  columns: { start: last.columns.end, end: last.columns.end },
-                },
-              ]
-            : []
-      }
-      if (sameRanges(ranges, current.cellSelection)) return false
-      const copy = ranges.map(copyRange)
-      if (
-        !emit(
-          current.onCellSelectionChange,
-          current.setCellSelection,
-          copy,
-          reason,
-          event
-        )
-      )
-        return false
-      set({ cellSelection: copy })
-      // What the summary announces after: a change the user made.
-      context().cells.set({ change: { ranges: copy, reason } })
-      return true
-    },
-    currentCellSelection: () => now().cellSelection,
-    changeCells(changes, reason, event, signal) {
-      const details: DataTableCellsChangeDetails = Object.assign(
-        createChangeEventDetails(reason, event),
-        { signal }
-      )
-      const result = now().onCellsChange?.(changes, details)
-      return { canceled: details.isCanceled, result }
-    },
-    clearCellMessages() {
-      // No writer: no cell has been written, so no message.
-      const { cells } = context()
-      cells.get().writer?.clearMessages(cells)
-    },
-    async runCellCommand(command, options) {
-      const module = await loadFeature("cellSelection")
-      return module.runCellCommand(
-        {
-          context: context() as DataTableContextValue<unknown>,
-          t: now().t,
-          focused: null,
-        },
-        command,
-        options
-      )
-    },
     async exportCsv(options = {}) {
       const { toCsv } = await loadFeature("csv")
       // Read once loaded: the state the export was asked for, or later.
@@ -921,19 +732,12 @@ function DataTable<T>({
   sortable = true,
   filterable = false,
   groupable = false,
-  editable = false,
   resizableColumns = false,
   reorderableColumns = false,
   hideableColumns = false,
   pinnableColumns = false,
-  reorderableRows = false,
   pagination = false,
   selectionMode = "none",
-  cellSelectionMode = "none",
-  cellSelection: cellSelectionProp,
-  defaultCellSelection,
-  onCellSelectionChange,
-  onCellsChange,
   view: viewProp,
   defaultView,
   onViewChange,
@@ -953,7 +757,6 @@ function DataTable<T>({
   onPageSizeChange,
   pageSizes = DEFAULT_PAGE_SIZES,
   onActivate,
-  onRowOrderChange,
   className,
   children,
   ...props
@@ -968,7 +771,6 @@ function DataTable<T>({
   // A tree's rows nest by their items, not by grouping or a flat order
   // (§4.3).
   const grouping = groupable && !tree
-  const rowOrder = reorderableRows && !tree
   const capabilities = React.useMemo<ViewCapabilities>(
     () => ({ sortable, filterable, groupable: grouping }),
     [sortable, filterable, grouping]
@@ -1012,9 +814,6 @@ function DataTable<T>({
   const ofGrouping = sameIds(collapsed.grouping, view.grouping)
   if (!ofGrouping && collapsed !== NO_GROUPS) setCollapsed(NO_GROUPS)
   const closedGroups = ofGrouping ? collapsed.closed : ALL_OPEN
-  const [cellSelection, setCellSelection] = useControlled<
-    ReadonlyArray<DataTableCellRange>
-  >(cellSelectionProp, defaultCellSelection ?? NO_RANGES)
   const [page, setPage] = useControlled(pageProp, defaultPage ?? 1)
   const [pageSize, setPageSize] = useControlled(
     pageSizeProp,
@@ -1052,28 +851,6 @@ function DataTable<T>({
     return () => (counts ??= countGroups(groupKeys, closedGroups))
   }, [groupKeys, closedGroups])
   const formatter = getFormatter(getColumnModel(columns), locale, labels)
-  const cellMode = cellSelectionMode !== "none"
-  // Columns hidden below the window's breakpoint hold no selected cells,
-  // and an editor's Tab passes over them.
-  const below = useBelowBreakpoints(
-    cellMode || editable
-      ? layout.columns.flatMap((column) => column.definition.hideBelow ?? [])
-      : NO_BREAKPOINTS
-  )
-  // Resolved by the code on demand: none until it is there (a selection
-  // given then draws once it is; nothing moves, only the cells' fill).
-  const cellCode = useFeature("cellSelection", cellMode).module
-  const cellGrid = React.useMemo(
-    () =>
-      cellCode?.resolveSelection(
-        cellSelection,
-        model,
-        layout.columns,
-        view.columns.order,
-        below
-      ) ?? null,
-    [cellCode, cellSelection, model, layout.columns, view.columns.order, below]
-  )
 
   const allMatching =
     matching &&
@@ -1112,16 +889,12 @@ function DataTable<T>({
       sortable,
       filterable,
       groupable: grouping,
-      editable,
       resizableColumns,
       reorderableColumns,
       hideableColumns,
       pinnableColumns,
-      reorderableRows: rowOrder,
       pagination,
       selectionMode,
-      cellSelectionMode,
-      cellFocus: editable || cellMode,
       disabledBehavior,
       disallowEmptySelection,
       tree,
@@ -1139,16 +912,12 @@ function DataTable<T>({
       sortable,
       filterable,
       grouping,
-      editable,
       resizableColumns,
       reorderableColumns,
       hideableColumns,
       pinnableColumns,
-      rowOrder,
       pagination,
       selectionMode,
-      cellSelectionMode,
-      cellMode,
       disabledBehavior,
       disallowEmptySelection,
       tree,
@@ -1180,9 +949,6 @@ function DataTable<T>({
       loading,
       error: error ?? null,
       clears,
-      cellSelection,
-      cellGrid,
-      cellBelow: below,
     }),
     [
       columns,
@@ -1202,9 +968,6 @@ function DataTable<T>({
       loading,
       error,
       clears,
-      cellSelection,
-      cellGrid,
-      below,
     ]
   )
 
@@ -1230,9 +993,6 @@ function DataTable<T>({
     loading,
     selectionMode,
     disallowEmptySelection,
-    cellSelectionMode,
-    cellSelection,
-    t,
     itemToHref,
     navigate,
     onActivate,
@@ -1243,9 +1003,6 @@ function DataTable<T>({
     onPageSizeChange,
     onRetry,
     onLoadMore,
-    onRowOrderChange,
-    onCellSelectionChange,
-    onCellsChange,
     setClears,
     setView,
     setValue,
@@ -1254,44 +1011,20 @@ function DataTable<T>({
     setCollapsed,
     setPage,
     setPageSize,
-    setCellSelection,
   }
   const latest = React.useRef(latestValues)
-  // The context, for the actions that hand it to on-demand code: set below.
-  const [own] = React.useState<{ context: DataTableContextValue<T> | null }>(
-    () => ({ context: null })
-  )
   const [{ actions, viewChanged, pageShown, committed }] = React.useState(() =>
-    createActions(latest, warn, () => own.context as DataTableContextValue<T>)
+    createActions(latest, warn)
   )
   React.useInsertionEffect(() => {
     latest.current = latestValues
     committed()
   })
   const [store] = React.useState(() => createStore(state))
-  const [cells] = React.useState(() =>
-    createStore<CellsState>({
-      grid: cellGrid as CellsState["grid"],
-      waiting: cellMode && cellSelection.length > 0 && !cellGrid,
-      marks: NO_MARKS,
-      writer: null,
-      change: null,
-      editing: null,
-      editor: null,
-      edits: null,
-    })
-  )
-  const [context] = React.useState<DataTableContextValue<T>>(() => {
-    own.context = { store, actions, cells }
-    return own.context
-  })
+  const [context] = React.useState(() => ({ store, actions }))
   React.useLayoutEffect(() => {
     store.set(state)
-    cells.set({
-      grid: cellGrid as CellsState["grid"],
-      waiting: cellMode && cellSelection.length > 0 && !cellGrid,
-    })
-  }, [store, cells, state, cellGrid, cellMode, cellSelection])
+  }, [store, state])
 
   const previous = React.useRef({ view, page })
   React.useLayoutEffect(() => {
@@ -1305,24 +1038,8 @@ function DataTable<T>({
 
   // ---- on demand, warnings ------------------------------------------------
 
-  // The editors of the types a table's columns that can be written have.
-  const edited = React.useMemo(() => {
-    const types = new Set<string>()
-    for (const column of getColumnModel(columns).leaves)
-      if (
-        column.definition.editable !== false &&
-        !column.definition.renderEditor
-      )
-        types.add(column.type)
-    return types
-  }, [columns])
   const features: Array<FeatureName> = []
-  if (editable) features.push("editing")
-  if (editable && edited.has("options")) features.push("editingOptions")
-  // A date filter asks for its calendar itself (`DataTableFilter`).
-  if (editable && edited.has("date")) features.push("editingDate", "dateInput")
-  if (cellSelectionMode !== "none") features.push("cellSelection")
-  if (reorderableColumns || reorderableRows) features.push("dragAndDrop")
+  if (reorderableColumns) features.push("dragAndDrop")
   usePrefetchFeatures(features)
 
   // New columns re-render every row: said when they are new but the same.
@@ -1399,44 +1116,6 @@ function DataTable<T>({
       // No `process` (no bundler): no warning.
     }
   }, [warn, groupable, tree])
-  React.useEffect(() => {
-    try {
-      if (process.env.NODE_ENV !== "production" && reorderableRows && tree)
-        warn(
-          "reorderable-rows-tree",
-          "DataTable: `reorderableRows` is off in a tree (`itemToChildren`): rows are reordered in a flat list only."
-        )
-    } catch {
-      // No `process` (no bundler): no warning.
-    }
-  }, [warn, reorderableRows, tree])
-  React.useEffect(() => {
-    try {
-      if (
-        process.env.NODE_ENV !== "production" &&
-        editable &&
-        onCellsChange === undefined
-      )
-        warn(
-          "editable-without-on-cells-change",
-          "DataTable: `editable` without `onCellsChange`: the cells written are reported there; the table does not change `items` itself."
-        )
-    } catch {
-      // No `process` (no bundler): no warning.
-    }
-  }, [warn, editable, onCellsChange])
-  const activates = onActivate !== undefined && itemToHref === undefined
-  React.useEffect(() => {
-    try {
-      if (process.env.NODE_ENV !== "production" && editable && activates)
-        warn(
-          "editable-on-activate",
-          "DataTable: `onActivate` is not reached from editable cells (Enter, F2 and a double click edit them): activate from a column with `editable: false`, or use `itemToHref`."
-        )
-    } catch {
-      // No `process` (no bundler): no warning.
-    }
-  }, [warn, editable, activates])
   React.useEffect(() => {
     try {
       if (process.env.NODE_ENV !== "production" && hasMore && pagination)

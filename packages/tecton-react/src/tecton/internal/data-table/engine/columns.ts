@@ -30,7 +30,7 @@ type EngineColumn<T> = {
   readonly header: string
   readonly description: string | undefined
   readonly type: DataTableColumnType
-  /** The column as written, for its render functions, `validate` and `editable`. */
+  /** The column as written, for its render functions. */
   readonly definition: DataTableLeafColumn<T>
   /** The column's default position among the leaf columns. */
   readonly index: number
