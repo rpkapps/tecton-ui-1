@@ -8,19 +8,15 @@ import {
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
-} from "@tecton/react/components/breadcrumb"
+} from "@tecton/react/breadcrumb"
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-} from "@tecton/react/components/empty"
-import {
-  AppShell,
-  AppShellBody,
-  AppShellMain,
-} from "@tecton/react/tecton/app-shell"
-import { Link } from "@tecton/react/tecton/link"
+} from "@tecton/react/empty"
+import { AppShell, AppShellBody, AppShellMain } from "@tecton/react/app-shell"
+import { Link } from "@tecton/react/link"
 
 import { ShellHeader } from "./components/shell-header"
 import { apps } from "./data"

@@ -1,14 +1,13 @@
 // Synced from shadcn/ui (apps/v4/examples/base/bubble-reactions.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import { toast } from "sonner"
-
+import { toast } from "@tecton/react/toast"
 import {
   Bubble,
   BubbleContent,
   BubbleReactions,
-} from "@tecton/react/components/bubble"
-import { Button } from "@tecton/react/components/button"
+} from "@tecton/react/bubble"
+import { Button } from "@tecton/react/button"
 
 export function BubbleReactionsDemo() {
   return (
@@ -60,7 +59,7 @@ export function BubbleReactionsDemo() {
           <Button
             variant="ghost"
             size="xs"
-            onClick={() => toast.success("You clicked yes, running command...")}
+            onClick={() => toast.add({ title: "You clicked yes, running command...", type: "success" })}
           >
             Yes, run it
           </Button>

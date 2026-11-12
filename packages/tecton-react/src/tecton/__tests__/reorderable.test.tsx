@@ -10,14 +10,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+} from "@tecton/react/table"
+import { TectonProvider } from "@tecton/react/provider"
 import {
   Reorderable,
   ReorderableHandle,
   ReorderableItem,
   ReorderableSlot,
-} from "@tecton/react/tecton/reorderable"
+} from "@tecton/react/reorderable"
 
 import { moveInList } from "../internal/primitives/drag-and-drop/list-strategy"
 import { stubAnimations } from "./web-animations"

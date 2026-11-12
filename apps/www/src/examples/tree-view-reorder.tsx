@@ -6,7 +6,7 @@ import {
   TreeViewCollection,
   TreeViewItem,
   TreeViewItemContent,
-} from "@tecton/react/tecton/tree-view"
+} from "@tecton/react/tree-view"
 
 type Node = { id: string; name: string; children?: Node[] }
 

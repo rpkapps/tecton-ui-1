@@ -2,7 +2,7 @@
 import { act, fireEvent, screen } from "@testing-library/react"
 import { vi } from "vitest"
 
-import { createColumns } from "@tecton/react/tecton/data-table"
+import { createColumns } from "@tecton/react/data-table"
 
 type Well = {
   id: string

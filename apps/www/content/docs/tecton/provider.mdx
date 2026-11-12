@@ -6,7 +6,7 @@ description: "The one provider a Tecton application mounts: locale, reading dire
 ## Usage
 
 ```tsx
-import { TectonProvider } from "@tecton/react/tecton/provider"
+import { TectonProvider } from "@tecton/react/provider"
 ```
 
 ```tsx
@@ -43,7 +43,7 @@ Pass your router's `navigate` and `useHref` and Tecton links navigate client-sid
 
 ```tsx title="src/routes/__root.tsx"
 import { Outlet, useRouter } from "@tanstack/react-router"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+import { TectonProvider } from "@tecton/react/provider"
 
 function Root() {
   const router = useRouter()
@@ -133,7 +133,7 @@ Read the direction with `useDirection()` (`"ltr" | "rtl"`) in components of your
 <Correct>
 
 ```tsx
-import { TectonProvider } from "@tecton/react/tecton/provider"
+import { TectonProvider } from "@tecton/react/provider"
 
 <TectonProvider locale="ar-EG">
   <App />

@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/base/button-render.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { buttonVariants } from "@tecton/react/components/button"
+import { buttonVariants } from "@tecton/react/button"
 
 export default function ButtonRender() {
   return (

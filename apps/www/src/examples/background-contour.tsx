@@ -1,4 +1,4 @@
-import { ContourBackground } from "@tecton/react/tecton/background"
+import { ContourBackground } from "@tecton/react/background"
 
 import { BackgroundPreview } from "@/components/background-preview"
 

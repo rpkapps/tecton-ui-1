@@ -9,11 +9,11 @@ import {
   PlusIcon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenuItem,
   DropdownMenuSeparator,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 import {
   Empty,
   EmptyContent,
@@ -21,7 +21,7 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@tecton/react/components/empty"
+} from "@tecton/react/empty"
 import {
   createColumns,
   DataTable,
@@ -30,8 +30,8 @@ import {
   DataTableFooter,
   DataTablePagination,
   DataTableRowActions,
-} from "@tecton/react/tecton/data-table"
-import { OverflowItem, OverflowLabel } from "@tecton/react/tecton/overflow"
+} from "@tecton/react/data-table"
+import { OverflowItem, OverflowLabel } from "@tecton/react/overflow"
 
 import { statusMeta, typeMeta } from "../data"
 import type { Well, WellStatus } from "../data"

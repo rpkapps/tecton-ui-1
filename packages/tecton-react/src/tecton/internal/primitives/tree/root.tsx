@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { useDirection } from "@tecton/react/tecton/provider"
+import { useDirection } from "@tecton/react/provider"
 
 import { createStore, useStore } from "../../store"
 import {

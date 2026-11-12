@@ -37,7 +37,7 @@ import {
   XIcon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,9 +48,9 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 
-import { useLocale } from "@tecton/react/tecton/provider"
+import { useLocale } from "@tecton/react/provider"
 
 import { useTranslations, type Translator } from "../i18n/translations"
 import { announce } from "../primitives/live-announcer"

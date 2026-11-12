@@ -2,7 +2,7 @@ import * as React from "react"
 import { cn } from "cn"
 import { CheckIcon, XIcon } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
+import { Badge } from "@tecton/react/badge"
 
 /**
  * The MDX components of the "## Usage guidelines" section, emitted by

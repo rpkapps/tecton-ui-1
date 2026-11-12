@@ -2,9 +2,9 @@
 
 import * as React from "react"
 
-import { Badge } from "@tecton/react/components/badge"
-import { Field, FieldLabel } from "@tecton/react/components/field"
-import { Switch } from "@tecton/react/components/switch"
+import { Badge } from "@tecton/react/badge"
+import { Field, FieldLabel } from "@tecton/react/field"
+import { Switch } from "@tecton/react/switch"
 import {
   Table,
   TableBody,
@@ -12,11 +12,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@tecton/react/components/toggle-group"
+} from "@tecton/react/table"
+import { ToggleGroup, ToggleGroupItem } from "@tecton/react/toggle-group"
 
 const wells = [
   {

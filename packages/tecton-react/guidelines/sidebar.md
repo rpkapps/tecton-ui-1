@@ -1,6 +1,6 @@
 ---
 component: Sidebar
-module: "@tecton/react/components/sidebar"
+module: "@tecton/react/sidebar"
 family: navigation
 exports: [Sidebar, SidebarProvider, SidebarTrigger, SidebarRail, SidebarInset, SidebarHeader, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarMenuAction, SidebarMenuBadge, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton, useSidebar]
 notFor:

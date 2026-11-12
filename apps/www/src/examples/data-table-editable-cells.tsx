@@ -2,12 +2,12 @@
 
 import * as React from "react"
 
-import { Input } from "@tecton/react/components/input"
+import { Input } from "@tecton/react/input"
 import {
   createColumns,
   DataTable,
   DataTableContent,
-} from "@tecton/react/tecton/data-table"
+} from "@tecton/react/data-table"
 
 type Well = { id: string; name: string; field: string; remarks: string }
 

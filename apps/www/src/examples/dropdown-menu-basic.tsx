@@ -1,7 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/base/dropdown-menu-basic.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 
 export function DropdownMenuBasic() {
   return (

@@ -1,6 +1,6 @@
 ---
 component: ResizablePanelGroup
-module: "@tecton/react/components/resizable"
+module: "@tecton/react/resizable"
 family: layout
 exports: [ResizablePanelGroup, ResizablePanel, ResizableHandle]
 notFor:

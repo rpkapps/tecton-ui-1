@@ -11,21 +11,17 @@ import {
   AlertDialogFooter,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@tecton/react/components/alert-dialog"
-import { Button } from "@tecton/react/components/button"
-import { ButtonGroup } from "@tecton/react/components/button-group"
-import { Calendar } from "@tecton/react/components/calendar"
-import {
-  Drawer,
-  DrawerContent,
-  DrawerTitle,
-} from "@tecton/react/components/drawer"
+} from "@tecton/react/alert-dialog"
+import { Button } from "@tecton/react/button"
+import { ButtonGroup } from "@tecton/react/button-group"
+import { Calendar } from "@tecton/react/calendar"
+import { Drawer, DrawerContent, DrawerTitle } from "@tecton/react/drawer"
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
   PaginationLink,
-} from "@tecton/react/components/pagination"
+} from "@tecton/react/pagination"
 import {
   Sidebar,
   SidebarMenu,
@@ -34,15 +30,10 @@ import {
   SidebarProvider,
   SidebarRail,
   useSidebar,
-} from "@tecton/react/components/sidebar"
-import { Sheet, SheetContent, SheetTitle } from "@tecton/react/components/sheet"
-import { Slider } from "@tecton/react/components/slider"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@tecton/react/components/tabs"
+} from "@tecton/react/sidebar"
+import { Sheet, SheetContent, SheetTitle } from "@tecton/react/sheet"
+import { Slider } from "@tecton/react/slider"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecton/react/tabs"
 
 // Behaviour the overlay patch (scripts/registry-mirror/overlay/tecton.patch)
 // fixes in the generated components; see docs/UPSTREAM.md, "Overlay hunks".

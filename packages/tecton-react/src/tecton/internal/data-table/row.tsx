@@ -39,8 +39,8 @@ import * as React from "react"
 import { cn } from "cn"
 import { ChevronRightIcon } from "lucide-react"
 
-import { Checkbox } from "@tecton/react/components/checkbox"
-import { TableCell, TableHead, TableRow } from "@tecton/react/components/table"
+import { Checkbox } from "@tecton/react/checkbox"
+import { TableCell, TableHead, TableRow } from "@tecton/react/table"
 
 import { useTranslations } from "../i18n/translations"
 import { createStore, useStore } from "../store"

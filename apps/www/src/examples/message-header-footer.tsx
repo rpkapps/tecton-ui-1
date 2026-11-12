@@ -1,11 +1,11 @@
 // Synced from shadcn/ui (apps/v4/examples/base/message-header-footer.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Bubble, BubbleContent } from "@tecton/react/components/bubble"
+import { Bubble, BubbleContent } from "@tecton/react/bubble"
 import {
   Message,
   MessageContent,
   MessageFooter,
   MessageHeader,
-} from "@tecton/react/components/message"
+} from "@tecton/react/message"
 
 export function MessageHeaderFooterDemo() {
   return (

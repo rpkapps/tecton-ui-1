@@ -24,7 +24,7 @@ import {
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "@tecton/react/components/input-group"
+} from "@tecton/react/input-group"
 
 import { useTranslations } from "../i18n/translations"
 import {

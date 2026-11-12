@@ -18,7 +18,7 @@ import {
   useDataTable,
   type DataTableProps,
   type DataTableView,
-} from "@tecton/react/tecton/data-table"
+} from "@tecton/react/data-table"
 
 import {
   cell,

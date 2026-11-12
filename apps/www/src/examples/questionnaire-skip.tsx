@@ -3,8 +3,7 @@
 
 import * as React from "react"
 import type { QuestionnaireItemStatus } from "@shadcn/react/questionnaire"
-import { toast } from "sonner"
-
+import { toast } from "@tecton/react/toast"
 import {
   Questionnaire,
   QuestionnaireActions,
@@ -20,7 +19,7 @@ import {
   QuestionnaireSkip,
   QuestionnaireSubmit,
   QuestionnaireTitle,
-} from "@tecton/react/components/questionnaire"
+} from "@tecton/react/questionnaire"
 
 const items = [
   { name: "task", required: true },
@@ -43,13 +42,11 @@ export function QuestionnaireSkipExample() {
       review: formData.get("review"),
     }
 
-    toast("Agent brief submitted", {
-      description: `Task: ${answers.task ?? "None"} · Constraints: ${
+    toast.add({ title: "Agent brief submitted", description: `Task: ${answers.task ?? "None"} · Constraints: ${
         answers.constraintStatus === "skipped"
           ? "Skipped"
           : (answers.constraints ?? "None")
-      } · Review: ${answers.review ?? "None"}`,
-    })
+      } · Review: ${answers.review ?? "None"}` })
   }
 
   return (

@@ -1,21 +1,23 @@
 import { createServerFn } from "@tanstack/react-start"
+import { staticFunctionMiddleware } from "@tanstack/start-static-server-functions"
 import { z } from "zod"
 
 // Serialized page tree for the docs sidebar (deserialized on the client with
 // `useFumadocsLoader`).
-export const getPageTree = createServerFn({ method: "GET" }).handler(
-  async () => {
+export const getPageTree = createServerFn({ method: "GET" })
+  .middleware([staticFunctionMiddleware])
+  .handler(async () => {
     const { source } = await import("./source")
     return {
       pageTree: await source.serializePageTree(source.getPageTree()),
     }
-  }
-)
+  })
 
 /** The slugs of a docs URL (`/docs/components/button` → `["components", "button"]`). */
 const docsPageInput = z.array(z.string().max(128)).max(16)
 
 export const getDocsPage = createServerFn({ method: "GET" })
+  .middleware([staticFunctionMiddleware])
   .validator(docsPageInput)
   .handler(async ({ data: slugs }) => {
     const { source } = await import("./source")

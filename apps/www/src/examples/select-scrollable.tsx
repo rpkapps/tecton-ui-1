@@ -7,7 +7,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
+} from "@tecton/react/select"
 
 const northAmerica = [
   { label: "Eastern Standard Time", value: "est" },

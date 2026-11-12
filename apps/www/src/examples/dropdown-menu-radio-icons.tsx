@@ -4,7 +4,7 @@
 import * as React from "react"
 import { Building2Icon, CreditCardIcon, WalletIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +13,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 
 export function DropdownMenuRadioIcons() {
   const [paymentMethod, setPaymentMethod] = React.useState("card")

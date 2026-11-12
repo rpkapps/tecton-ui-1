@@ -1,7 +1,7 @@
 import * as React from "react"
 import { cn } from "cn"
 
-import { Overflow, type OverflowProps } from "@tecton/react/tecton/overflow"
+import { Overflow, type OverflowProps } from "@tecton/react/overflow"
 
 /**
  * Tecton PageHeader — page title block with optional eyebrow (breadcrumb),

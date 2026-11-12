@@ -16,8 +16,8 @@ import {
   AttachmentDescription,
   AttachmentMedia,
   AttachmentTitle,
-} from "@tecton/react/components/attachment"
-import { Spinner } from "@tecton/react/components/spinner"
+} from "@tecton/react/attachment"
+import { Spinner } from "@tecton/react/spinner"
 
 export function AttachmentStates() {
   return (

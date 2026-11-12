@@ -4,12 +4,8 @@ import * as React from "react"
 import { cn } from "cn"
 import { Maximize2Icon, XIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-} from "@tecton/react/components/dialog"
+import { Button } from "@tecton/react/button"
+import { Dialog, DialogClose, DialogContent } from "@tecton/react/dialog"
 
 /**
  * A preview tile for a background effect in the docs: the effect behind

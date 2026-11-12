@@ -4,8 +4,8 @@ import * as React from "react"
 import { cn } from "cn"
 import { EllipsisIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import { countBadgeVariants } from "@tecton/react/tecton/count-badge"
+import { Button } from "@tecton/react/button"
+import { countBadgeVariants } from "@tecton/react/count-badge"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,14 +15,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
-import { Separator } from "@tecton/react/components/separator"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@tecton/react/components/tooltip"
-import { useDirection } from "@tecton/react/tecton/provider"
+} from "@tecton/react/dropdown-menu"
+import { Separator } from "@tecton/react/separator"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@tecton/react/tooltip"
+import { useDirection } from "@tecton/react/provider"
 
 import { useTranslations } from "./internal/i18n/translations"
 

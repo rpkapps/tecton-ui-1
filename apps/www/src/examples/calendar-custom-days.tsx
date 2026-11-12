@@ -5,8 +5,8 @@ import * as React from "react"
 import { addDays } from "date-fns"
 import { type DateRange } from "react-day-picker"
 
-import { Calendar, CalendarDayButton } from "@tecton/react/components/calendar"
-import { Card, CardContent } from "@tecton/react/components/card"
+import { Calendar, CalendarDayButton } from "@tecton/react/calendar"
+import { Card, CardContent } from "@tecton/react/card"
 
 export function CalendarCustomDays() {
   const [range, setRange] = React.useState<DateRange | undefined>({

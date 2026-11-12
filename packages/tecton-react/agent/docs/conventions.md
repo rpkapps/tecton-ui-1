@@ -59,7 +59,7 @@ part, never on the root.
 `render` swaps the element a part renders while keeping its behaviour and
 styles: `render={<a href="/wells" />}` on a `Badge`, `Item` or
 `BreadcrumbLink`; `render={<Link to="/wells" />}` for a router link. A link
-that looks like a button is a `LinkButton` (`@tecton/react/tecton/link`), not a
+that looks like a button is a `LinkButton` (`@tecton/react/link`), not a
 `Button` with `render={<a />}`, which keeps `role="button"`. It also accepts a function `(props) => <a {...props} />`. There is
 no `asChild`.
 
@@ -79,7 +79,7 @@ variant matches only `data-selected="true"` (the command palette), so style the
 
 ## Providers, portals, shortcuts
 
-One `TectonProvider` (`@tecton/react/tecton/provider`) at the root carries the
+One `TectonProvider` (`@tecton/react/provider`) at the root carries the
 direction, the locale, the router (`navigate`, `useHref`) and the portal
 container; `ThemeRoot` wraps one. No other provider is public — never mount
 one from the libraries underneath. Tecton binds no keyboard shortcuts: `Kbd`,
@@ -161,22 +161,26 @@ Correct:
 An item's identity is `value`; `id` is only the DOM id, so no tab matches the
 controlled value and the handler never fires.
 
-### [HIGH] Importing the library underneath
+### [HIGH] Importing from a copied components directory
 
 Wrong:
 
 ```tsx
-import { Dialog } from "@base-ui/react/dialog"
-import { Button } from "react-aria-components"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
+
+type SettingsDialogProps = { title: string } & Record<string, unknown>
 ```
 
 Correct:
 
 ```tsx
-import { Dialog, DialogContent } from "@tecton/react/components/dialog"
-import { Button } from "@tecton/react/components/button"
+import { Dialog, DialogContent } from "@tecton/react/dialog"
+import type { DialogContentProps } from "@tecton/react/dialog"
+
+type SettingsDialogProps = DialogContentProps & { title: string }
 ```
 
-The raw primitives carry none of the Tecton styles, portal container or
-provider context, and which library backs a component is not part of the API:
-the import breaks the day it changes.
+Every component, hook and props type comes from its
+`@tecton/react/<name>` module, which exports a `<Part>Props` type for
+each part: a copy misses every Tecton fix, and a hand-written props type
+drifts from the real one.

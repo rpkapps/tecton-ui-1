@@ -1,4 +1,4 @@
-import { Separator } from "@tecton/react/components/separator"
+import { Separator } from "@tecton/react/separator"
 
 const emphases = ["subtle", "default", "strong"] as const
 

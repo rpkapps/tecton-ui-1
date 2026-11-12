@@ -9,8 +9,8 @@ import {
   SearchIcon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import { Link, LinkButton } from "@tecton/react/tecton/link"
+import { Button } from "@tecton/react/button"
+import { Link, LinkButton } from "@tecton/react/link"
 
 import {
   LogTrack,

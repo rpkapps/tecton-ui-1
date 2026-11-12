@@ -3,8 +3,8 @@ import {
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@tecton/react/components/field"
-import { Textarea } from "@tecton/react/components/textarea"
+} from "@tecton/react/field"
+import { Textarea } from "@tecton/react/textarea"
 
 const variants = [
   { variant: "outline", label: "Outline" },

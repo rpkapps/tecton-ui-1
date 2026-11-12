@@ -7,7 +7,7 @@
 #
 # The `base-tecton` style exists only here, so every shadcn CLI command that
 # touches packages/tecton-react must run against this mirror:
-#   REGISTRY_URL=http://127.0.0.1:4000/r pnpm dlx shadcn@4.21.0 add <item> -c packages/tecton-react
+#   REGISTRY_URL=http://127.0.0.1:4000/r pnpm dlx shadcn@4.21.5 add <item> -c packages/tecton-react
 #
 # Usage:
 #   scripts/registry-mirror.sh setup   # clone + install + overlay + build (one time, ~5 min)
@@ -38,11 +38,16 @@ OVERLAY_PATHSPEC=(
   ':(exclude)apps/v4/registry/bases/__*'
 )
 BUN="${BUN:-$(command -v bun || echo "$HOME/.bun/bin/bun")}"
+# Items of the `base` registry Tecton never installs (docs/UPSTREAM.md); the cn-* check skips them.
+UNSHIPPED_ITEMS=(sonner menubar navigation-menu)
 
 setup() {
+  # LF on every platform: the docs sync and the overlay patch match upstream text byte for byte.
+  # Set at clone time so the first checkout is LF, and again for clones made before this.
   if [ ! -d "$MIRROR_DIR/.git" ]; then
-    git clone --filter=blob:none https://github.com/shadcn-ui/ui.git "$MIRROR_DIR"
+    git clone -c core.autocrlf=false --filter=blob:none https://github.com/shadcn-ui/ui.git "$MIRROR_DIR"
   fi
+  git -C "$MIRROR_DIR" config core.autocrlf false
   git -C "$MIRROR_DIR" fetch --depth 1 origin "$UPSTREAM_SHA"
   # A clone left dirty by an earlier overlay (or by a conflicted `apply --3way`)
   # would make a plain checkout abort after a pin bump. Uncommitted edits in the
@@ -52,7 +57,8 @@ setup() {
   git -C "$MIRROR_DIR" clean -fdq
   git -C "$MIRROR_DIR" checkout --force --quiet "$UPSTREAM_SHA"
   (cd "$MIRROR_DIR" && PUPPETEER_SKIP_DOWNLOAD=1 pnpm install --frozen-lockfile --ignore-scripts)
-  (cd "$MIRROR_DIR" && pnpm --filter=@shadcn/react build && pnpm --filter=@shadcn/helpers build && pnpm --filter=shadcn build)
+  # The CLI and every workspace package it depends on, in dependency order.
+  (cd "$MIRROR_DIR" && pnpm --filter=shadcn... build)
   build
 }
 
@@ -104,9 +110,13 @@ export_overlay() {
 check_cn_classes() {
   local out="$MIRROR_DIR/apps/v4/public/r/styles/$STYLE"
   local transform="$MIRROR_DIR/packages/shadcn/src/styles/transform-style-map.ts"
-  local allowlist leftovers
+  local allowlist leftovers files=()
   allowlist="$(sed -n '/^const ALLOWLIST = new Set(\[/,/^\])/p' "$transform" | grep -o '"cn-[A-Za-z0-9_-]*"' | tr -d '"' || true)"
-  leftovers="$(grep -o '\bcn-[A-Za-z0-9_-]*' "$out"/*.json | sort -u |
+  for f in "$out"/*.json; do
+    case " ${UNSHIPPED_ITEMS[*]} " in *" $(basename "$f" .json) "*) continue ;; esac
+    files+=("$f")
+  done
+  leftovers="$(grep -o '\bcn-[A-Za-z0-9_-]*' "${files[@]}" | sort -u |
     ALLOWLIST="$allowlist" awk -F: '
       BEGIN { n = split(ENVIRON["ALLOWLIST"], a, "\n"); for (i = 1; i <= n; i++) allowed[a[i]] = 1 }
       !($2 in allowed)' || true)"

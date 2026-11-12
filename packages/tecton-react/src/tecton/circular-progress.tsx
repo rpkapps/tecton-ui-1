@@ -5,7 +5,7 @@ import { Progress as ProgressPrimitive } from "@base-ui/react/progress"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
-import { useLocale } from "@tecton/react/tecton/provider"
+import { useLocale } from "@tecton/react/provider"
 
 /**
  * Tecton circular Progress — determinate ring with optional centred value

@@ -1,6 +1,6 @@
 ---
 component: Calendar
-module: "@tecton/react/components/calendar"
+module: "@tecton/react/calendar"
 family: data
 exports: [Calendar, CalendarDayButton]
 notFor:

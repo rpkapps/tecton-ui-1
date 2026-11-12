@@ -4,30 +4,26 @@ import * as React from "react"
 import { cn } from "cn"
 import { InfoIcon } from "lucide-react"
 
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@tecton/react/components/alert"
+import { Alert, AlertDescription, AlertTitle } from "@tecton/react/alert"
 import {
   Field,
   FieldContent,
   FieldDescription,
   FieldError,
   FieldLabel,
-} from "@tecton/react/components/field"
-import { Input } from "@tecton/react/components/input"
+} from "@tecton/react/field"
+import { Input } from "@tecton/react/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
-import { Separator } from "@tecton/react/components/separator"
-import { Switch } from "@tecton/react/components/switch"
-import { Textarea } from "@tecton/react/components/textarea"
-import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
+} from "@tecton/react/select"
+import { Separator } from "@tecton/react/separator"
+import { Switch } from "@tecton/react/switch"
+import { Textarea } from "@tecton/react/textarea"
+import { ColorSwatch } from "@tecton/react/color-swatch"
 
 import {
   accents,

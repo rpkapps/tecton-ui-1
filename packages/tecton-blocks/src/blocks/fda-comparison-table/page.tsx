@@ -4,12 +4,12 @@ import * as React from "react"
 import { cn } from "cn"
 import { PlusIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   DataTable,
   DataTableActionBar,
   DataTableContent,
-} from "@tecton/react/tecton/data-table"
+} from "@tecton/react/data-table"
 
 import { createFdaColumns, MonoValue } from "./components/fda-columns"
 import type { RankedAlternative } from "./components/fda-columns"

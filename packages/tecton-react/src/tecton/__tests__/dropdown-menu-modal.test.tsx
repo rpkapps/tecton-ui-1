@@ -2,13 +2,13 @@ import { act, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 
 // `DropdownMenu` is not modal unless it is given `modal` (the overlay patch,
 // docs/UPSTREAM.md "Overlay hunks"): a modal menu locks the page's scroll,

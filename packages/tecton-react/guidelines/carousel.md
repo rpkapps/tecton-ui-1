@@ -1,6 +1,6 @@
 ---
 component: Carousel
-module: "@tecton/react/components/carousel"
+module: "@tecton/react/carousel"
 family: presentation
 exports: [Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, useCarousel]
 notFor:

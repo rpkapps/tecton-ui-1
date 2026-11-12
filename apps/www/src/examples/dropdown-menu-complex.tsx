@@ -30,7 +30,7 @@ import {
   UserIcon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -47,7 +47,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 
 export function DropdownMenuComplex() {
   const [notifications, setNotifications] = React.useState({

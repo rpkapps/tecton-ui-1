@@ -11,9 +11,9 @@
 import * as React from "react"
 import type { Matcher } from "react-day-picker"
 
-import { Button } from "@tecton/react/components/button"
-import { Calendar } from "@tecton/react/components/calendar"
-import { useLocale } from "@tecton/react/tecton/provider"
+import { Button } from "@tecton/react/button"
+import { Calendar } from "@tecton/react/calendar"
+import { useLocale } from "@tecton/react/provider"
 
 import type {
   DatePickerProps,

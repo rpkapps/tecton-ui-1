@@ -3,7 +3,7 @@
 import * as React from "react"
 import { DownloadIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   createColumns,
   DataTable,
@@ -11,8 +11,8 @@ import {
   DataTableSearch,
   DataTableToolbar,
   useDataTable,
-} from "@tecton/react/tecton/data-table"
-import { OverflowSpacer } from "@tecton/react/tecton/overflow"
+} from "@tecton/react/data-table"
+import { OverflowSpacer } from "@tecton/react/overflow"
 
 type Well = {
   id: string

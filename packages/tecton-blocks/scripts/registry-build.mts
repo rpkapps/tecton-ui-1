@@ -84,7 +84,6 @@ const KNOWN_DEPENDENCIES = new Set([
   "cn",
   "lucide-react",
   "recharts",
-  "sonner",
 ])
 
 /** Imports every React application already has; not listed as dependencies. */
@@ -114,7 +113,9 @@ function clientOnlyReason(source: string) {
 }
 
 function hasUseClient(source: string) {
-  return /^(?:\s|\/\/[^\n]*\n|\/\*[\s\S]*?\*\/)*["']use client["']/.test(source)
+  return /^(?:\s|\/\/[^\n]*\n|\/\*(?:[^*]|\*(?!\/))*\*\/)*["']use client["']/.test(
+    source
+  )
 }
 
 /**
@@ -317,7 +318,7 @@ async function main() {
     throw new Error(
       `registry:build publishes blocks only, but ${notBlocks.length} item(s) are not ` +
         `registry:block: ${notBlocks.map((item) => `${item.name} (${item.type})`).join(", ")}. ` +
-        `Components belong in the package, imported from @tecton/react/components/*.`
+        `Components belong in the package, imported from @tecton/react/*.`
     )
   }
 

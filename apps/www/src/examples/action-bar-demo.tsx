@@ -8,12 +8,12 @@ import {
   UserPlusIcon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   ActionBar,
   ActionBarActions,
   ActionBarSelection,
-} from "@tecton/react/tecton/action-bar"
+} from "@tecton/react/action-bar"
 import {
   createColumns,
   DataTable,
@@ -21,13 +21,13 @@ import {
   DataTableSearch,
   DataTableToolbar,
   useDataTable,
-} from "@tecton/react/tecton/data-table"
+} from "@tecton/react/data-table"
 import {
   OverflowDivider,
   OverflowItem,
   OverflowLabel,
   OverflowSpacer,
-} from "@tecton/react/tecton/overflow"
+} from "@tecton/react/overflow"
 
 type Well = {
   id: string

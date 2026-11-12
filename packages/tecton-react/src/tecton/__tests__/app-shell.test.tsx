@@ -8,8 +8,8 @@ import {
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-import { DropdownMenuItem } from "@tecton/react/components/dropdown-menu"
-import { Kbd, KbdGroup } from "@tecton/react/components/kbd"
+import { DropdownMenuItem } from "@tecton/react/dropdown-menu"
+import { Kbd, KbdGroup } from "@tecton/react/kbd"
 import {
   AppShell,
   AppShellAction,
@@ -29,7 +29,7 @@ import {
   AppShellSplitPanel,
   AppShellUserMenu,
   useMinWidth,
-} from "@tecton/react/tecton/app-shell"
+} from "@tecton/react/app-shell"
 
 describe("AppShell", () => {
   it("renders the frame with landmarks", () => {

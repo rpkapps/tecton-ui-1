@@ -8,7 +8,7 @@ description: "Eleven quiet, decorative background effects drawn from oil and gas
 ## Usage
 
 ```tsx
-import { ContourBackground } from "@tecton/react/tecton/background"
+import { ContourBackground } from "@tecton/react/background"
 ```
 
 ```tsx
@@ -61,7 +61,7 @@ Give the container `relative isolate`: the effect is `absolute inset-0 -z-10`, a
 `BackgroundEffect` renders an effect by name, for a settings screen where users choose their background. `backgroundEffects` maps names to components; `backgroundTones`, `backgroundIntensities` and `backgroundSpeeds` list the values of the shared props.
 
 ```tsx
-import { BackgroundEffect, backgroundEffects } from "@tecton/react/tecton/background"
+import { BackgroundEffect, backgroundEffects } from "@tecton/react/background"
 
 const names = Object.keys(backgroundEffects) // "seismic" | "contour" | …
 

@@ -9,7 +9,7 @@ import {
   DataTableFooter,
   DataTablePagination,
   type DataTableProps,
-} from "@tecton/react/tecton/data-table"
+} from "@tecton/react/data-table"
 
 import {
   checkbox,

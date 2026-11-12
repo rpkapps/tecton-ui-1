@@ -438,6 +438,9 @@
       "color-filled-active": "var(--filled-active)",
       "color-slider-rail": "var(--slider-rail)",
       "color-progress-track": "var(--progress-track)",
+      "color-input-filled": "var(--input-filled)",
+      "color-input-filled-focus": "var(--input-filled-focus)",
+      "color-number-field-fill": "var(--number-field-fill)",
       "color-content-hover": "var(--content-hover)",
       "color-content-pressed": "var(--content-pressed)",
       "color-content-active": "var(--content-active)"
@@ -548,6 +551,9 @@
       "filled-active": "#8b5ba9",
       "slider-rail": "#decae5",
       "progress-track": "#b48ac5",
+      "input-filled": "#f0eef3",
+      "input-filled-focus": "#f6f3f8",
+      "number-field-fill": "#decae5",
       "content-hover": "#eae8ec",
       "content-pressed": "#dbd6dd",
       "content-active": "#dbd6dd",
@@ -1004,6 +1010,9 @@
       "filled-active": "#af9ebc",
       "slider-rail": "#776284",
       "progress-track": "#6b5679",
+      "input-filled": "#28232c",
+      "input-filled-focus": "#342f39",
+      "number-field-fill": "#514659",
       "content-hover": "#262528",
       "content-pressed": "#323134",
       "content-active": "#323134",
@@ -1359,6 +1368,8 @@
   "css": {
     "@import \"@fontsource/figtree/400.css\"": {},
     "@import \"@fontsource/figtree/500.css\"": {},
+    "@import \"@fontsource/figtree/600.css\"": {},
+    "@import \"@fontsource/figtree/700.css\"": {},
     "@import \"@fontsource/ibm-plex-mono/400.css\"": {},
     "@import \"@fontsource/ibm-plex-mono/500.css\"": {},
     ".light, [data-theme=\"light\"]": {
@@ -1467,6 +1478,9 @@
       "--filled-active": "#8b5ba9",
       "--slider-rail": "#decae5",
       "--progress-track": "#b48ac5",
+      "--input-filled": "#f0eef3",
+      "--input-filled-focus": "#f6f3f8",
+      "--number-field-fill": "#decae5",
       "--content-hover": "#eae8ec",
       "--content-pressed": "#dbd6dd",
       "--content-active": "#dbd6dd",
@@ -1823,6 +1837,9 @@
       "*": {
         "scrollbar-width": "thin",
         "scrollbar-color": "var(--border) transparent"
+      },
+      "body": {
+        "font-synthesis-weight": "none"
       }
     }
   }

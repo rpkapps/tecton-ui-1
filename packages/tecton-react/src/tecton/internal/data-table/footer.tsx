@@ -29,7 +29,9 @@ const BAND = {
   sm: "text-xs [[data-slot=data-table-content]+&]:min-h-[calc(var(--spacing)*2+1lh+1px)]",
 } as const
 
-function DataTableFooter({ className, ...props }: React.ComponentProps<"div">) {
+type DataTableFooterProps = React.ComponentProps<"div">
+
+function DataTableFooter({ className, ...props }: DataTableFooterProps) {
   const context = useDataTableContext("DataTableFooter")
   const size = useDataTableSelector(context, (state) => state.options.size)
   return (
@@ -50,3 +52,4 @@ function DataTableFooter({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 export { DataTableFooter }
+export type { DataTableFooterProps }

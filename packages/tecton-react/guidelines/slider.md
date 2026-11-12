@@ -1,11 +1,11 @@
 ---
 component: Slider
-module: "@tecton/react/components/slider"
+module: "@tecton/react/slider"
 family: forms
 exports: [Slider]
 notFor:
-  - need: an exact number the user types, with units or validation
-    use: Input
+  - need: an exact number the user types or steps, with bounds or a unit
+    use: NumberField
   - need: the title, description and layout around the control
     use: Field
   - need: an on/off setting rather than a value

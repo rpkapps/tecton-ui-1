@@ -1,6 +1,6 @@
 // Synced from shadcn/ui (apps/v4/examples/base/radio-group-disabled.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Field, FieldLabel } from "@tecton/react/components/field"
-import { RadioGroup, RadioGroupItem } from "@tecton/react/components/radio-group"
+import { Field, FieldLabel } from "@tecton/react/field"
+import { RadioGroup, RadioGroupItem } from "@tecton/react/radio-group"
 
 export function RadioGroupDisabled() {
   return (

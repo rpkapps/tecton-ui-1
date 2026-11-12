@@ -8,7 +8,7 @@ import {
   ItemGroup,
   ItemHeader,
   ItemTitle,
-} from "@tecton/react/components/item"
+} from "@tecton/react/item"
 
 const models = [
   {

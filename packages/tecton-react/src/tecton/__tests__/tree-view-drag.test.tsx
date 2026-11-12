@@ -9,7 +9,7 @@ import {
   TreeViewCollection,
   TreeViewItem,
   TreeViewItemContent,
-} from "@tecton/react/tecton/tree-view"
+} from "@tecton/react/tree-view"
 
 import { stubAnimations } from "./web-animations"
 

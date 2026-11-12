@@ -1,0 +1,226 @@
+---
+title: Toast
+description: A succinct message that is displayed temporarily.
+upstream: apps/v4/content/docs/components/base/toast.mdx
+---
+
+<ComponentPreview name="toast-demo" />
+
+## Usage
+
+```tsx
+import { toast } from "@tecton/react/toast"
+```
+
+```tsx
+toast.add({
+  title: "Event created",
+  description: "Sunday, December 3 at 9:00 AM",
+})
+```
+
+## Types
+
+Set the `type` option to render a status icon. The built-in renderer recognizes
+`success`, `info`, `warning`, `error`, and `loading`.
+
+<ComponentPreview name="toast-types" />
+
+## Action
+
+Pass button props with `actionProps` to render an action.
+
+```tsx
+const id = toast.add({
+  title: "Event created",
+  actionProps: {
+    children: "Undo",
+    onClick() {
+      toast.close(id)
+    },
+  },
+})
+```
+
+## Promise
+
+Use `toast.promise` to update one toast as an asynchronous task moves through
+loading, success, and error states.
+
+<ComponentPreview name="toast-promise" />
+
+## Toaster
+
+`toast.add()` renders nothing until a `Toaster` is mounted. Mount one, once, at the application root, inside the [`TectonProvider`](/docs/tecton/provider):
+
+```tsx lineNumbers
+import { TectonProvider } from "@tecton/react/provider"
+import { Toaster } from "@tecton/react/toast"
+
+export function App({ children }: { children: React.ReactNode }) {
+  return (
+    <TectonProvider>
+      {children}
+      <Toaster />
+    </TectonProvider>
+  )
+}
+```
+
+Like every Tecton overlay, the toasts portal into the `portalContainer` of the nearest `TectonProvider`, else into `document.body`; `container` on `Toaster` overrides both. In a [micro-frontend](/docs/micro-frontends) page, the toasts of every application join the stack of the shell's `Toaster`, so they never overlap.
+
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- Confirming something the user just did, where the page already shows the result: saved, copied, queued, undone.
+- Reporting the end of a background task the user is not watching: an export finished, a run failed to start.
+- Offering a short-lived undo beside that confirmation.
+
+### Not for
+
+- a message that must stay until the user resolves it: use [Alert](/docs/components/alert)
+- the state of a list that has nothing in it: use [Empty](/docs/components/empty)
+- the progress of a task the user is watching: use [Progress](/docs/components/progress)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Mount `<Toaster />` once, at the application root (a micro-frontend remote inside its `ThemeRoot`, where its toasts join the shell's stack); everywhere else import `toast` from `@tecton/react/toast` and call `toast.add`.
+
+</Do>
+
+<Do>
+
+Give the severity with `type` (`"success"`, `"info"`, `"warning"`, `"error"`) so the Toaster's icons and the Tecton outlined status colours apply.
+
+</Do>
+
+<Do>
+
+Put the headline in `title`, the detail in `description` and a single undo in `actionProps`; a toast is one sentence and at most one action.
+
+</Do>
+
+<Do>
+
+Let `toast.promise` own a pending toast so it resolves itself, and close one early with `toast.close(id)`.
+
+</Do>
+
+<Do>
+
+Repeating an action replaces its toast instead of stacking another (keep the id `toast.add` returns and call `toast.update(id, …)`).
+
+</Do>
+
+<Do>
+
+Use an error toast only for background failures the page also shows; failures needing action are a destructive `Alert`.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="CRITICAL" title="Calling toast.add() with no Toaster mounted">
+
+<Wrong>
+
+```tsx
+import { toast } from "@tecton/react/toast"
+
+export function SaveButton() {
+  return <Button onClick={() => toast.add({ title: "Model saved", type: "success" })}>Save</Button>
+}
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+import { toast, Toaster } from "@tecton/react/toast"
+
+export function App() {
+  return (
+    <>
+      <Button onClick={() => toast.add({ title: "Model saved", type: "success" })}>Save</Button>
+      <Toaster />
+    </>
+  )
+}
+```
+
+</Correct>
+
+`toast.add()` pushes onto a queue that only a mounted `Toaster` reads; with none mounted nothing renders and nothing throws, so the confirmation is lost in silence.
+
+</Dont>
+
+<Dont severity="HIGH" title="A pending toast that is never resolved">
+
+<Wrong>
+
+```tsx
+toast.add({ title: "Running simulation…", type: "loading", timeout: 0 })
+await runSimulation()
+toast.add({ title: "Simulation finished", type: "success" })
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+toast.promise(runSimulation(), {
+  loading: "Running simulation…",
+  success: "Simulation finished",
+  error: "Simulation failed",
+})
+```
+
+</Correct>
+
+A toast with `timeout: 0` stays until it is closed, so unless its id is passed to `toast.close` it stays on screen for the rest of the session and the success toast stacks above it.
+
+</Dont>
+
+<Dont severity="HIGH" title="Colouring a toast by hand">
+
+<Wrong>
+
+```tsx
+toast.add({ title: "Simulation failed", className: "bg-red-600 text-white" })
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+toast.add({
+  title: "Simulation failed",
+  description: "12 cells have negative volume.",
+  type: "error",
+})
+```
+
+</Correct>
+
+The Toaster maps each `type` onto the Tecton status border and text colours over the popover surface, and `red-600` is not a Tecton step, so the class emits no CSS and the toast shows no severity at all.
+
+</Dont>
+
+{/* guidelines:end */}
+
+## API Reference
+
+for details about manager options, stacking, swipe dismissal, and the primitive
+API.

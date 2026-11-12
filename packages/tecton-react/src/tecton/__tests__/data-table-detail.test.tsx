@@ -11,13 +11,8 @@ import { renderToString } from "react-dom/server"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, expectTypeOf, it, vi } from "vitest"
 
-import { DropdownMenuItem } from "@tecton/react/components/dropdown-menu"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@tecton/react/components/table"
+import { DropdownMenuItem } from "@tecton/react/dropdown-menu"
+import { Table, TableBody, TableCell, TableRow } from "@tecton/react/table"
 import {
   createColumns,
   DataTable,
@@ -25,8 +20,8 @@ import {
   DataTableRowActions,
   type DataTableContentProps,
   type DataTableProps,
-} from "@tecton/react/tecton/data-table"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+} from "@tecton/react/data-table"
+import { TectonProvider } from "@tecton/react/provider"
 
 import {
   columns,

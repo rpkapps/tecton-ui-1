@@ -15,8 +15,8 @@
 import * as React from "react"
 import { cn } from "cn"
 
-import { Button } from "@tecton/react/components/button"
-import { Chip, ChipGroup, ChipList } from "@tecton/react/tecton/chip"
+import { Button } from "@tecton/react/button"
+import { Chip, ChipGroup, ChipList } from "@tecton/react/chip"
 
 import { useTranslations } from "../i18n/translations"
 import {

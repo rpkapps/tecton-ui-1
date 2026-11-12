@@ -2,10 +2,10 @@
 
 import * as React from "react"
 import { useForm } from "@tanstack/react-form"
-import { toast } from "sonner"
+import { toast } from "@tecton/react/toast"
 import * as z from "zod"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Card,
   CardContent,
@@ -13,21 +13,21 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@tecton/react/components/card"
+} from "@tecton/react/card"
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@tecton/react/components/field"
-import { Input } from "@tecton/react/components/input"
+} from "@tecton/react/field"
+import { Input } from "@tecton/react/input"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupText,
   InputGroupTextarea,
-} from "@tecton/react/components/input-group"
+} from "@tecton/react/input-group"
 
 const formSchema = z.object({
   title: z
@@ -41,14 +41,13 @@ const formSchema = z.object({
 })
 
 export function showSubmitted(value: unknown) {
-  toast("You submitted the following values:", {
+  toast.add({
+    title: "You submitted the following values:",
     description: (
-      <pre className="mt-2 w-[320px] overflow-x-auto rounded-md bg-muted p-4 text-muted-foreground">
-        <code>{JSON.stringify(value, null, 2)}</code>
-      </pre>
+      <code className="mt-2 block w-[320px] overflow-x-auto rounded-md bg-muted p-4 whitespace-pre text-muted-foreground">
+        {JSON.stringify(value, null, 2)}
+      </code>
     ),
-    position: "bottom-right",
-    classNames: { content: "flex flex-col gap-2" },
   })
 }
 

@@ -18,7 +18,7 @@ import {
   ZoomOutIcon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -28,25 +28,21 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
-import { Separator } from "@tecton/react/components/separator"
+} from "@tecton/react/select"
+import { Separator } from "@tecton/react/separator"
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@tecton/react/components/sidebar"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@tecton/react/components/tooltip"
+} from "@tecton/react/sidebar"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@tecton/react/tooltip"
 import {
   Canvas,
   CanvasLegend,
@@ -55,8 +51,8 @@ import {
   CanvasSurface,
   CanvasToolbar,
   CanvasToolbarButton,
-} from "@tecton/react/tecton/canvas"
-import { useLocale } from "@tecton/react/tecton/provider"
+} from "@tecton/react/canvas"
+import { useLocale } from "@tecton/react/provider"
 
 import { FairwayMap } from "./components/fairway-map"
 import { PresetList } from "./components/preset-list"

@@ -1,13 +1,13 @@
 // Synced from shadcn/ui (apps/v4/examples/base/button-group-popover.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { BotIcon, ChevronDownIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import { ButtonGroup } from "@tecton/react/components/button-group"
+import { Button } from "@tecton/react/button"
+import { ButtonGroup } from "@tecton/react/button-group"
 import {
   Field,
   FieldDescription,
   FieldLabel,
-} from "@tecton/react/components/field"
+} from "@tecton/react/field"
 import {
   Popover,
   PopoverContent,
@@ -15,8 +15,8 @@ import {
   PopoverHeader,
   PopoverTitle,
   PopoverTrigger,
-} from "@tecton/react/components/popover"
-import { Textarea } from "@tecton/react/components/textarea"
+} from "@tecton/react/popover"
+import { Textarea } from "@tecton/react/textarea"
 
 export default function ButtonGroupPopover() {
   return (

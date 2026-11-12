@@ -1,14 +1,14 @@
 import * as React from "react"
 
-import { Badge } from "@tecton/react/components/badge"
-import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
+import { Badge } from "@tecton/react/badge"
+import { ColorSwatch } from "@tecton/react/color-swatch"
 import {
   TreeView,
   TreeViewAction,
   TreeViewItem,
   TreeViewItemContent,
   TreeViewVisibilityToggle,
-} from "@tecton/react/tecton/tree-view"
+} from "@tecton/react/tree-view"
 
 const horizons = [
   { id: "balder", name: "Top Balder", color: "#f59e0b", picks: 12 },

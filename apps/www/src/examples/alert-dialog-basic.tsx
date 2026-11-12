@@ -9,8 +9,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@tecton/react/components/alert-dialog"
-import { Button } from "@tecton/react/components/button"
+} from "@tecton/react/alert-dialog"
+import { Button } from "@tecton/react/button"
 
 export function AlertDialogBasic() {
   return (

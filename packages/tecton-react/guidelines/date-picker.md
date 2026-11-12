@@ -1,6 +1,6 @@
 ---
 component: DatePicker
-module: "@tecton/react/tecton/date-picker"
+module: "@tecton/react/date-picker"
 family: forms
 exports: [DatePicker, DateRangePicker, datePickerVariants]
 docs: components/date-picker

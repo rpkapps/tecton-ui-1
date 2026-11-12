@@ -1,12 +1,12 @@
 // Synced from shadcn/ui (apps/v4/examples/base/checkbox-description.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Checkbox } from "@tecton/react/components/checkbox"
+import { Checkbox } from "@tecton/react/checkbox"
 import {
   Field,
   FieldContent,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@tecton/react/components/field"
+} from "@tecton/react/field"
 
 export function CheckboxDescription() {
   return (

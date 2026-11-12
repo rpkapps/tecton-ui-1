@@ -4,17 +4,17 @@ import * as React from "react"
 import { cn } from "cn"
 import { ArrowUpIcon, SquareIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupTextarea,
-} from "@tecton/react/components/input-group"
-import { Kbd } from "@tecton/react/components/kbd"
-import { Spinner } from "@tecton/react/components/spinner"
-import { Chip, ChipGroup, ChipList } from "@tecton/react/tecton/chip"
-import { useDirection } from "@tecton/react/tecton/provider"
+} from "@tecton/react/input-group"
+import { Kbd } from "@tecton/react/kbd"
+import { Spinner } from "@tecton/react/spinner"
+import { Chip, ChipGroup, ChipList } from "@tecton/react/chip"
+import { useDirection } from "@tecton/react/provider"
 
 /**
  * Tecton Composer — the message box of a chat: a textarea that grows with

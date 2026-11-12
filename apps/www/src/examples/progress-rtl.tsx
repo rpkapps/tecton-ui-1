@@ -11,7 +11,7 @@ import {
   Progress,
   ProgressLabel,
   ProgressValue,
-} from "@tecton/react/components/progress"
+} from "@tecton/react/progress"
 
 const translations: Translations = {
   en: {

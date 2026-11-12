@@ -1,6 +1,6 @@
 ---
 component: InputGroup
-module: "@tecton/react/components/input-group"
+module: "@tecton/react/input-group"
 family: forms
 exports: [InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, InputGroupTextarea]
 notFor:

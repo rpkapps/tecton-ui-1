@@ -7,7 +7,7 @@ import {
   useTranslation,
   type Translations,
 } from "@/components/language-selector"
-import { Skeleton } from "@tecton/react/components/skeleton"
+import { Skeleton } from "@tecton/react/skeleton"
 
 const translations: Translations = {
   en: {

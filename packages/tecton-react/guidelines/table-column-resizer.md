@@ -1,6 +1,6 @@
 ---
 component: TableColumnResizer
-module: "@tecton/react/tecton/table-column-resizer"
+module: "@tecton/react/table-column-resizer"
 docs: "components/data-table#resizing"
 family: data
 exports: [TableColumnResizer]

@@ -4,19 +4,19 @@
 import * as React from "react"
 import { AudioLinesIcon, PlusIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import { ButtonGroup } from "@tecton/react/components/button-group"
+import { Button } from "@tecton/react/button"
+import { ButtonGroup } from "@tecton/react/button-group"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "@tecton/react/components/input-group"
+} from "@tecton/react/input-group"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@tecton/react/components/tooltip"
+} from "@tecton/react/tooltip"
 
 export default function ButtonGroupInputGroup() {
   const [voiceEnabled, setVoiceEnabled] = React.useState(false)

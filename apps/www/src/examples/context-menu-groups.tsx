@@ -8,7 +8,7 @@ import {
   ContextMenuSeparator,
   ContextMenuShortcut,
   ContextMenuTrigger,
-} from "@tecton/react/components/context-menu"
+} from "@tecton/react/context-menu"
 
 export function ContextMenuGroups() {
   return (

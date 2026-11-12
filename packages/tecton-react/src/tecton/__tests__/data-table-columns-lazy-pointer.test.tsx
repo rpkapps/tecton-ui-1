@@ -5,7 +5,7 @@ import {
   createColumns,
   DataTable,
   DataTableContent,
-} from "@tecton/react/tecton/data-table"
+} from "@tecton/react/data-table"
 
 /** The column drag and drop's code arrives when the test lets it. */
 const chunk = vi.hoisted(() => {

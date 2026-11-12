@@ -9,8 +9,8 @@ import {
   AlertAction,
   AlertDescription,
   AlertTitle,
-} from "@tecton/react/components/alert"
-import { Button } from "@tecton/react/components/button"
+} from "@tecton/react/alert"
+import { Button } from "@tecton/react/button"
 import {
   Card,
   CardContent,
@@ -18,13 +18,13 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@tecton/react/components/card"
-import { Checkbox } from "@tecton/react/components/checkbox"
-import { Field, FieldError, FieldLabel } from "@tecton/react/components/field"
-import { Input } from "@tecton/react/components/input"
-import { Separator } from "@tecton/react/components/separator"
-import { Spinner } from "@tecton/react/components/spinner"
-import { Link } from "@tecton/react/tecton/link"
+} from "@tecton/react/card"
+import { Checkbox } from "@tecton/react/checkbox"
+import { Field, FieldError, FieldLabel } from "@tecton/react/field"
+import { Input } from "@tecton/react/input"
+import { Separator } from "@tecton/react/separator"
+import { Spinner } from "@tecton/react/spinner"
+import { Link } from "@tecton/react/link"
 
 import { loginCopy, validateEmail, validatePassword } from "../data"
 

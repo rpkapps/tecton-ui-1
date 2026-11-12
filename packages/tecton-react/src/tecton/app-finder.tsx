@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 import { CheckIcon, ChevronDownIcon, SearchXIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Command,
   CommandEmpty,
@@ -13,12 +13,8 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@tecton/react/components/command"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@tecton/react/components/popover"
+} from "@tecton/react/command"
+import { Popover, PopoverContent, PopoverTrigger } from "@tecton/react/popover"
 
 /**
  * Tecton AppFinder — the shell's application switcher. The trigger shows

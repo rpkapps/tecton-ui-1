@@ -6,7 +6,7 @@ import {
   DataTable,
   DataTableContent,
   type DataTableProps,
-} from "@tecton/react/tecton/data-table"
+} from "@tecton/react/data-table"
 
 import { moveRow } from "../internal/data-table/row-order"
 import {

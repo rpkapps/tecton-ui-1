@@ -3,10 +3,10 @@
 import * as React from "react"
 import { cn } from "cn"
 
-import { Button } from "@tecton/react/components/button"
-import { Spinner } from "@tecton/react/components/spinner"
-import { TectonProvider } from "@tecton/react/tecton/provider"
-import { ThemeRoot } from "@tecton/react/tecton/theme-root"
+import { Button } from "@tecton/react/button"
+import { Spinner } from "@tecton/react/spinner"
+import { TectonProvider } from "@tecton/react/provider"
+import { ThemeRoot } from "@tecton/react/theme-root"
 
 import { CodeBlock } from "@/components/code-block"
 import {
@@ -89,7 +89,7 @@ export function ComponentPreview({
         className="relative mt-6 aspect-[4/2.5] w-full overflow-hidden rounded-2xl border bg-background md:-mx-1"
       >
         <iframe
-          src={`/view/${name}`}
+          src={`${import.meta.env.BASE_URL}view/${name}`}
           title={name}
           className="absolute inset-0 size-full"
           loading="lazy"

@@ -1,11 +1,11 @@
 // Synced from shadcn/ui (apps/v4/examples/base/button-group-split.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { PlusIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   ButtonGroup,
   ButtonGroupSeparator,
-} from "@tecton/react/components/button-group"
+} from "@tecton/react/button-group"
 
 export default function ButtonGroupSplit() {
   return (

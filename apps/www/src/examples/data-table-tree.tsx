@@ -5,7 +5,7 @@ import {
   DataTable,
   DataTableActionBar,
   DataTableContent,
-} from "@tecton/react/tecton/data-table"
+} from "@tecton/react/data-table"
 
 type Asset = {
   id: string

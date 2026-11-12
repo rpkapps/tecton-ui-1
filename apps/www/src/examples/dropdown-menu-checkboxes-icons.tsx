@@ -4,7 +4,7 @@
 import * as React from "react"
 import { BellIcon, MailIcon, MessageSquareIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -12,7 +12,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 
 export function DropdownMenuCheckboxesIcons() {
   const [notifications, setNotifications] = React.useState({

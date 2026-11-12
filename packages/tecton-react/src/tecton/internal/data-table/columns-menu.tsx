@@ -16,7 +16,7 @@
 import * as React from "react"
 import { Columns3Icon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -31,7 +31,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 
 import { useTranslations } from "../i18n/translations"
 import { announce } from "../primitives/live-announcer"

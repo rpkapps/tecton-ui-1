@@ -8,7 +8,7 @@ import {
   DataTableContent,
   useDataTable,
   type DataTableProps,
-} from "@tecton/react/tecton/data-table"
+} from "@tecton/react/data-table"
 
 import { columns, layout, WELLS, type Well } from "./data-table-fixtures"
 

@@ -2,15 +2,12 @@
 
 import * as React from "react"
 
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@tecton/react/components/toggle-group"
+import { ToggleGroup, ToggleGroupItem } from "@tecton/react/toggle-group"
 import {
   createColumns,
   DataTable,
   DataTableContent,
-} from "@tecton/react/tecton/data-table"
+} from "@tecton/react/data-table"
 
 type Well = {
   id: string

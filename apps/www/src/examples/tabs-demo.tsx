@@ -5,13 +5,13 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@tecton/react/components/card"
+} from "@tecton/react/card"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@tecton/react/components/tabs"
+} from "@tecton/react/tabs"
 
 export function TabsDemo() {
   return (

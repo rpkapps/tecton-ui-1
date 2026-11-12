@@ -35,6 +35,8 @@
  *   - vendored shadcn stylesheet (src/styles/shadcn.css): present, its header names the
  *     installed shadcn version, its body is byte-identical to `shadcn/tailwind.css`,
  *     and globals.css imports the copy instead of the package
+ *   - fonts: every `--tecton-font-weight-*` value has a Figtree face imported by
+ *     globals.css, so no Tecton weight renders as a synthesized bold
  *   - the map itself: tokens/tecton.map.json matches tokens/tecton.map.schema.json, and
  *     the `:root`, `.dark` and `@theme inline` blocks of globals.css and tecton-theme.css
  *     hold exactly what the map resolves to (scripts/tokens-lib.mts, the resolution
@@ -292,6 +294,12 @@ const CONTRAST_PAIRS: [string, string, number][] = [
   ["card", "warning", 4.5],
   ["card", "info", 4.5],
   ["background", "destructive", 3],
+  // the number of a number field slider sits on its fill
+  ["number-field-fill", "foreground", 7],
+  // filled fields
+  ["input-filled", "foreground", 4.5],
+  ["input-filled-focus", "foreground", 4.5],
+  ["input-filled", "muted-foreground", 4.5],
 ];
 
 // link text (Button variant=link, tab triggers) on the surfaces it sits on,
@@ -870,6 +878,26 @@ if (resolvedMap) {
     threshold: "absent",
     status: globals.includes('@import "shadcn/tailwind.css";') ? "fail" : "pass",
     detail: globals.includes('@import "shadcn/tailwind.css";') ? "the shadcn CLI would become a consumer dependency" : undefined,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Fonts: a weight token without a loaded face would be faked by the browser
+// ---------------------------------------------------------------------------
+{
+  const globals = existsSync(GLOBALS_CSS) ? readFileSync(GLOBALS_CSS, "utf8") : "";
+  const loaded = new Set([...globals.matchAll(/@import\s+["']@fontsource\/figtree\/(\d+)\.css["']/g)].map((m) => m[1]));
+  const weights = new Set<string>();
+  for (const [name, value] of themedTokens.dark) if (name.startsWith("--tecton-font-weight-")) weights.add(value.trim());
+  for (const [name, value] of themedTokens.light) if (name.startsWith("--tecton-font-weight-")) weights.add(value.trim());
+  const missing = [...weights].filter((w) => !loaded.has(w)).sort();
+  results.push({
+    mode: "both",
+    check: "fonts: every --tecton-font-weight-* has a Figtree face in globals.css",
+    value: missing.length ? `missing ${missing.join(", ")}` : `${[...weights].sort().join(", ")} loaded`,
+    threshold: "all loaded",
+    status: weights.size && !missing.length ? "pass" : "fail",
+    detail: missing.length ? "add the weight to FONT_IMPORTS in scripts/tokens-build.mts" : undefined,
   });
 }
 

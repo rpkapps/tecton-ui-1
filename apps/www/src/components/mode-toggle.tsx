@@ -3,14 +3,14 @@
 import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 
 export function ModeToggle() {
   const { theme, setTheme } = useTheme()

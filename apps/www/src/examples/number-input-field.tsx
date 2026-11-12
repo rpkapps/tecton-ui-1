@@ -7,8 +7,8 @@ import {
   FieldDescription,
   FieldError,
   FieldLabel,
-} from "@tecton/react/components/field"
-import { NumberInput } from "@tecton/react/tecton/number-input"
+} from "@tecton/react/field"
+import { NumberInput } from "@tecton/react/number-input"
 
 const MAX_DEPTH = 6000
 

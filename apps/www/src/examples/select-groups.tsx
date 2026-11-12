@@ -8,7 +8,7 @@ import {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
+} from "@tecton/react/select"
 
 export function SelectGroups() {
   const fruits = [

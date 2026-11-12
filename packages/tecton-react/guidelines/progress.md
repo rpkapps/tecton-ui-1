@@ -1,6 +1,6 @@
 ---
 component: Progress
-module: "@tecton/react/components/progress"
+module: "@tecton/react/progress"
 family: progress
 exports: [Progress, ProgressLabel, ProgressValue, ProgressTrack, ProgressIndicator]
 notFor:

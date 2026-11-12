@@ -7,7 +7,7 @@ import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
-} from "@tecton/react/components/input-otp"
+} from "@tecton/react/input-otp"
 
 export function InputOTPFourDigits() {
   return (

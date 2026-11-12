@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Dialog,
   DialogClose,
@@ -10,24 +10,24 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@tecton/react/components/dialog"
-import { DropdownMenuItem } from "@tecton/react/components/dropdown-menu"
-import { Field, FieldGroup, FieldLabel } from "@tecton/react/components/field"
-import { Input } from "@tecton/react/components/input"
+} from "@tecton/react/dialog"
+import { DropdownMenuItem } from "@tecton/react/dropdown-menu"
+import { Field, FieldGroup, FieldLabel } from "@tecton/react/field"
+import { Input } from "@tecton/react/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
+} from "@tecton/react/select"
 import {
   createColumns,
   DataTable,
   DataTableContent,
   DataTableRowActions,
-} from "@tecton/react/tecton/data-table"
-import { NumberInput } from "@tecton/react/tecton/number-input"
+} from "@tecton/react/data-table"
+import { NumberInput } from "@tecton/react/number-input"
 
 type Status = "producing" | "shut-in" | "drilling"
 

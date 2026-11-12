@@ -1,6 +1,6 @@
 ---
 component: Breadcrumb
-module: "@tecton/react/components/breadcrumb"
+module: "@tecton/react/breadcrumb"
 family: navigation
 exports: [Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator, BreadcrumbEllipsis]
 notFor:

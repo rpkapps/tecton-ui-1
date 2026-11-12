@@ -1,6 +1,6 @@
 ---
 component: ScrollArea
-module: "@tecton/react/components/scroll-area"
+module: "@tecton/react/scroll-area"
 family: layout
 exports: [ScrollArea, ScrollBar]
 notFor:

@@ -15,8 +15,8 @@ import {
   useDataTable,
   type DataTableContentProps,
   type DataTableProps,
-} from "@tecton/react/tecton/data-table"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+} from "@tecton/react/data-table"
+import { TectonProvider } from "@tecton/react/provider"
 
 import {
   groupCellsOf,

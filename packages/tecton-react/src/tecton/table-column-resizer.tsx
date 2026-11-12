@@ -3,7 +3,7 @@
 import * as React from "react"
 import { cn } from "cn"
 
-import { useDirection } from "@tecton/react/tecton/provider"
+import { useDirection } from "@tecton/react/provider"
 
 import {
   columnResizerClassName,

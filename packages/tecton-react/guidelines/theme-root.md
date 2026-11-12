@@ -1,6 +1,6 @@
 ---
 component: ThemeRoot
-module: "@tecton/react/tecton/theme-root"
+module: "@tecton/react/theme-root"
 family: infrastructure
 exports: [ThemeRoot, themeRootVariants]
 notFor:
@@ -40,7 +40,7 @@ createRoot(element).render(<App />)
 Correct:
 
 ```tsx
-import { ThemeRoot } from "@tecton/react/tecton/theme-root"
+import { ThemeRoot } from "@tecton/react/theme-root"
 
 import "./styles/remote.css"
 

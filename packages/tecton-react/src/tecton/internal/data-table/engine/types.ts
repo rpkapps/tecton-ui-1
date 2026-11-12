@@ -7,7 +7,7 @@
 import type * as React from "react"
 import type { VariantProps } from "class-variance-authority"
 
-import type { badgeVariants } from "@tecton/react/components/badge"
+import type { badgeVariants } from "@tecton/react/badge"
 
 /** How a column's values are shown, sorted, filtered, edited and summed. */
 type DataTableColumnType = "text" | "number" | "date" | "boolean" | "options"

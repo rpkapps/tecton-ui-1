@@ -56,6 +56,7 @@ export type { DataTableColumnsMenuProps } from "./internal/data-table/columns-me
 export type { DataTableGroupByProps } from "./internal/data-table/group-by"
 export type { DataTableRowActionsProps } from "./internal/data-table/row-actions"
 export type { DataTableToolbarProps } from "./internal/data-table/toolbar"
+export type { DataTableFooterProps } from "./internal/data-table/footer"
 export type { DataTableActionBarProps } from "./internal/data-table/action-bar"
 export type { DataTablePaginationProps } from "./internal/data-table/pagination"
 export type {

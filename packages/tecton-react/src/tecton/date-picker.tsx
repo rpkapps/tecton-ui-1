@@ -5,20 +5,16 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 import { CalendarIcon, ChevronDownIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import type { Calendar } from "@tecton/react/components/calendar"
+import { Button } from "@tecton/react/button"
+import type { Calendar } from "@tecton/react/calendar"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "@tecton/react/components/input-group"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@tecton/react/components/popover"
-import { useLocale } from "@tecton/react/tecton/provider"
+} from "@tecton/react/input-group"
+import { Popover, PopoverContent, PopoverTrigger } from "@tecton/react/popover"
+import { useLocale } from "@tecton/react/provider"
 
 import { useCalendarLocale } from "./internal/calendar-locale"
 import {

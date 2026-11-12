@@ -1,7 +1,7 @@
 "use client"
 
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip"
-import { usePortalTarget } from "@tecton/react/tecton/portal"
+import { usePortalTarget } from "@tecton/react/portal"
 import { cn } from "cn"
 
 function TooltipProvider({

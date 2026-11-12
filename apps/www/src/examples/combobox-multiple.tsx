@@ -14,7 +14,7 @@ import {
   ComboboxList,
   ComboboxValue,
   useComboboxAnchor,
-} from "@tecton/react/components/combobox"
+} from "@tecton/react/combobox"
 
 const frameworks = [
   "Next.js",

@@ -1,40 +1,37 @@
 import type * as React from "react"
-import { render, screen } from "@testing-library/react"
+import { act, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it } from "vitest"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Dialog,
   DialogContent,
   DialogTitle,
   DialogTrigger,
-} from "@tecton/react/components/dialog"
+} from "@tecton/react/dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@tecton/react/components/popover"
+} from "@tecton/react/dropdown-menu"
+import { Popover, PopoverContent, PopoverTrigger } from "@tecton/react/popover"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
+} from "@tecton/react/select"
 import {
   Sheet,
   SheetContent,
   SheetTitle,
   SheetTrigger,
-} from "@tecton/react/components/sheet"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+} from "@tecton/react/sheet"
+import { TectonProvider } from "@tecton/react/provider"
+import { createToastManager, Toaster } from "@tecton/react/toast"
 
 // Every overlay takes a caller's `container` on its content part and forwards
 // `container ?? portalTarget` to its Base UI Portal (the overlay patch): the
@@ -69,6 +66,9 @@ type OverlayCase = {
   /** Opens the overlay and resolves with its popup element. */
   open: () => Promise<HTMLElement>
 }
+
+// A manager per render, so no toast outlives its case.
+let toastManager = createToastManager()
 
 async function clickOpen() {
   await userEvent.click(screen.getByRole("button", { name: "Open" }))
@@ -151,6 +151,19 @@ const overlays: OverlayCase[] = [
     open: async () => {
       await userEvent.click(screen.getByRole("combobox", { name: "Well" }))
       return screen.findByRole("listbox")
+    },
+  },
+  {
+    name: "Toast",
+    ui: (container) => {
+      toastManager = createToastManager()
+      return <Toaster toastManager={toastManager} container={container} />
+    },
+    open: async () => {
+      act(() => {
+        toastManager.add({ title: "Model saved" })
+      })
+      return screen.findByText("Model saved")
     },
   },
 ]

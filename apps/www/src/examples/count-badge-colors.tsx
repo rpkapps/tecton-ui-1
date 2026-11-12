@@ -1,4 +1,4 @@
-import { CountBadge } from "@tecton/react/tecton/count-badge"
+import { CountBadge } from "@tecton/react/count-badge"
 
 const colors = [
   "default",

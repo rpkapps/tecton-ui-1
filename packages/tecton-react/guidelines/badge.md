@@ -1,6 +1,6 @@
 ---
 component: Badge
-module: "@tecton/react/components/badge"
+module: "@tecton/react/badge"
 family: labels
 exports: [Badge]
 notFor:

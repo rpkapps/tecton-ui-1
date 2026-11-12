@@ -4,12 +4,12 @@
 import * as React from "react"
 import { ChevronsUpDown } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@tecton/react/components/collapsible"
+} from "@tecton/react/collapsible"
 
 export default function CollapsibleDemo() {
   const [isOpen, setIsOpen] = React.useState(false)

@@ -17,7 +17,7 @@ import {
   ChartContainer,
   ChartTooltip,
   type ChartConfig,
-} from "@tecton/react/components/chart"
+} from "@tecton/react/chart"
 
 import { getAxis, riskLabel } from "../data"
 import type { AxisOption, DesignPoint } from "../data"

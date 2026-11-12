@@ -1,6 +1,6 @@
 import { ArrowRightIcon } from "lucide-react"
 
-import { LinkButton } from "@tecton/react/tecton/link"
+import { LinkButton } from "@tecton/react/link"
 
 export default function LinkButtonDemo() {
   return (

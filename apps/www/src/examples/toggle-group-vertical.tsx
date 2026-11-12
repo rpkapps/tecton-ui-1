@@ -4,7 +4,7 @@ import { BoldIcon, ItalicIcon, UnderlineIcon } from "lucide-react"
 import {
   ToggleGroup,
   ToggleGroupItem,
-} from "@tecton/react/components/toggle-group"
+} from "@tecton/react/toggle-group"
 
 export function ToggleGroupVertical() {
   return (

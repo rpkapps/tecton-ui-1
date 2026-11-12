@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router"
 
-import { buttonVariants } from "@tecton/react/components/button"
+import { buttonVariants } from "@tecton/react/button"
 
 /** The 404 page inside the site chrome (header, sidebar, footer). */
 export function NotFound() {

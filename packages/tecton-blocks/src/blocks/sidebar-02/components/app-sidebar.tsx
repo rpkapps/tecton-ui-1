@@ -7,7 +7,7 @@ import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@tecton/react/components/input-group"
+} from "@tecton/react/input-group"
 import {
   Sidebar,
   SidebarContent,
@@ -16,9 +16,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@tecton/react/components/sidebar"
-import { Link } from "@tecton/react/tecton/link"
-import { useDirection } from "@tecton/react/tecton/provider"
+} from "@tecton/react/sidebar"
+import { Link } from "@tecton/react/link"
+import { useDirection } from "@tecton/react/provider"
 
 import { currentUser, navMain, navSecondary, recentProjects } from "../data"
 import { NavMain } from "./nav-main"

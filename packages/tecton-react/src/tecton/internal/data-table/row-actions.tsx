@@ -19,12 +19,12 @@ import * as React from "react"
 import { cn } from "cn"
 import { EllipsisIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 
 import { useTranslations } from "../i18n/translations"
 import { useDataTableContext, useDataTableSelector } from "./context"

@@ -1,7 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/base/checkbox-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import { Checkbox } from "@tecton/react/components/checkbox"
+import { Checkbox } from "@tecton/react/checkbox"
 import {
   Field,
   FieldContent,
@@ -9,8 +9,8 @@ import {
   FieldGroup,
   FieldLabel,
   FieldTitle,
-} from "@tecton/react/components/field"
-import { Label } from "@tecton/react/components/label"
+} from "@tecton/react/field"
+import { Label } from "@tecton/react/label"
 
 export default function CheckboxDemo() {
   return (

@@ -5,7 +5,7 @@ import * as React from "react"
 import { cn } from "cn"
 
 import { useMediaQuery } from "@/hooks/use-media-query"
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@tecton/react/components/dialog"
+} from "@tecton/react/dialog"
 import {
   Drawer,
   DrawerClose,
@@ -23,9 +23,9 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@tecton/react/components/drawer"
-import { Input } from "@tecton/react/components/input"
-import { Label } from "@tecton/react/components/label"
+} from "@tecton/react/drawer"
+import { Input } from "@tecton/react/input"
+import { Label } from "@tecton/react/label"
 
 export function DrawerDialogDemo() {
   const [open, setOpen] = React.useState(false)

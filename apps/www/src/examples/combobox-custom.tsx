@@ -8,13 +8,13 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
-} from "@tecton/react/components/combobox"
+} from "@tecton/react/combobox"
 import {
   Item,
   ItemContent,
   ItemDescription,
   ItemTitle,
-} from "@tecton/react/components/item"
+} from "@tecton/react/item"
 
 const countries = [
   { code: "", value: "", continent: "", label: "Select country" },

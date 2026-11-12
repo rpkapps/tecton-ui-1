@@ -1,6 +1,6 @@
 ---
 component: Table
-module: "@tecton/react/components/table"
+module: "@tecton/react/table"
 family: data
 exports: [Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption]
 notFor:

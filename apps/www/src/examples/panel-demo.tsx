@@ -1,13 +1,13 @@
 import { SettingsIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Panel,
   PanelActions,
   PanelContent,
   PanelHeader,
   PanelTitle,
-} from "@tecton/react/tecton/panel"
+} from "@tecton/react/panel"
 
 export default function PanelDemo() {
   return (

@@ -57,7 +57,7 @@ markdown.
 ## Usage
 
 ```tsx
-import { Message } from "@tecton/react/components/message"
+import { Message } from "@tecton/react/message"
 import {
   MessageScroller,
   MessageScrollerButton,
@@ -65,7 +65,7 @@ import {
   MessageScrollerItem,
   MessageScrollerProvider,
   MessageScrollerViewport,
-} from "@tecton/react/components/message-scroller"
+} from "@tecton/react/message-scroller"
 ```
 
 ```tsx
@@ -337,7 +337,7 @@ in any component inside the provider, including controls rendered outside the
 `MessageScroller` frame.
 
 ```tsx
-import { useMessageScroller } from "@tecton/react/components/message-scroller"
+import { useMessageScroller } from "@tecton/react/message-scroller"
 ```
 
 ```tsx
@@ -360,7 +360,7 @@ conversation. A common example is a table-of-contents or a jump menu that
 highlights the current anchored turn.
 
 ```tsx
-import { useMessageScrollerVisibility } from "@tecton/react/components/message-scroller"
+import { useMessageScrollerVisibility } from "@tecton/react/message-scroller"
 ```
 
 ```tsx
@@ -384,7 +384,7 @@ edges the viewport can still scroll toward; "at the start/end" is the negation
 scroller itself, prefer the `data-scrollable` attribute.
 
 ```tsx
-import { useMessageScrollerScrollable } from "@tecton/react/components/message-scroller"
+import { useMessageScrollerScrollable } from "@tecton/react/message-scroller"
 ```
 
 ```tsx

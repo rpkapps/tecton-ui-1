@@ -1,6 +1,6 @@
 ---
 component: AlertDialog
-module: "@tecton/react/components/alert-dialog"
+module: "@tecton/react/alert-dialog"
 family: overlays
 exports: [AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction, AlertDialogOverlay, AlertDialogPortal]
 notFor:

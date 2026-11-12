@@ -18,8 +18,8 @@ import {
   useTranslation,
   type Translations,
 } from "@/components/language-selector"
-import { Button } from "@tecton/react/components/button"
-import { ButtonGroup } from "@tecton/react/components/button-group"
+import { Button } from "@tecton/react/button"
+import { ButtonGroup } from "@tecton/react/button-group"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,7 +32,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 
 const translations: Translations = {
   en: {

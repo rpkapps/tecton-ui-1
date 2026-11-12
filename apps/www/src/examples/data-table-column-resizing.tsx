@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   createColumns,
   DataTable,
@@ -10,7 +10,7 @@ import {
   DataTableToolbar,
   useDataTable,
   type DataTablePartialView,
-} from "@tecton/react/tecton/data-table"
+} from "@tecton/react/data-table"
 
 type Run = {
   id: string

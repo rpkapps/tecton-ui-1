@@ -715,7 +715,7 @@
   }
 
   .cn-field-error {
-    @apply text-destructive text-sm;
+    @apply text-destructive text-sm leading-normal;
   }
 
   /* MARK: Hover Card */
@@ -737,11 +737,11 @@
   }
 
   .cn-input-variant-filled {
-    @apply rounded-b-none border-x-0 border-t-0 border-b-border bg-muted hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] focus-visible:border-ring focus-visible:ring-2 aria-invalid:bg-destructive/20 aria-invalid:ring-0 dark:bg-muted dark:hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] dark:aria-invalid:border-destructive autofill:[-webkit-background-clip:border-box] autofill:shadow-[inset_0_0_0_1000px_var(--muted)];
+    @apply border-transparent bg-input-filled hover:border-transparent focus-visible:border-ring focus-visible:ring-2 aria-invalid:bg-destructive/20 aria-invalid:ring-0 dark:aria-invalid:border-destructive focus:bg-input-filled-focus autofill:[-webkit-background-clip:border-box] autofill:shadow-[inset_0_0_0_1000px_var(--input-filled)];
   }
 
   .cn-input-variant-text {
-    @apply rounded-none border-x-0 border-t-0 border-b-border bg-transparent px-0 hover:border-b-foreground/60 focus-visible:border-ring focus-visible:ring-2 aria-invalid:ring-0 dark:bg-transparent dark:hover:bg-transparent;
+    @apply rounded-none border-x-0 border-t-0 border-transparent bg-transparent px-0 hover:border-transparent focus-visible:ring-0 disabled:border-border data-disabled:border-border aria-invalid:ring-0 dark:bg-transparent dark:hover:bg-transparent;
   }
 
   /* MARK: Input OTP */
@@ -1081,11 +1081,11 @@
   }
 
   .cn-select-trigger-variant-filled {
-    @apply rounded-b-none border-x-0 border-t-0 border-b-border bg-muted hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] focus-visible:border-ring focus-visible:ring-2 aria-invalid:bg-destructive/20 aria-invalid:ring-0 dark:bg-muted dark:hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] dark:aria-invalid:border-destructive;
+    @apply border-transparent bg-input-filled hover:border-transparent focus-visible:border-ring focus-visible:ring-2 aria-invalid:bg-destructive/20 aria-invalid:ring-0 dark:aria-invalid:border-destructive focus-visible:bg-input-filled-focus data-popup-open:bg-input-filled-focus;
   }
 
   .cn-select-trigger-variant-text {
-    @apply rounded-none border-x-0 border-t-0 border-b-border bg-transparent pl-0 hover:border-b-foreground/60 focus-visible:border-ring focus-visible:ring-2 aria-invalid:ring-0 dark:bg-transparent dark:hover:bg-transparent;
+    @apply rounded-none border-x-0 border-t-0 border-transparent bg-transparent pl-0 hover:border-transparent focus-visible:ring-0 disabled:border-border data-disabled:border-border aria-invalid:ring-0 dark:bg-transparent dark:hover:bg-transparent;
   }
 
   .cn-select-value {
@@ -1338,9 +1338,9 @@
   }
 
   /* MARK: Toast */
-  /* No .cn-toast: sonner takes a class only through toastOptions, which the
-     registry build never inlines. The Tecton toast is styled by the CSS
-     variables the Toaster sets (tecton.patch, sonner.tsx). */
+  .cn-toast {
+    @apply rounded-md data-[type=success]:border-success data-[type=success]:text-success data-[type=info]:border-info data-[type=info]:text-info data-[type=warning]:border-warning data-[type=warning]:text-warning data-[type=error]:border-destructive data-[type=error]:text-destructive;
+  }
 
   /* MARK: Switch */
   .cn-switch {
@@ -1448,11 +1448,11 @@
   }
 
   .cn-textarea-variant-filled {
-    @apply rounded-b-none border-x-0 border-t-0 border-b-border bg-muted hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] focus-visible:border-ring focus-visible:ring-2 aria-invalid:bg-destructive/20 aria-invalid:ring-0 dark:bg-muted dark:hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] dark:aria-invalid:border-destructive autofill:[-webkit-background-clip:border-box] autofill:shadow-[inset_0_0_0_1000px_var(--muted)];
+    @apply border-transparent bg-input-filled hover:border-transparent focus-visible:border-ring focus-visible:ring-2 aria-invalid:bg-destructive/20 aria-invalid:ring-0 dark:aria-invalid:border-destructive focus:bg-input-filled-focus autofill:[-webkit-background-clip:border-box] autofill:shadow-[inset_0_0_0_1000px_var(--input-filled)];
   }
 
   .cn-textarea-variant-text {
-    @apply rounded-none border-x-0 border-t-0 border-b-border bg-transparent px-0 hover:border-b-foreground/60 focus-visible:border-ring focus-visible:ring-2 aria-invalid:ring-0 dark:bg-transparent dark:hover:bg-transparent;
+    @apply rounded-none border-x-0 border-t-0 border-transparent bg-transparent px-0 hover:border-transparent focus-visible:ring-0 disabled:border-border data-disabled:border-border aria-invalid:ring-0 dark:bg-transparent dark:hover:bg-transparent;
   }
 
   /* MARK: Toggle */
@@ -1778,6 +1778,83 @@
 
   .cn-questionnaire-actions {
     @apply gap-2 sm:min-h-8;
+  }
+
+  /* MARK: Trace */
+  .cn-trace {
+    @apply gap-2 *:has-[>[data-slot=trace-line]]:rounded-md *:has-[>[data-slot=trace-line]]:outline-none *:has-[>[data-slot=trace-line]]:focus-visible:ring-2 *:has-[>[data-slot=trace-line]]:focus-visible:ring-ring;
+  }
+
+  .cn-trace-collapsible-trigger {
+    @apply gap-1 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring;
+  }
+
+  .cn-trace-line {
+    @apply gap-2 text-sm;
+  }
+
+  .cn-trace-icon {
+    @apply size-4 [&_svg:not([class*='size-'])]:size-4 [[data-slot=trace-title]~&]:-ml-1;
+  }
+
+  .cn-trace-collapsible-content {
+    @apply duration-200;
+  }
+
+  .cn-trace-collapsible-content-inner {
+    @apply mt-2 mb-1 ml-[calc(--spacing(2)-1px)] border-l border-border pr-1 pl-4 leading-relaxed;
+  }
+
+  /* MARK: Code Block */
+  .cn-code-block {
+    @apply rounded-md text-sm data-[size=sm]:text-xs has-[>[data-slot=code-block-content]:focus-visible]:ring-2 has-[>[data-slot=code-block-content]:focus-visible]:ring-ring;
+  }
+
+  .cn-code-block-variant-default {
+    @apply border border-border bg-card text-foreground has-[>[data-slot=code-block-content]:focus-visible]:border-ring;
+  }
+
+  .cn-code-block-variant-destructive {
+    @apply border border-destructive bg-card text-destructive;
+  }
+
+  .cn-code-block-header {
+    @apply gap-2 px-4 pt-4 text-muted-foreground group-data-[variant=destructive]/code-block:text-destructive group-data-[size=sm]/code-block:px-3 group-data-[size=sm]/code-block:pt-3;
+  }
+
+  .cn-code-block-footer {
+    @apply gap-2 px-4 pb-4 text-muted-foreground group-data-[size=sm]/code-block:px-3 group-data-[size=sm]/code-block:pb-3;
+  }
+
+  .cn-code-block-title {
+    @apply font-sans text-sm font-medium text-foreground group-data-[variant=destructive]/code-block:text-destructive *:[svg]:me-1.5 [&_svg:not([class*='size-'])]:size-4 group-data-[size=sm]/code-block:text-xs group-data-[size=sm]/code-block:[&_svg:not([class*='size-'])]:size-3.5;
+  }
+
+  .cn-code-block-actions {
+    @apply -my-1 -me-1.5 gap-1 [[data-slot=code-block]>&]:m-0 [[data-slot=code-block]>&]:top-3 [[data-slot=code-block]>&]:end-3 group-data-[size=sm]/code-block:[[data-slot=code-block]>&]:top-2 group-data-[size=sm]/code-block:[[data-slot=code-block]>&]:end-2 [[data-slot=code-block]>&]:*:[button]:bg-card [[data-slot=code-block]>&]:*:[button]:ring-1 [[data-slot=code-block]>&]:*:[button]:ring-border;
+  }
+
+  .cn-code-block-copy-button {
+  }
+
+  .cn-code-block-content {
+    @apply px-4 py-4 leading-relaxed outline-none group-has-data-[slot=code-block-header]/code-block:pt-2 group-has-data-[slot=code-block-footer]/code-block:pb-2 group-data-[size=sm]/code-block:px-3 group-data-[size=sm]/code-block:py-3 group-data-[size=sm]/code-block:group-has-data-[slot=code-block-header]/code-block:pt-1.5;
+  }
+
+  .cn-code-block-line {
+    @apply -mx-4 px-4 in-data-numbered:gap-x-3 before:min-w-6 before:text-end before:text-muted-foreground after:start-1 after:text-muted-foreground group-data-[size=sm]/code-block:-mx-3 group-data-[size=sm]/code-block:px-3;
+  }
+
+  .cn-code-block-line-variant-highlighted {
+    @apply bg-muted;
+  }
+
+  .cn-code-block-line-variant-added {
+    @apply bg-success/10 after:text-success after:content-['+'] dark:bg-success/20;
+  }
+
+  .cn-code-block-line-variant-removed {
+    @apply bg-destructive/10 after:text-destructive after:content-['−'] dark:bg-destructive/20;
   }
 
   /* MARK: Message Scroller */

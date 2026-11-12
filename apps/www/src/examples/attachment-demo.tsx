@@ -10,8 +10,8 @@ import {
   AttachmentGroup,
   AttachmentMedia,
   AttachmentTitle,
-} from "@tecton/react/components/attachment"
-import { Spinner } from "@tecton/react/components/spinner"
+} from "@tecton/react/attachment"
+import { Spinner } from "@tecton/react/spinner"
 
 const images = [
   {

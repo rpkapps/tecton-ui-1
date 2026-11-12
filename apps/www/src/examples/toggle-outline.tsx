@@ -1,7 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/base/toggle-outline.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { BoldIcon, ItalicIcon } from "lucide-react"
 
-import { Toggle } from "@tecton/react/components/toggle"
+import { Toggle } from "@tecton/react/toggle"
 
 export function ToggleOutline() {
   return (

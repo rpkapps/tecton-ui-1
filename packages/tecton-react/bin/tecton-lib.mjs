@@ -277,7 +277,7 @@ export function search(
 
 /**
  * Resolves `alert-dialog`, `AlertDialog`, `AlertDialogAction`, `toast`, a
- * module path (`@tecton/react/components/alert-dialog`) or a docs URL
+ * module path (`@tecton/react/alert-dialog`) or a docs URL
  * (`https://…/docs/components/alert-dialog/#usage`) to an id.
  */
 export function resolveId(index, key) {

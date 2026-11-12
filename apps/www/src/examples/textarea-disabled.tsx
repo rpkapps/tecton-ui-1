@@ -1,6 +1,6 @@
 // Synced from shadcn/ui (apps/v4/examples/base/textarea-disabled.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Field, FieldLabel } from "@tecton/react/components/field"
-import { Textarea } from "@tecton/react/components/textarea"
+import { Field, FieldLabel } from "@tecton/react/field"
+import { Textarea } from "@tecton/react/textarea"
 
 export function TextareaDisabled() {
   return (

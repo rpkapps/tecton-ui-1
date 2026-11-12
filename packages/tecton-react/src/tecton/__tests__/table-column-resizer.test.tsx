@@ -3,8 +3,8 @@ import { act, fireEvent, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
-import { TectonProvider } from "@tecton/react/tecton/provider"
-import { TableColumnResizer } from "@tecton/react/tecton/table-column-resizer"
+import { TectonProvider } from "@tecton/react/provider"
+import { TableColumnResizer } from "@tecton/react/table-column-resizer"
 
 function Resizer(
   props: Partial<React.ComponentProps<typeof TableColumnResizer>>

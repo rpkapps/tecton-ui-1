@@ -10,14 +10,14 @@ import userEvent from "@testing-library/user-event"
 import { renderToString } from "react-dom/server"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-import { Chip, ChipGroup, ChipList } from "@tecton/react/tecton/chip"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+import { Chip, ChipGroup, ChipList } from "@tecton/react/chip"
+import { TectonProvider } from "@tecton/react/provider"
 import {
   TreeView,
   TreeViewCollection,
   TreeViewItem,
   TreeViewItemContent,
-} from "@tecton/react/tecton/tree-view"
+} from "@tecton/react/tree-view"
 
 import { ChipPrimitive } from "../internal/primitives/chip/index"
 import { edgeKey, nextKey } from "../internal/primitives/navigation"

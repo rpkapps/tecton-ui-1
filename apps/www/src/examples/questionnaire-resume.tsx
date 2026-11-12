@@ -2,9 +2,8 @@
 "use client"
 
 import * as React from "react"
-import { toast } from "sonner"
-
-import { Button } from "@tecton/react/components/button"
+import { toast } from "@tecton/react/toast"
+import { Button } from "@tecton/react/button"
 import {
   Questionnaire,
   QuestionnaireActions,
@@ -19,7 +18,7 @@ import {
   QuestionnaireProgress,
   QuestionnaireSubmit,
   QuestionnaireTitle,
-} from "@tecton/react/components/questionnaire"
+} from "@tecton/react/questionnaire"
 
 const items = [
   { name: "change", required: true },
@@ -38,9 +37,7 @@ export function QuestionnaireResume() {
       notes: formData.get("notes"),
     }
 
-    toast("Draft updated", {
-      description: `Migration: ${answers.change ?? "None"} · Verification: ${answers.verification.join(", ") || "None"} · Notes: ${answers.notes || "None"}`,
-    })
+    toast.add({ title: "Draft updated", description: `Migration: ${answers.change ?? "None"} · Verification: ${answers.verification.join(", ") || "None"} · Notes: ${answers.notes || "None"}` })
   }
 
   return (
@@ -48,7 +45,7 @@ export function QuestionnaireResume() {
       className="mx-auto max-w-md"
       defaultItem="verification"
       items={items}
-      onReset={() => toast("Saved answers restored")}
+      onReset={() => toast.add({ title: "Saved answers restored" })}
       onSubmit={handleSubmit}
     >
       <QuestionnaireProgress />

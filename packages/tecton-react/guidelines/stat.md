@@ -1,6 +1,6 @@
 ---
 component: Stat
-module: "@tecton/react/tecton/stat"
+module: "@tecton/react/stat"
 family: data
 exports: [Stat, StatLabel, StatValue, StatDelta, StatHelp, StatGroup]
 notFor:

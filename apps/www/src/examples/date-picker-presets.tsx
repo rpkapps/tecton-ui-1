@@ -2,8 +2,8 @@
 
 import * as React from "react"
 
-import { Field, FieldLabel } from "@tecton/react/components/field"
-import { DateRangePicker } from "@tecton/react/tecton/date-picker"
+import { Field, FieldLabel } from "@tecton/react/field"
+import { DateRangePicker } from "@tecton/react/date-picker"
 
 export default function DatePickerPresets() {
   // Production is reported up to yesterday: "Today" is disabled.

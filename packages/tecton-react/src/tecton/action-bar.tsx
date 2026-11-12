@@ -5,9 +5,9 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 import { XIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import { Toolbar, type ToolbarProps } from "@tecton/react/tecton/overflow"
-import { useLocale } from "@tecton/react/tecton/provider"
+import { Button } from "@tecton/react/button"
+import { Toolbar, type ToolbarProps } from "@tecton/react/overflow"
+import { useLocale } from "@tecton/react/provider"
 
 import { useTranslations } from "./internal/i18n/translations"
 

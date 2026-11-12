@@ -30,12 +30,8 @@ import * as React from "react"
 import { cn } from "cn"
 import { ArrowDownIcon, ArrowUpDownIcon, ArrowUpIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import {
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@tecton/react/components/table"
+import { Button } from "@tecton/react/button"
+import { TableHead, TableHeader, TableRow } from "@tecton/react/table"
 
 import {
   columnResizerClassName,

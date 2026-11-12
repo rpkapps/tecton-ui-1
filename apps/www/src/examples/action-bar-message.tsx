@@ -2,15 +2,15 @@
 
 import * as React from "react"
 
-import { Button } from "@tecton/react/components/button"
-import { Field, FieldLabel } from "@tecton/react/components/field"
-import { Input } from "@tecton/react/components/input"
+import { Button } from "@tecton/react/button"
+import { Field, FieldLabel } from "@tecton/react/field"
+import { Input } from "@tecton/react/input"
 import {
   ActionBar,
   ActionBarActions,
   ActionBarMessage,
-} from "@tecton/react/tecton/action-bar"
-import { OverflowItem } from "@tecton/react/tecton/overflow"
+} from "@tecton/react/action-bar"
+import { OverflowItem } from "@tecton/react/overflow"
 
 const initial = { name: "34/10-A-12", operator: "Equinor" }
 

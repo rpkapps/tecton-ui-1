@@ -10,12 +10,8 @@
 import * as React from "react"
 import { InfoIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@tecton/react/components/popover"
+import { Button } from "@tecton/react/button"
+import { Popover, PopoverContent, PopoverTrigger } from "@tecton/react/popover"
 
 import { useTranslations } from "../i18n/translations"
 

@@ -2,12 +2,8 @@
 
 import * as React from "react"
 
-import { Checkbox } from "@tecton/react/components/checkbox"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@tecton/react/components/tooltip"
+import { Checkbox } from "@tecton/react/checkbox"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@tecton/react/tooltip"
 
 import { useTranslations } from "../i18n/translations"
 import { useStore } from "../store"

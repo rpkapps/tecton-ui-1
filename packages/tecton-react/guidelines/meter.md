@@ -1,6 +1,6 @@
 ---
 component: Meter
-module: "@tecton/react/tecton/meter"
+module: "@tecton/react/meter"
 family: progress
 exports: [Meter]
 notFor:

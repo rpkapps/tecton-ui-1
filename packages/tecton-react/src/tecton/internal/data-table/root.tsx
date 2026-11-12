@@ -31,7 +31,7 @@
 import * as React from "react"
 import { cn } from "cn"
 
-import { useLocale } from "@tecton/react/tecton/provider"
+import { useLocale } from "@tecton/react/provider"
 
 import { useTranslations } from "../i18n/translations"
 import {

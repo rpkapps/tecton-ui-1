@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/base/field-responsive.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Field,
   FieldContent,
@@ -8,8 +8,8 @@ import {
   FieldLabel,
   FieldLegend,
   FieldSet,
-} from "@tecton/react/components/field"
-import { Input } from "@tecton/react/components/input"
+} from "@tecton/react/field"
+import { Input } from "@tecton/react/input"
 
 export function FieldResponsive() {
   return (

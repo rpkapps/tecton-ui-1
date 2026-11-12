@@ -6,14 +6,14 @@ import {
   FieldDescription,
   FieldError,
   FieldLabel,
-} from "@tecton/react/components/field"
+} from "@tecton/react/field"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
+} from "@tecton/react/select"
 
 import { Caption, Matrix, Page, Section } from "./matrix"
 

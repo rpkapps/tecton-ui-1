@@ -1,7 +1,7 @@
 import { createFileRoute, getRouteApi, Outlet } from "@tanstack/react-router"
 import { useFumadocsLoader } from "fumadocs-core/source/client"
 
-import { SidebarProvider } from "@tecton/react/components/sidebar"
+import { SidebarProvider } from "@tecton/react/sidebar"
 
 import { DocsSidebar } from "@/components/docs-sidebar"
 

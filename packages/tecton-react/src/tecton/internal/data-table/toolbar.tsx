@@ -15,12 +15,12 @@
  */
 import * as React from "react"
 
-import { DropdownMenuItem } from "@tecton/react/components/dropdown-menu"
+import { DropdownMenuItem } from "@tecton/react/dropdown-menu"
 import {
   OverflowItem,
   Toolbar,
   type ToolbarProps,
-} from "@tecton/react/tecton/overflow"
+} from "@tecton/react/overflow"
 
 import { useTranslations } from "../i18n/translations"
 import { useDataTableContext } from "./context"

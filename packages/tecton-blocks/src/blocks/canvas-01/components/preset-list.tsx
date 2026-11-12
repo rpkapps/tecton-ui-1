@@ -11,26 +11,22 @@ import {
   TrashIcon,
 } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
+import { Badge } from "@tecton/react/badge"
+import { Button } from "@tecton/react/button"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@tecton/react/components/collapsible"
+} from "@tecton/react/collapsible"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-} from "@tecton/react/components/sidebar"
-import { useDirection } from "@tecton/react/tecton/provider"
+} from "@tecton/react/dropdown-menu"
+import { Sidebar, SidebarContent, SidebarGroup } from "@tecton/react/sidebar"
+import { useDirection } from "@tecton/react/provider"
 
 import { presets as defaultPresets } from "../data"
 import type { PresetStatus, ViewPreset } from "../data"

@@ -3,19 +3,15 @@ import { render, renderHook, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it } from "vitest"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Dialog,
   DialogContent,
   DialogTitle,
   DialogTrigger,
-} from "@tecton/react/components/dialog"
-import {
-  TectonProvider,
-  useDirection,
-  useLocale,
-} from "@tecton/react/tecton/provider"
-import { ThemeRoot } from "@tecton/react/tecton/theme-root"
+} from "@tecton/react/dialog"
+import { TectonProvider, useDirection, useLocale } from "@tecton/react/provider"
+import { ThemeRoot } from "@tecton/react/theme-root"
 
 function root() {
   return document.querySelector<HTMLElement>('[data-slot="theme-root"]')!

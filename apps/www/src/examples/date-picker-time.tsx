@@ -1,8 +1,8 @@
 "use client"
 
-import { Field, FieldGroup, FieldLabel } from "@tecton/react/components/field"
-import { Input } from "@tecton/react/components/input"
-import { DatePicker } from "@tecton/react/tecton/date-picker"
+import { Field, FieldGroup, FieldLabel } from "@tecton/react/field"
+import { Input } from "@tecton/react/input"
+import { DatePicker } from "@tecton/react/date-picker"
 
 export default function DatePickerTime() {
   return (

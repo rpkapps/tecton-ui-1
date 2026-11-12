@@ -37,20 +37,20 @@ import {
   ChevronsRightIcon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
-} from "@tecton/react/components/pagination"
+} from "@tecton/react/pagination"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
-import { NumberInput } from "@tecton/react/tecton/number-input"
+} from "@tecton/react/select"
+import { NumberInput } from "@tecton/react/number-input"
 
 import { useTranslations } from "../i18n/translations"
 import {

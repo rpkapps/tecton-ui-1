@@ -3,13 +3,10 @@
 import * as React from "react"
 import { cn } from "cn"
 import { CheckIcon } from "lucide-react"
-import { toast } from "sonner"
+import { toast } from "@tecton/react/toast"
 
-import { Button } from "@tecton/react/components/button"
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@tecton/react/components/toggle-group"
+import { Button } from "@tecton/react/button"
+import { ToggleGroup, ToggleGroupItem } from "@tecton/react/toggle-group"
 
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
 
@@ -92,7 +89,7 @@ function Swatch({
  * table follows the site's colour mode. Click a cell to copy the Tailwind
  * class, the CSS variable or the current mode's colour value; hover for all
  * of them. Generated from tokens/tecton.map.json + registry/theme.json.
- * `feedback` announces a copy inline (default) or as a sonner toast.
+ * `feedback` announces a copy inline (default) or as a toast.
  */
 export function PaletteTable({
   className,
@@ -120,7 +117,7 @@ export function PaletteTable({
     const isDark = document.documentElement.classList.contains("dark")
     const text = copyText(name, mode, isDark)
     if (!(await copyToClipboard(text))) return
-    if (feedback === "toast") toast(`Copied ${text}`)
+    if (feedback === "toast") toast.add({ title: `Copied ${text}` })
     setCopied({ name, text })
     if (timer.current) clearTimeout(timer.current)
     timer.current = setTimeout(() => setCopied(null), 2000)

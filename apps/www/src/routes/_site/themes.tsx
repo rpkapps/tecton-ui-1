@@ -5,35 +5,23 @@ import { createFileRoute } from "@tanstack/react-router"
 import { InfoIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@tecton/react/components/alert"
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
-import { Checkbox } from "@tecton/react/components/checkbox"
-import { Input } from "@tecton/react/components/input"
-import { Label } from "@tecton/react/components/label"
-import { Switch } from "@tecton/react/components/switch"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@tecton/react/components/tabs"
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@tecton/react/components/toggle-group"
-import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
-import { CopyButton } from "@tecton/react/tecton/copy-button"
+import { Alert, AlertDescription, AlertTitle } from "@tecton/react/alert"
+import { Badge } from "@tecton/react/badge"
+import { Button } from "@tecton/react/button"
+import { Checkbox } from "@tecton/react/checkbox"
+import { Input } from "@tecton/react/input"
+import { Label } from "@tecton/react/label"
+import { Switch } from "@tecton/react/switch"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecton/react/tabs"
+import { ToggleGroup, ToggleGroupItem } from "@tecton/react/toggle-group"
+import { ColorSwatch } from "@tecton/react/color-swatch"
+import { CopyButton } from "@tecton/react/copy-button"
 import {
   PageHeader,
   PageHeaderContent,
   PageHeaderDescription,
   PageHeaderTitle,
-} from "@tecton/react/tecton/page-header"
+} from "@tecton/react/page-header"
 
 import { CodeBlock } from "@/components/code-block"
 import { HeroPreview } from "@/components/hero-preview"

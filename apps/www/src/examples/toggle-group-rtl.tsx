@@ -10,7 +10,7 @@ import {
 import {
   ToggleGroup,
   ToggleGroupItem,
-} from "@tecton/react/components/toggle-group"
+} from "@tecton/react/toggle-group"
 
 const translations: Translations = {
   en: {

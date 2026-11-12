@@ -5,13 +5,13 @@ import {
   Bubble,
   BubbleContent,
   BubbleReactions,
-} from "@tecton/react/components/bubble"
-import { Button } from "@tecton/react/components/button"
+} from "@tecton/react/bubble"
+import { Button } from "@tecton/react/button"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@tecton/react/components/tooltip"
+} from "@tecton/react/tooltip"
 
 export function BubbleTooltipDemo() {
   return (

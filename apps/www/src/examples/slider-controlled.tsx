@@ -3,8 +3,8 @@
 
 import * as React from "react"
 
-import { Label } from "@tecton/react/components/label"
-import { Slider } from "@tecton/react/components/slider"
+import { Label } from "@tecton/react/label"
+import { Slider } from "@tecton/react/slider"
 
 export function SliderControlled() {
   const [value, setValue] = React.useState([0.3, 0.7])

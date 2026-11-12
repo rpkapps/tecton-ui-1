@@ -3,8 +3,8 @@
 import * as React from "react"
 import { cn } from "cn"
 
-import { Button } from "@tecton/react/components/button"
-import { Separator } from "@tecton/react/components/separator"
+import { Button } from "@tecton/react/button"
+import { Separator } from "@tecton/react/separator"
 
 import { CodeBlock } from "@/components/code-block"
 import { loadExampleSource } from "@/lib/examples"

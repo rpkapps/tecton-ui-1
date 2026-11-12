@@ -3,8 +3,8 @@
 import * as React from "react"
 import { HomeIcon } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
+import { Badge } from "@tecton/react/badge"
+import { Button } from "@tecton/react/button"
 import { LogCurveIcon } from "@tecton/react/icons/log-curve"
 import { OilRigOffshoreIcon } from "@tecton/react/icons/oil-rig-offshore"
 import { TrajectoryIcon } from "@tecton/react/icons/trajectory"
@@ -17,7 +17,7 @@ import {
   DocumentTabsLabel,
   DocumentTabsList,
   DocumentTabsTrigger,
-} from "@tecton/react/tecton/document-tabs"
+} from "@tecton/react/document-tabs"
 
 type View = { id: string; name: string; kind: "overview" | "logs" | "path" }
 type Well = { id: string; name: string; field: string; views: Array<View> }

@@ -7,7 +7,7 @@ import {
   createColumns,
   DataTable,
   DataTableContent,
-} from "@tecton/react/tecton/data-table"
+} from "@tecton/react/data-table"
 
 import { loadFeature, useFeature } from "../internal/data-table/lazy"
 

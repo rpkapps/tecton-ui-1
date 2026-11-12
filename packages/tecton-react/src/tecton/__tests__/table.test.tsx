@@ -13,7 +13,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
+} from "@tecton/react/table"
 
 /**
  * The size and stripe classes respond to the table's `data-size` /

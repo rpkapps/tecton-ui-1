@@ -1,6 +1,6 @@
 ---
 component: Combobox
-module: "@tecton/react/components/combobox"
+module: "@tecton/react/combobox"
 family: selection
 exports: [Combobox, ComboboxInput, ComboboxContent, ComboboxList, ComboboxItem, ComboboxGroup, ComboboxLabel, ComboboxEmpty, ComboboxSeparator, ComboboxChips, ComboboxChip, ComboboxChipsInput, ComboboxCollection, ComboboxTrigger, ComboboxValue, useComboboxAnchor]
 notFor:

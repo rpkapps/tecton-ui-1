@@ -7,9 +7,9 @@
  *
  * One guideline file per module becomes one "## Usage guidelines" section:
  *
- *   @tecton/react/components/badge -> content/docs/components/badge.mdx
- *   @tecton/react/tecton/chip      -> content/docs/tecton/chip.mdx
- *   @tecton/react/tecton/use-x     -> content/docs/hooks/use-x.mdx   (Tecton hooks)
+ *   @tecton/react/badge -> content/docs/components/badge.mdx
+ *   @tecton/react/chip      -> content/docs/tecton/chip.mdx
+ *   @tecton/react/use-x     -> content/docs/hooks/use-x.mdx   (Tecton hooks)
  *
  * A guideline whose `docs` names a whole page (`docs: components/data-table`)
  * renders into that page instead; one that names a section (`…#resizing`)

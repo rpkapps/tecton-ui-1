@@ -1,6 +1,6 @@
 ---
 component: Panel
-module: "@tecton/react/tecton/panel"
+module: "@tecton/react/panel"
 family: surfaces
 exports: [Panel, PanelHeader, PanelTitle, PanelDescription, PanelActions, PanelContent, PanelFooter]
 notFor:

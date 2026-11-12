@@ -15,13 +15,13 @@
  */
 import * as React from "react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   ActionBar,
   ActionBarActions,
   ActionBarSelection,
   type ActionBarProps,
-} from "@tecton/react/tecton/action-bar"
+} from "@tecton/react/action-bar"
 
 import { useTranslations } from "../i18n/translations"
 import {

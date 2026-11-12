@@ -1,6 +1,6 @@
 ---
 component: Switch
-module: "@tecton/react/components/switch"
+module: "@tecton/react/switch"
 family: forms
 exports: [Switch]
 notFor:

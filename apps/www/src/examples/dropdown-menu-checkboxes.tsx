@@ -3,7 +3,7 @@
 
 import * as React from "react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -11,7 +11,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 
 export function DropdownMenuCheckboxes() {
   const [showStatusBar, setShowStatusBar] = React.useState(true)

@@ -16,8 +16,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+} from "@tecton/react/table"
+import { TectonProvider } from "@tecton/react/provider"
 
 import { DataTableSelectionCheckbox } from "../internal/data-table/selection-checkbox"
 import {

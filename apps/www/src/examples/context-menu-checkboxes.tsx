@@ -5,7 +5,7 @@ import {
   ContextMenuContent,
   ContextMenuGroup,
   ContextMenuTrigger,
-} from "@tecton/react/components/context-menu"
+} from "@tecton/react/context-menu"
 
 export function ContextMenuCheckboxes() {
   return (

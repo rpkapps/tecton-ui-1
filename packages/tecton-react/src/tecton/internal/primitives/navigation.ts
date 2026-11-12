@@ -7,7 +7,7 @@
  */
 import * as React from "react"
 
-import { useLocale } from "@tecton/react/tecton/provider"
+import { useLocale } from "@tecton/react/provider"
 
 /**
  * The key `step` places from `from` (or the first / last when `from` is

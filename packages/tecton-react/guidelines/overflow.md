@@ -1,6 +1,6 @@
 ---
 component: Overflow
-module: "@tecton/react/tecton/overflow"
+module: "@tecton/react/overflow"
 family: presentation
 exports: [Overflow, Toolbar, OverflowItem, OverflowLabel, OverflowGroup, OverflowDivider, OverflowSpacer, OverflowMenu, useIsOverflowItemVisible]
 notFor:

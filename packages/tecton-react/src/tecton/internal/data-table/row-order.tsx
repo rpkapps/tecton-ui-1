@@ -22,7 +22,7 @@ import * as React from "react"
 import { cn } from "cn"
 import { GripVerticalIcon } from "lucide-react"
 
-import { buttonVariants } from "@tecton/react/components/button"
+import { buttonVariants } from "@tecton/react/button"
 
 import { useTranslations } from "../i18n/translations"
 import type { ListDropPlace } from "../primitives/drag-and-drop/list-strategy"

@@ -2,7 +2,7 @@
 import * as React from "react"
 import Image from "@/components/shims/image"
 
-import { ScrollArea, ScrollBar } from "@tecton/react/components/scroll-area"
+import { ScrollArea, ScrollBar } from "@tecton/react/scroll-area"
 
 export interface Artwork {
   artist: string

@@ -7,7 +7,7 @@ import {
   DataTableContent,
   DataTableGroupBy,
   DataTableToolbar,
-} from "@tecton/react/tecton/data-table"
+} from "@tecton/react/data-table"
 
 type Allocation = {
   id: string

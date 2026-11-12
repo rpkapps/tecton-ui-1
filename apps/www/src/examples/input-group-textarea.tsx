@@ -7,7 +7,7 @@ import {
   InputGroupButton,
   InputGroupText,
   InputGroupTextarea,
-} from "@tecton/react/components/input-group"
+} from "@tecton/react/input-group"
 
 export default function InputGroupTextareaExample() {
   return (

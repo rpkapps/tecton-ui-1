@@ -10,7 +10,7 @@ import * as React from "react"
  *
  * The module stays in the package `exports` map only because the built
  * overlay components import it by package name
- * (`@tecton/react/tecton/portal`): a host and a remote sharing the
+ * (`@tecton/react/portal`): a host and a remote sharing the
  * `@tecton/react/` prefix then read one portal context.
  *
  * Every overlay passes the resolved container straight to its primitive's

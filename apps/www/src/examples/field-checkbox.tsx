@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/base/field-checkbox.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Checkbox } from "@tecton/react/components/checkbox"
+import { Checkbox } from "@tecton/react/checkbox"
 import {
   Field,
   FieldContent,
@@ -9,7 +9,7 @@ import {
   FieldLegend,
   FieldSeparator,
   FieldSet,
-} from "@tecton/react/components/field"
+} from "@tecton/react/field"
 
 export function FieldCheckbox() {
   return (

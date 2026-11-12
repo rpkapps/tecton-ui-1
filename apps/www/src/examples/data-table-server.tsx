@@ -11,7 +11,7 @@ import {
   DataTablePagination,
   type DataTableAllMatching,
   type DataTableSort,
-} from "@tecton/react/tecton/data-table"
+} from "@tecton/react/data-table"
 
 type Well = {
   id: string

@@ -1,6 +1,6 @@
 ---
 component: Item
-module: "@tecton/react/components/item"
+module: "@tecton/react/item"
 family: surfaces
 exports: [Item, ItemGroup, ItemSeparator, ItemHeader, ItemMedia, ItemContent, ItemTitle, ItemDescription, ItemActions, ItemFooter]
 notFor:

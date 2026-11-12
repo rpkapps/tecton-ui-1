@@ -4,7 +4,7 @@ import * as React from "react"
 import { cn } from "cn"
 import { DownloadIcon, PlusIcon, UploadIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   PageHeader,
   PageHeaderActions,
@@ -12,7 +12,7 @@ import {
   PageHeaderDescription,
   PageHeaderEyebrow,
   PageHeaderTitle,
-} from "@tecton/react/tecton/page-header"
+} from "@tecton/react/page-header"
 
 import { emptyFilter, WellsFilterBar } from "./components/wells-filter-bar"
 import type { WellsFilter } from "./components/wells-filter-bar"

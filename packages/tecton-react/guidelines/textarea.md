@@ -1,6 +1,6 @@
 ---
 component: Textarea
-module: "@tecton/react/components/textarea"
+module: "@tecton/react/textarea"
 family: forms
 exports: [Textarea]
 notFor:

@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/base/slider-vertical.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Slider } from "@tecton/react/components/slider"
+import { Slider } from "@tecton/react/slider"
 
 export function SliderVertical() {
   return (

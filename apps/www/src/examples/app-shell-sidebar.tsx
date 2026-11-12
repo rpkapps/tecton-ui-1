@@ -1,6 +1,6 @@
 import { HexagonIcon, SettingsIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   AppShell,
   AppShellActions,
@@ -10,12 +10,12 @@ import {
   AppShellMain,
   AppShellNav,
   AppShellSidebar,
-} from "@tecton/react/tecton/app-shell"
+} from "@tecton/react/app-shell"
 import {
   TreeView,
   TreeViewItem,
   TreeViewItemContent,
-} from "@tecton/react/tecton/tree-view"
+} from "@tecton/react/tree-view"
 
 export default function AppShellSidebarExample() {
   return (

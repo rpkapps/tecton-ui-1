@@ -1,6 +1,6 @@
 {
   "name": "@tecton/react",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "type": "module",
   "sideEffects": [
     "**/*.css"
@@ -13,6 +13,7 @@
     "prepack": "pnpm build",
     "exports:build": "bun run scripts/exports-build.mts",
     "exports:check": "bun run scripts/exports-build.mts --check",
+    "consumer:check": "bun run scripts/consumer-check.mts",
     "lint": "eslint",
     "format": "prettier --write --ignore-path ../../.prettierignore \"**/*.{ts,tsx,mjs}\"",
     "typecheck": "tsc --noEmit",
@@ -45,11 +46,10 @@
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.5.0",
     "lucide-react": "^1.45.0",
-    "next-themes": "^0.4.6",
-    "react-day-picker": "^10.0.1",
+    "react-day-picker": "^10.0.2",
     "react-resizable-panels": "^4.12.4",
     "recharts": "3.8.0",
-    "sonner": "^2.0.8",
+    "shiki": "^4.4.3",
     "tw-animate-css": "^1.4.0"
   },
   "devDependencies": {
@@ -71,7 +71,7 @@
     "postcss": "^8",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "shadcn": "4.21.0",
+    "shadcn": "4.21.5",
     "tailwindcss": "^4",
     "typescript": "^6",
     "vitest": "^5.0.0"
@@ -106,447 +106,477 @@
       "types": "./postcss/scope.d.mts",
       "default": "./postcss/scope.mjs"
     },
-    "./components/accordion": {
+    "./accordion": {
       "types": "./dist/components/accordion.d.ts",
       "import": "./dist/components/accordion.js",
       "default": "./dist/components/accordion.js"
     },
-    "./components/alert": {
+    "./alert": {
       "types": "./dist/components/alert.d.ts",
       "import": "./dist/components/alert.js",
       "default": "./dist/components/alert.js"
     },
-    "./components/alert-dialog": {
+    "./alert-dialog": {
       "types": "./dist/components/alert-dialog.d.ts",
       "import": "./dist/components/alert-dialog.js",
       "default": "./dist/components/alert-dialog.js"
     },
-    "./components/aspect-ratio": {
+    "./aspect-ratio": {
       "types": "./dist/components/aspect-ratio.d.ts",
       "import": "./dist/components/aspect-ratio.js",
       "default": "./dist/components/aspect-ratio.js"
     },
-    "./components/attachment": {
+    "./attachment": {
       "types": "./dist/components/attachment.d.ts",
       "import": "./dist/components/attachment.js",
       "default": "./dist/components/attachment.js"
     },
-    "./components/avatar": {
+    "./avatar": {
       "types": "./dist/components/avatar.d.ts",
       "import": "./dist/components/avatar.js",
       "default": "./dist/components/avatar.js"
     },
-    "./components/badge": {
+    "./badge": {
       "types": "./dist/components/badge.d.ts",
       "import": "./dist/components/badge.js",
       "default": "./dist/components/badge.js"
     },
-    "./components/breadcrumb": {
+    "./breadcrumb": {
       "types": "./dist/components/breadcrumb.d.ts",
       "import": "./dist/components/breadcrumb.js",
       "default": "./dist/components/breadcrumb.js"
     },
-    "./components/bubble": {
+    "./bubble": {
       "types": "./dist/components/bubble.d.ts",
       "import": "./dist/components/bubble.js",
       "default": "./dist/components/bubble.js"
     },
-    "./components/button": {
+    "./button": {
       "types": "./dist/components/button.d.ts",
       "import": "./dist/components/button.js",
       "default": "./dist/components/button.js"
     },
-    "./components/button-group": {
+    "./button-group": {
       "types": "./dist/components/button-group.d.ts",
       "import": "./dist/components/button-group.js",
       "default": "./dist/components/button-group.js"
     },
-    "./components/calendar": {
+    "./calendar": {
       "types": "./dist/components/calendar.d.ts",
       "import": "./dist/components/calendar.js",
       "default": "./dist/components/calendar.js"
     },
-    "./components/card": {
+    "./card": {
       "types": "./dist/components/card.d.ts",
       "import": "./dist/components/card.js",
       "default": "./dist/components/card.js"
     },
-    "./components/carousel": {
+    "./carousel": {
       "types": "./dist/components/carousel.d.ts",
       "import": "./dist/components/carousel.js",
       "default": "./dist/components/carousel.js"
     },
-    "./components/chart": {
+    "./chart": {
       "types": "./dist/components/chart.d.ts",
       "import": "./dist/components/chart.js",
       "default": "./dist/components/chart.js"
     },
-    "./components/checkbox": {
+    "./checkbox": {
       "types": "./dist/components/checkbox.d.ts",
       "import": "./dist/components/checkbox.js",
       "default": "./dist/components/checkbox.js"
     },
-    "./components/collapsible": {
+    "./code-block": {
+      "types": "./dist/components/code-block.d.ts",
+      "import": "./dist/components/code-block.js",
+      "default": "./dist/components/code-block.js"
+    },
+    "./collapsible": {
       "types": "./dist/components/collapsible.d.ts",
       "import": "./dist/components/collapsible.js",
       "default": "./dist/components/collapsible.js"
     },
-    "./components/combobox": {
+    "./combobox": {
       "types": "./dist/components/combobox.d.ts",
       "import": "./dist/components/combobox.js",
       "default": "./dist/components/combobox.js"
     },
-    "./components/command": {
+    "./command": {
       "types": "./dist/components/command.d.ts",
       "import": "./dist/components/command.js",
       "default": "./dist/components/command.js"
     },
-    "./components/context-menu": {
+    "./context-menu": {
       "types": "./dist/components/context-menu.d.ts",
       "import": "./dist/components/context-menu.js",
       "default": "./dist/components/context-menu.js"
     },
-    "./components/dialog": {
+    "./dialog": {
       "types": "./dist/components/dialog.d.ts",
       "import": "./dist/components/dialog.js",
       "default": "./dist/components/dialog.js"
     },
-    "./components/drawer": {
+    "./drawer": {
       "types": "./dist/components/drawer.d.ts",
       "import": "./dist/components/drawer.js",
       "default": "./dist/components/drawer.js"
     },
-    "./components/dropdown-menu": {
+    "./dropdown-menu": {
       "types": "./dist/components/dropdown-menu.d.ts",
       "import": "./dist/components/dropdown-menu.js",
       "default": "./dist/components/dropdown-menu.js"
     },
-    "./components/empty": {
+    "./empty": {
       "types": "./dist/components/empty.d.ts",
       "import": "./dist/components/empty.js",
       "default": "./dist/components/empty.js"
     },
-    "./components/field": {
+    "./field": {
       "types": "./dist/components/field.d.ts",
       "import": "./dist/components/field.js",
       "default": "./dist/components/field.js"
     },
-    "./components/hover-card": {
+    "./hover-card": {
       "types": "./dist/components/hover-card.d.ts",
       "import": "./dist/components/hover-card.js",
       "default": "./dist/components/hover-card.js"
     },
-    "./components/input": {
+    "./input": {
       "types": "./dist/components/input.d.ts",
       "import": "./dist/components/input.js",
       "default": "./dist/components/input.js"
     },
-    "./components/input-group": {
+    "./input-group": {
       "types": "./dist/components/input-group.d.ts",
       "import": "./dist/components/input-group.js",
       "default": "./dist/components/input-group.js"
     },
-    "./components/input-otp": {
+    "./input-otp": {
       "types": "./dist/components/input-otp.d.ts",
       "import": "./dist/components/input-otp.js",
       "default": "./dist/components/input-otp.js"
     },
-    "./components/item": {
+    "./item": {
       "types": "./dist/components/item.d.ts",
       "import": "./dist/components/item.js",
       "default": "./dist/components/item.js"
     },
-    "./components/kbd": {
+    "./kbd": {
       "types": "./dist/components/kbd.d.ts",
       "import": "./dist/components/kbd.js",
       "default": "./dist/components/kbd.js"
     },
-    "./components/label": {
+    "./label": {
       "types": "./dist/components/label.d.ts",
       "import": "./dist/components/label.js",
       "default": "./dist/components/label.js"
     },
-    "./components/marker": {
+    "./marker": {
       "types": "./dist/components/marker.d.ts",
       "import": "./dist/components/marker.js",
       "default": "./dist/components/marker.js"
     },
-    "./components/message": {
+    "./message": {
       "types": "./dist/components/message.d.ts",
       "import": "./dist/components/message.js",
       "default": "./dist/components/message.js"
     },
-    "./components/message-scroller": {
+    "./message-scroller": {
       "types": "./dist/components/message-scroller.d.ts",
       "import": "./dist/components/message-scroller.js",
       "default": "./dist/components/message-scroller.js"
     },
-    "./components/native-select": {
+    "./native-select": {
       "types": "./dist/components/native-select.d.ts",
       "import": "./dist/components/native-select.js",
       "default": "./dist/components/native-select.js"
     },
-    "./components/pagination": {
+    "./pagination": {
       "types": "./dist/components/pagination.d.ts",
       "import": "./dist/components/pagination.js",
       "default": "./dist/components/pagination.js"
     },
-    "./components/popover": {
+    "./popover": {
       "types": "./dist/components/popover.d.ts",
       "import": "./dist/components/popover.js",
       "default": "./dist/components/popover.js"
     },
-    "./components/progress": {
+    "./progress": {
       "types": "./dist/components/progress.d.ts",
       "import": "./dist/components/progress.js",
       "default": "./dist/components/progress.js"
     },
-    "./components/questionnaire": {
+    "./questionnaire": {
       "types": "./dist/components/questionnaire.d.ts",
       "import": "./dist/components/questionnaire.js",
       "default": "./dist/components/questionnaire.js"
     },
-    "./components/radio-group": {
+    "./radio-group": {
       "types": "./dist/components/radio-group.d.ts",
       "import": "./dist/components/radio-group.js",
       "default": "./dist/components/radio-group.js"
     },
-    "./components/resizable": {
+    "./resizable": {
       "types": "./dist/components/resizable.d.ts",
       "import": "./dist/components/resizable.js",
       "default": "./dist/components/resizable.js"
     },
-    "./components/scroll-area": {
+    "./scroll-area": {
       "types": "./dist/components/scroll-area.d.ts",
       "import": "./dist/components/scroll-area.js",
       "default": "./dist/components/scroll-area.js"
     },
-    "./components/select": {
+    "./select": {
       "types": "./dist/components/select.d.ts",
       "import": "./dist/components/select.js",
       "default": "./dist/components/select.js"
     },
-    "./components/separator": {
+    "./separator": {
       "types": "./dist/components/separator.d.ts",
       "import": "./dist/components/separator.js",
       "default": "./dist/components/separator.js"
     },
-    "./components/sheet": {
+    "./sheet": {
       "types": "./dist/components/sheet.d.ts",
       "import": "./dist/components/sheet.js",
       "default": "./dist/components/sheet.js"
     },
-    "./components/sidebar": {
+    "./sidebar": {
       "types": "./dist/components/sidebar.d.ts",
       "import": "./dist/components/sidebar.js",
       "default": "./dist/components/sidebar.js"
     },
-    "./components/skeleton": {
+    "./skeleton": {
       "types": "./dist/components/skeleton.d.ts",
       "import": "./dist/components/skeleton.js",
       "default": "./dist/components/skeleton.js"
     },
-    "./components/slider": {
+    "./slider": {
       "types": "./dist/components/slider.d.ts",
       "import": "./dist/components/slider.js",
       "default": "./dist/components/slider.js"
     },
-    "./components/sonner": {
-      "types": "./dist/components/sonner.d.ts",
-      "import": "./dist/components/sonner.js",
-      "default": "./dist/components/sonner.js"
-    },
-    "./components/spinner": {
+    "./spinner": {
       "types": "./dist/components/spinner.d.ts",
       "import": "./dist/components/spinner.js",
       "default": "./dist/components/spinner.js"
     },
-    "./components/switch": {
+    "./switch": {
       "types": "./dist/components/switch.d.ts",
       "import": "./dist/components/switch.js",
       "default": "./dist/components/switch.js"
     },
-    "./components/table": {
+    "./table": {
       "types": "./dist/components/table.d.ts",
       "import": "./dist/components/table.js",
       "default": "./dist/components/table.js"
     },
-    "./components/tabs": {
+    "./tabs": {
       "types": "./dist/components/tabs.d.ts",
       "import": "./dist/components/tabs.js",
       "default": "./dist/components/tabs.js"
     },
-    "./components/textarea": {
+    "./textarea": {
       "types": "./dist/components/textarea.d.ts",
       "import": "./dist/components/textarea.js",
       "default": "./dist/components/textarea.js"
     },
-    "./components/toggle": {
+    "./toast": {
+      "types": "./dist/components/toast.d.ts",
+      "import": "./dist/components/toast.js",
+      "default": "./dist/components/toast.js"
+    },
+    "./toggle": {
       "types": "./dist/components/toggle.d.ts",
       "import": "./dist/components/toggle.js",
       "default": "./dist/components/toggle.js"
     },
-    "./components/toggle-group": {
+    "./toggle-group": {
       "types": "./dist/components/toggle-group.d.ts",
       "import": "./dist/components/toggle-group.js",
       "default": "./dist/components/toggle-group.js"
     },
-    "./components/tooltip": {
+    "./tooltip": {
       "types": "./dist/components/tooltip.d.ts",
       "import": "./dist/components/tooltip.js",
       "default": "./dist/components/tooltip.js"
     },
-    "./tecton/action-bar": {
+    "./trace": {
+      "types": "./dist/components/trace.d.ts",
+      "import": "./dist/components/trace.js",
+      "default": "./dist/components/trace.js"
+    },
+    "./action-bar": {
       "types": "./dist/tecton/action-bar.d.ts",
       "import": "./dist/tecton/action-bar.js",
       "default": "./dist/tecton/action-bar.js"
     },
-    "./tecton/app-finder": {
+    "./app-finder": {
       "types": "./dist/tecton/app-finder.d.ts",
       "import": "./dist/tecton/app-finder.js",
       "default": "./dist/tecton/app-finder.js"
     },
-    "./tecton/app-shell": {
+    "./app-shell": {
       "types": "./dist/tecton/app-shell.d.ts",
       "import": "./dist/tecton/app-shell.js",
       "default": "./dist/tecton/app-shell.js"
     },
-    "./tecton/background": {
+    "./background": {
       "types": "./dist/tecton/background.d.ts",
       "import": "./dist/tecton/background.js",
       "default": "./dist/tecton/background.js"
     },
-    "./tecton/canvas": {
+    "./canvas": {
       "types": "./dist/tecton/canvas.d.ts",
       "import": "./dist/tecton/canvas.js",
       "default": "./dist/tecton/canvas.js"
     },
-    "./tecton/chip": {
+    "./chip": {
       "types": "./dist/tecton/chip.d.ts",
       "import": "./dist/tecton/chip.js",
       "default": "./dist/tecton/chip.js"
     },
-    "./tecton/circular-progress": {
+    "./circular-progress": {
       "types": "./dist/tecton/circular-progress.d.ts",
       "import": "./dist/tecton/circular-progress.js",
       "default": "./dist/tecton/circular-progress.js"
     },
-    "./tecton/color-swatch": {
+    "./color-swatch": {
       "types": "./dist/tecton/color-swatch.d.ts",
       "import": "./dist/tecton/color-swatch.js",
       "default": "./dist/tecton/color-swatch.js"
     },
-    "./tecton/composer": {
+    "./composer": {
       "types": "./dist/tecton/composer.d.ts",
       "import": "./dist/tecton/composer.js",
       "default": "./dist/tecton/composer.js"
     },
-    "./tecton/copy-button": {
+    "./copy-button": {
       "types": "./dist/tecton/copy-button.d.ts",
       "import": "./dist/tecton/copy-button.js",
       "default": "./dist/tecton/copy-button.js"
     },
-    "./tecton/count-badge": {
+    "./count-badge": {
       "types": "./dist/tecton/count-badge.d.ts",
       "import": "./dist/tecton/count-badge.js",
       "default": "./dist/tecton/count-badge.js"
     },
-    "./tecton/data-table": {
+    "./data-table": {
       "types": "./dist/tecton/data-table.d.ts",
       "import": "./dist/tecton/data-table.js",
       "default": "./dist/tecton/data-table.js"
     },
-    "./tecton/date-picker": {
+    "./date-picker": {
       "types": "./dist/tecton/date-picker.d.ts",
       "import": "./dist/tecton/date-picker.js",
       "default": "./dist/tecton/date-picker.js"
     },
-    "./tecton/document-tabs": {
+    "./document-tabs": {
       "types": "./dist/tecton/document-tabs.d.ts",
       "import": "./dist/tecton/document-tabs.js",
       "default": "./dist/tecton/document-tabs.js"
     },
-    "./tecton/dropzone": {
+    "./dropzone": {
       "types": "./dist/tecton/dropzone.d.ts",
       "import": "./dist/tecton/dropzone.js",
       "default": "./dist/tecton/dropzone.js"
     },
-    "./tecton/link": {
+    "./link": {
       "types": "./dist/tecton/link.d.ts",
       "import": "./dist/tecton/link.js",
       "default": "./dist/tecton/link.js"
     },
-    "./tecton/meter": {
+    "./meter": {
       "types": "./dist/tecton/meter.d.ts",
       "import": "./dist/tecton/meter.js",
       "default": "./dist/tecton/meter.js"
     },
-    "./tecton/number-input": {
+    "./number-field": {
+      "types": "./dist/tecton/number-field.d.ts",
+      "import": "./dist/tecton/number-field.js",
+      "default": "./dist/tecton/number-field.js"
+    },
+    "./number-input": {
       "types": "./dist/tecton/number-input.d.ts",
       "import": "./dist/tecton/number-input.js",
       "default": "./dist/tecton/number-input.js"
     },
-    "./tecton/overflow": {
+    "./overflow": {
       "types": "./dist/tecton/overflow.d.ts",
       "import": "./dist/tecton/overflow.js",
       "default": "./dist/tecton/overflow.js"
     },
-    "./tecton/page-header": {
+    "./page-header": {
       "types": "./dist/tecton/page-header.d.ts",
       "import": "./dist/tecton/page-header.js",
       "default": "./dist/tecton/page-header.js"
     },
-    "./tecton/panel": {
+    "./panel": {
       "types": "./dist/tecton/panel.d.ts",
       "import": "./dist/tecton/panel.js",
       "default": "./dist/tecton/panel.js"
     },
-    "./tecton/portal": {
+    "./portal": {
       "types": "./dist/tecton/portal.d.ts",
       "import": "./dist/tecton/portal.js",
       "default": "./dist/tecton/portal.js"
     },
-    "./tecton/provider": {
+    "./provider": {
       "types": "./dist/tecton/provider.d.ts",
       "import": "./dist/tecton/provider.js",
       "default": "./dist/tecton/provider.js"
     },
-    "./tecton/reorderable": {
+    "./reorderable": {
       "types": "./dist/tecton/reorderable.d.ts",
       "import": "./dist/tecton/reorderable.js",
       "default": "./dist/tecton/reorderable.js"
     },
-    "./tecton/stat": {
+    "./stat": {
       "types": "./dist/tecton/stat.d.ts",
       "import": "./dist/tecton/stat.js",
       "default": "./dist/tecton/stat.js"
     },
-    "./tecton/table-column-resizer": {
+    "./table-column-resizer": {
       "types": "./dist/tecton/table-column-resizer.d.ts",
       "import": "./dist/tecton/table-column-resizer.js",
       "default": "./dist/tecton/table-column-resizer.js"
     },
-    "./tecton/theme-root": {
+    "./theme-root": {
       "types": "./dist/tecton/theme-root.d.ts",
       "import": "./dist/tecton/theme-root.js",
       "default": "./dist/tecton/theme-root.js"
     },
-    "./tecton/tree-view": {
+    "./toast-bridge": {
+      "types": "./dist/tecton/toast-bridge.d.ts",
+      "import": "./dist/tecton/toast-bridge.js",
+      "default": "./dist/tecton/toast-bridge.js"
+    },
+    "./tree-view": {
       "types": "./dist/tecton/tree-view.d.ts",
       "import": "./dist/tecton/tree-view.js",
       "default": "./dist/tecton/tree-view.js"
     },
-    "./tecton/use-busy-delay": {
+    "./use-busy-delay": {
       "types": "./dist/tecton/use-busy-delay.d.ts",
       "import": "./dist/tecton/use-busy-delay.js",
       "default": "./dist/tecton/use-busy-delay.js"
     },
-    "./hooks/use-mobile": {
+    "./use-highlighted-code": {
+      "types": "./dist/hooks/use-highlighted-code.d.ts",
+      "import": "./dist/hooks/use-highlighted-code.js",
+      "default": "./dist/hooks/use-highlighted-code.js"
+    },
+    "./use-mobile": {
       "types": "./dist/hooks/use-mobile.d.ts",
       "import": "./dist/hooks/use-mobile.js",
       "default": "./dist/hooks/use-mobile.js"
     },
-    "./lib/utils": {
+    "./highlighter": {
+      "types": "./dist/lib/highlighter.d.ts",
+      "import": "./dist/lib/highlighter.js",
+      "default": "./dist/lib/highlighter.js"
+    },
+    "./utils": {
       "types": "./dist/lib/utils.d.ts",
       "import": "./dist/lib/utils.js",
       "default": "./dist/lib/utils.js"

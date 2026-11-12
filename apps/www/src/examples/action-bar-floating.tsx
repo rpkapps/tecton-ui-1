@@ -3,18 +3,18 @@
 import * as React from "react"
 import { ArchiveIcon, FolderInputIcon, TagIcon, Trash2Icon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import { Checkbox } from "@tecton/react/components/checkbox"
+import { Button } from "@tecton/react/button"
+import { Checkbox } from "@tecton/react/checkbox"
 import {
   ActionBar,
   ActionBarActions,
   ActionBarSelection,
-} from "@tecton/react/tecton/action-bar"
+} from "@tecton/react/action-bar"
 import {
   OverflowDivider,
   OverflowItem,
   OverflowLabel,
-} from "@tecton/react/tecton/overflow"
+} from "@tecton/react/overflow"
 
 const documents = Array.from({ length: 14 }, (_, index) => ({
   id: `doc-${index + 1}`,

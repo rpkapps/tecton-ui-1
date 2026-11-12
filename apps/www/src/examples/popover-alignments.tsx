@@ -1,10 +1,10 @@
 // Synced from shadcn/ui (apps/v4/examples/base/popover-alignments.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@tecton/react/components/popover"
+} from "@tecton/react/popover"
 
 export function PopoverAlignments() {
   return (

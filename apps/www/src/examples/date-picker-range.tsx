@@ -2,11 +2,8 @@
 
 import * as React from "react"
 
-import { Field, FieldLabel } from "@tecton/react/components/field"
-import {
-  DateRangePicker,
-  type DateRange,
-} from "@tecton/react/tecton/date-picker"
+import { Field, FieldLabel } from "@tecton/react/field"
+import { DateRangePicker, type DateRange } from "@tecton/react/date-picker"
 
 export default function DatePickerRange() {
   const [range, setRange] = React.useState<DateRange | undefined>(() => {

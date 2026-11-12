@@ -4,20 +4,20 @@ import * as React from "react"
 import { cn } from "cn"
 import { SearchIcon, XIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@tecton/react/components/input-group"
+} from "@tecton/react/input-group"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
-import { Chip, ChipGroup, ChipList } from "@tecton/react/tecton/chip"
+} from "@tecton/react/select"
+import { Chip, ChipGroup, ChipList } from "@tecton/react/chip"
 
 import { fields, statusMeta, typeMeta } from "../data"
 import type { WellStatus, WellType } from "../data"

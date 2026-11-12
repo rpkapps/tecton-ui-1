@@ -1,6 +1,6 @@
 ---
 component: Background
-module: "@tecton/react/tecton/background"
+module: "@tecton/react/background"
 family: presentation
 exports: [Background, BackgroundEffect, SeismicBackground, ContourBackground, StrataBackground, GridBackground, FlowBackground, WellLogBackground, DrillBackground, HexagonsBackground, PressureBackground, HorizonBackground, TerrainGridBackground, backgroundEffects, backgroundVariants, backgroundTones, backgroundIntensities, backgroundSpeeds]
 notFor:

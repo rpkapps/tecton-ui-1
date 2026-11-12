@@ -1,6 +1,6 @@
 ---
 component: Select
-module: "@tecton/react/components/select"
+module: "@tecton/react/select"
 family: selection
 exports: [Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectLabel, SelectItem, SelectSeparator, SelectScrollUpButton, SelectScrollDownButton, selectTriggerVariants]
 notFor:

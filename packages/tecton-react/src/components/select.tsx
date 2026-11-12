@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Select as SelectPrimitive } from "@base-ui/react/select"
-import { usePortalTarget } from "@tecton/react/tecton/portal"
+import { usePortalTarget } from "@tecton/react/portal"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
@@ -41,8 +41,8 @@ const selectTriggerVariants = cva(
       variant: {
         outline: "bg-transparent",
         filled:
-          "rounded-b-none border-x-0 border-t-0 border-b-border bg-muted hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] focus-visible:border-ring focus-visible:ring-2 aria-invalid:bg-destructive/20 aria-invalid:ring-0 dark:bg-muted dark:hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] dark:aria-invalid:border-destructive",
-        text: "rounded-none border-x-0 border-t-0 border-b-border bg-transparent ps-0 hover:border-b-foreground/60 focus-visible:border-ring focus-visible:ring-2 aria-invalid:ring-0 dark:bg-transparent dark:hover:bg-transparent",
+          "bg-input-filled focus-visible:bg-input-filled-focus data-popup-open:bg-input-filled-focus border-transparent hover:border-transparent focus-visible:border-ring focus-visible:ring-2 aria-invalid:bg-destructive/20 aria-invalid:ring-0 dark:aria-invalid:border-destructive",
+        text: "rounded-none border-x-0 border-t-0 border-transparent bg-transparent ps-0 hover:border-transparent focus-visible:ring-0 disabled:border-border aria-invalid:ring-0 dark:bg-transparent dark:hover:bg-transparent data-disabled:border-border",
       },
     },
     defaultVariants: {

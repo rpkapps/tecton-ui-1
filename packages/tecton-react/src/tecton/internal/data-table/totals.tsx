@@ -20,7 +20,7 @@ import {
   TableFooter,
   TableHead,
   TableRow,
-} from "@tecton/react/components/table"
+} from "@tecton/react/table"
 
 import { useTranslations } from "../i18n/translations"
 import {

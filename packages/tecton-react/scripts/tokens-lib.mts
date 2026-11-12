@@ -15,7 +15,7 @@ import { clampChroma, converter, parse } from "culori";
 export type Confidence = "exact" | "approximated" | "derived";
 export interface Mapping {
   dark: string;
-  /** Tecton token, literal value or "derived"; defaults to `dark`. */
+  /** Tecton token or "derived"; defaults to `dark`. Never a literal colour (the schema rejects one). */
   light?: string;
   confidence: Confidence;
   note?: string;

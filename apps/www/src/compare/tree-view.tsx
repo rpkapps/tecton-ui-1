@@ -1,13 +1,13 @@
 import * as React from "react"
 
-import { Badge } from "@tecton/react/components/badge"
+import { Badge } from "@tecton/react/badge"
 import {
   TreeView,
   TreeViewAction,
   TreeViewItem,
   TreeViewItemContent,
   TreeViewVisibilityToggle,
-} from "@tecton/react/tecton/tree-view"
+} from "@tecton/react/tree-view"
 
 import { Matrix, Page } from "./matrix"
 

@@ -6,8 +6,8 @@ import {
   DataTableColumnsMenu,
   DataTableContent,
   DataTableToolbar,
-} from "@tecton/react/tecton/data-table"
-import { OverflowSpacer } from "@tecton/react/tecton/overflow"
+} from "@tecton/react/data-table"
+import { OverflowSpacer } from "@tecton/react/overflow"
 
 type Well = {
   id: string

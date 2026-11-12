@@ -2,8 +2,8 @@
 
 import * as React from "react"
 
-import { Button } from "@tecton/react/components/button"
-import { Separator } from "@tecton/react/components/separator"
+import { Button } from "@tecton/react/button"
+import { Separator } from "@tecton/react/separator"
 import {
   PageHeader,
   PageHeaderActions,
@@ -11,7 +11,7 @@ import {
   PageHeaderDescription,
   PageHeaderEyebrow,
   PageHeaderTitle,
-} from "@tecton/react/tecton/page-header"
+} from "@tecton/react/page-header"
 
 import { WellHeaderForm } from "./components/well-header-form"
 import { defaultWellHeader } from "./data"

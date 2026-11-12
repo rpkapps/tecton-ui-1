@@ -3,7 +3,7 @@ import {
   NativeSelect,
   NativeSelectOptGroup,
   NativeSelectOption,
-} from "@tecton/react/components/native-select"
+} from "@tecton/react/native-select"
 
 export default function NativeSelectGroups() {
   return (

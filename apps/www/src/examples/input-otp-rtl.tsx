@@ -7,12 +7,12 @@ import {
   useTranslation,
   type Translations,
 } from "@/components/language-selector"
-import { Field, FieldLabel } from "@tecton/react/components/field"
+import { Field, FieldLabel } from "@tecton/react/field"
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
-} from "@tecton/react/components/input-otp"
+} from "@tecton/react/input-otp"
 
 const translations: Translations = {
   en: {

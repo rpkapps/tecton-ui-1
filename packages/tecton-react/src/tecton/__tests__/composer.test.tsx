@@ -19,8 +19,8 @@ import {
   type ComposerCommandItem,
   type ComposerProps,
   useComposer,
-} from "@tecton/react/tecton/composer"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+} from "@tecton/react/composer"
+import { TectonProvider } from "@tecton/react/provider"
 
 function Chat(
   props: Partial<ComposerProps> & { attachments?: ComposerAttachmentItem[] }

@@ -8,7 +8,7 @@ import {
   useTranslation,
   type Translations,
 } from "@/components/language-selector"
-import { Calendar } from "@tecton/react/components/calendar"
+import { Calendar } from "@tecton/react/calendar"
 
 const translations: Translations = {
   en: {

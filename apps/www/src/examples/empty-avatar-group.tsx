@@ -5,8 +5,8 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@tecton/react/components/avatar"
-import { Button } from "@tecton/react/components/button"
+} from "@tecton/react/avatar"
+import { Button } from "@tecton/react/button"
 import {
   Empty,
   EmptyContent,
@@ -14,7 +14,7 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@tecton/react/components/empty"
+} from "@tecton/react/empty"
 
 export default function EmptyAvatarGroup() {
   return (

@@ -8,7 +8,7 @@ import {
   useTranslation,
   type Translations,
 } from "@/components/language-selector"
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Item,
   ItemActions,
@@ -16,7 +16,7 @@ import {
   ItemDescription,
   ItemMedia,
   ItemTitle,
-} from "@tecton/react/components/item"
+} from "@tecton/react/item"
 
 const translations: Translations = {
   en: {

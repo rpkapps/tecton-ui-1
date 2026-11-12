@@ -6,8 +6,8 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@tecton/react/components/avatar"
-import { Button } from "@tecton/react/components/button"
+} from "@tecton/react/avatar"
+import { Button } from "@tecton/react/button"
 import {
   Item,
   ItemActions,
@@ -17,7 +17,7 @@ import {
   ItemMedia,
   ItemSeparator,
   ItemTitle,
-} from "@tecton/react/components/item"
+} from "@tecton/react/item"
 
 const people = [
   {

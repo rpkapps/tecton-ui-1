@@ -8,7 +8,7 @@ import {
   useTranslation,
   type Translations,
 } from "@/components/language-selector"
-import { AspectRatio } from "@tecton/react/components/aspect-ratio"
+import { AspectRatio } from "@tecton/react/aspect-ratio"
 
 const translations: Translations = {
   en: {

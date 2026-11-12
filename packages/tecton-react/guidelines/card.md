@@ -1,6 +1,6 @@
 ---
 component: Card
-module: "@tecton/react/components/card"
+module: "@tecton/react/card"
 family: surfaces
 exports: [Card, CardHeader, CardTitle, CardDescription, CardAction, CardContent, CardFooter]
 notFor:

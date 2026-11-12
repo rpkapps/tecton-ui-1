@@ -126,6 +126,9 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--filled-active` | `--tecton-color-action-filled-bg-active` | `#af9ebc` | `#8b5ba9` | exact | Checked checkbox, as the Tecton MUI checkbox. |
 | `--slider-rail` | `--tecton-color-accent-lilac-muted` | `#776284` | `#decae5` | exact | Slider rail behind the `slider` range (Tecton's muted lilac). |
 | `--progress-track` | `--tecton-color-extended-lilac-260` | `#6b5679` | `#b48ac5` | exact | Progress track behind the `progress` bar, as the Tecton MUI linear progress. |
+| `--input-filled` | `--tecton-color-input-filled-bg` | `#28232c` | `#f0eef3` | exact | Surface of the `filled` input, textarea, select trigger and number field. |
+| `--input-filled-focus` | `--tecton-color-input-filled-bg-focus` | `#342f39` | `#f6f3f8` | exact | Focused `filled` field. |
+| `--number-field-fill` | `--tecton-color-action-secondary-bg-focus` / `--tecton-color-accent-lilac-muted` | `#514659` | `#decae5` | approximated | Number field slider fill up to the value, also while dragging. The number sits on it, so it keeps text-primary at 7:1 or more in both modes (light 11.2, dark 8.2). |
 | `--content-hover` | `--tecton-color-content-bg-hover` | `#262528` | `#eae8ec` | exact | Hovered list item (sidebar item, tree item). |
 | `--content-pressed` | `--tecton-color-content-bg-press` | `#323134` | `#dbd6dd` | exact | Pressed list item. |
 | `--content-active` | `--tecton-color-content-bg-active` | `#323134` | `#dbd6dd` | exact | Selected / current list item (the current sidebar item, a selected tree item). |
@@ -214,6 +217,9 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--color-filled-active` | `var(--filled-active)` | `var(--filled-active)` |
 | `--color-slider-rail` | `var(--slider-rail)` | `var(--slider-rail)` |
 | `--color-progress-track` | `var(--progress-track)` | `var(--progress-track)` |
+| `--color-input-filled` | `var(--input-filled)` | `var(--input-filled)` |
+| `--color-input-filled-focus` | `var(--input-filled-focus)` | `var(--input-filled-focus)` |
+| `--color-number-field-fill` | `var(--number-field-fill)` | `var(--number-field-fill)` |
 | `--color-content-hover` | `var(--content-hover)` | `var(--content-hover)` |
 | `--color-content-pressed` | `var(--content-pressed)` | `var(--content-pressed)` |
 | `--color-content-active` | `var(--content-active)` | `var(--content-active)` |

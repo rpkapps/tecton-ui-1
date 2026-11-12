@@ -10,8 +10,8 @@ import {
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { ContextMenuItem } from "@tecton/react/components/context-menu"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+import { ContextMenuItem } from "@tecton/react/context-menu"
+import { TectonProvider } from "@tecton/react/provider"
 import {
   DocumentTabs,
   DocumentTabsAdd,
@@ -23,7 +23,7 @@ import {
   DocumentTabsMenuClose,
   DocumentTabsMore,
   DocumentTabsTrigger,
-} from "@tecton/react/tecton/document-tabs"
+} from "@tecton/react/document-tabs"
 
 /**
  * jsdom has no layout. Elements declare their width with `data-w` and their

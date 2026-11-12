@@ -98,6 +98,8 @@ interface PaletteEntry {
 const FONT_IMPORTS = [
   "@fontsource/figtree/400.css",
   "@fontsource/figtree/500.css",
+  "@fontsource/figtree/600.css",
+  "@fontsource/figtree/700.css",
   "@fontsource/ibm-plex-mono/400.css",
   "@fontsource/ibm-plex-mono/500.css",
 ];
@@ -112,6 +114,7 @@ const BASE_IMPORT = '@import "./tecton-base.css";';
 const BASE_CSS: Record<string, Record<string, Record<string, string>>> = {
   "@layer base": {
     "*": { "scrollbar-width": "thin", "scrollbar-color": "var(--border) transparent" },
+    body: { "font-synthesis-weight": "none" },
   },
 };
 
@@ -573,6 +576,9 @@ function buildScopedThemeCss(): string {
   lines.push("    @apply bg-background text-foreground;");
   lines.push("    scrollbar-width: thin;");
   lines.push("    scrollbar-color: var(--border) transparent;");
+  // a weight with no loaded face falls back to a real one instead of a faked bold
+  // (a remote under a shell inherits this from the shell's body)
+  lines.push("    font-synthesis-weight: none;");
   lines.push("  }");
   lines.push("}");
   lines.push("");
@@ -795,7 +801,7 @@ ${rows.join("\n")}
 }
 
 function buildMappingDoc(): string {
-  const esc = (s: string) => s.replace(/\|/g, "\\|");
+  const esc = (s: string) => s.replace(/[\\|]/g, "\\$&");
   const row = (r: Resolved) =>
     `| \`--${r.name}\` | \`${r.token}\`${r.lightToken !== r.token ? ` / \`${r.lightToken}\`` : ""} | \`${r.darkLiteral}\` | \`${r.lightLiteral}\`${overrides[r.name] !== undefined ? " (override)" : ""} | ${r.confidence} | ${esc(r.note)} |`;
   const header = [

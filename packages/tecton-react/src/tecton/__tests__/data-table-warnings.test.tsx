@@ -11,7 +11,7 @@ import {
   createColumns,
   DataTable,
   DataTableContent,
-} from "@tecton/react/tecton/data-table"
+} from "@tecton/react/data-table"
 
 import { createWarnings } from "../internal/data-table/warnings"
 

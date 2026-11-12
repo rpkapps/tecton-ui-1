@@ -17,14 +17,14 @@ import {
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-import { DropdownMenuItem } from "@tecton/react/components/dropdown-menu"
+import { DropdownMenuItem } from "@tecton/react/dropdown-menu"
 import {
   createColumns,
   DataTable,
   DataTableContent,
   DataTableFilter,
   DataTableRowActions,
-} from "@tecton/react/tecton/data-table"
+} from "@tecton/react/data-table"
 
 import { columnResizerClassName } from "../internal/column-resizer-style"
 

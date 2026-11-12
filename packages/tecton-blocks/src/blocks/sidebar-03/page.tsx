@@ -9,17 +9,14 @@ import {
   ZoomOutIcon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import { Separator } from "@tecton/react/components/separator"
+import { Button } from "@tecton/react/button"
+import { Separator } from "@tecton/react/separator"
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@tecton/react/components/sidebar"
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@tecton/react/components/toggle-group"
+} from "@tecton/react/sidebar"
+import { ToggleGroup, ToggleGroupItem } from "@tecton/react/toggle-group"
 
 import { AppSidebar } from "./components/app-sidebar"
 import { flattenTree, projectTree } from "./data"

@@ -20,8 +20,8 @@ import * as React from "react"
 import { cn } from "cn"
 import { CircleAlertIcon, InboxIcon, SearchXIcon } from "lucide-react"
 
-import { Alert, AlertAction, AlertTitle } from "@tecton/react/components/alert"
-import { Button } from "@tecton/react/components/button"
+import { Alert, AlertAction, AlertTitle } from "@tecton/react/alert"
+import { Button } from "@tecton/react/button"
 import {
   Empty,
   EmptyContent,
@@ -29,11 +29,11 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@tecton/react/components/empty"
-import { Progress } from "@tecton/react/components/progress"
-import { Skeleton } from "@tecton/react/components/skeleton"
-import { Spinner } from "@tecton/react/components/spinner"
-import { TableCell } from "@tecton/react/components/table"
+} from "@tecton/react/empty"
+import { Progress } from "@tecton/react/progress"
+import { Skeleton } from "@tecton/react/skeleton"
+import { Spinner } from "@tecton/react/spinner"
+import { TableCell } from "@tecton/react/table"
 
 import { useTranslations } from "../i18n/translations"
 import { useNumberFormat } from "./context"

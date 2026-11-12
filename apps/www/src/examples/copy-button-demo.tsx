@@ -1,4 +1,4 @@
-import { CopyButton } from "@tecton/react/tecton/copy-button"
+import { CopyButton } from "@tecton/react/copy-button"
 
 export default function CopyButtonDemo() {
   return (

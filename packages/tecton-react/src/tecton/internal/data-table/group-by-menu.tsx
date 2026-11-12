@@ -32,8 +32,8 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-} from "@tecton/react/components/dropdown-menu"
-import { useLocale } from "@tecton/react/tecton/provider"
+} from "@tecton/react/dropdown-menu"
+import { useLocale } from "@tecton/react/provider"
 
 import { useTranslations } from "../i18n/translations"
 import {

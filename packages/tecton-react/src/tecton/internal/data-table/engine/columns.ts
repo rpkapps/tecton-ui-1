@@ -304,7 +304,7 @@ function getColumnModel<T>(columns: DataTableColumns<T>): ColumnModel<T> {
   const model = models.get(columns)
   if (!model)
     throw new Error(
-      "DataTable: `columns` must be made with `createColumns(...)` from @tecton/react/tecton/data-table."
+      "DataTable: `columns` must be made with `createColumns(...)` from @tecton/react/data-table."
     )
   return model
 }

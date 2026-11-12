@@ -1,4 +1,4 @@
-import { Link } from "@tecton/react/tecton/link"
+import { Link } from "@tecton/react/link"
 
 export default function LinkVariants() {
   return (

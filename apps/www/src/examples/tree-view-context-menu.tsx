@@ -12,12 +12,12 @@ import {
   ContextMenuGroup,
   ContextMenuItem,
   ContextMenuSeparator,
-} from "@tecton/react/components/context-menu"
+} from "@tecton/react/context-menu"
 import {
   TreeView,
   TreeViewItem,
   TreeViewItemContent,
-} from "@tecton/react/tecton/tree-view"
+} from "@tecton/react/tree-view"
 
 const horizons = [
   { id: "balder", name: "Top Balder" },

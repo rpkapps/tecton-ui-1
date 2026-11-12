@@ -7,7 +7,7 @@ import {
   ItemContent,
   ItemDescription,
   ItemTitle,
-} from "@tecton/react/components/item"
+} from "@tecton/react/item"
 
 export function ItemLink() {
   return (

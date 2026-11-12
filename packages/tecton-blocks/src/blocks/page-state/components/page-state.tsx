@@ -4,8 +4,8 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
-import { Badge } from "@tecton/react/components/badge"
-import { CopyButton } from "@tecton/react/tecton/copy-button"
+import { Badge } from "@tecton/react/badge"
+import { CopyButton } from "@tecton/react/copy-button"
 
 /**
  * PageState — the full-page scaffold every page state (404, 403, 500,

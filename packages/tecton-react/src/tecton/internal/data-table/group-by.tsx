@@ -13,12 +13,9 @@
 import * as React from "react"
 import { ListTreeIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
-import { useLocale } from "@tecton/react/tecton/provider"
+import { Button } from "@tecton/react/button"
+import { DropdownMenu, DropdownMenuTrigger } from "@tecton/react/dropdown-menu"
+import { useLocale } from "@tecton/react/provider"
 
 import { useTranslations } from "../i18n/translations"
 import {

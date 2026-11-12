@@ -1,5 +1,5 @@
-import { Avatar, AvatarFallback } from "@tecton/react/components/avatar"
-import { CountBadge } from "@tecton/react/tecton/count-badge"
+import { Avatar, AvatarFallback } from "@tecton/react/avatar"
+import { CountBadge } from "@tecton/react/count-badge"
 
 export default function CountBadgeDot() {
   return (

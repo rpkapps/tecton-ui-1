@@ -1,6 +1,6 @@
 ---
 component: AppShell
-module: "@tecton/react/tecton/app-shell"
+module: "@tecton/react/app-shell"
 family: surfaces
 exports: [AppShell, AppShellHeader, AppShellBrand, AppShellNav, AppShellActions, AppShellAction, AppShellCommandTrigger, AppShellDivider, AppShellOverflow, AppShellUserMenu, AppShellBody, AppShellSidebar, AppShellMain, AppShellAside, AppShellSplit, AppShellSplitPanel, AppShellSplitHandle, useMinWidth]
 notFor:

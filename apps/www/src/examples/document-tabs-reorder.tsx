@@ -2,14 +2,14 @@
 
 import * as React from "react"
 
-import { Badge } from "@tecton/react/components/badge"
+import { Badge } from "@tecton/react/badge"
 import { WellIcon } from "@tecton/react/icons/well"
 import {
   DocumentTabs,
   DocumentTabsLabel,
   DocumentTabsList,
   DocumentTabsTrigger,
-} from "@tecton/react/tecton/document-tabs"
+} from "@tecton/react/document-tabs"
 
 const WELLS = [
   { id: "ow-b-01", name: "OW-B: Well-01", field: "Orion Discovery" },

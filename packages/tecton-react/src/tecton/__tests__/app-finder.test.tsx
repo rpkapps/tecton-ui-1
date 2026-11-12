@@ -10,7 +10,7 @@ import {
   AppFinderList,
   AppFinderMenu,
   AppFinderTrigger,
-} from "@tecton/react/tecton/app-finder"
+} from "@tecton/react/app-finder"
 
 function Finder({ onSelect }: { onSelect?: (value: string) => void }) {
   return (

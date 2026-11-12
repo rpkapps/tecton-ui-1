@@ -1,6 +1,6 @@
 import { MapPinIcon } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
+import { Badge } from "@tecton/react/badge"
 
 export default function BadgeSizes() {
   return (

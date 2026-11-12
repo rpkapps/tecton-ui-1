@@ -10,14 +10,14 @@ import {
   AttachmentDescription,
   AttachmentMedia,
   AttachmentTitle,
-} from "@tecton/react/components/attachment"
+} from "@tecton/react/attachment"
 import {
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@tecton/react/components/empty"
+} from "@tecton/react/empty"
 import {
   Dropzone,
   DropzoneArea,
@@ -25,7 +25,7 @@ import {
   DropzoneRemove,
   DropzoneTrigger,
   formatFileSize,
-} from "@tecton/react/tecton/dropzone"
+} from "@tecton/react/dropzone"
 
 export default function DropzoneDemo() {
   const [files, setFiles] = React.useState<File[]>([])

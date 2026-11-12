@@ -7,8 +7,8 @@ import {
   DatePicker,
   DateRangePicker,
   type DateRange,
-} from "@tecton/react/tecton/date-picker"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+} from "@tecton/react/date-picker"
+import { TectonProvider } from "@tecton/react/provider"
 
 import { loadCalendarLocale } from "../internal/calendar-locale"
 import { parseDate } from "../internal/date-text"

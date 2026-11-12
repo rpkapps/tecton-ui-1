@@ -7,7 +7,7 @@ import {
   useTranslation,
   type Translations,
 } from "@/components/language-selector"
-import { Kbd, KbdGroup } from "@tecton/react/components/kbd"
+import { Kbd, KbdGroup } from "@tecton/react/kbd"
 
 const translations: Translations = {
   en: {

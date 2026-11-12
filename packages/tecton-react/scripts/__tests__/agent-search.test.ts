@@ -86,9 +86,9 @@ describe("tecton search", () => {
   })
 
   it("routes a notFor need to the component it points at", () => {
-    // badge.md: "a transient confirmation → toast"; toast is documented by sonner.md
+    // badge.md: "a transient confirmation → toast"; toast is an export of the toast module
     const [first] = search(index, "transient confirmation")
-    expect(first.entry.id).toBe("sonner")
+    expect(first.entry.id).toBe("toast")
   })
 
   it("expands the query vocabulary", () => {
@@ -132,7 +132,7 @@ describe("tecton search", () => {
     ["ToggleGroup", "toggle-group"],
     ["scroll area", "scroll-area"],
     ["SelectItem", "select"],
-    ["toast", "sonner"],
+    ["toast", "toast"],
     ["DataTable", "data-table"],
   ])("ranks %s's component first", (query, id) => {
     expect(top(query, 1)).toEqual([id])
@@ -151,15 +151,15 @@ describe("tecton search", () => {
     expect(top(query, 1)).toEqual([id])
   })
 
-  // A number goes to NumberInput; free text stays with Input.
+  // A number goes to NumberField; free text stays with Input.
   it.each([
     ["number input", "number-input"],
     ["NumberInput", "number-input"],
-    ["number field", "number-input"],
-    ["numeric input", "number-input"],
-    ["spinbutton", "number-input"],
-    ["stepper", "number-input"],
-    ["input type number with min and max", "number-input"],
+    ["number field", "number-field"],
+    ["numeric input", "number-field"],
+    ["spinbutton", "number-field"],
+    ["stepper", "number-field"],
+    ["input type number with min and max", "number-field"],
     ["text input", "input"],
     ["password field", "input"],
   ])("routes %s to %s", (query, id) => {
@@ -235,11 +235,11 @@ describe("tecton docs", () => {
   it("accepts an id, a component or any export", () => {
     expect(resolveId(index, "alert-dialog")).toBe("alert-dialog")
     expect(resolveId(index, "AlertDialogAction")).toBe("alert-dialog")
-    expect(resolveId(index, "toast")).toBe("sonner")
+    expect(resolveId(index, "Toaster")).toBe("toast")
   })
 
   it("accepts a module path or a docs URL", () => {
-    expect(resolveId(index, "@tecton/react/components/select")).toBe("select")
+    expect(resolveId(index, "@tecton/react/select")).toBe("select")
     expect(resolveId(index, "/docs/components/select/")).toBe("select")
     expect(
       resolveId(index, "https://tecton.example/docs/tecton/chip#usage")
@@ -252,7 +252,7 @@ describe("tecton docs", () => {
     const ok = run(["docs", "select,combobox"], index)
     expect(ok.code).toBe(0)
     expect(ok.err).toBe("")
-    expect(ok.out).toContain("# Select — @tecton/react/components/select")
+    expect(ok.out).toContain("# Select — @tecton/react/select")
     expect(ok.out).toContain("# Combobox")
     const miss = run(["docs", "dropdwn"], index)
     expect(miss.code).toBe(1)
@@ -307,7 +307,7 @@ describe("tecton search output", () => {
     const result = run(["search", "ScrollArea"], index)
     expect(result.code).toBe(0)
     expect(result.out).toMatch(
-      /^1\. scroll-area — ScrollArea — ≈\S+ tok\n {3}import \{ ScrollArea[^}]*\} from "@tecton\/react\/components\/scroll-area"$/m
+      /^1\. scroll-area — ScrollArea — ≈\S+ tok\n {3}import \{ ScrollArea[^}]*\} from "@tecton\/react\/scroll-area"$/m
     )
   })
 

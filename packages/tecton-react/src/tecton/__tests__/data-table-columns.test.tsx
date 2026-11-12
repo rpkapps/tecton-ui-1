@@ -20,22 +20,17 @@ import {
   type DataTablePartialView,
   type DataTableProps,
   type DataTableView,
-} from "@tecton/react/tecton/data-table"
-import { Card } from "@tecton/react/components/card"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@tecton/react/components/table"
+} from "@tecton/react/data-table"
+import { Card } from "@tecton/react/card"
+import { Table, TableBody, TableCell, TableRow } from "@tecton/react/table"
 import {
   AppShell,
   AppShellAside,
   AppShellHeader,
   AppShellSidebar,
-} from "@tecton/react/tecton/app-shell"
-import { Panel } from "@tecton/react/tecton/panel"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+} from "@tecton/react/app-shell"
+import { Panel } from "@tecton/react/panel"
+import { TectonProvider } from "@tecton/react/provider"
 
 import { loadFeature } from "../internal/data-table/lazy"
 

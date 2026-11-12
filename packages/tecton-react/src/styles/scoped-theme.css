@@ -1006,6 +1006,9 @@
   --filled-active: var(--tecton-color-action-filled-bg-active);
   --slider-rail: var(--tecton-color-accent-lilac-muted);
   --progress-track: var(--tecton-color-extended-lilac-260);
+  --input-filled: var(--tecton-color-input-filled-bg);
+  --input-filled-focus: var(--tecton-color-input-filled-bg-focus);
+  --number-field-fill: var(--tecton-color-accent-lilac-muted);
   --content-hover: var(--tecton-color-content-bg-hover);
   --content-pressed: var(--tecton-color-content-bg-press);
   --content-active: var(--tecton-color-content-bg-active);
@@ -2005,6 +2008,9 @@
   --filled-active: var(--tecton-color-action-filled-bg-active);
   --slider-rail: var(--tecton-color-accent-lilac-muted);
   --progress-track: var(--tecton-color-extended-lilac-260);
+  --input-filled: var(--tecton-color-input-filled-bg);
+  --input-filled-focus: var(--tecton-color-input-filled-bg-focus);
+  --number-field-fill: var(--tecton-color-action-secondary-bg-focus);
   --content-hover: var(--tecton-color-content-bg-hover);
   --content-pressed: var(--tecton-color-content-bg-press);
   --content-active: var(--tecton-color-content-bg-active);
@@ -3005,6 +3011,9 @@
   --filled-active: var(--tecton-color-action-filled-bg-active);
   --slider-rail: var(--tecton-color-accent-lilac-muted);
   --progress-track: var(--tecton-color-extended-lilac-260);
+  --input-filled: var(--tecton-color-input-filled-bg);
+  --input-filled-focus: var(--tecton-color-input-filled-bg-focus);
+  --number-field-fill: var(--tecton-color-accent-lilac-muted);
   --content-hover: var(--tecton-color-content-bg-hover);
   --content-pressed: var(--tecton-color-content-bg-press);
   --content-active: var(--tecton-color-content-bg-active);
@@ -3015,5 +3024,6 @@
     @apply bg-background text-foreground;
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
+    font-synthesis-weight: none;
   }
 }

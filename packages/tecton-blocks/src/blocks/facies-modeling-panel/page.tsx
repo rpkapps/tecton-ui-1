@@ -16,9 +16,9 @@ import {
   AlertAction,
   AlertDescription,
   AlertTitle,
-} from "@tecton/react/components/alert"
-import { Button } from "@tecton/react/components/button"
-import { Spinner } from "@tecton/react/components/spinner"
+} from "@tecton/react/alert"
+import { Button } from "@tecton/react/button"
+import { Spinner } from "@tecton/react/spinner"
 import {
   Panel,
   PanelActions,
@@ -26,8 +26,8 @@ import {
   PanelFooter,
   PanelHeader,
   PanelTitle,
-} from "@tecton/react/tecton/panel"
-import { useLocale } from "@tecton/react/tecton/provider"
+} from "@tecton/react/panel"
+import { useLocale } from "@tecton/react/provider"
 
 import { FaciesForm } from "./components/facies-form"
 import { ParameterSlider } from "./components/parameter-slider"

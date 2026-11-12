@@ -4,8 +4,8 @@ import {
   ItemContent,
   ItemMedia,
   ItemTitle,
-} from "@tecton/react/components/item"
-import { Spinner } from "@tecton/react/components/spinner"
+} from "@tecton/react/item"
+import { Spinner } from "@tecton/react/spinner"
 
 export function SpinnerDemo() {
   return (

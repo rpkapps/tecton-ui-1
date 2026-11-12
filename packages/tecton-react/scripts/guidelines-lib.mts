@@ -151,7 +151,7 @@ export type Reference =
       name: string
       /** `components/badge` */
       module: string
-      /** `@tecton/react/components/badge` */
+      /** `@tecton/react/badge` */
       modulePath: string
       /** `/docs/components/badge` */
       docs: string
@@ -160,9 +160,9 @@ export type Reference =
   | {
       kind: "external"
       name: string
-      /** The full statement from families.json, e.g. `import { toast } from "sonner"`. */
+      /** The full statement from families.json, e.g. `import { useForm } from "@tanstack/react-form"`. */
       import: string
-      /** Just the specifier, e.g. `sonner`. */
+      /** Just the specifier, e.g. `@tanstack/react-form`. */
       importFrom: string
       docs: string
     }
@@ -175,7 +175,7 @@ export type Catalog = {
   byExportName: Map<string, string>
   /** `components/badge` -> the families that list it. */
   familiesOfModule: Map<string, string[]>
-  /** The keys of the package `exports` map, e.g. `./components/badge`. */
+  /** The keys of the package `exports` map, e.g. `./badge`. */
   packageExports: Set<string>
   version: string
   /** `components/badge` -> its validated guideline. Filled by `loadGuidelines`. */
@@ -208,23 +208,36 @@ export function parseYaml(text: string): unknown {
 // module paths
 // ---------------------------------------------------------------------------
 
-/** `@tecton/react/components/badge` -> `components/badge` (null when not ours). */
+/**
+ * A module's root path -> its key: `@tecton/react/badge` -> `components/badge`,
+ * `@tecton/react/chip` -> `tecton/chip` (null when not ours). Every module is
+ * exported from the package root; the key names the folder its source lives in.
+ */
 export function moduleKeyOf(modulePath: string): string | null {
   const prefix = `${PKG_NAME}/`
   if (!modulePath.startsWith(prefix)) return null
-  const key = modulePath.slice(prefix.length)
-  const [dir, ...rest] = key.split("/")
-  if (rest.length !== 1) return null
-  if (!(MODULE_DIRS as readonly string[]).includes(dir)) return null
-  return key
+  const name = modulePath.slice(prefix.length)
+  if (!/^[a-z0-9-]+$/.test(name)) return null
+  for (const dir of MODULE_DIRS) {
+    const key = `${dir}/${name}`
+    if (existsSync(sourceFileOf(key))) return key
+  }
+  return `tecton/${name}`
 }
 
-/** `components/badge` -> `@tecton/react/components/badge` */
+/** The `exports` subpath of a module: `badge` for `components/badge`, `chip` for `tecton/chip`. */
+export function exportSubpathOf(moduleKey: string): string {
+  return moduleKey.slice(moduleKey.indexOf("/") + 1)
+}
+
+/** `components/badge` -> `@tecton/react/badge`, `tecton/chip` -> `@tecton/react/chip` */
 export function modulePathOf(moduleKey: string): string {
-  return `${PKG_NAME}/${moduleKey}`
+  return `${PKG_NAME}/${exportSubpathOf(moduleKey)}`
 }
 
-/** A Tecton hook: `tecton/use-busy-delay`. Hooks are `.ts` and documented under Hooks. */
+/**
+ * A Tecton hook: `tecton/use-busy-delay`. Hooks are `.ts` and documented under Hooks.
+ */
 export function isHookModule(moduleKey: string): boolean {
   return moduleKey.startsWith("tecton/use-")
 }
@@ -271,7 +284,7 @@ export function loadFamilies(dir: string = GUIDELINES_DIR): FamiliesFile {
  * direction and portal plumbing behind `TectonProvider`. They have no guideline,
  * no family and no docs page, and nothing resolves to their exports.
  */
-export const INTERNAL_MODULES: ReadonlySet<string> = new Set(["components/direction", "tecton/portal"])
+export const INTERNAL_MODULES: ReadonlySet<string> = new Set(["components/direction", "tecton/portal", "tecton/toast-bridge"])
 
 /**
  * Every public `.tsx` module under src/components and src/tecton, plus the
@@ -539,20 +552,26 @@ function lintUnits(text: string): LintUnit[] {
 
 /**
  * Rejects the name of a library underneath Tecton in guidance text (a guideline,
- * a topic, the skill, a families.json or adopted rule string). The one exception
- * is a package name (`react-aria-components`, `@base-ui/react`) in an import
- * prohibition: an `import` line in a `Wrong:` block, or a sentence that forbids
- * it ("nothing is imported from …").
+ * a topic, the skill, a families.json or adopted rule string). The one exception,
+ * in the skill only (`allowProhibitions`), is a package name
+ * (`react-aria-components`, `@base-ui/react`) in an import prohibition: an
+ * `import` line in a `Wrong:` block, or a sentence that forbids it ("nothing is
+ * imported from …"). Everything else consumers read never names them at all.
  */
-export function libraryNameErrors(text: string, where: string): string[] {
+export function libraryNameErrors(
+  text: string,
+  where: string,
+  { allowProhibitions = false }: { allowProhibitions?: boolean } = {}
+): string[] {
   const errors: string[] = []
   for (const unit of lintUnits(text)) {
-    const allowed = unit.allowPackages ? unit.text.replace(PACKAGE_SPECIFIER, "") : unit.text
+    const allowed =
+      allowProhibitions && unit.allowPackages ? unit.text.replace(PACKAGE_SPECIFIER, "") : unit.text
     for (const { pattern, name } of LIBRARY_NAMES) {
       pattern.lastIndex = 0
       if (!pattern.test(allowed)) continue
       errors.push(
-        `${where}:${unit.line}: names ${name} — guidance names the Tecton props and parts, never the library underneath (a package name only in an import prohibition)`
+        `${where}:${unit.line}: names ${name} — guidance names the Tecton props and parts, never the library underneath (a package name only in an import prohibition in the skill)`
       )
     }
   }
@@ -871,7 +890,7 @@ export function validateGuideline(
   const moduleKey = moduleKeyOf(meta.module)
   if (!moduleKey) {
     errors.push(
-      `frontmatter: "module" must be "${PKG_NAME}/components/<name>" or "${PKG_NAME}/tecton/<name>", got "${meta.module}"`
+      `frontmatter: "module" must be "${PKG_NAME}/<name>", got "${meta.module}"`
     )
   } else {
     const basename = moduleKey.split("/")[1]
@@ -880,7 +899,7 @@ export function validateGuideline(
         `file name: "${parsed.name}.md" does not match the module basename "${basename}" of "${meta.module}"`
       )
     }
-    if (!catalog.packageExports.has(`./${moduleKey}`)) {
+    if (!catalog.packageExports.has(`./${exportSubpathOf(moduleKey)}`)) {
       errors.push(
         `frontmatter: "${meta.module}" is not in the package "exports" map (run exports:build)`
       )
@@ -1083,7 +1102,7 @@ export function renderNotFor(meta: Frontmatter, catalog: Catalog): string[] {
   })
 }
 
-/** `import { Badge, badgeVariants } from "@tecton/react/components/badge"` */
+/** `import { Badge, badgeVariants } from "@tecton/react/badge"` */
 export function renderImportLine(meta: Frontmatter): string {
   return `import { ${meta.exports.join(", ")} } from "${meta.module}"`
 }

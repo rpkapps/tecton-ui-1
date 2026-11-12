@@ -12,7 +12,7 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from "@tecton/react/components/command"
+} from "@tecton/react/command"
 
 import {
   apps as defaultApps,

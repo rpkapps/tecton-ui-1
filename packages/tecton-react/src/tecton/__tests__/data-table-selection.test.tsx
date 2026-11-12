@@ -21,7 +21,7 @@ import {
   useDataTable,
   type DataTableProps,
   type DataTableSelectionChangeDetails,
-} from "@tecton/react/tecton/data-table"
+} from "@tecton/react/data-table"
 
 import {
   cell,

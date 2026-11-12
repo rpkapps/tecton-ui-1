@@ -1,8 +1,8 @@
 import * as React from "react"
 
-import { Button } from "@tecton/react/components/button"
-import { Spinner } from "@tecton/react/components/spinner"
-import { useBusyDelay } from "@tecton/react/tecton/use-busy-delay"
+import { Button } from "@tecton/react/button"
+import { Spinner } from "@tecton/react/spinner"
+import { useBusyDelay } from "@tecton/react/use-busy-delay"
 
 function useFakeRequest() {
   const [pending, setPending] = React.useState(false)

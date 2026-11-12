@@ -3,19 +3,19 @@
 import * as React from "react"
 import { HexagonIcon, PlusIcon, SearchIcon } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
+import { Badge } from "@tecton/react/badge"
+import { Button } from "@tecton/react/button"
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-} from "@tecton/react/components/empty"
+} from "@tecton/react/empty"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@tecton/react/components/input-group"
+} from "@tecton/react/input-group"
 import {
   Sidebar,
   SidebarContent,
@@ -27,17 +27,17 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@tecton/react/components/sidebar"
-import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
+} from "@tecton/react/sidebar"
+import { ColorSwatch } from "@tecton/react/color-swatch"
 import {
   TreeView,
   TreeViewCollection,
   TreeViewItem,
   TreeViewItemContent,
   TreeViewVisibilityToggle,
-} from "@tecton/react/tecton/tree-view"
-import { Link } from "@tecton/react/tecton/link"
-import { useDirection } from "@tecton/react/tecton/provider"
+} from "@tecton/react/tree-view"
+import { Link } from "@tecton/react/link"
+import { useDirection } from "@tecton/react/provider"
 
 import { filterTree, flattenTree, project, projectTree } from "../data"
 import type { ProjectNode } from "../data"

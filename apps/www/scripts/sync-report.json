@@ -1,5 +1,5 @@
 {
-  "upstream": "3ba91b1cc83e1bbe4ab35a422ff2a694849c5048",
+  "upstream": "c2477f311c19982ef6e246085438e6cfec3e35ea",
   "pages": [
     "accordion",
     "alert",
@@ -17,6 +17,7 @@
     "carousel",
     "chart",
     "checkbox",
+    "code-block",
     "collapsible",
     "combobox",
     "command",
@@ -50,15 +51,16 @@
     "sidebar",
     "skeleton",
     "slider",
-    "sonner",
     "spinner",
     "switch",
     "table",
     "tabs",
     "textarea",
+    "toast",
     "toggle",
     "toggle-group",
     "tooltip",
+    "trace",
     "utils/scroll-fade",
     "utils/shimmer"
   ],
@@ -190,6 +192,22 @@
     "checkbox-invalid",
     "checkbox-rtl",
     "checkbox-table",
+    "code-block-actions",
+    "code-block-ansi",
+    "code-block-basic",
+    "code-block-destructive",
+    "code-block-diff",
+    "code-block-floating-actions",
+    "code-block-header",
+    "code-block-height",
+    "code-block-highlighted-lines",
+    "code-block-highlighting",
+    "code-block-line-numbers",
+    "code-block-rtl",
+    "code-block-size",
+    "code-block-start-line",
+    "code-block-trace",
+    "code-block-wrap",
     "collapsible-demo",
     "collapsible-file-tree",
     "collapsible-rtl",
@@ -438,10 +456,6 @@
     "slider-range",
     "slider-rtl",
     "slider-vertical",
-    "sonner-demo",
-    "sonner-description",
-    "sonner-position",
-    "sonner-types",
     "spinner-badge",
     "spinner-button",
     "spinner-custom",
@@ -473,6 +487,9 @@
     "textarea-field",
     "textarea-invalid",
     "textarea-rtl",
+    "toast-demo",
+    "toast-promise",
+    "toast-types",
     "toggle-demo",
     "toggle-disabled",
     "toggle-group-demo",
@@ -491,11 +508,33 @@
     "tooltip-disabled",
     "tooltip-keyboard",
     "tooltip-rtl",
-    "tooltip-sides"
+    "tooltip-sides",
+    "trace-collapsible",
+    "trace-commit",
+    "trace-description",
+    "trace-dialog",
+    "trace-group",
+    "trace-link",
+    "trace-open",
+    "trace-sheet",
+    "trace-sources",
+    "trace-static",
+    "trace-status",
+    "trace-steps",
+    "trace-turn"
   ],
   "skippedExamples": {
     "bubble-variants": "unsupported import: @/components/markdown",
     "calendar-hijri": "unsupported import: next/font/google",
+    "code-block-demo": "unsupported import: ai",
+    "code-block-show-more": "unsupported import: @ai-sdk/react",
+    "code-block-show-more-scroll": "unsupported import: @ai-sdk/react",
+    "code-block-tabs": "unsupported import: ai",
+    "code-block-chat": "unsupported import: ai",
+    "code-block-typeset": "unsupported import: ai",
+    "code-block-languages": "unsupported import: tailwindcss",
+    "code-block-streaming": "unsupported import: ai",
+    "code-block-markdown": "unsupported import: @ai-sdk/react",
     "collapsible-basic": "unsupported import: @/registry/icons/__lucide__",
     "message-scroller-demo": "unsupported import: @ai-sdk/react",
     "message-scroller-anchoring": "unsupported import: @/components/message-animated",
@@ -505,7 +544,10 @@
     "message-scroller-animation": "unsupported import: @ai-sdk/react",
     "message-scroller-commands": "unsupported import: @/lib/ai",
     "message-scroller-visibility": "unsupported import: @/lib/ai",
-    "message-scroller-scrollable": "unsupported import: @/components/message-animated"
+    "message-scroller-scrollable": "unsupported import: @/components/message-animated",
+    "trace-demo": "unsupported import: @ai-sdk/react",
+    "trace-thinking": "unsupported import: @ai-sdk/react",
+    "trace-tool-calls": "unsupported import: @ai-sdk/react"
   },
   "removedPreviews": {
     "bubble": [
@@ -513,6 +555,17 @@
     ],
     "calendar": [
       "calendar-hijri"
+    ],
+    "code-block": [
+      "code-block-demo",
+      "code-block-show-more",
+      "code-block-show-more-scroll",
+      "code-block-tabs",
+      "code-block-chat",
+      "code-block-typeset",
+      "code-block-languages",
+      "code-block-streaming",
+      "code-block-markdown"
     ],
     "collapsible": [
       "collapsible-basic"
@@ -527,6 +580,11 @@
       "message-scroller-commands",
       "message-scroller-visibility",
       "message-scroller-scrollable"
+    ],
+    "trace": [
+      "trace-demo",
+      "trace-thinking",
+      "trace-tool-calls"
     ]
   }
 }

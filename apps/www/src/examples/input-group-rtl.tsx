@@ -13,7 +13,7 @@ import {
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@tecton/react/components/field"
+} from "@tecton/react/field"
 import {
   InputGroup,
   InputGroupAddon,
@@ -21,8 +21,8 @@ import {
   InputGroupInput,
   InputGroupText,
   InputGroupTextarea,
-} from "@tecton/react/components/input-group"
-import { Spinner } from "@tecton/react/components/spinner"
+} from "@tecton/react/input-group"
+import { Spinner } from "@tecton/react/spinner"
 
 const translations: Translations = {
   en: {

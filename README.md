@@ -24,14 +24,14 @@ Requirements: Node 22.22+ / 24.15+ / 26+, pnpm 10, [bun](https://bun.sh) for the
 
 ## Using the library
 
-`@tecton/react` is private: consume it as a workspace package, a packed tarball or through a private registry (see [Installation](apps/www/content/docs/installation.mdx)).
+`@tecton/react` is private: consume it as a workspace package, a packed tarball or through a private registry (see [Installation](apps/www/content/docs/installation.mdx)). [RELEASE.md](RELEASE.md) describes versioning and how to cut a release; [CHANGELOG.md](CHANGELOG.md) lists the changes in each version.
 
 ```tsx
 import "@tecton/react/globals.css"
 
-import { Button } from "@tecton/react/components/button" // shadcn/ui component
-import { Chip } from "@tecton/react/tecton/chip"         // Tecton component
-import { WellIcon } from "@tecton/react/icons"            // Tecton icon set
+import { Button } from "@tecton/react/button"  // shadcn/ui component
+import { Chip } from "@tecton/react/chip"      // Tecton component
+import { WellIcon } from "@tecton/react/icons" // Tecton icon set
 ```
 
 Blocks are the only items published to a shadcn registry (`/r/{name}.json`, namespace `@tecton`); the copies import the components from the package. An application mounted inside another one uses `@tecton/react/styles/scoped.css` and the `@tecton/react/postcss/scope` plugin instead of `globals.css` (see [Micro-frontends](apps/www/content/docs/micro-frontends.mdx)). Coding agents get one Agent Skill and the `tecton` lookup command (see [AI agents](apps/www/content/docs/agents.mdx)).

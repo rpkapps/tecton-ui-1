@@ -1,7 +1,7 @@
 "use client"
 
 import { PreviewCard as PreviewCardPrimitive } from "@base-ui/react/preview-card"
-import { usePortalTarget } from "@tecton/react/tecton/portal"
+import { usePortalTarget } from "@tecton/react/portal"
 import { cn } from "cn"
 
 function HoverCard({ ...props }: PreviewCardPrimitive.Root.Props) {

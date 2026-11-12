@@ -6,8 +6,8 @@ import {
   DataTable,
   DataTableContent,
   DataTableFilter,
-} from "@tecton/react/tecton/data-table"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+} from "@tecton/react/data-table"
+import { TectonProvider } from "@tecton/react/provider"
 
 import { columns, WELLS } from "./data-table-fixtures"
 

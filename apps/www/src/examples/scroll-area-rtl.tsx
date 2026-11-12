@@ -7,8 +7,8 @@ import {
   useTranslation,
   type Translations,
 } from "@/components/language-selector"
-import { ScrollArea } from "@tecton/react/components/scroll-area"
-import { Separator } from "@tecton/react/components/separator"
+import { ScrollArea } from "@tecton/react/scroll-area"
+import { Separator } from "@tecton/react/separator"
 
 const tags = Array.from({ length: 50 }).map(
   (_, i, a) => `v1.2.0-beta.${a.length - i}`

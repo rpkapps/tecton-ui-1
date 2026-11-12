@@ -10,7 +10,7 @@
  */
 import * as React from "react"
 
-import { useLocale } from "@tecton/react/tecton/provider"
+import { useLocale } from "@tecton/react/provider"
 
 import type { ChangeEventDetails } from "../primitives/event-details"
 import type { SelectionReason } from "../primitives/selection"

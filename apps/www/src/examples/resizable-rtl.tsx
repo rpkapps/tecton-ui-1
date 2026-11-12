@@ -11,7 +11,7 @@ import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from "@tecton/react/components/resizable"
+} from "@tecton/react/resizable"
 
 const translations: Translations = {
   en: {

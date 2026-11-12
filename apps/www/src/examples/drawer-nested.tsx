@@ -1,8 +1,8 @@
 // Synced from shadcn/ui (apps/v4/examples/base/drawer-nested.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import { useIsMobile } from "@tecton/react/hooks/use-mobile"
-import { Button } from "@tecton/react/components/button"
+import { useIsMobile } from "@tecton/react/use-mobile"
+import { Button } from "@tecton/react/button"
 import {
   Drawer,
   DrawerClose,
@@ -12,7 +12,7 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@tecton/react/components/drawer"
+} from "@tecton/react/drawer"
 
 export function DrawerNested() {
   const isMobile = useIsMobile()

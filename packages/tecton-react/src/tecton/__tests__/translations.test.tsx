@@ -5,12 +5,12 @@ import { fileURLToPath } from "node:url"
 import { render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
-import { TectonProvider } from "@tecton/react/tecton/provider"
+import { TectonProvider } from "@tecton/react/provider"
 import {
   TreeView,
   TreeViewItem,
   TreeViewItemContent,
-} from "@tecton/react/tecton/tree-view"
+} from "@tecton/react/tree-view"
 
 import {
   createTranslator,

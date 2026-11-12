@@ -2,9 +2,8 @@
 "use client"
 
 import * as React from "react"
-import { toast } from "sonner"
-
-import { Button } from "@tecton/react/components/button"
+import { toast } from "@tecton/react/toast"
+import { Button } from "@tecton/react/button"
 import {
   Dialog,
   DialogClose,
@@ -14,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@tecton/react/components/dialog"
+} from "@tecton/react/dialog"
 import {
   Questionnaire,
   QuestionnaireActions,
@@ -28,7 +27,7 @@ import {
   QuestionnaireProgress,
   QuestionnaireSubmit,
   QuestionnaireTitle,
-} from "@tecton/react/components/questionnaire"
+} from "@tecton/react/questionnaire"
 
 const items = [
   { name: "scope", required: true },
@@ -44,9 +43,7 @@ export function QuestionnaireDialog() {
     const formData = new FormData(event.currentTarget)
 
     setOpen(false)
-    toast("Clarification sent", {
-      description: `Scope: ${formData.get("scope") ?? "None"} · Verification: ${formData.get("tests") ?? "None"}`,
-    })
+    toast.add({ title: "Clarification sent", description: `Scope: ${formData.get("scope") ?? "None"} · Verification: ${formData.get("tests") ?? "None"}` })
   }
 
   return (

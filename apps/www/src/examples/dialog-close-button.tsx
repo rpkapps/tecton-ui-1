@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/base/dialog-close-button.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Dialog,
   DialogClose,
@@ -9,9 +9,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@tecton/react/components/dialog"
-import { Input } from "@tecton/react/components/input"
-import { Label } from "@tecton/react/components/label"
+} from "@tecton/react/dialog"
+import { Input } from "@tecton/react/input"
+import { Label } from "@tecton/react/label"
 
 export function DialogCloseButton() {
   return (

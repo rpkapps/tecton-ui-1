@@ -2,18 +2,15 @@
 
 import * as React from "react"
 
-import { Field, FieldLabel } from "@tecton/react/components/field"
-import { Switch } from "@tecton/react/components/switch"
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@tecton/react/components/toggle-group"
+import { Field, FieldLabel } from "@tecton/react/field"
+import { Switch } from "@tecton/react/switch"
+import { ToggleGroup, ToggleGroupItem } from "@tecton/react/toggle-group"
 import {
   createColumns,
   DataTable,
   DataTableContent,
   DataTableToolbar,
-} from "@tecton/react/tecton/data-table"
+} from "@tecton/react/data-table"
 
 type Reading = {
   id: string

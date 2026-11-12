@@ -1,6 +1,6 @@
 ---
 component: ActionBar
-module: "@tecton/react/tecton/action-bar"
+module: "@tecton/react/action-bar"
 family: actions
 exports: [ActionBar, ActionBarSelection, ActionBarMessage, ActionBarActions, actionBarVariants]
 notFor:

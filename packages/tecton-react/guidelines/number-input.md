@@ -1,6 +1,6 @@
 ---
 component: NumberInput
-module: "@tecton/react/tecton/number-input"
+module: "@tecton/react/number-input"
 family: forms
 exports: [NumberInput]
 notFor:

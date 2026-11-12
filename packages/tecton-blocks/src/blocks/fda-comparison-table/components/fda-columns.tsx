@@ -3,17 +3,14 @@
 import { cn } from "cn"
 import { CopyIcon, PencilIcon, ShareIcon, TrashIcon } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
+import { Badge } from "@tecton/react/badge"
 import {
   DropdownMenuItem,
   DropdownMenuSeparator,
-} from "@tecton/react/components/dropdown-menu"
-import {
-  createColumns,
-  DataTableRowActions,
-} from "@tecton/react/tecton/data-table"
-import { Meter } from "@tecton/react/tecton/meter"
-import { useLocale } from "@tecton/react/tecton/provider"
+} from "@tecton/react/dropdown-menu"
+import { createColumns, DataTableRowActions } from "@tecton/react/data-table"
+import { Meter } from "@tecton/react/meter"
+import { useLocale } from "@tecton/react/provider"
 
 import { formatFirstOil, riskLabel, statusMeta } from "../data"
 import type { FdaStatus, FieldDevelopmentAlternative } from "../data"

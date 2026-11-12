@@ -1,6 +1,6 @@
 ---
 component: Input
-module: "@tecton/react/components/input"
+module: "@tecton/react/input"
 family: forms
 exports: [Input]
 notFor:
@@ -8,11 +8,11 @@ notFor:
     use: Textarea
   - need: an icon, a prefix or a button inside the field
     use: InputGroup
-  - need: a quantity typed or stepped, with bounds, a step or a unit
-    use: NumberInput
   - need: the label, description and error message around the control
     use: Field
-related: [Field, InputGroup, Textarea, NumberInput]
+  - need: a number with bounds, minus and plus buttons, a unit or locale formatting
+    use: NumberField
+related: [Field, InputGroup, Textarea]
 ---
 
 ## Use it when

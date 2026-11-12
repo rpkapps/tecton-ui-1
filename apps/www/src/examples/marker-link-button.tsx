@@ -2,9 +2,8 @@
 "use client"
 
 import { GitBranchIcon, RotateCcwIcon } from "lucide-react"
-import { toast } from "sonner"
-
-import { Marker, MarkerContent, MarkerIcon } from "@tecton/react/components/marker"
+import { toast } from "@tecton/react/toast"
+import { Marker, MarkerContent, MarkerIcon } from "@tecton/react/marker"
 
 export function MarkerLinkButtonDemo() {
   return (
@@ -20,7 +19,7 @@ export function MarkerLinkButtonDemo() {
           <button
             type="button"
             className="transition-colors hover:text-foreground"
-            onClick={() => toast("You clicked the revert button")}
+            onClick={() => toast.add({ title: "You clicked the revert button" })}
           />
         }
       >

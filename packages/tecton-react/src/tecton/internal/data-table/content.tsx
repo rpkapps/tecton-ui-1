@@ -37,8 +37,8 @@
 import * as React from "react"
 import { cn } from "cn"
 
-import { Table, TableBody } from "@tecton/react/components/table"
-import { useDirection } from "@tecton/react/tecton/provider"
+import { Table, TableBody } from "@tecton/react/table"
+import { useDirection } from "@tecton/react/provider"
 
 import { useTranslations } from "../i18n/translations"
 import { createStore } from "../store"

@@ -8,8 +8,8 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "@tecton/react/components/sidebar"
-import { useDirection } from "@tecton/react/tecton/provider"
+} from "@tecton/react/sidebar"
+import { useDirection } from "@tecton/react/provider"
 
 import { currentUser, navGroups, projects } from "../data"
 import { NavMain } from "./nav-main"

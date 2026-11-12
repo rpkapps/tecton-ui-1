@@ -14,7 +14,7 @@ import {
   AvatarGroup,
   AvatarGroupCount,
   AvatarImage,
-} from "@tecton/react/components/avatar"
+} from "@tecton/react/avatar"
 
 const translations: Translations = {
   en: {

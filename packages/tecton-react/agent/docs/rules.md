@@ -12,11 +12,12 @@ convention — `onClick`, `disabled`, `checked`, `value` / `onValueChange`,
 Run this list against the file you just wrote, whatever else you
 looked up. Every line is a condition that has to hold in that file.
 
-- **Imports** — every component comes from `@tecton/react/components/<name>`,
-  `@tecton/react/tecton/<name>` or `@tecton/react/icons`. Nothing is imported
-  from the `@tecton/react` root (there is no `.` export), from a
-  `components/ui/` directory, or from `react-aria-components` or
-  `@base-ui/react`.
+- **Imports** — every component, hook and props type comes from
+  `@tecton/react/<name>`, glyphs from `@tecton/react/icons`.
+  Nothing is imported
+  from the `@tecton/react` root (there is no `.` export) or from a
+  `components/ui/` directory. A wrapper types its props with the module's
+  `<Part>Props` (`DialogContentProps` from `@tecton/react/dialog`).
 - **No stock Tailwind colour** — no `bg-red-500`, `text-zinc-400`,
   `border-slate-300`, `bg-emerald-600`; the palette is reset, so they emit no
   CSS. A Tecton colour is a semantic token (`bg-primary`,
@@ -47,7 +48,7 @@ looked up. Every line is a condition that has to hold in that file.
   nothing to show renders `Empty` with `EmptyTitle` and `EmptyDescription`, not
   a stack of divs; an empty `Table` shows it in place of the table or in one
   cell spanning every column.
-- **Confirmations** — a transient one is `toast` from `sonner` with exactly one
+- **Confirmations** — a transient one is `toast.add` from `@tecton/react/toast` with exactly one
   `<Toaster />` mounted at the application root; one that stays on the page
   until the user reads or resolves it is an `Alert` with a `variant`.
 - **The component that already exists** — a KPI is a `Stat` (`StatLabel`,
@@ -84,12 +85,12 @@ Tecton tokens and the theme variables.
 Tecton is dark-first: put the `dark` class on `<html>` (for example with
 `next-themes`, `attribute="class" defaultTheme="dark"`). Without it you get the
 Tecton light theme, which is equally complete. Mount one `TectonProvider`
-(`@tecton/react/tecton/provider`) at the root for the locale, the direction and
+(`@tecton/react/provider`) at the root for the locale, the direction and
 the router. Then import each component from its own module:
 
 ```tsx
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
+import { Badge } from "@tecton/react/badge"
+import { Button } from "@tecton/react/button"
 import { WellIcon } from "@tecton/react/icons"
 
 export function WellHeader() {
@@ -107,12 +108,11 @@ export function WellHeader() {
 Nothing at build time checks the rules above: a stock colour class type-checks,
 builds and renders unstyled. The *Before you finish* list is the check.
 
-## Three import namespaces, no root export
+## Two import namespaces, no root export
 
 | Path | Holds |
 | --- | --- |
-| `@tecton/react/components/<name>` | The shadcn components: `button`, `badge`, `alert`, `select`, `dialog`, `field`, `input`, `tabs`, `table`, … |
-| `@tecton/react/tecton/<name>` | Tecton-only components: `chip`, `count-badge`, `circular-progress`, `meter`, `tree-view`, `stat`, `panel`, `page-header`, `app-shell`, `copy-button`, `link`, `provider`, `theme-root`, …; and the Tecton hooks, `use-<name>` (`use-busy-delay`) |
+| `@tecton/react/<name>` | Every component and hook, one module each. The shadcn components: `button`, `badge`, `alert`, `select`, `dialog`, `field`, `input`, `tabs`, `table`, …; the Tecton-only components: `chip`, `count-badge`, `circular-progress`, `meter`, `tree-view`, `stat`, `panel`, `page-header`, `app-shell`, `copy-button`, `link`, `provider`, `theme-root`, …; the hooks `use-busy-delay` and `use-mobile`; and `utils` (`cn`) |
 | `@tecton/react/icons` | The Tecton domain glyphs (`WellIcon`, `SeismicIcon`, `HorizonIcon`, `DrillBitIcon`, …); everything generic comes from `lucide-react` |
 
 The `exports` map is enumerated, one entry per module, so a typo fails at
@@ -203,7 +203,7 @@ import { Button } from "@/components/ui/button" // after `npx shadcn@latest add 
 Correct:
 
 ```tsx
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 ```
 
 Without the `@tecton` namespace the CLI installs from the public shadcn
@@ -221,8 +221,8 @@ import { Button, Badge } from "@tecton/react"
 Correct:
 
 ```tsx
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
+import { Badge } from "@tecton/react/badge"
+import { Button } from "@tecton/react/button"
 ```
 
 The `exports` map has no `.` entry, so the root specifier resolves to nothing.

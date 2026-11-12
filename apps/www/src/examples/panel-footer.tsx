@@ -1,5 +1,5 @@
-import { Button } from "@tecton/react/components/button"
-import { Meter } from "@tecton/react/tecton/meter"
+import { Button } from "@tecton/react/button"
+import { Meter } from "@tecton/react/meter"
 import {
   Panel,
   PanelContent,
@@ -7,7 +7,7 @@ import {
   PanelFooter,
   PanelHeader,
   PanelTitle,
-} from "@tecton/react/tecton/panel"
+} from "@tecton/react/panel"
 
 export default function PanelFooterExample() {
   return (

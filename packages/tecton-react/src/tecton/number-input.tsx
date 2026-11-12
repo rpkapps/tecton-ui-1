@@ -6,8 +6,8 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 import { MinusIcon, PlusIcon } from "lucide-react"
 
-import { buttonVariants } from "@tecton/react/components/button"
-import { useLocale } from "@tecton/react/tecton/provider"
+import { buttonVariants } from "@tecton/react/button"
+import { useLocale } from "@tecton/react/provider"
 
 import { useTranslations } from "./internal/i18n/translations"
 

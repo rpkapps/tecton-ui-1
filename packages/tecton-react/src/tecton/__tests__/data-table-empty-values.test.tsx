@@ -19,7 +19,7 @@ import {
   useDataTable,
   type DataTableColumn,
   type DataTableProps,
-} from "@tecton/react/tecton/data-table"
+} from "@tecton/react/data-table"
 
 import { createDefaultView, reconcileView } from "../internal/data-table/engine"
 import { names, row } from "./data-table-fixtures"

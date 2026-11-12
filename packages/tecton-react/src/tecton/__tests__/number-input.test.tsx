@@ -3,9 +3,9 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
-import { Field, FieldError, FieldLabel } from "@tecton/react/components/field"
-import { NumberInput } from "@tecton/react/tecton/number-input"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+import { Field, FieldError, FieldLabel } from "@tecton/react/field"
+import { NumberInput } from "@tecton/react/number-input"
+import { TectonProvider } from "@tecton/react/provider"
 
 /** A NumberInput labelled "Depth", in an en-US provider. */
 function Depth(props: React.ComponentProps<typeof NumberInput>) {

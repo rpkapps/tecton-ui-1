@@ -7,8 +7,8 @@ import {
   ActionBarActions,
   ActionBarMessage,
   ActionBarSelection,
-} from "@tecton/react/tecton/action-bar"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+} from "@tecton/react/action-bar"
+import { TectonProvider } from "@tecton/react/provider"
 
 import { loadTranslations } from "../internal/i18n/translations"
 

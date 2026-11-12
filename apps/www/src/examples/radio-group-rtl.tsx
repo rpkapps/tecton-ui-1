@@ -12,11 +12,11 @@ import {
   FieldContent,
   FieldDescription,
   FieldLabel,
-} from "@tecton/react/components/field"
+} from "@tecton/react/field"
 import {
   RadioGroup,
   RadioGroupItem,
-} from "@tecton/react/components/radio-group"
+} from "@tecton/react/radio-group"
 
 const translations: Translations = {
   en: {

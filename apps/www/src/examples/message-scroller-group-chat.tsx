@@ -4,8 +4,8 @@
 import * as React from "react"
 import { RotateCwIcon } from "lucide-react"
 
-import { Bubble, BubbleContent } from "@tecton/react/components/bubble"
-import { Button } from "@tecton/react/components/button"
+import { Bubble, BubbleContent } from "@tecton/react/bubble"
+import { Button } from "@tecton/react/button"
 import {
   Card,
   CardAction,
@@ -14,13 +14,13 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@tecton/react/components/card"
-import { Marker, MarkerContent } from "@tecton/react/components/marker"
+} from "@tecton/react/card"
+import { Marker, MarkerContent } from "@tecton/react/marker"
 import {
   Message,
   MessageContent,
   MessageHeader,
-} from "@tecton/react/components/message"
+} from "@tecton/react/message"
 import {
   MessageScroller,
   MessageScrollerButton,
@@ -28,12 +28,12 @@ import {
   MessageScrollerItem,
   MessageScrollerProvider,
   MessageScrollerViewport,
-} from "@tecton/react/components/message-scroller"
+} from "@tecton/react/message-scroller"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@tecton/react/components/tooltip"
+} from "@tecton/react/tooltip"
 
 const currentUser = "Grace"
 

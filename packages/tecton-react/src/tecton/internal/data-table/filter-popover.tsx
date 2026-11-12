@@ -30,17 +30,14 @@
 import * as React from "react"
 import { cn } from "cn"
 
-import { Button } from "@tecton/react/components/button"
-import { Checkbox } from "@tecton/react/components/checkbox"
-import { Input } from "@tecton/react/components/input"
-import { Label } from "@tecton/react/components/label"
-import { PopoverContent, PopoverTitle } from "@tecton/react/components/popover"
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from "@tecton/react/components/radio-group"
-import { Separator } from "@tecton/react/components/separator"
-import { NumberInput } from "@tecton/react/tecton/number-input"
+import { Button } from "@tecton/react/button"
+import { Checkbox } from "@tecton/react/checkbox"
+import { Input } from "@tecton/react/input"
+import { Label } from "@tecton/react/label"
+import { PopoverContent, PopoverTitle } from "@tecton/react/popover"
+import { RadioGroup, RadioGroupItem } from "@tecton/react/radio-group"
+import { Separator } from "@tecton/react/separator"
+import { NumberInput } from "@tecton/react/number-input"
 
 import { CalendarLoading } from "../calendar-loading"
 import { useTranslations } from "../i18n/translations"

@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
+import { ColorSwatch } from "@tecton/react/color-swatch"
 
 export default function ColorSwatchEditable() {
   const [color, setColor] = React.useState("#cb8553")

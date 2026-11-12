@@ -12,7 +12,7 @@ upstream: apps/v4/content/docs/components/base/input.mdx
 ## Usage
 
 ```tsx
-import { Input } from "@tecton/react/components/input"
+import { Input } from "@tecton/react/input"
 ```
 
 ```tsx
@@ -166,8 +166,8 @@ Use `variant="outline" | "filled" | "text"` for the three Tecton surface styles.
 
 - more than one line of free text: use [Textarea](/docs/components/textarea)
 - an icon, a prefix or a button inside the field: use [InputGroup](/docs/components/input-group)
-- a quantity typed or stepped, with bounds, a step or a unit: use [NumberInput](/docs/tecton/number-input)
 - the label, description and error message around the control: use [Field](/docs/components/field)
+- a number with bounds, minus and plus buttons, a unit or locale formatting: use [NumberField](/docs/tecton/number-field)
 
 ### Do
 
@@ -217,7 +217,7 @@ Search and filter fields show a clear button at the end while they hold a value 
 
 <Do>
 
-Every numeric value shows its unit (ft, psi, bbl/d): an `InputGroupText` end addon on an `Input`, after the live value on a `Slider`.
+Every numeric value shows its unit (ft, psi, bbl/d): `NumberFieldUnit` in a `NumberField`, after the live value on a `Slider`.
 
 </Do>
 

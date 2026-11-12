@@ -14,7 +14,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from "@tecton/react/components/chart"
+} from "@tecton/react/chart"
 
 const translations: Translations = {
   en: {

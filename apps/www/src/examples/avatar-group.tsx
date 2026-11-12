@@ -4,7 +4,7 @@ import {
   AvatarFallback,
   AvatarGroup,
   AvatarImage,
-} from "@tecton/react/components/avatar"
+} from "@tecton/react/avatar"
 
 export function AvatarGroupExample() {
   return (

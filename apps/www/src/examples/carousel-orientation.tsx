@@ -1,14 +1,14 @@
 // Synced from shadcn/ui (apps/v4/examples/base/carousel-orientation.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import * as React from "react"
 
-import { Card, CardContent } from "@tecton/react/components/card"
+import { Card, CardContent } from "@tecton/react/card"
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@tecton/react/components/carousel"
+} from "@tecton/react/carousel"
 
 export default function CarouselOrientation() {
   return (

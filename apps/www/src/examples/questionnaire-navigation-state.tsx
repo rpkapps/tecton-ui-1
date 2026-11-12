@@ -3,8 +3,7 @@
 
 import * as React from "react"
 import type { QuestionnaireItemStatus } from "@shadcn/react/questionnaire"
-import { toast } from "sonner"
-
+import { toast } from "@tecton/react/toast"
 import {
   Questionnaire,
   QuestionnaireActions,
@@ -18,7 +17,7 @@ import {
   QuestionnaireProgress,
   QuestionnaireSubmit,
   QuestionnaireTitle,
-} from "@tecton/react/components/questionnaire"
+} from "@tecton/react/questionnaire"
 
 const items = [
   { name: "permission", required: true },
@@ -46,9 +45,7 @@ export function QuestionnaireNavigationState() {
 
     const formData = new FormData(event.currentTarget)
 
-    toast("Permissions saved", {
-      description: `Permission: ${formData.get("permission") ?? "None"} · Verification: ${formData.get("verification") ?? "None"}`,
-    })
+    toast.add({ title: "Permissions saved", description: `Permission: ${formData.get("permission") ?? "None"} · Verification: ${formData.get("verification") ?? "None"}` })
   }
 
   return (

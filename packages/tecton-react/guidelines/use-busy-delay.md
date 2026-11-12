@@ -1,6 +1,6 @@
 ---
 component: useBusyDelay
-module: "@tecton/react/tecton/use-busy-delay"
+module: "@tecton/react/use-busy-delay"
 family: hooks
 exports: [useBusyDelay]
 notFor:

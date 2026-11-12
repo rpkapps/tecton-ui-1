@@ -1,12 +1,12 @@
-import { Badge } from "@tecton/react/components/badge"
-import { Link } from "@tecton/react/tecton/link"
+import { Badge } from "@tecton/react/badge"
+import { Link } from "@tecton/react/link"
 import {
   PageHeader,
   PageHeaderContent,
   PageHeaderDescription,
   PageHeaderEyebrow,
   PageHeaderTitle,
-} from "@tecton/react/tecton/page-header"
+} from "@tecton/react/page-header"
 
 export default function PageHeaderEyebrowExample() {
   return (

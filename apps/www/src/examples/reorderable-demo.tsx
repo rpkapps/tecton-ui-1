@@ -9,12 +9,12 @@ import {
   ItemDescription,
   ItemGroup,
   ItemTitle,
-} from "@tecton/react/components/item"
+} from "@tecton/react/item"
 import {
   Reorderable,
   ReorderableHandle,
   ReorderableItem,
-} from "@tecton/react/tecton/reorderable"
+} from "@tecton/react/reorderable"
 
 const STEPS = [
   { id: "rig-up", name: "Rig up", detail: "Skid the rig over slot A-12" },

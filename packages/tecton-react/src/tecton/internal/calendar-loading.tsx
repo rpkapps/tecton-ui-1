@@ -11,7 +11,7 @@
  */
 import * as React from "react"
 
-import { Spinner } from "@tecton/react/components/spinner"
+import { Spinner } from "@tecton/react/spinner"
 
 function CalendarLoading({
   numberOfMonths = 1,

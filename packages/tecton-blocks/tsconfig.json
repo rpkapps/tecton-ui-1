@@ -14,10 +14,19 @@
     "exactOptionalPropertyTypes": true,
     "noUncheckedIndexedAccess": true,
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "paths": {
       "@tecton/react/*": [
         "../tecton-react/dist/*",
-        "../tecton-react/src/*"
+        "../tecton-react/dist/components/*",
+        "../tecton-react/dist/tecton/*",
+        "../tecton-react/dist/hooks/*",
+        "../tecton-react/dist/lib/*",
+        "../tecton-react/src/*",
+        "../tecton-react/src/components/*",
+        "../tecton-react/src/tecton/*",
+        "../tecton-react/src/hooks/*",
+        "../tecton-react/src/lib/*"
       ]
     }
   },

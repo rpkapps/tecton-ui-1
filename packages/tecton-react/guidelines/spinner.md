@@ -1,6 +1,6 @@
 ---
 component: Spinner
-module: "@tecton/react/components/spinner"
+module: "@tecton/react/spinner"
 family: progress
 exports: [Spinner]
 notFor:

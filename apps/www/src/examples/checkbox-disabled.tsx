@@ -1,6 +1,6 @@
 // Synced from shadcn/ui (apps/v4/examples/base/checkbox-disabled.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Checkbox } from "@tecton/react/components/checkbox"
-import { Field, FieldGroup, FieldLabel } from "@tecton/react/components/field"
+import { Checkbox } from "@tecton/react/checkbox"
+import { Field, FieldGroup, FieldLabel } from "@tecton/react/field"
 
 export function CheckboxDisabled() {
   return (

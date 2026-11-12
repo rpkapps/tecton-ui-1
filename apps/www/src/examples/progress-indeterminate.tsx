@@ -1,4 +1,4 @@
-import { Progress, ProgressLabel } from "@tecton/react/components/progress"
+import { Progress, ProgressLabel } from "@tecton/react/progress"
 
 export default function ProgressIndeterminate() {
   return (

@@ -11,7 +11,7 @@ import {
   SquareDashedIcon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Command,
   CommandDialog,
@@ -20,7 +20,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@tecton/react/components/command"
+} from "@tecton/react/command"
 
 import { siteConfig } from "@/lib/site"
 import {

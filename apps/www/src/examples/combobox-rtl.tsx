@@ -18,8 +18,8 @@ import {
   ComboboxList,
   ComboboxValue,
   useComboboxAnchor,
-} from "@tecton/react/components/combobox"
-import { Field, FieldLabel } from "@tecton/react/components/field"
+} from "@tecton/react/combobox"
+import { Field, FieldLabel } from "@tecton/react/field"
 
 const categories = [
   "technology",

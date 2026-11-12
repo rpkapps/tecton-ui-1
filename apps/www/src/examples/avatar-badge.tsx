@@ -4,7 +4,7 @@ import {
   AvatarBadge,
   AvatarFallback,
   AvatarImage,
-} from "@tecton/react/components/avatar"
+} from "@tecton/react/avatar"
 
 export function AvatarWithBadge() {
   return (

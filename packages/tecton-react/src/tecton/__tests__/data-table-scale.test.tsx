@@ -8,7 +8,7 @@ import {
   DataTableContent,
   DataTableSearch,
   useDataTable,
-} from "@tecton/react/tecton/data-table"
+} from "@tecton/react/data-table"
 
 import { checkbox, focusRow, layout, press } from "./data-table-fixtures"
 

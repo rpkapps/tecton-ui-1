@@ -9,16 +9,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
+} from "@tecton/react/table"
 import {
   createColumns,
   DataTable,
   DataTableContent,
-} from "@tecton/react/tecton/data-table"
-import {
-  recycle,
-  type Slot,
-} from "@tecton/react/tecton/internal/table-virtualizer"
+} from "@tecton/react/data-table"
+import { recycle, type Slot } from "../internal/table-virtualizer"
 
 /**
  * jsdom has no layout: the table's container is 400 px tall, the header

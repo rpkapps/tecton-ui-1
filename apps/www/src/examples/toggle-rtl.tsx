@@ -8,7 +8,7 @@ import {
   useTranslation,
   type Translations,
 } from "@/components/language-selector"
-import { Toggle } from "@tecton/react/components/toggle"
+import { Toggle } from "@tecton/react/toggle"
 
 const translations: Translations = {
   en: {

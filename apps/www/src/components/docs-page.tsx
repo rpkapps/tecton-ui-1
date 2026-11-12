@@ -4,7 +4,7 @@ import { Link, notFound } from "@tanstack/react-router"
 import browserCollections from "fumadocs-mdx:collections/browser"
 import { ArrowLeftIcon, ArrowRightIcon, ExternalLinkIcon } from "lucide-react"
 
-import { buttonVariants } from "@tecton/react/components/button"
+import { buttonVariants } from "@tecton/react/button"
 
 import { DocsTableOfContents } from "@/components/docs-toc"
 import { getMDXComponents } from "@/components/mdx"

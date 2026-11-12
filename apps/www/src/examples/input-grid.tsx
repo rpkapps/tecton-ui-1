@@ -1,6 +1,6 @@
 // Synced from shadcn/ui (apps/v4/examples/base/input-grid.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Field, FieldGroup, FieldLabel } from "@tecton/react/components/field"
-import { Input } from "@tecton/react/components/input"
+import { Field, FieldGroup, FieldLabel } from "@tecton/react/field"
+import { Input } from "@tecton/react/input"
 
 export function InputGrid() {
   return (

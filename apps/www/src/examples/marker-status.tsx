@@ -1,6 +1,6 @@
 // Synced from shadcn/ui (apps/v4/examples/base/marker-status.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Marker, MarkerContent, MarkerIcon } from "@tecton/react/components/marker"
-import { Spinner } from "@tecton/react/components/spinner"
+import { Marker, MarkerContent, MarkerIcon } from "@tecton/react/marker"
+import { Spinner } from "@tecton/react/spinner"
 
 export function MarkerStatusDemo() {
   return (

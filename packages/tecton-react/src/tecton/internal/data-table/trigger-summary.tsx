@@ -9,8 +9,8 @@
  */
 import * as React from "react"
 
-import { Badge } from "@tecton/react/components/badge"
-import { Separator } from "@tecton/react/components/separator"
+import { Badge } from "@tecton/react/badge"
+import { Separator } from "@tecton/react/separator"
 
 function DataTableTriggerSummary({
   id,

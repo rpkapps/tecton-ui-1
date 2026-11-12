@@ -16,7 +16,7 @@
  */
 import * as React from "react"
 
-import { useDirection } from "@tecton/react/tecton/provider"
+import { useDirection } from "@tecton/react/provider"
 
 import * as DragAndDropPrimitive from "../primitives/drag-and-drop/index.parts"
 import {

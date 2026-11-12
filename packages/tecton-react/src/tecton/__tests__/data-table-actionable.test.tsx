@@ -10,22 +10,22 @@ import { act, fireEvent, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
-import { Button } from "@tecton/react/components/button"
-import { Checkbox } from "@tecton/react/components/checkbox"
-import { Input } from "@tecton/react/components/input"
+import { Button } from "@tecton/react/button"
+import { Checkbox } from "@tecton/react/checkbox"
+import { Input } from "@tecton/react/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
+} from "@tecton/react/select"
 import {
   createColumns,
   DataTable,
   DataTableContent,
   type DataTableProps,
-} from "@tecton/react/tecton/data-table"
+} from "@tecton/react/data-table"
 
 type Well = { id: string; name: string; note: string; status: string }
 

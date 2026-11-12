@@ -3,9 +3,9 @@
 import { useForm } from "@tanstack/react-form"
 import * as z from "zod"
 
-import { Button } from "@tecton/react/components/button"
-import { Card, CardContent, CardFooter } from "@tecton/react/components/card"
-import { Checkbox } from "@tecton/react/components/checkbox"
+import { Button } from "@tecton/react/button"
+import { Card, CardContent, CardFooter } from "@tecton/react/card"
+import { Checkbox } from "@tecton/react/checkbox"
 import {
   Field,
   FieldContent,
@@ -17,19 +17,16 @@ import {
   FieldSeparator,
   FieldSet,
   FieldTitle,
-} from "@tecton/react/components/field"
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from "@tecton/react/components/radio-group"
+} from "@tecton/react/field"
+import { RadioGroup, RadioGroupItem } from "@tecton/react/radio-group"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
-import { Switch } from "@tecton/react/components/switch"
+} from "@tecton/react/select"
+import { Switch } from "@tecton/react/switch"
 
 import { showSubmitted } from "./form-tanstack-demo"
 

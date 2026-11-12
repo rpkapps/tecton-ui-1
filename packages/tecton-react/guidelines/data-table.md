@@ -1,6 +1,6 @@
 ---
 component: DataTable
-module: "@tecton/react/tecton/data-table"
+module: "@tecton/react/data-table"
 family: data
 docs: "components/data-table"
 exports: [DataTable, DataTableContent, DataTableToolbar, DataTableSearch, DataTableFilter, DataTableActiveFilters, DataTableGroupBy, DataTableColumnsMenu, DataTableRowActions, DataTableActionBar, DataTableFooter, DataTablePagination, createColumns, useDataTable]

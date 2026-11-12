@@ -20,7 +20,7 @@
  */
 import * as React from "react"
 
-import { useLocale } from "@tecton/react/tecton/provider"
+import { useLocale } from "@tecton/react/provider"
 
 import enUS from "./translations/en-US"
 
