@@ -8,7 +8,7 @@ import {
   within,
 } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
 
 import {
   createColumns,
@@ -67,6 +67,11 @@ const chips = () =>
 const status = () =>
   document.querySelector('[data-slot="data-table-content"] > [role="status"]')
 
+// The date filter loads its calendar in idle time. Its first import is slow
+// under test (the module is transformed), and nothing waits for it: loaded
+// here, it cannot spill into a test that waits on real timers.
+beforeAll(() => import("../internal/date-calendar"), 15_000)
+
 afterEach(() => {
   vi.useRealTimers()
   vi.restoreAllMocks()
@@ -90,8 +95,7 @@ describe("DataTableSearch", () => {
     await user.clear(searchbox())
     await user.type(searchbox(), "gullf")
     expect(names()).toEqual(["Ærøy"])
-    // The file's first table also loads the calendar's module in idle time.
-  }, 15_000)
+  })
 
   it("says how many rows match, and clears with its button or Escape", async () => {
     const user = userEvent.setup({ delay: null })
