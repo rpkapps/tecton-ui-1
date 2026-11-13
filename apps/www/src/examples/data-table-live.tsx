@@ -180,6 +180,7 @@ export default function DataTableLive() {
         </Button>
         <OverflowItem
           value="pages"
+          label="Pages"
           overflow={
             <DropdownMenuCheckboxItem
               checked={paged}
@@ -202,6 +203,7 @@ export default function DataTableLive() {
         </OverflowItem>
         <OverflowItem
           value="group"
+          label="Group by severity"
           overflow={
             <DropdownMenuCheckboxItem
               checked={grouped}
