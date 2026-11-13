@@ -301,6 +301,31 @@ For rows sent in batches, `hasMore` says more follow and `onLoadMore` loads the 
 
 With `"button"`, the button spins while the batch loads and keeps focus; once no more rows follow, focus moves to the first new row, and screen readers hear "Loaded 50 more rows". Load more is off with `pagination`, and in client mode while a search or filter is in effect: use server mode to load what matches.
 
+## Live data
+
+For rows that arrive while the user watches (alarms, events, readings pushed by a subscription), `highlightChanges` shows what came without moving what the user is looking at. Put each new record in `items`, as for any change. Here an alarm is raised every two seconds and lands where the sort by pressure puts it: scroll down, point at a row or open its menu, and pause the feed to compare.
+
+<ComponentPreview name="data-table-live" align="start" />
+
+```tsx
+<DataTable items={alarms} columns={columns} highlightChanges className="h-96">
+  <DataTableContent aria-label="Pressure alarms" virtualized />
+</DataTable>
+```
+
+- **Highlighted where it lands.** A row added after the first render appears in its sorted place with a light tint of the info colour, neither the hover's nor the selection's, that fades out over 1.5 s, across the whole row, pinned columns included; a striped, hovered or selected row keeps its own fill under it. A row added inside a closed group, or under a closed tree row, highlights the group's or the tree row's row. `highlightChanges={{ duration: 3000 }}` lengthens the highlight.
+- **Counted when out of view.** Rows that land above or below the rows in view, or on another page, are counted in a button at that edge of the table: "↑ 3 new rows", "↓ 2 new rows", "3 new rows on other pages". It scrolls (or turns the page) to the first of them, which is highlighted again, and goes away; a row the user scrolls to is no longer counted, and is still highlighted if its 1.5 s are not over. Rows the search or filters hide are not counted.
+- **Rows in view stay still.** Scrolled into the rows, rows added above the view go above it: the rows on screen do not move. While the pointer is over the rows, focus is in them or a row's menu or popover is open, rows that would show in the view, even cut by its edge, or land on an earlier page are held back and counted in "Show 2 new rows"; they come in, highlighted, 0.3 s after the user is done, or when the button is pressed. Rows the application removes or changes are applied at once: only additions wait.
+
+Which rows are added: the ids in `items` that the previous `items` did not have. In client mode `items` are compared, not the rows the view shows, so a search or filter that brings back rows adds none. Not added:
+
+- the rows of the first render, and the first rows of a table that starts empty;
+- rows that come with a load: while `loading`, in the change that ends it, and the batch `onLoadMore` asked for;
+- in server mode, the rows of a new view: the first `items` after the search, filters, sorting, grouping, page or page size change. Only `items` that change while the view stays the same are compared, so set `loading` while the server answers a view change;
+- the children of a tree row loaded as it opens. A child added to a row whose children were there is added, open or not.
+
+Screen readers hear "3 rows added" at most once a second, for the rows the view shows. The button is a real button, after the table in the tab order, and never takes focus by itself; pressed from the keyboard, focus moves to the first new row. It scrolls smoothly to rows near the view and jumps to rows further away; with reduced motion it always jumps, and the highlight still fades, a change of colour, not of place.
+
 ## Trees and detail rows
 
 `itemToChildren` makes the rows a tree; `renderDetail` on `DataTableContent` gives each row an expandable detail row instead.
@@ -424,7 +449,7 @@ The table is one tab stop; focus is on a row, or on a cell once the arrows move 
 - A grid, or a treegrid with trees, details or groups.
 - Name it with `aria-label` on `DataTableContent`.
 - Rows named by their row header column.
-- Sort, selection and result counts announced.
+- Sort, selection and result counts announced, and the rows `highlightChanges` sees added.
 - Full `aria-rowcount` on pages and virtualized rows.
 - Focus never drops to the page.
 
@@ -440,7 +465,7 @@ Direction and locale come from the [TectonProvider](/docs/tecton/provider): colu
 
 - An application shows records in columns, a data grid of wells, work orders, run results or documents. Use `DataTable` for every such table, even one that only sorts today, so tables look and behave the same in every application.
 - Rows are sorted, searched, filtered, grouped, selected, paged or opened, or the user hides, pins, resizes or reorders the columns.
-- The rows are many (`virtualized`, or loaded in batches with `hasMore`: as the user scrolls, or from Show more with `loadMore="button"` when content follows the table), come page by page from a server (`dataMode="server"`), or form a hierarchy with columns (`itemToChildren`) or detail rows (`renderDetail`).
+- The rows are many (`virtualized`, or loaded in batches with `hasMore`: as the user scrolls, or from Show more with `loadMore="button"` when content follows the table), come page by page from a server (`dataMode="server"`), form a hierarchy with columns (`itemToChildren`) or detail rows (`renderDetail`), or arrive while the user watches: alarms, events or readings pushed by a subscription (`highlightChanges`).
 
 ### Not for
 
@@ -479,7 +504,7 @@ Set `size="sm"` and `striped` on `DataTable` for dense data; show the states wit
 
 <Do>
 
-With `dataMode="server"`, pass the page's `items`, `rowCount` and `loading`, and load from `onViewChange` (its `view.sorting` lists every sort, first one first), `onPageChange` and `onPageSizeChange`; keep a saved view with `defaultView` and `onViewChange`. A part of your own reads the table with `useDataTable()` (`value`, `clearSelection`, `exportCsv`).
+With `dataMode="server"`, pass the page's `items`, `rowCount` and `loading`, and load from `onViewChange` (its `view.sorting` lists every sort, first one first), `onPageChange` and `onPageSizeChange`; keep a saved view with `defaultView` and `onViewChange`. A part of your own reads the table with `useDataTable()` (`value`, `clearSelection`, `exportCsv`). For live data, set `highlightChanges` and put each new record (with its own `id`) in `items`: the table highlights it where it lands, counts the new rows out of view and keeps the rows in view still while the user works in them, so never tint, animate or scroll rows yourself; in server mode, set `loading` while a new view loads, so its rows are not taken for additions.
 
 </Do>
 
@@ -600,6 +625,7 @@ The root `div`. Every `on…Change` gets the new value and `eventDetails` (`reas
 | `onLoadMore` | `() => void` | - | Called to load the next rows: when the end of the rows nears, or on Show more. |
 | `size` | `"default" \| "sm"` | `"default"` | Compact rows. |
 | `striped` | `boolean` | `false` | Alternate row fills. |
+| `highlightChanges` | `boolean \| { added?: boolean; duration?: number }` | `false` | Live data: highlights rows added to `items` where they land (for `duration` ms, 1500 by default), counts those out of view, and keeps the rows in view still while the user works in them ([Live data](#live-data)). |
 | `sortable` | `boolean` | `true` | Headers sort. |
 | `multiSort` | `boolean` | `true` | Sorting by several columns: <Kbd>Shift</Kbd> + click, Add to sort. |
 | `filterable` | `boolean` | `false` | Turns on search and filters. |
@@ -624,7 +650,7 @@ The root `div`. Every `on…Change` gets the new value and `eventDetails` (`reas
 | `onExpandedChange` | `(expanded, eventDetails) => void` | - | Called with the open rows. |
 | `page` | `number` | - | The page, from 1 (controlled). |
 | `defaultPage` | `number` | `1` | The initial page. |
-| `onPageChange` | `(page, eventDetails) => void` | - | Called with the new page; `reason` is `"first"`, `"previous"`, `"next"` or `"last"` (its arrow buttons) or `"page"` (its page field: typed, or stepped with the arrow keys, Home and End) from `DataTablePagination`, else `"reset"`, `"page-size"`, `"clamp"` or `"group"`. |
+| `onPageChange` | `(page, eventDetails) => void` | - | Called with the new page; `reason` is `"first"`, `"previous"`, `"next"` or `"last"` (its arrow buttons) or `"page"` (its page field: typed, or stepped with the arrow keys, Home and End) from `DataTablePagination`, else `"reset"`, `"page-size"`, `"clamp"`, `"group"` or `"new-rows"` (the "new rows on other pages" button). |
 | `pageSize` | `number` | - | Rows per page (controlled). |
 | `defaultPageSize` | `number` | `10` | Initial rows per page. |
 | `onPageSizeChange` | `(pageSize, eventDetails) => void` | - | Called with the new page size. |

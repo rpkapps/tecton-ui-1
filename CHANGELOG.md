@@ -38,6 +38,17 @@ write entries and cut a release.
   bound's own number does not match (more than `min`, less than `max`). Its filter button and chip
   read "> 3,000" or "> 1,000 and ≤ 3,000", and editing that bound in the filter includes it again.
   Server-mode applications that read the filter value should apply both flags.
+- `DataTable` takes `highlightChanges` for live data (`true`, or `{ duration }` in ms): a row added
+  to `items` after the first render takes a neutral tint where it lands, fading over 1.5 s across
+  the whole row (pinned columns too, over its stripe, hover or selection). Rows that land out of
+  view are counted in a button at that edge of the table ("↑ 3 new rows", "↓ 2 new rows", "3 new
+  rows on other pages") that scrolls or pages to them; rows added above the view keep the rows on
+  screen still; and while the pointer is over the rows, focus is in them or a row's menu is open,
+  additions that would move the rows in view wait ("Show 2 new rows") until the user is done.
+  Rows of the first render, of a load (`loading`, `onLoadMore`) or of a new server view are not
+  additions, nor rows a search shows again. Screen readers hear "3 rows added", at most once a
+  second; with reduced motion the button jumps instead of scrolling. `onPageChange` has the
+  reason `"new-rows"` for the page that button turns to. Its strings are in the 34 locales.
 - `DatePicker` and `DateRangePicker` (`@tecton/react/date-picker`): a date or a range picked on a
   `Calendar` in a popover, from a button or a typed date (`variant="input"`), with `minDate` /
   `maxDate`, range presets (bounded by `minDate` / `maxDate`), a Clear button, `name` for forms,
