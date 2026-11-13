@@ -20,14 +20,14 @@ import { useDataTableContext, useDataTableSelector } from "./context"
  * `TableCell`'s padding (`py-3`, compact `py-1`) around a line of the
  * table's text (`text-sm`, compact `text-xs`), written with the same spacing
  * and text tokens (`1lh` is the band's own line, in the same text), and a
- * row's border. Its controls keep a little room above and below them
- * (`py-2`, compact `py-1`), so the band is a little taller than a row
- * when they are as tall as one.
+ * row's border. The default band keeps a little room above and below its
+ * controls (`py-2`), so it is a little taller than a row; the compact one
+ * keeps none, its controls borderless instead (`DataTablePagination`).
  */
 const BAND = {
   default:
     "text-sm [[data-slot=data-table-content]+&]:min-h-[calc(var(--spacing)*6+1lh+1px)] [[data-slot=data-table-content]+&]:py-2",
-  sm: "text-xs [[data-slot=data-table-content]+&]:min-h-[calc(var(--spacing)*2+1lh+1px)] [[data-slot=data-table-content]+&]:py-1",
+  sm: "text-xs [[data-slot=data-table-content]+&]:min-h-[calc(var(--spacing)*2+1lh+1px)]",
 } as const
 
 type DataTableFooterProps = React.ComponentProps<"div">
