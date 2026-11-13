@@ -407,12 +407,15 @@ function columnClassName<T>(column: EngineColumn<T>) {
 }
 
 /**
- * Numbers and dates are in the monospace font: every digit one width, so a
- * column's values line up digit for digit and a changing value keeps its
- * width.
+ * Numbers and dates are numeric readouts: IBM Plex Mono with tabular
+ * figures, as Tecton sets them, so a column's values line up digit for
+ * digit and a changing value keeps its width.
  */
 function numericClassName<T>(column: EngineColumn<T>) {
-  return (column.type === "number" || column.type === "date") && "font-mono"
+  return (
+    (column.type === "number" || column.type === "date") &&
+    "font-mono tabular-nums"
+  )
 }
 
 function bodyClassName<T>(

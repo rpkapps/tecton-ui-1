@@ -184,7 +184,7 @@ describe("DataTable grouping", () => {
         .reduce((sum, well) => sum + (well.depth ?? 0), 0)
         .toLocaleString("en-US")
     )
-    expect(cells[1]).toHaveClass("text-end", "font-mono")
+    expect(cells[1]).toHaveClass("text-end", "font-mono", "tabular-nums")
     // Booleans count their trues.
     expect(cells[2]).toHaveTextContent(
       String(gullfaks.filter((well) => well.active).length)
