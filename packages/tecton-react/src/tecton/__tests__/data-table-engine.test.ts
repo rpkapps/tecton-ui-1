@@ -692,7 +692,7 @@ describe("view", () => {
         gas: { type: "number", max: 5, minExclusive: true, maxExclusive: 1 },
         name: { type: "text", value: "x" },
       },
-    } as never)
+    })
     expect(view.filters.oil).toEqual({
       type: "number",
       min: 1,

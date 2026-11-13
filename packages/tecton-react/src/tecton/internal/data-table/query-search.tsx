@@ -264,7 +264,6 @@ function QuerySearch({
       setOpen(true)
     }
     // Once, on mount.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   /** The input's caret, as the selection has it. */
@@ -309,7 +308,8 @@ function QuerySearch({
   })
   React.useEffect(() => {
     const input = inputRef.current
-    const fonts = typeof document !== "undefined" ? document.fonts : undefined
+    // Not every environment has font loading events (a test's DOM).
+    const fonts = (document as { fonts?: FontFaceSet }).fonts
     const onSelection = () => {
       if (input && document.activeElement === input) {
         readCaret()
@@ -317,12 +317,12 @@ function QuerySearch({
       }
     }
     window.addEventListener("resize", syncMirror)
-    fonts?.addEventListener?.("loadingdone", syncMirror)
+    fonts?.addEventListener("loadingdone", syncMirror)
     input?.addEventListener("scroll", syncMirror)
     document.addEventListener("selectionchange", onSelection)
     return () => {
       window.removeEventListener("resize", syncMirror)
-      fonts?.removeEventListener?.("loadingdone", syncMirror)
+      fonts?.removeEventListener("loadingdone", syncMirror)
       input?.removeEventListener("scroll", syncMirror)
       document.removeEventListener("selectionchange", onSelection)
     }
@@ -568,9 +568,9 @@ function QuerySearch({
         return { number: Math.round(middle / step) * step }
       }
       if (queryColumn.type === "text") {
-        const top = [...source.facets(queryColumn.id, none).counts].sort(
-          (a, b) => b[1] - a[1]
-        )[0]
+        const top = [...source.facets(queryColumn.id, none).counts]
+          .sort((a, b) => b[1] - a[1])
+          .at(0)
         return top ? { text: top[0] } : {}
       }
       return {}
@@ -1131,7 +1131,7 @@ function QueryCalendar({
         }
       }}
       onBlur={(event) => {
-        const next = event.relatedTarget as Element | null
+        const next = event.relatedTarget
         if (!event.currentTarget.contains(next)) onLeave(next)
       }}
     >

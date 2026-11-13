@@ -161,7 +161,7 @@ function ProblemRun({
             onMouseDown={(event) => {
               // The caret goes where the press landed, in the input below.
               event.preventDefault()
-              const doc = document as Document & {
+              const doc = document as {
                 caretPositionFromPoint?: (
                   x: number,
                   y: number

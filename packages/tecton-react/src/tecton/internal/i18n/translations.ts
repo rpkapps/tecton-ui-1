@@ -232,8 +232,8 @@ function createTranslator<TNamespace extends Namespace>(
   const own = table?.[namespace] as
     Partial<Record<string, Translation>> | undefined
   const english = (deferredEnglish ??
-    (enUS as TranslationTable)[namespace] ??
-    {}) as Record<string, Translation>
+    (enUS as Partial<TranslationTable>)[namespace] ??
+    {}) as Partial<Record<string, Translation>>
   let plurals: Intl.PluralRules | null = null
   return (key: string, values: Record<string, string | number> = {}) => {
     const translation = own?.[key] ?? english[key] ?? key

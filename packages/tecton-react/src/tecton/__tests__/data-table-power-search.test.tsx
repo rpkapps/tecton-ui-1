@@ -457,7 +457,7 @@ describe("DataTableSearch syntax=query: the field stays put", () => {
           x: 0,
           y: 0,
           toJSON() {},
-        } as DOMRect
+        }
       }
     )
     const user = userEvent.setup({ delay: null })
