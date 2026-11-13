@@ -1,7 +1,8 @@
 /**
  * A filter's value in words, for its `DataTableFilter` button and its chip
  * in `DataTableActiveFilters`: the text a text filter looks for, a number
- * range ("1,000–3,000", "≥ 1,000"), a range of days (one day when both
+ * range ("1,000–3,000", "≥ 1,000", "> 1,000", "> 1,000 and ≤ 3,000" with an
+ * exclusive bound), a range of days (one day when both
  * ends are the same), Yes / No, the options' labels ("Producing,
  * Drilling"; with `short`, "3 selected" past two), each with its "No value"
  * ("No value" alone, "1,000–3,000 or no value", "Producing, No value").
@@ -77,12 +78,24 @@ function valueText<T>(
     case "text":
       return value.value.trim() || null
     case "number": {
-      const { min, max } = value
+      const { min, max, minExclusive, maxExclusive } = value
+      const low =
+        min === undefined
+          ? null
+          : t(minExclusive ? "filterMoreThan" : "filterAtLeast", {
+              value: format(min),
+            })
+      const high =
+        max === undefined
+          ? null
+          : t(maxExclusive ? "filterLessThan" : "filterAtMost", {
+              value: format(max),
+            })
       if (min !== undefined && max !== undefined)
-        return t("filterRange", { from: format(min), to: format(max) })
-      if (min !== undefined) return t("filterAtLeast", { value: format(min) })
-      if (max !== undefined) return t("filterAtMost", { value: format(max) })
-      return null
+        return minExclusive || maxExclusive
+          ? t("filterBounds", { min: low ?? "", max: high ?? "" })
+          : t("filterRange", { from: format(min), to: format(max) })
+      return low ?? high
     }
     case "date": {
       const { from, to } = value

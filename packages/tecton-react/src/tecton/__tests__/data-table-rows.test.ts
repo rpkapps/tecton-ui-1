@@ -407,6 +407,30 @@ describe("facets", () => {
   })
 })
 
+describe("search parts", () => {
+  it("are the rows, formatter, search index and hidden columns, kept while they are", () => {
+    const engine = createDataTableEngine<Well>()
+    const first = run({}, engine)
+    const parts = first.searchParts()
+    expect(first.searchParts()).toBe(parts)
+    expect(parts.core.items).toHaveLength(fleet.length)
+    expect(parts.hidden).toEqual([])
+    // A new sort: a new model, the same rows and search index.
+    const sorted = run(
+      { view: view({ sorting: [{ column: "oil", direction: "ascending" }] }) },
+      engine
+    )
+    expect(sorted.searchParts().index).toBe(parts.index)
+    expect(sorted.searchParts().core).toBe(parts.core)
+    // A hidden column: search does not read it.
+    const hidden = run(
+      { view: view({ columns: { hidden: ["operator"] } }) },
+      engine
+    )
+    expect(hidden.searchParts().hidden).toEqual(["operator"])
+  })
+})
+
 describe("number facets", () => {
   it("are a number column's numbers, sorted, over the rows matching everything but its own filter", () => {
     const result = run({
@@ -437,6 +461,25 @@ describe("number facets", () => {
     expect(numbers.count({ type: "number", max: 5 })).toBe(1)
     expect(numbers.count({ type: "number", min: 21, max: 39 })).toBe(0)
     expect(numbers.count({ type: "number", min: 40, max: 5 })).toBe(0)
+    // Exclusive bounds leave their own value out.
+    expect(numbers.count({ type: "number", min: 7, minExclusive: true })).toBe(
+      3
+    )
+    expect(
+      numbers.count({
+        type: "number",
+        min: 7,
+        max: 20,
+        minExclusive: true,
+        maxExclusive: true,
+      })
+    ).toBe(1)
+    expect(numbers.count({ type: "number", max: 5, maxExclusive: true })).toBe(
+      0
+    )
+    expect(
+      numbers.count({ type: "number", min: 10, max: 10, maxExclusive: true })
+    ).toBe(0)
     // "No value": the row without oil, besides or alone.
     expect(numbers.count({ type: "number", empty: true })).toBe(1)
     expect(numbers.count({ type: "number", min: 20, empty: true })).toBe(3)

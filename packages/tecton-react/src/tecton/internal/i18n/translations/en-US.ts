@@ -156,6 +156,11 @@ const enUS = {
     // The search's chip among the active filters ("Search: well 4"): a noun.
     searchChip: "Search",
     clearSearch: "Clear search",
+    // `DataTableSearch syntax="query"`: its placeholder, and its "?"
+    // button and the popover it opens. Bundled, as the field shows them
+    // before its other strings have loaded.
+    searchOrFilter: "Search or filter",
+    searchSyntax: "Search syntax",
     // A filter's button (`DataTableFilter`), named after its column, and
     // the fields in its popover.
     filterBy: "Filter by {columnName}",
@@ -169,6 +174,11 @@ const enUS = {
     filterRange: "{from}–{to}",
     filterAtLeast: "≥ {value}",
     filterAtMost: "≤ {value}",
+    // More than / less than, and a range whose ends are not both included
+    // ("> 1,000 and ≤ 3,000"; {min} and {max} are the two ends in words).
+    filterMoreThan: "> {value}",
+    filterLessThan: "< {value}",
+    filterBounds: "{min} and {max}",
     filterFrom: "From {value}",
     filterUntil: "Until {value}",
     // A missing value: what screen readers read for the dash of a cell

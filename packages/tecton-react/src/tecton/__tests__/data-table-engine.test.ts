@@ -33,6 +33,7 @@ import {
   setSearch,
   setSelectedInAllMatching,
   setSorting,
+  sameFilterValue,
   sameView,
   shouldResetPage,
   sortColumn,
@@ -684,6 +685,38 @@ describe("view", () => {
     })
   })
 
+  it("keeps a number filter's exclusive flags only as true, with their bound", () => {
+    const view = reconcile({
+      filters: {
+        oil: { type: "number", min: 1, minExclusive: true },
+        gas: { type: "number", max: 5, minExclusive: true, maxExclusive: 1 },
+        name: { type: "text", value: "x" },
+      },
+    })
+    expect(view.filters.oil).toEqual({
+      type: "number",
+      min: 1,
+      minExclusive: true,
+    })
+    expect(view.filters.gas).toEqual({ type: "number", max: 5 })
+    const kept = { type: "number" as const, min: 1, maxExclusive: undefined }
+    expect(reconcile({ filters: { oil: kept } }).filters.oil).toBe(kept)
+  })
+
+  it("compares number filters with their exclusive flags", () => {
+    const a = { type: "number" as const, min: 1 }
+    expect(sameFilterValue(a, { type: "number", min: 1 })).toBe(true)
+    expect(
+      sameFilterValue(a, { type: "number", min: 1, minExclusive: true })
+    ).toBe(false)
+    expect(
+      sameFilterValue(
+        { type: "number", max: 1, maxExclusive: true },
+        { type: "number", max: 1, maxExclusive: true }
+      )
+    ).toBe(true)
+  })
+
   it("drops empty filters and custom ones without a filter function", () => {
     const view = reconcile({
       filters: {
@@ -1237,6 +1270,21 @@ describe("engine: filters", () => {
     ])
     expect(filter({ oil: { type: "number", min: 301 } })).toEqual(["a-1"])
     expect(filter({ oil: { type: "number", max: 50 } })).toEqual(["B-1"])
+  })
+
+  it("leaves an exclusive bound's own number out", () => {
+    expect(
+      filter({ oil: { type: "number", min: 50, minExclusive: true } })
+    ).not.toContain("B-1")
+    expect(
+      filter({ oil: { type: "number", min: 50, max: 300, minExclusive: true } })
+    ).toEqual(["A-10"])
+    expect(
+      filter({ oil: { type: "number", min: 50, max: 300, maxExclusive: true } })
+    ).toEqual(["B-1"])
+    expect(
+      filter({ oil: { type: "number", max: 50, maxExclusive: true } })
+    ).toEqual([])
   })
 
   it("filters dates by range, a midnight `to` taking in its day", () => {

@@ -45,6 +45,7 @@ export type {
   DataTableEngine,
   DataTableEngineInput,
   DataTableRowModel,
+  SearchParts,
 } from "./engine"
 export {
   DEFAULT_LABELS,

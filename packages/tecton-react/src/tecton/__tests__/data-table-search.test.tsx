@@ -376,6 +376,47 @@ describe("DataTableFilter", () => {
     expect(filterButton("Depth (m)")).toHaveTextContent("≤ 3,000")
   })
 
+  it("shows exclusive bounds as > and <, and includes a bound once it is edited", async () => {
+    const user = userEvent.setup({ delay: null })
+    const onViewChange = vi.fn()
+    render(
+      <Wells
+        defaultView={{
+          filters: {
+            depth: { type: "number", min: 2000, minExclusive: true },
+          },
+        }}
+        onViewChange={onViewChange}
+      />
+    )
+    const above = WELLS.slice(0, 8)
+      .filter((well) => (well.depth ?? 0) > 2000)
+      .map((well) => well.name)
+    expect(names()).toEqual(above)
+    expect(filterButton("Depth (m)")).toHaveTextContent("> 2,000")
+    expect(chips()).toContain("Depth (m): > 2,000")
+    await user.click(filterButton("Depth (m)"))
+    // The other bound typed: the first one stays exclusive.
+    await user.type(screen.getByRole("textbox", { name: "Max" }), "3000")
+    expect(filterButton("Depth (m)")).toHaveTextContent("> 2,000 and ≤ 3,000")
+    expect(onViewChange.mock.calls.at(-1)?.[0].filters.depth).toEqual({
+      type: "number",
+      min: 2000,
+      max: 3000,
+      minExclusive: true,
+    })
+    // The exclusive bound edited: now it is included.
+    const min = screen.getByRole("textbox", { name: "Min" })
+    await user.clear(min)
+    await user.type(min, "2000")
+    expect(filterButton("Depth (m)")).toHaveTextContent("2,000–3,000")
+    expect(onViewChange.mock.calls.at(-1)?.[0].filters.depth).toEqual({
+      type: "number",
+      min: 2000,
+      max: 3000,
+    })
+  })
+
   it("steps a number filter's bounds with its minus and plus and the arrow keys, not native spinners", async () => {
     const user = userEvent.setup({ delay: null })
     const onViewChange = vi.fn()

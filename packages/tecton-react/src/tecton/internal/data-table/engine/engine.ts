@@ -140,6 +140,20 @@ type DataTableEngineInput<T> = {
   rowCount?: number
 }
 
+/**
+ * What the table searches and filters, for another reader of its rows (the
+ * query language's suggestions, `query/source.ts`): the columns, every row,
+ * the formatter and the search index (shared: its texts are built once),
+ * and the hidden columns, which search does not read.
+ */
+type SearchParts<T> = {
+  readonly model: ColumnModel<T>
+  readonly core: Core<T>
+  readonly formatter: Formatter<T>
+  readonly index: SearchIndex<T>
+  readonly hidden: ReadonlyArray<string>
+}
+
 type DataTableRowModel<T> = {
   /** The body rows to render: the page's when paginated (with its continued ancestors first). */
   readonly rows: ReadonlyArray<EngineRow<T>>
@@ -226,6 +240,8 @@ type DataTableRowModel<T> = {
    * then offers "No value" (in server mode, the loaded rows).
    */
   hasEmptyValues: (column: string) => boolean
+  /** What the table searches and filters, the same object for the same model. */
+  searchParts: () => SearchParts<T>
 }
 
 type DataTableEngine<T> = {
@@ -618,7 +634,8 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
       filtering: boolean,
       rowHeader: EngineColumn<T> | undefined,
       server: boolean,
-      matchingCount: number
+      matchingCount: number,
+      hidden: ReadonlyArray<string>
     ): DataTableRowModel<T> => {
       const { items, ids } = rows
       const aggregates = aggregateColumnsOf(columns)
@@ -649,6 +666,13 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
         groupCache.set(groups ?? set, kept)
       }
       const known = kept
+      const parts = lazy((): SearchParts<T> => ({
+        model: columns,
+        core: rows,
+        formatter,
+        index,
+        hidden,
+      }))
       return {
         rows: page.rows,
         allRows,
@@ -766,6 +790,7 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
             },
           }
         }),
+        searchParts: parts,
         hasEmptyValues: (id) => {
           const column = columns.byId.get(id)
           if (!column) return false
@@ -875,7 +900,8 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
       }
       const disabled = steadyDisabled(disabledFlags(rows, input.isItemDisabled))
       const index = searchIndex(rows, formatter)
-      const shown = searchColumns(columns, steadyHidden(view.columns.hidden))
+      const hidden = steadyHidden(view.columns.hidden)
+      const shown = searchColumns(columns, hidden)
       const query = view.search.trim()
       const search = server
         ? null
@@ -951,7 +977,8 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
         filtering,
         rowHeaderId === undefined ? undefined : columns.byId.get(rowHeaderId),
         server,
-        matchingCount
+        matchingCount,
+        hidden
       )
     },
   }
@@ -963,4 +990,5 @@ export type {
   DataTableEngine,
   DataTableEngineInput,
   DataTableRowModel,
+  SearchParts,
 }

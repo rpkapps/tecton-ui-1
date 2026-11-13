@@ -62,12 +62,15 @@ function SingleCalendar({
   minDate,
   maxDate,
   captionLayout,
+  className,
 }: {
   value: Date | undefined
   onPick: (day: Date) => void
   minDate?: Date
   maxDate?: Date
   captionLayout: DatePickerProps["captionLayout"]
+  /** The calendar's own classes (`bg-transparent` on another surface). */
+  className?: string
 }) {
   const { locale, direction } = useLocale()
   const calendarLocale = useCalendarLocale(locale)
@@ -84,6 +87,7 @@ function SingleCalendar({
       locale={calendarLocale}
       dir={direction}
       autoFocus={focusDay}
+      className={className}
       {...calendarBounds(minDate, maxDate)}
     />
   )
@@ -150,6 +154,7 @@ function RangeCalendar({
   presets,
   minDate,
   maxDate,
+  className,
 }: {
   value: DateRange | undefined
   onPick: (range: Required<DateRange>) => void
@@ -157,6 +162,8 @@ function RangeCalendar({
   presets?: DateRangePickerProps["presets"]
   minDate?: Date
   maxDate?: Date
+  /** The calendar's own classes (`bg-transparent` on another surface). */
+  className?: string
 }) {
   const t = useTranslations("datePicker")
   const { locale, direction } = useLocale()
@@ -187,6 +194,7 @@ function RangeCalendar({
         locale={calendarLocale}
         dir={direction}
         autoFocus={focusDay}
+        className={className}
         {...calendarBounds(minDate, maxDate)}
       />
       {presets?.length ? (

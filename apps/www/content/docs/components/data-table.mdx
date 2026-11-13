@@ -148,12 +148,37 @@ Pinned cells are opaque in `var(--surface)`; a custom surface sets it: `classNam
 | `type` | Filter | Value in the view |
 | --- | --- | --- |
 | `text` | contains the text | `{ type: "text", value }` |
-| `number` | Min and Max side by side, with the column's unit | `{ type: "number", min?, max? }` |
+| `number` | Min and Max side by side, with the column's unit | `{ type: "number", min?, max?, minExclusive?, maxExclusive? }` |
 | `date` | a [date range picker](/docs/components/date-picker) | `{ type: "date", from?, to? }` |
 | `boolean` | Yes or No, radio buttons with counts | `{ type: "boolean", value? }` |
 | `options` | a checkbox per option, with counts | `{ type: "options", values }` |
 
 A number filter's Min and Max are [number fields](/docs/tecton/number-field), stepped with their minus and plus buttons or the arrow keys, with the column's unit on the side the column writes it (from its `format`: a unit, a percent sign or a currency; a percent is typed as the column shows it, 12.5 for 0.125). Under them, beside "No value" when the column has empty values, the filter says how many rows match ("12 of 120 match") as the bounds are typed, of the rows the search and the other filters keep. In server mode, where the table holds only the rows loaded, it does not show the count. A yes / no filter is laid out as an options filter, with radio buttons: neither chosen keeps every row, and Clear goes back to that. Each filter also offers "No value" (`empty: true`) for a column with empty values. Search matches the shown columns' display text, ignoring case and accents. A column's own `filter(item, value)` replaces its type's.
+
+A number filter's bounds are included; `minExclusive: true` or `maxExclusive: true` leaves that bound's own number out (more than `min`, less than `max`), as `>` and `<` in a [power search](#power-search) set it. The filter's button and chip then read "> 3,000 m" or "> 1,000 and ≤ 3,000", and editing that bound in the filter includes it again. In server mode, apply them as such: `minExclusive` means `value > min`, else `value >= min`.
+
+## Power search
+
+`<DataTableSearch syntax="query" />` turns the search into a query field for people who filter all day: typed terms set the same column filters the filter buttons set, and free words are the search. A filter button, a chip or a controlled `view` writes the query again from the view, keeping the free words. Focus the field for suggestions; its "?" button lists the table's own columns with examples.
+
+<ComponentPreview name="data-table-power-search" align="start" />
+
+| Term | Filter |
+| --- | --- |
+| `gullfaks`, `"aker bp"` | the search: text in any shown column |
+| `status:drilling,producing` | an options column: any of the values, by value or label |
+| `subsea:yes` | yes / no |
+| `well:a-12` | a text column contains the text |
+| `td:3000`, `td:>=3000`, `td:>3000`, `td:<3000`, `td:1000..3000` | a number column; `..` includes both ends, `>` and `<` are `minExclusive` / `maxExclusive` |
+| `spud:2015`, `spud:2015-06`, `spud:jun 2015`, `spud:2015-06-30`, `spud:<2015`, `spud:2015..2016` | a date column, by whole days in the column's time zone |
+| `spud:last30d`, `spud:thismonth`, `spud:today` | a relative date (`last<N>d`, `w`, `m`, `y`; kept as such in the field) |
+| `td:none`, `td:>=3000,none` | "No value", alone or beside the rest |
+
+A column's key is its header or its id, without case, accents, spaces or punctuation (`spuddate`, `spud_date`); numbers and dates are read in the provider locale, and quotes keep spaces together. Terms side by side all apply; `OR`, `NOT` and a leading `-` are not supported and are shown as problems, never applied otherwise. A term with a problem (an unknown column or value, a backwards range) is underlined once the typing pauses, with its message on a tooltip and at the top of the suggestions, and is not applied. Filters the query cannot write (a column's own `filter`, a column with no key) stay in the view.
+
+The suggestions follow the caret: columns with their type; an options column's values with their row counts; "No value"; a number's comparisons with the data's range; a date's presets with the days they cover, the years and months of the data and the date filter's calendar, which writes the days it picks. <Kbd>↑</Kbd> / <Kbd>↓</Kbd> move, <Kbd>Enter</Kbd> picks, <Kbd>Tab</Kbd> completes, <Kbd>Escape</Kbd> closes the list, then clears the field. Counts are over the rest of the query, as the filter popovers count. In server mode the field sends the filters and search through `onViewChange` as the filter buttons do; the counts are the options' own `count`.
+
+The query field loads on demand: a plain field of the same size renders at once and the query layer arrives in idle time or as the field is pointed at or focused; what is typed before is kept and read once it arrives. A table with the plain search never loads it.
 
 ## Empty values
 
@@ -426,7 +451,7 @@ Make the columns once with `createColumns`, at module level or in a `React.useMe
 
 <Do>
 
-Turn features on at the root (`selectionMode`, `pagination`, `filterable`, `groupable`, `resizableColumns`, `reorderableColumns`, `hideableColumns`, `pinnableColumns`; sorting is on, by several columns with Shift + click or a column menu's "Add to sort", one only with `multiSort={false}`), then place their parts: `DataTableToolbar` with `DataTableSearch`, a `DataTableFilter column` per filter, `DataTableGroupBy` and `DataTableColumnsMenu`; `DataTableActiveFilters`; `DataTableContent`; `DataTableFooter` with `DataTablePagination`.
+Turn features on at the root (`selectionMode`, `pagination`, `filterable`, `groupable`, `resizableColumns`, `reorderableColumns`, `hideableColumns`, `pinnableColumns`; sorting is on, by several columns with Shift + click or a column menu's "Add to sort", one only with `multiSort={false}`), then place their parts: `DataTableToolbar` with `DataTableSearch`, a `DataTableFilter column` per filter, `DataTableGroupBy` and `DataTableColumnsMenu`; `DataTableActiveFilters`; `DataTableContent`; `DataTableFooter` with `DataTablePagination`. A table people filter all day by many columns gets a power search, `<DataTableSearch syntax="query" />`: typed terms (`status:drilling td:>3000 spud:2015`) set the same filters as the filter buttons, which stay beside it, never a query parser of your own; keep the default plain search elsewhere (the query field loads its code on demand).
 
 </Do>
 
@@ -626,7 +651,8 @@ The search field; takes the props of an `input`.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `placeholder` | `string` | `"Search"` | The placeholder. |
+| `syntax` | `"text" \| "query"` | `"text"` | `"query"`: a [power search](#power-search), its terms the columns' filters. |
+| `placeholder` | `string` | `"Search"`, `"Search or filter"` with `syntax="query"` | The placeholder. |
 | `aria-label` | `string` | `"Search"` | The field's name. |
 
 ### DataTableFilter
@@ -751,7 +777,16 @@ type DataTableView = {
 // when the rest is unset (`value: ""`, no range, no `value`, `values: []`).
 type DataTableFilterValue =
   | { type: "text"; value: string; empty?: boolean }
-  | { type: "number"; min?: number; max?: number; empty?: boolean }
+  // A bound is included, but with `minExclusive` / `maxExclusive: true`
+  // (`value > min`, `value < max`).
+  | {
+      type: "number"
+      min?: number
+      max?: number
+      minExclusive?: true
+      maxExclusive?: true
+      empty?: boolean
+    }
   | { type: "date"; from?: Date; to?: Date; empty?: boolean }
   | { type: "boolean"; value?: boolean; empty?: boolean }
   | { type: "options"; values: ReadonlyArray<string>; empty?: boolean }
