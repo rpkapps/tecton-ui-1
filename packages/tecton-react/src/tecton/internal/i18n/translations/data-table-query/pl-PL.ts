@@ -82,7 +82,6 @@ export default defineTranslations({
     keySelect: "Wybierz",
     keyComplete: "Uzupełnij",
     keyClose: "Zamknij",
-    footerAll: "Warunki obok siebie obowiązują wszystkie",
     summaryFilters: "Filtry: {filters}.",
     summaryNoFilters: "Brak filtrów.",
     summarySearch: "Wyszukiwanie: {search}.",
@@ -109,9 +108,17 @@ export default defineTranslations({
     backwardsRange:
       "Ten zakres zaczyna się po swoim końcu: {from} jest po {to}.",
     unsupportedOr:
-      "OR nie jest obsługiwane: obowiązują wszystkie warunki. Aby znaleźć dowolną z kilku wartości, oddziel je przecinkami.",
+      "OR nie jest obsługiwane. Wiersze muszą spełniać każdy warunek. Aby znaleźć jedną z kilku wartości kolumny, wypisz je oddzielone przecinkami: {example}",
+    unsupportedOrNoList:
+      "OR nie jest obsługiwane. Wiersze muszą spełniać każdy warunek, więc szukaj jednej rzeczy naraz.",
+    unsupportedMinus:
+      "Wykluczanie nie jest obsługiwane, więc ten warunek jest pomijany. Aby wyszukać dokładnie ten tekst, ujmij go w cudzysłów. Aby zawęzić wiersze, odfiltruj zamiast tego wartości do zachowania: {example}",
+    unsupportedMinusNoFilter:
+      "Wykluczanie nie jest obsługiwane, więc ten warunek jest pomijany. Aby wyszukać dokładnie ten tekst, ujmij go w cudzysłów.",
     unsupportedNot:
-      "Wykluczanie nie jest obsługiwane: odfiltruj zamiast tego wartości do zachowania. Aby wyszukać ten tekst, ujmij go w cudzysłów.",
+      "Wykluczanie nie jest obsługiwane, więc NOT jest pomijane, a warunki obok niego nadal obowiązują. Aby zawęzić wiersze, odfiltruj zamiast tego wartości do zachowania: {example}",
+    unsupportedNotNoFilter:
+      "Wykluczanie nie jest obsługiwane, więc NOT jest pomijane, a warunki obok niego nadal obowiązują.",
     exclusiveComparison: "Dla daty z godziną użyj >= lub <=.",
     notComparable: "Kolumna {column} nie ma kolejności: wybierz jej wartości.",
     multipleBoolean: "{column} to tak lub nie, nie oba naraz.",

@@ -78,7 +78,6 @@ export default defineTranslations({
     keySelect: "Selectare",
     keyComplete: "Completare",
     keyClose: "Închidere",
-    footerAll: "Condițiile alăturate se aplică toate",
     summaryFilters: "Filtre: {filters}.",
     summaryNoFilters: "Fără filtre.",
     summarySearch: "Căutare: {search}.",
@@ -104,9 +103,17 @@ export default defineTranslations({
     backwardsRange:
       "Acest interval începe după ce se termină: {from} este după {to}.",
     unsupportedOr:
-      "OR nu este acceptat: se aplică toate condițiile. Pentru a găsi oricare dintre mai multe valori, separați-le prin virgule.",
+      "OR nu este acceptat. Rândurile trebuie să îndeplinească fiecare condiție. Pentru a găsi una dintre mai multe valori ale unei coloane, enumerați-le separate prin virgule: {example}",
+    unsupportedOrNoList:
+      "OR nu este acceptat. Rândurile trebuie să îndeplinească fiecare condiție, așa că căutați un singur lucru odată.",
+    unsupportedMinus:
+      "Excluderea nu este acceptată, așa că această condiție este ignorată. Pentru a căuta chiar acest text, puneți-l între ghilimele. Pentru a restrânge rândurile, filtrați în schimb valorile de păstrat: {example}",
+    unsupportedMinusNoFilter:
+      "Excluderea nu este acceptată, așa că această condiție este ignorată. Pentru a căuta chiar acest text, puneți-l între ghilimele.",
     unsupportedNot:
-      "Excluderea nu este acceptată: filtrați în schimb valorile de păstrat. Pentru a căuta acest text, puneți-l între ghilimele.",
+      "Excluderea nu este acceptată, așa că NOT este ignorat, iar condițiile din jurul lui se aplică în continuare. Pentru a restrânge rândurile, filtrați în schimb valorile de păstrat: {example}",
+    unsupportedNotNoFilter:
+      "Excluderea nu este acceptată, așa că NOT este ignorat, iar condițiile din jurul lui se aplică în continuare.",
     exclusiveComparison: "Cu dată și oră folosiți >= sau <=.",
     notComparable: "{column} nu are o ordine: alegeți în schimb valorile.",
     multipleBoolean: "{column} este da sau nu, nu ambele.",

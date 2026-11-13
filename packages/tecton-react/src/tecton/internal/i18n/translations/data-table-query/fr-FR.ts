@@ -74,7 +74,6 @@ export default defineTranslations({
     keySelect: "Choisir",
     keyComplete: "Compléter",
     keyClose: "Fermer",
-    footerAll: "Les termes côte à côte s’appliquent tous",
     summaryFilters: "Filtres : {filters}.",
     summaryNoFilters: "Aucun filtre.",
     summarySearch: "Recherche : {search}.",
@@ -99,9 +98,17 @@ export default defineTranslations({
     backwardsRange:
       "Cette plage commence après sa fin : {from} est après {to}.",
     unsupportedOr:
-      "OR n’est pas pris en charge : chaque terme s’applique. Pour trouver l’une de plusieurs valeurs, séparez-les par des virgules.",
+      "OR n’est pas pris en charge. Les lignes doivent correspondre à chaque terme. Pour trouver l’une de plusieurs valeurs d’une colonne, séparez-les par des virgules : {example}",
+    unsupportedOrNoList:
+      "OR n’est pas pris en charge. Les lignes doivent correspondre à chaque terme : cherchez une chose à la fois.",
+    unsupportedMinus:
+      "L’exclusion n’est pas prise en charge : ce terme est ignoré. Pour rechercher ce texte tel quel, mettez-le entre guillemets. Pour restreindre les lignes, filtrez plutôt les valeurs à garder : {example}",
+    unsupportedMinusNoFilter:
+      "L’exclusion n’est pas prise en charge : ce terme est ignoré. Pour rechercher ce texte tel quel, mettez-le entre guillemets.",
     unsupportedNot:
-      "L’exclusion n’est pas prise en charge : filtrez plutôt les valeurs à garder. Pour rechercher ce texte, mettez-le entre guillemets.",
+      "L’exclusion n’est pas prise en charge : NOT est ignoré et les termes autour continuent de s’appliquer. Pour restreindre les lignes, filtrez plutôt les valeurs à garder : {example}",
+    unsupportedNotNoFilter:
+      "L’exclusion n’est pas prise en charge : NOT est ignoré et les termes autour continuent de s’appliquer.",
     exclusiveComparison: "Utilisez >= ou <= avec une date et une heure.",
     notComparable: "{column} n’a pas d’ordre : choisissez plutôt ses valeurs.",
     multipleBoolean: "{column} est oui ou non, pas les deux.",

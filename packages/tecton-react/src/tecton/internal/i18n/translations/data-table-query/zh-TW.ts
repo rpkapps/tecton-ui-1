@@ -61,7 +61,6 @@ export default defineTranslations({
     keySelect: "選擇",
     keyComplete: "補全",
     keyClose: "關閉",
-    footerAll: "並排的條件全部生效",
     summaryFilters: "篩選條件：{filters}。",
     summaryNoFilters: "沒有篩選條件。",
     summarySearch: "搜尋：{search}。",
@@ -80,9 +79,17 @@ export default defineTranslations({
     ambiguousMonth: "「{value}」可能對應多個月份：請多輸入一些名稱。",
     backwardsRange: "此範圍在結束之後才開始：{from} 晚於 {to}。",
     unsupportedOr:
-      "不支援 OR：所有條件都會生效。要符合多個值中的任一個，請用逗號分隔。",
+      "不支援 OR。每一列都必須符合所有條件。要符合某一欄多個值中的任一個，請用逗號分隔列出這些值：{example}",
+    unsupportedOrNoList:
+      "不支援 OR。每一列都必須符合所有條件，請一次只搜尋一項。",
+    unsupportedMinus:
+      "不支援排除，因此會忽略此條件。要搜尋這段文字本身，請加上引號。要縮小結果範圍，請改為篩選要保留的值：{example}",
+    unsupportedMinusNoFilter:
+      "不支援排除，因此會忽略此條件。要搜尋這段文字本身，請加上引號。",
     unsupportedNot:
-      "不支援排除：請改為篩選要保留的值。要搜尋此文字，請加上引號。",
+      "不支援排除，因此會忽略 NOT，其兩側的條件仍會生效。要縮小結果範圍，請改為篩選要保留的值：{example}",
+    unsupportedNotNoFilter:
+      "不支援排除，因此會忽略 NOT，其兩側的條件仍會生效。",
     exclusiveComparison: "日期和時間請使用 >= 或 <=。",
     notComparable: "{column} 沒有順序：請改為選擇它的值。",
     multipleBoolean: "{column} 只能是是或否，不能同時為兩者。",

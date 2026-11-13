@@ -361,9 +361,24 @@ new item only. Existing widths are kept. This includes an item mounted by
 its own parent's state rather than the row's render: it is measured when it
 registers.
 
-14.7. First paint: every item renders visible with its label, one
-measurement runs in a layout effect before paint and collapses what does
-not fit. There is no flash of overflow.
+14.7. First paint: every item renders with its label, one measurement
+runs in a layout effect before paint and collapses what does not fit.
+There is no flash of overflow. Rendered on the server, the row has no
+width to measure until it hydrates, and must not show a layout it will
+not keep. Until its first pass it has no `data-measured`; it keeps to one
+line, every child at its own size (only elastic items shrink), and clips
+what runs past its end, so there is no second line or scrollbar for the
+pass to take away. What may still move is `visibility: hidden` (laid out,
+so nothing shifts and the pass measures it, but neither drawn, focusable
+nor announced): each item that can go into the menu or lose its label
+(neither fixed nor elastic), each divider, and every child after the
+first such item, whose place depends on it. The fixed and elastic
+children before it show. The pass sets `data-measured` in the same commit
+that hides what does not fit and renders the trigger, so the row goes
+from unseen items to its real layout in one frame and never shows a More
+button it then removes. The row re-renders this once; a pass after it
+notifies only what changed. A row outside a live document, which never
+measures, is marked measured at once and shows every item.
 
 14.8. No transition on hide or show. Items appear and disappear in one
 frame. Only the host's own enter and exit (the `ActionBar` slide) animates.

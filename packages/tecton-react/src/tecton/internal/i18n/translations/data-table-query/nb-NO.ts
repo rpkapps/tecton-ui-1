@@ -65,7 +65,6 @@ export default defineTranslations({
     keySelect: "Velg",
     keyComplete: "Fullfør",
     keyClose: "Lukk",
-    footerAll: "Termer ved siden av hverandre gjelder alle",
     summaryFilters: "Filtre: {filters}.",
     summaryNoFilters: "Ingen filtre.",
     summarySearch: "Søk: {search}.",
@@ -89,9 +88,17 @@ export default defineTranslations({
     backwardsRange:
       "Området starter etter at det slutter: {from} er etter {to}.",
     unsupportedOr:
-      "OR støttes ikke: alle termene gjelder. Skill verdier med komma for å finne en av flere verdier.",
+      "OR støttes ikke. Radene må samsvare med alle termene. Skriv verdiene skilt med komma for å finne én av flere verdier i en kolonne: {example}",
+    unsupportedOrNoList:
+      "OR støttes ikke. Radene må samsvare med alle termene, så søk etter én ting om gangen.",
+    unsupportedMinus:
+      "Utelukking støttes ikke, så denne termen ignoreres. Sett teksten i anførselstegn for å søke etter selve teksten. Filtrer heller etter verdiene som skal være med, for å snevre inn radene: {example}",
+    unsupportedMinusNoFilter:
+      "Utelukking støttes ikke, så denne termen ignoreres. Sett teksten i anførselstegn for å søke etter selve teksten.",
     unsupportedNot:
-      "Utelukking støttes ikke: filtrer heller etter verdiene som skal være med. Sett teksten i anførselstegn for å søke etter den.",
+      "Utelukking støttes ikke, så NOT ignoreres, og termene rundt gjelder fortsatt. Filtrer heller etter verdiene som skal være med, for å snevre inn radene: {example}",
+    unsupportedNotNoFilter:
+      "Utelukking støttes ikke, så NOT ignoreres, og termene rundt gjelder fortsatt.",
     exclusiveComparison: "Bruk >= eller <= med dato og klokkeslett.",
     notComparable: "{column} har ingen rekkefølge: velg verdiene i stedet.",
     multipleBoolean: "{column} er ja eller nei, ikke begge.",

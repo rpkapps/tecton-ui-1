@@ -78,7 +78,6 @@ export default defineTranslations({
     keySelect: "Atlasīt",
     keyComplete: "Pabeigt",
     keyClose: "Aizvērt",
-    footerAll: "Blakus esošie nosacījumi tiek piemēroti visi",
     summaryFilters: "Filtri: {filters}.",
     summaryNoFilters: "Nav filtru.",
     summarySearch: "Meklēšana: {search}.",
@@ -102,9 +101,17 @@ export default defineTranslations({
       "“{value}” var būt vairāk nekā viens mēnesis: uzrakstiet vairāk no nosaukuma.",
     backwardsRange: "Šis diapazons sākas pēc beigām: {from} ir pēc {to}.",
     unsupportedOr:
-      "OR netiek atbalstīts: tiek piemēroti visi nosacījumi. Lai atrastu jebkuru no vairākām vērtībām, atdaliet tās ar komatiem.",
+      "OR netiek atbalstīts. Rindām jāatbilst katram nosacījumam. Lai atrastu vienu no vairākām kolonnas vērtībām, uzskaitiet tās, atdalot ar komatiem: {example}",
+    unsupportedOrNoList:
+      "OR netiek atbalstīts. Rindām jāatbilst katram nosacījumam, tāpēc meklējiet vienu lietu vienlaikus.",
+    unsupportedMinus:
+      "Izslēgšana netiek atbalstīta, tāpēc šis nosacījums tiek ignorēts. Lai meklētu tieši šo tekstu, ielieciet to pēdiņās. Lai sašaurinātu rindas, tā vietā filtrējiet vērtības, kuras paturēt: {example}",
+    unsupportedMinusNoFilter:
+      "Izslēgšana netiek atbalstīta, tāpēc šis nosacījums tiek ignorēts. Lai meklētu tieši šo tekstu, ielieciet to pēdiņās.",
     unsupportedNot:
-      "Izslēgšana netiek atbalstīta: tā vietā filtrējiet vērtības, kuras paturēt. Lai meklētu šo tekstu, ielieciet to pēdiņās.",
+      "Izslēgšana netiek atbalstīta, tāpēc NOT tiek ignorēts, bet blakus esošie nosacījumi joprojām tiek piemēroti. Lai sašaurinātu rindas, tā vietā filtrējiet vērtības, kuras paturēt: {example}",
+    unsupportedNotNoFilter:
+      "Izslēgšana netiek atbalstīta, tāpēc NOT tiek ignorēts, bet blakus esošie nosacījumi joprojām tiek piemēroti.",
     exclusiveComparison: "Datumam ar laiku izmantojiet >= vai <=.",
     notComparable: "{column} nav secības: tā vietā izvēlieties vērtības.",
     multipleBoolean: "{column} ir jā vai nē, ne abi.",

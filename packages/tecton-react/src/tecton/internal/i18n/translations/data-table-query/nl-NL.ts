@@ -74,7 +74,6 @@ export default defineTranslations({
     keySelect: "Selecteren",
     keyComplete: "Aanvullen",
     keyClose: "Sluiten",
-    footerAll: "Termen naast elkaar gelden allemaal",
     summaryFilters: "Filters: {filters}.",
     summaryNoFilters: "Geen filters.",
     summarySearch: "Zoeken: {search}.",
@@ -98,9 +97,17 @@ export default defineTranslations({
       "‘{value}’ kan meer dan één maand zijn: schrijf meer van de naam.",
     backwardsRange: "Dit bereik begint na het einde: {from} ligt na {to}.",
     unsupportedOr:
-      "OR wordt niet ondersteund: elke term geldt. Scheid waarden met komma’s om een van meerdere waarden te vinden.",
+      "OR wordt niet ondersteund. Rijen moeten aan elke term voldoen. Noem de waarden gescheiden door komma’s om een van meerdere waarden van een kolom te vinden: {example}",
+    unsupportedOrNoList:
+      "OR wordt niet ondersteund. Rijen moeten aan elke term voldoen, dus zoek naar één ding tegelijk.",
+    unsupportedMinus:
+      "Uitsluiten wordt niet ondersteund, dus deze term wordt genegeerd. Zet de tekst tussen aanhalingstekens om naar precies die tekst te zoeken. Filter in plaats daarvan op de waarden die u wilt houden om de rijen te beperken: {example}",
+    unsupportedMinusNoFilter:
+      "Uitsluiten wordt niet ondersteund, dus deze term wordt genegeerd. Zet de tekst tussen aanhalingstekens om naar precies die tekst te zoeken.",
     unsupportedNot:
-      "Uitsluiten wordt niet ondersteund: filter in plaats daarvan op de waarden die u wilt houden. Zet deze tekst tussen aanhalingstekens om ernaar te zoeken.",
+      "Uitsluiten wordt niet ondersteund, dus NOT wordt genegeerd en de termen ernaast gelden nog steeds. Filter in plaats daarvan op de waarden die u wilt houden om de rijen te beperken: {example}",
+    unsupportedNotNoFilter:
+      "Uitsluiten wordt niet ondersteund, dus NOT wordt genegeerd en de termen ernaast gelden nog steeds.",
     exclusiveComparison: "Gebruik >= of <= met een datum en tijd.",
     notComparable:
       "{column} heeft geen volgorde: kies in plaats daarvan de waarden.",

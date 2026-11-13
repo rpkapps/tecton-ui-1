@@ -13,6 +13,7 @@ import {
   getColumnModel,
   reconcileView,
   sameFilters,
+  type ColumnModel,
   type DataTableFilterValue,
   type DataTableView,
 } from "../internal/data-table/engine"
@@ -28,6 +29,12 @@ import {
   type QuerySuggestion,
 } from "../internal/data-table/engine/query"
 import { startOfDay } from "../internal/data-table/engine/values"
+import {
+  problemMessage,
+  type ColumnSample,
+} from "../internal/data-table/query-model"
+import { createTranslator } from "../internal/i18n/translations"
+import queryEnglish from "../internal/i18n/translations/data-table-query/en-US"
 
 const zone = process.env.TZ
 process.env.TZ = "America/Los_Angeles"
@@ -1467,5 +1474,81 @@ describe("suggestQuery", () => {
     expect(suggest("OR|").items).toEqual([])
     expect(suggest("-stat|").items).toEqual([])
     expect(suggest(`"gull|`).items).toEqual([])
+  })
+})
+
+describe("problemMessage: OR, NOT and a leading minus in words", () => {
+  const t = createTranslator(
+    "dataTableQuery",
+    "en-US",
+    undefined,
+    queryEnglish.dataTableQuery
+  )
+  /** The message of the one problem in `text`, in a table of `of`'s columns (the wells' by default). */
+  const message = (
+    text: string,
+    of: ColumnModel<Well> = model,
+    sample: ColumnSample = () => ({})
+  ) => {
+    // Untyped, as the field reads it from the table's context.
+    const columns = of as unknown as ColumnModel<unknown>
+    const language = getQueryLanguage(columns, "en-US")
+    return problemMessage(problem(text, language), language, columns, t, sample)
+  }
+  const OR = "OR isn't supported. Rows must match every term."
+  const MINUS =
+    "Excluding isn't supported, so this term is ignored. To search for the text itself, put it in quotes."
+  const NOT =
+    "Excluding isn't supported, so NOT is ignored and the terms beside it still apply."
+  const KEEP = "To narrow the rows, filter for the values to keep instead:"
+
+  it("shows how to write either value with the table's first options column", () => {
+    expect(message("drilling OR producing")).toBe(
+      `${OR} To match one of several values of a column, list them with commas: status:drilling,producing`
+    )
+    expect(message("-gullfaks")).toBe(
+      `${MINUS} ${KEEP} status:drilling,producing`
+    )
+    expect(message("NOT gullfaks")).toBe(
+      `${NOT} ${KEEP} status:drilling,producing`
+    )
+  })
+
+  it("has no list to offer without an options column, and keeps rows with another column, from the data", () => {
+    const wells = getColumnModel(
+      createColumns<Well>([
+        { id: "name", header: "Well" },
+        { id: "td", header: "TD", type: "number" },
+        { id: "spud", header: "Spud date", type: "date" },
+      ])
+    )
+    expect(message("a OR b", wells)).toBe(
+      `${OR.slice(0, -1)}, so search for one thing at a time.`
+    )
+    // A number before a date or a text; the data's middle when it has one.
+    expect(message("-a", wells)).toBe(`${MINUS} ${KEEP} td:>=100`)
+    expect(
+      message("-a", wells, (column) =>
+        column.type === "number" ? { number: 3000 } : {}
+      )
+    ).toBe(`${MINUS} ${KEEP} td:>=3000`)
+    const flags = getColumnModel(
+      createColumns<Well>([
+        { id: "td", header: "TD", type: "number" },
+        { id: "subsea", header: "Subsea", type: "boolean" },
+      ])
+    )
+    expect(message("NOT a", flags)).toBe(`${NOT} ${KEEP} subsea:yes`)
+  })
+
+  it("says only what happened when no column can be filtered", () => {
+    const none = getColumnModel(
+      createColumns<Well>([{ id: "name", header: "Well", filterable: false }])
+    )
+    expect(message("a OR b", none)).toBe(
+      `${OR.slice(0, -1)}, so search for one thing at a time.`
+    )
+    expect(message("-a", none)).toBe(MINUS)
+    expect(message("NOT a", none)).toBe(NOT)
   })
 })

@@ -62,7 +62,6 @@ export default defineTranslations({
     keySelect: "選択",
     keyComplete: "補完",
     keyClose: "閉じる",
-    footerAll: "並べた条件はすべて適用",
     summaryFilters: "フィルター: {filters}。",
     summaryNoFilters: "フィルターなし。",
     summarySearch: "検索: {search}。",
@@ -84,9 +83,17 @@ export default defineTranslations({
     backwardsRange:
       "この範囲は終わりより後に始まっています: {from} は {to} より後です。",
     unsupportedOr:
-      "OR は使えません。すべての条件が適用されます。複数の値のいずれかに一致させるには、カンマで区切ってください。",
+      "OR は使えません。行はすべての条件に一致する必要があります。列の複数の値のいずれかに一致させるには、値をカンマで区切って並べてください。例: {example}",
+    unsupportedOrNoList:
+      "OR は使えません。行はすべての条件に一致する必要があるため、一度に 1 つずつ検索してください。",
+    unsupportedMinus:
+      "除外は使えないため、この条件は無視されます。このテキストそのものを検索するには引用符で囲んでください。行を絞り込むには、代わりに残す値を指定してください。例: {example}",
+    unsupportedMinusNoFilter:
+      "除外は使えないため、この条件は無視されます。このテキストそのものを検索するには引用符で囲んでください。",
     unsupportedNot:
-      "除外は使えません。代わりに残す値で絞り込んでください。このテキストを検索するには引用符で囲んでください。",
+      "除外は使えないため、NOT は無視され、前後の条件はそのまま適用されます。行を絞り込むには、代わりに残す値を指定してください。例: {example}",
+    unsupportedNotNoFilter:
+      "除外は使えないため、NOT は無視され、前後の条件はそのまま適用されます。",
     exclusiveComparison: "日時には >= または <= を使ってください。",
     notComparable:
       "{column} には順序がありません。代わりに値を選んでください。",
