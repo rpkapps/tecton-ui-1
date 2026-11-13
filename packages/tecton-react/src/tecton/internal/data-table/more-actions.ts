@@ -23,7 +23,7 @@ import type {
   DataTableSelectionChangeReason,
   DataTableState,
 } from "./context"
-import { loadFeature } from "./lazy"
+import { feature, loadFeature } from "./lazy"
 import { emit } from "./root"
 
 /** Back to the default view; whether it changed. */
@@ -133,6 +133,9 @@ function setPageSize<T>(
   if (page !== current.page) changePage(page, "page-size", event)
 }
 
+/** `exportCsv`'s module: loaded when it is first called, never prefetched. */
+const CSV = feature(() => import("./engine/csv"))
+
 /** The rows of `ids`: the matching ones in display order, then the rest. */
 function itemsOf<T>(model: DataTableRowModel<T>, ids: ReadonlyArray<string>) {
   const wanted = new Set(ids)
@@ -150,7 +153,7 @@ async function exportCsv<T>(
   actions: DataTableActions<T>,
   options: DataTableExportOptions = {}
 ) {
-  const { toCsv } = await loadFeature("csv")
+  const { toCsv } = await loadFeature(CSV)
   // Read once loaded: the state the export was asked for, or later.
   const { model, layout, formatter, value, view, columns } =
     actions.internals.now()

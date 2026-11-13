@@ -54,7 +54,7 @@ import { useLocale } from "@tecton/react/provider"
 
 import { useTranslations, type Translator } from "../i18n/translations"
 import { announce } from "../primitives/live-announcer"
-import { loadFeature } from "./lazy"
+import { loadFeature, RESIZER } from "./lazy"
 import { gridMenuKeys } from "./part-popup"
 import type { DataTableContextValue } from "./context"
 import {
@@ -390,7 +390,7 @@ function ColumnMenuItems<T>({
             onClick={() => {
               closing.current = "resize"
               if (resizerRef.current) return
-              loadFeature("resizer")
+              loadFeature(RESIZER)
                 .then(() => setTimeout(() => resizerRef.current?.focus()))
                 .catch(() => undefined)
             }}

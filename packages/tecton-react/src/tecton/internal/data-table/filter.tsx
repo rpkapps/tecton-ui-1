@@ -34,6 +34,7 @@ import {
 } from "./engine/index"
 import { DataTableFilterPopover, type SetColumnFilter } from "./filter-popover"
 import { filterText } from "./filter-text"
+import { DATE_INPUT } from "./date-input"
 import { loadFeature, usePrefetchFeatures } from "./lazy"
 import { usePartPopup } from "./part-popup"
 import { DataTableToolbarItem } from "./toolbar"
@@ -50,11 +51,11 @@ type DataTableFilterProps = Omit<
 }
 
 const NO_FEATURES = [] as const
-const DATE_FILTERS = ["dateInput"] as const
+const DATE_FILTERS = [DATE_INPUT]
 
 /** Asks for a date filter's calendar before its popover opens. */
 const loadCalendar = () => {
-  loadFeature("dateInput").catch(() => undefined)
+  loadFeature(DATE_INPUT).catch(() => undefined)
 }
 
 function DataTableFilter({

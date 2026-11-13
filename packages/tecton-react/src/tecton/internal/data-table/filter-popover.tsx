@@ -69,6 +69,7 @@ import {
   type EngineColumn,
 } from "./engine/index"
 import { dayOf, startOfDay } from "./engine/values"
+import { DATE_INPUT } from "./date-input"
 import { useFeature } from "./lazy"
 import type { PartPopup } from "./part-popup"
 
@@ -517,7 +518,7 @@ const DATE_FILTER_MONTHS = 2
 
 /**
  * A date filter: `DateRangePicker`'s calendar, its code loaded on demand
- * (`date-calendar.tsx`, the `dateInput` feature), its place kept meanwhile.
+ * (`date-calendar.tsx`, `DATE_INPUT`), its place kept meanwhile.
  * The first day picked starts a range, the second ends it, sets the filter
  * and closes the popover (`onPicked`), as the picker does.
  *
@@ -547,7 +548,7 @@ function DateFilter({
   }
   const fromCalendar = (date: Date) =>
     startOfDay(date.getFullYear(), date.getMonth(), date.getDate(), timeZone)
-  const { module, load } = useFeature("dateInput", true)
+  const { module, load } = useFeature(DATE_INPUT, true)
   // Asked for as the popover opens, if the idle prefetch has not brought it.
   React.useEffect(() => {
     if (!module) load()

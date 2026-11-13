@@ -95,7 +95,13 @@ import {
   type EngineColumn,
   type GroupRow,
 } from "./engine/index"
-import { useFeature, usePrefetchFeatures } from "./lazy"
+import {
+  DRAG_AND_DROP,
+  LIVE,
+  RESIZER,
+  useFeature,
+  usePrefetchFeatures,
+} from "./lazy"
 import { DataTableHeader, shownHeaderRows, type HeaderShared } from "./header"
 import { createLiveBridge, LiveAnchor, type LiveMessage } from "./live-bridge"
 import { describeRow, renderRow } from "./row"
@@ -158,8 +164,8 @@ const NO_IDS: ReadonlySet<string> = new Set()
 const NO_OPEN: ReadonlyArray<string> = []
 const NO_FEATURES = [] as const
 const NO_LABEL_WIDTH = { "--data-table-group-label": "initial" }
-const RESIZER = ["resizer"] as const
-const LIVE = ["live"] as const
+const PREFETCH_RESIZER = [RESIZER]
+const PREFETCH_LIVE = [LIVE]
 
 /** Rows shown while the first rows load, without pages. */
 const LOADING_ROWS = 5
@@ -237,7 +243,7 @@ function useRowOrder(
   model: DataTableRowModel<unknown>,
   on: boolean
 ) {
-  const feature = useFeature("dragAndDrop", on)
+  const feature = useFeature(DRAG_AND_DROP, on)
   const { load } = feature
   const [order] = React.useState<RowOrder>(() =>
     createRowOrder(context.actions, () => frame.current, grid, load)
@@ -449,7 +455,7 @@ function useColumnOrder(
   layout: ColumnLayout<unknown>,
   on: boolean
 ) {
-  const feature = useFeature("dragAndDrop", on)
+  const feature = useFeature(DRAG_AND_DROP, on)
   const snapshot = React.useMemo(
     () => (on ? movableColumns(columns, layout) : null),
     [on, columns, layout]
@@ -832,7 +838,7 @@ function DataTableContentImpl({
   )
 
   // The header's on-demand part, in idle time: the resizers.
-  usePrefetchFeatures(options.resizableColumns ? RESIZER : NO_FEATURES)
+  usePrefetchFeatures(options.resizableColumns ? PREFETCH_RESIZER : NO_FEATURES)
 
   const gridController = React.useRef<TableGridController | null>(null)
   const closedGroups = useDataTableSelector(
@@ -844,8 +850,8 @@ function DataTableContentImpl({
   // the table mounts (`live-rows.tsx`); the rows and the anchor read the
   // bridge, which it writes.
   const live = useDataTableSelector(context, (state) => state.live)
-  const liveFeature = useFeature("live", live !== null)
-  usePrefetchFeatures(live ? LIVE : NO_FEATURES)
+  const liveFeature = useFeature(LIVE, live !== null)
+  usePrefetchFeatures(live ? PREFETCH_LIVE : NO_FEATURES)
   const [liveBridge] = React.useState(createLiveBridge)
   const [liveMessage, setLiveMessage] = React.useState<LiveMessage | null>(null)
   const rowOrder = useRowOrder(context, frame, gridController, model, handle)

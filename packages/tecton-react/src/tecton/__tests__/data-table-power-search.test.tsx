@@ -39,7 +39,9 @@ import {
 } from "@tecton/react/data-table"
 import { TectonProvider } from "@tecton/react/provider"
 
+import { DATE_INPUT } from "../internal/data-table/date-input"
 import { loadFeature } from "../internal/data-table/lazy"
+import { QUERY } from "../internal/data-table/search"
 import { columns, names, WELLS, type Well } from "./data-table-fixtures"
 
 function Wells({
@@ -82,8 +84,8 @@ const lastView = (spy: ReturnType<typeof vi.fn>) =>
 
 beforeAll(async () => {
   // The query layer and the date filter's calendar, loaded before the tests.
-  await loadFeature("query")
-  await loadFeature("dateInput")
+  await loadFeature(QUERY)
+  await loadFeature(DATE_INPUT)
 }, 30_000)
 
 afterEach(() => {

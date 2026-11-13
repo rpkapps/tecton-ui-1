@@ -9,11 +9,15 @@ import {
   DataTableContent,
 } from "@tecton/react/data-table"
 
-import { loadFeature, useFeature } from "../internal/data-table/lazy"
+import {
+  DRAG_AND_DROP,
+  loadFeature,
+  useFeature,
+} from "../internal/data-table/lazy"
 
 /** What a part renders with a feature: the server's markup until hydrated. */
 function Probe() {
-  const { module } = useFeature("dragAndDrop", true)
+  const { module } = useFeature(DRAG_AND_DROP, true)
   return <span>{module ? "loaded" : "pending"}</span>
 }
 
@@ -40,7 +44,7 @@ describe("DataTable on demand, server rendered", () => {
   it("renders a feature as the server did while hydrating, then with its module", async () => {
     const html = renderToString(<Probe />)
     expect(html).toContain("pending")
-    await loadFeature("dragAndDrop")
+    await loadFeature(DRAG_AND_DROP)
     const recoverable = vi.fn()
     const container = document.createElement("div")
     container.innerHTML = html
@@ -56,7 +60,7 @@ describe("DataTable on demand, server rendered", () => {
 
   it("hydrates without a mismatch while another table has loaded the drag and drop", async () => {
     const html = renderToString(<Wells />)
-    await loadFeature("dragAndDrop")
+    await loadFeature(DRAG_AND_DROP)
     const error = vi.spyOn(console, "error").mockImplementation(() => {})
     const recoverable = vi.fn()
     const container = document.createElement("div")

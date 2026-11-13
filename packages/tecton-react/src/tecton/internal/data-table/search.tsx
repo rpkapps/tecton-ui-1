@@ -43,7 +43,7 @@ import {
 } from "./context"
 import { useDelayedCommit } from "./delayed-commit"
 import { setSearch } from "./engine/index"
-import { useFeature, usePrefetchFeatures, type FeatureName } from "./lazy"
+import { feature, useFeature, usePrefetchFeatures } from "./lazy"
 import type { QueryHandoff } from "./query-search"
 import { DataTableToolbarSearch } from "./toolbar"
 
@@ -149,7 +149,13 @@ function TextSearch({
   )
 }
 
-const QUERY: ReadonlyArray<FeatureName> = ["query"]
+/**
+ * `syntax="query"`: the query language, its colours, suggestions and
+ * help (its strings are the `dataTableQuery` namespace), on demand.
+ */
+const QUERY = feature(() => import("./query-search"))
+const PREFETCH_QUERY = [QUERY]
+const NO_FEATURES = [] as const
 
 /**
  * `syntax="query"`: the plain field until the query layer has loaded (the
@@ -171,8 +177,8 @@ function QuerySearchField({
   )
   const search = useDataTableSelector(context, (state) => state.view.search)
   useFeatureWarning(context, !filterable, "DataTableSearch", "`filterable`")
-  usePrefetchFeatures(filterable ? QUERY : [])
-  const { module, load } = useFeature("query", filterable)
+  usePrefetchFeatures(filterable ? PREFETCH_QUERY : NO_FEATURES)
+  const { module, load } = useFeature(QUERY, filterable)
   const handoff = React.useRef<QueryHandoff>({
     text: null,
     selectionStart: null,
@@ -283,5 +289,5 @@ function QuerySearchField({
   )
 }
 
-export { DataTableSearch }
+export { DataTableSearch, QUERY }
 export type { DataTableSearchProps }

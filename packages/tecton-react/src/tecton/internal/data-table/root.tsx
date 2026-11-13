@@ -89,7 +89,7 @@ import {
   type DataTableSelectionMode,
   type DataTableState,
 } from "./context"
-import { usePrefetchFeatures, type FeatureName } from "./lazy"
+import { DRAG_AND_DROP, usePrefetchFeatures } from "./lazy"
 import {
   resolveHighlightChanges,
   useHeldItems,
@@ -344,6 +344,8 @@ type Matching = {
 }
 
 const NO_IDS: ReadonlyArray<string> = []
+const NO_FEATURES = [] as const
+const PREFETCH_DRAG_AND_DROP = [DRAG_AND_DROP]
 const NO_GROUPS: Collapsed = { grouping: NO_IDS, closed: ALL_OPEN }
 
 function sameMembers(a: ReadonlyArray<string>, b: ReadonlyArray<string>) {
@@ -1084,9 +1086,9 @@ function DataTable<T>({
 
   // ---- on demand, warnings ------------------------------------------------
 
-  const features: Array<FeatureName> = []
-  if (reorderableColumns || rowOrder) features.push("dragAndDrop")
-  usePrefetchFeatures(features)
+  usePrefetchFeatures(
+    reorderableColumns || rowOrder ? PREFETCH_DRAG_AND_DROP : NO_FEATURES
+  )
 
   // New columns re-render every row: said when they are new but the same.
   const previousColumns = React.useRef(columns)

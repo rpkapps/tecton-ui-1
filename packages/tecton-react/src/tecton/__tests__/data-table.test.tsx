@@ -24,7 +24,7 @@ import {
 } from "@tecton/react/data-table"
 import { TectonProvider } from "@tecton/react/provider"
 
-import { loadFeature } from "../internal/data-table/lazy"
+import { DRAG_AND_DROP, loadFeature } from "../internal/data-table/lazy"
 
 import {
   cell,
@@ -1008,6 +1008,6 @@ describe("DataTable on the server and on demand", () => {
   })
 
   it("loads a feature once, sharing the promise", () => {
-    expect(loadFeature("dragAndDrop")).toBe(loadFeature("dragAndDrop"))
+    expect(loadFeature(DRAG_AND_DROP)).toBe(loadFeature(DRAG_AND_DROP))
   })
 })

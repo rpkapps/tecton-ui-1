@@ -83,6 +83,7 @@ import {
   type Day,
 } from "./engine/query/dates"
 import type { SearchParts } from "./engine/engine"
+import { DATE_INPUT, type DateInputModule } from "./date-input"
 import { useFeature } from "./lazy"
 import { QueryHelp } from "./query-help"
 import {
@@ -442,7 +443,7 @@ function QuerySearch({
     )
     return "kind" in read && read.kind === "days" ? read.first : undefined
   })()
-  const dateFeature = useFeature("dateInput", calendarMode !== null)
+  const dateFeature = useFeature(DATE_INPUT, calendarMode !== null)
   const loadDates = dateFeature.load
   React.useEffect(() => {
     if (calendarMode !== null) loadDates()
@@ -1092,9 +1093,7 @@ function ymd(
   return [p.year, p.month, p.day]
 }
 
-type DateModule = NonNullable<
-  ReturnType<typeof useFeature<"dateInput">>["module"]
->
+type DateModule = NonNullable<DateInputModule | undefined>
 
 /**
  * The calendar of the suggestions, for a date value: the date filter's own

@@ -32,7 +32,7 @@ import {
 import { Panel } from "@tecton/react/panel"
 import { TectonProvider } from "@tecton/react/provider"
 
-import { loadFeature } from "../internal/data-table/lazy"
+import { DRAG_AND_DROP, loadFeature } from "../internal/data-table/lazy"
 
 type Field = {
   id: string
@@ -877,7 +877,7 @@ describe("DataTable column resizing", () => {
 describe("DataTable column reordering", () => {
   // The drag and drop code, loaded once for the tests that drag.
   beforeEach(async () => {
-    await loadFeature("dragAndDrop")
+    await loadFeature(DRAG_AND_DROP)
   })
 
   /** A press on a header cell, moved to `x`, and released there. */

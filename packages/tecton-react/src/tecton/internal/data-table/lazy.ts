@@ -5,32 +5,37 @@
  * once a feature is on, kept out of the table's own modules so an
  * application that does not use it never downloads it.
  *
- * - `loadFeature(name)` imports a feature's module once (later calls share
- *   the promise; a failed load is tried again on the next call).
- * - `usePrefetchFeatures(names)` loads the features a mounted table has on,
- *   in idle time (within two seconds), so they are there before they are
- *   first used; an `eager` feature loads as soon as the table mounts
+ * - `loadFeature(feature)` imports a feature's module once (later calls
+ *   share the promise; a failed load is tried again on the next call).
+ * - `usePrefetchFeatures(features)` loads the features a mounted table has
+ *   on, in idle time (within two seconds), so they are there before they
+ *   are first used; an `eager` feature loads as soon as the table mounts
  *   instead. A part asks for its feature as it is pointed at or focused,
  *   before then (a date filter's button, a column's menu button).
- * - `useFeature(name, on)` is a feature's module for a part to render with:
- *   `undefined` until it has loaded (the part renders without it, with no
- *   change of layout), then the module; and `load`, for a press that needs
- *   it before the idle prefetch has brought it.
+ * - `useFeature(feature, on)` is a feature's module for a part to render
+ *   with: `undefined` until it has loaded (the part renders without it,
+ *   with no change of layout), then the module; and `load`, for a press
+ *   that needs it before the idle prefetch has brought it.
  * - Nothing loads on the server or while rendering: only effects and
  *   handlers call these.
  *
- * Adding a feature is one entry of `FEATURES`: its `import()`, and `true`
- * after it to make it eager. To bundle a feature with the table instead
- * (its size is small enough to not matter), import its module statically
- * where it is used.
+ * Adding a feature is one `feature(() => import(…))`, with `true` after it
+ * to make it eager: here for the features of the table's own modules,
+ * else in the module of the part that uses it (`QUERY` in `search.tsx`,
+ * `DATE_INPUT` in `date-input.ts`, `CSV` in `more-actions.ts`), so that an
+ * application without that part has no chunk for it. To bundle a feature
+ * with the table instead (its size is small enough to not matter), import
+ * its module statically where it is used.
  */
 import * as React from "react"
 
-type Feature<TModule> = {
+type Feature<TModule extends object> = {
   load: () => Promise<TModule>
   /** Loaded as soon as a table mounts with the feature on, not in idle time. */
   eager: boolean
 }
+
+type AnyFeature = Feature<object>
 
 function feature<TModule extends object>(
   load: () => Promise<TModule>,
@@ -39,55 +44,40 @@ function feature<TModule extends object>(
   return { load, eager }
 }
 
-const FEATURES = {
-  /** `exportCsv`: loaded when it is first called, never prefetched. */
-  csv: feature(() => import("./engine/csv")),
-  /** `reorderableColumns`, `reorderableRows`: one chunk for both. */
-  dragAndDrop: feature(() => import("./reorder")),
-  /** A date filter's calendar: `DateRangePicker`'s (`date-calendar.tsx`). */
-  dateInput: feature(() => import("../date-calendar")),
-  /** `resizableColumns`: the columns' resizers and their drags. */
-  resizer: feature(() => import("../../table-column-resizer")),
-  /**
-   * `DataTableSearch syntax="query"`: the query language, its colours,
-   * suggestions and help (its strings are the `dataTableQuery` namespace).
-   */
-  query: feature(() => import("./query-search")),
-  /**
-   * `highlightChanges`: what added rows look like and do in the content
-   * (`live-rows.tsx`), loaded as soon as the table mounts, before rows come.
-   */
-  live: feature(() => import("./live-rows"), true),
-}
-
-type FeatureName = keyof typeof FEATURES
+/** `reorderableColumns`, `reorderableRows`: one chunk for both. */
+const DRAG_AND_DROP = feature(() => import("./reorder"))
+/** `resizableColumns`: the columns' resizers and their drags. */
+const RESIZER = feature(() => import("../../table-column-resizer"))
+/**
+ * `highlightChanges`: what added rows look like and do in the content
+ * (`live-rows.tsx`), loaded as soon as the table mounts, before rows come.
+ */
+const LIVE = feature(() => import("./live-rows"), true)
 
 /** The longest an idle prefetch waits for the browser to be idle. */
 const IDLE_TIMEOUT = 2000
-type FeatureModule<TName extends FeatureName> =
-  (typeof FEATURES)[TName] extends Feature<infer TModule> ? TModule : never
 
-const loads = new Map<FeatureName, Promise<object>>()
+const loads = new Map<AnyFeature, Promise<object>>()
 /** The modules loaded, for a part that mounts after its feature has. */
-const loaded = new Map<FeatureName, object>()
+const loaded = new Map<AnyFeature, object>()
 
-function loadFeature<TName extends FeatureName>(
-  name: TName
-): Promise<FeatureModule<TName>> {
-  let load = loads.get(name)
+function loadFeature<TModule extends object>(
+  feature: Feature<TModule>
+): Promise<TModule> {
+  let load = loads.get(feature)
   if (!load) {
-    load = FEATURES[name].load()
-    loads.set(name, load)
+    load = feature.load()
+    loads.set(feature, load)
     load
       .then((module) => {
-        loaded.set(name, module)
+        loaded.set(feature, module)
         for (const listener of [...listeners]) listener()
       })
       .catch(() => undefined)
     // An unreachable chunk is not remembered: the next call tries again.
-    load.catch(() => loads.delete(name))
+    load.catch(() => loads.delete(feature))
   }
-  return load as Promise<FeatureModule<TName>>
+  return load as Promise<TModule>
 }
 
 /**
@@ -104,26 +94,25 @@ function whenIdle(task: () => void): () => void {
   return () => clearTimeout(handle)
 }
 
-/** Loads the features a mounted table has on: in idle time, eager ones at once. */
-function usePrefetchFeatures(names: ReadonlyArray<FeatureName>) {
-  // The list is compared by value: the root builds it on every render.
-  const key = names.join(" ")
+/**
+ * Loads the features a mounted table has on: in idle time, eager ones at
+ * once. `features` stays the same array while they are the same (one
+ * constant for each set), as the effect compares it.
+ */
+function usePrefetchFeatures(features: ReadonlyArray<AnyFeature>) {
   React.useEffect(() => {
-    if (!key) return
     // Asked for already (by another table, another row): nothing to wait for.
-    const wanted = (key.split(" ") as Array<FeatureName>).filter(
-      (name) => !loads.has(name)
-    )
+    const wanted = features.filter((feature) => !loads.has(feature))
     if (!wanted.length) return
     const prefetch = () => {
       // A prefetch that fails is retried by the load that needs the module.
-      for (const name of wanted) loadFeature(name).catch(() => undefined)
+      for (const feature of wanted) loadFeature(feature).catch(() => undefined)
     }
-    const eager = wanted.filter((name) => FEATURES[name].eager)
-    for (const name of eager) loadFeature(name).catch(() => undefined)
+    const eager = wanted.filter((feature) => feature.eager)
+    for (const feature of eager) loadFeature(feature).catch(() => undefined)
     if (eager.length === wanted.length) return
     return whenIdle(prefetch)
-  }, [key])
+  }, [features])
 }
 
 /** Told when a module has loaded, for `useFeature`. */
@@ -143,21 +132,29 @@ function subscribe(listener: () => void) {
  * another table has loaded the feature already. `load` asks for it now (a
  * press that needs it).
  */
-function useFeature<TName extends FeatureName>(
-  name: TName,
+function useFeature<TModule extends object>(
+  feature: Feature<TModule>,
   on: boolean
-): { module: FeatureModule<TName> | undefined; load: () => void } {
+): { module: TModule | undefined; load: () => void } {
   const module = React.useSyncExternalStore(
     subscribe,
-    () => loaded.get(name) as FeatureModule<TName> | undefined,
+    () => loaded.get(feature) as TModule | undefined,
     () => undefined
   )
   const load = React.useCallback(() => {
     // A failed load is tried again by the next press.
-    loadFeature(name).catch(() => undefined)
-  }, [name])
+    loadFeature(feature).catch(() => undefined)
+  }, [feature])
   return { module: on ? module : undefined, load }
 }
 
-export { loadFeature, useFeature, usePrefetchFeatures }
-export type { FeatureModule, FeatureName }
+export {
+  DRAG_AND_DROP,
+  feature,
+  LIVE,
+  loadFeature,
+  RESIZER,
+  useFeature,
+  usePrefetchFeatures,
+}
+export type { AnyFeature, Feature }

@@ -32,7 +32,7 @@ import {
   type DataTableView,
 } from "@tecton/react/data-table"
 
-import { loadFeature } from "../internal/data-table/lazy"
+import { LIVE, loadFeature } from "../internal/data-table/lazy"
 
 type Reading = {
   id: string
@@ -199,7 +199,7 @@ function Live({ virtualized = true, children, ...props }: Props) {
 // The content's live module loads as a table with `highlightChanges`
 // mounts; here once, before any.
 beforeAll(async () => {
-  await loadFeature("live")
+  await loadFeature(LIVE)
 })
 
 beforeEach(() => {

@@ -76,7 +76,7 @@ import {
   type HeaderCell,
   type HeaderRow,
 } from "./engine/index"
-import { useFeature } from "./lazy"
+import { RESIZER, useFeature } from "./lazy"
 import { createPressWait } from "./press-wait"
 import { DataTableSelectionCheckbox } from "./selection-checkbox"
 
@@ -185,7 +185,7 @@ function hasColumnMenu(options: ColumnMenuOptions) {
  * the resizer if the pointer is still down when it arrives.
  */
 function useResizer(on: boolean) {
-  const feature = useFeature("resizer", on)
+  const feature = useFeature(RESIZER, on)
   const [wait] = React.useState(() =>
     createPressWait<null>((_, element, { pointer }) => {
       if (!pointer || typeof PointerEvent === "undefined") return
