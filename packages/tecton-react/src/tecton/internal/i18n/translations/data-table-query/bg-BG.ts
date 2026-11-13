@@ -74,7 +74,6 @@ export default defineTranslations({
     keySelect: "Избор",
     keyComplete: "Допълване",
     keyClose: "Затваряне",
-    footerAll: "Условията едно до друго се прилагат всички",
     summaryFilters: "Филтри: {filters}.",
     summaryNoFilters: "Няма филтри.",
     summarySearch: "Търсене: {search}.",

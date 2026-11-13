@@ -62,7 +62,6 @@ export default defineTranslations({
     keySelect: "Seç",
     keyComplete: "Tamamla",
     keyClose: "Kapat",
-    footerAll: "Yan yana koşulların hepsi uygulanır",
     summaryFilters: "Filtreler: {filters}.",
     summaryNoFilters: "Filtre yok.",
     summarySearch: "Arama: {search}.",

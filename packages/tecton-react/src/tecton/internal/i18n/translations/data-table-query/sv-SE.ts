@@ -74,7 +74,6 @@ export default defineTranslations({
     keySelect: "Välj",
     keyComplete: "Komplettera",
     keyClose: "Stäng",
-    footerAll: "Termer bredvid varandra gäller alla",
     summaryFilters: "Filter: {filters}.",
     summaryNoFilters: "Inga filter.",
     summarySearch: "Sökning: {search}.",

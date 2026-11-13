@@ -90,7 +90,6 @@ export default defineTranslations({
     keySelect: "تحديد",
     keyComplete: "إكمال",
     keyClose: "إغلاق",
-    footerAll: "تُطبَّق جميع الشروط المتجاورة",
     summaryFilters: "عوامل التصفية: {filters}.",
     summaryNoFilters: "لا توجد عوامل تصفية.",
     summarySearch: "البحث: {search}.",

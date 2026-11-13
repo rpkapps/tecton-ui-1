@@ -62,7 +62,6 @@ export default defineTranslations({
     keySelect: "選択",
     keyComplete: "補完",
     keyClose: "閉じる",
-    footerAll: "並べた条件はすべて適用",
     summaryFilters: "フィルター: {filters}。",
     summaryNoFilters: "フィルターなし。",
     summarySearch: "検索: {search}。",

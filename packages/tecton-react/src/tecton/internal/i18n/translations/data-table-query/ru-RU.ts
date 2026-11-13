@@ -82,7 +82,6 @@ export default defineTranslations({
     keySelect: "Выбрать",
     keyComplete: "Дополнить",
     keyClose: "Закрыть",
-    footerAll: "Условия рядом применяются все",
     summaryFilters: "Фильтры: {filters}.",
     summaryNoFilters: "Фильтров нет.",
     summarySearch: "Поиск: {search}.",

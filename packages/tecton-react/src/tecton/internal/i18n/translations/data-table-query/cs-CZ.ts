@@ -82,7 +82,6 @@ export default defineTranslations({
     keySelect: "Vybrat",
     keyComplete: "Doplnit",
     keyClose: "Zavřít",
-    footerAll: "Podmínky vedle sebe platí všechny",
     summaryFilters: "Filtry: {filters}.",
     summaryNoFilters: "Žádné filtry.",
     summarySearch: "Hledání: {search}.",

@@ -74,7 +74,6 @@ export default defineTranslations({
     keySelect: "Selecionar",
     keyComplete: "Completar",
     keyClose: "Fechar",
-    footerAll: "Os termos lado a lado aplicam-se todos",
     summaryFilters: "Filtros: {filters}.",
     summaryNoFilters: "Sem filtros.",
     summarySearch: "Pesquisa: {search}.",

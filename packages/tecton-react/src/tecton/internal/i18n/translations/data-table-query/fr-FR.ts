@@ -74,7 +74,6 @@ export default defineTranslations({
     keySelect: "Choisir",
     keyComplete: "Compléter",
     keyClose: "Fermer",
-    footerAll: "Les termes côte à côte s’appliquent tous",
     summaryFilters: "Filtres : {filters}.",
     summaryNoFilters: "Aucun filtre.",
     summarySearch: "Recherche : {search}.",

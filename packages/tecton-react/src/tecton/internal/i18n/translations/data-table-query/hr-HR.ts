@@ -78,7 +78,6 @@ export default defineTranslations({
     keySelect: "Odaberi",
     keyComplete: "Dovrši",
     keyClose: "Zatvori",
-    footerAll: "Uvjeti jedan uz drugi vrijede svi",
     summaryFilters: "Filtri: {filters}.",
     summaryNoFilters: "Nema filtara.",
     summarySearch: "Pretraživanje: {search}.",

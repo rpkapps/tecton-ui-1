@@ -82,7 +82,6 @@ export default defineTranslations({
     keySelect: "Izberi",
     keyComplete: "Dopolni",
     keyClose: "Zapri",
-    footerAll: "Pogoji drug ob drugem veljajo vsi",
     summaryFilters: "Filtri: {filters}.",
     summaryNoFilters: "Ni filtrov.",
     summarySearch: "Iskanje: {search}.",

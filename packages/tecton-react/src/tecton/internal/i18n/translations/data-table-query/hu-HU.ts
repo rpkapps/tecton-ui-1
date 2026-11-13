@@ -65,7 +65,6 @@ export default defineTranslations({
     keySelect: "Kijelölés",
     keyComplete: "Kiegészítés",
     keyClose: "Bezárás",
-    footerAll: "Az egymás melletti feltételek mind érvényesek",
     summaryFilters: "Szűrők: {filters}.",
     summaryNoFilters: "Nincsenek szűrők.",
     summarySearch: "Keresés: {search}.",

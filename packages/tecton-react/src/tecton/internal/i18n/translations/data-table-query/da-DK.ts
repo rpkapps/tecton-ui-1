@@ -71,7 +71,6 @@ export default defineTranslations({
     keySelect: "Vælg",
     keyComplete: "Fuldfør",
     keyClose: "Luk",
-    footerAll: "Termer ved siden af hinanden gælder alle",
     summaryFilters: "Filtre: {filters}.",
     summaryNoFilters: "Ingen filtre.",
     summarySearch: "Søgning: {search}.",

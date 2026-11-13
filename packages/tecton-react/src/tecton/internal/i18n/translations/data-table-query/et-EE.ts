@@ -74,7 +74,6 @@ export default defineTranslations({
     keySelect: "Vali",
     keyComplete: "Täienda",
     keyClose: "Sulge",
-    footerAll: "Kõrvuti tingimused kehtivad kõik",
     summaryFilters: "Filtrid: {filters}.",
     summaryNoFilters: "Filtreid pole.",
     summarySearch: "Otsing: {search}.",

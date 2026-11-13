@@ -900,9 +900,6 @@ function QuerySearch({
             <KeyHint keys={["↵"]}>{t("keySelect")}</KeyHint>
             <KeyHint keys={["Tab"]}>{t("keyComplete")}</KeyHint>
             <KeyHint keys={["Esc"]}>{t("keyClose")}</KeyHint>
-            <span className="ms-auto hidden @[26rem]/popup:inline">
-              {t("footerAll")}
-            </span>
           </div>
         </ComboboxContent>
       </Combobox>

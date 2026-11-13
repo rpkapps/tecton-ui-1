@@ -82,7 +82,6 @@ export default defineTranslations({
     keySelect: "Pasirinkti",
     keyComplete: "Užbaigti",
     keyClose: "Uždaryti",
-    footerAll: "Sąlygos šalia viena kitos taikomos visos",
     summaryFilters: "Filtrai: {filters}.",
     summaryNoFilters: "Filtrų nėra.",
     summarySearch: "Paieška: {search}.",

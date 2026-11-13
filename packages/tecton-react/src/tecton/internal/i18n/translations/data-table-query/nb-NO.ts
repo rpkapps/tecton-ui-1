@@ -65,7 +65,6 @@ export default defineTranslations({
     keySelect: "Velg",
     keyComplete: "Fullfør",
     keyClose: "Lukk",
-    footerAll: "Termer ved siden av hverandre gjelder alle",
     summaryFilters: "Filtre: {filters}.",
     summaryNoFilters: "Ingen filtre.",
     summarySearch: "Søk: {search}.",

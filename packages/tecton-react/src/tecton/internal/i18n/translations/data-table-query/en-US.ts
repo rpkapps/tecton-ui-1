@@ -79,7 +79,6 @@ const enUS = {
     keySelect: "Select",
     keyComplete: "Complete",
     keyClose: "Close",
-    footerAll: "Terms side by side all apply",
     // What the field holds, read with it by screen readers: its filters
     // ({filters}: a list of "Column: value"), its search, its problems
     // (the plural form follows {count}; {problems} are the messages).

@@ -78,7 +78,6 @@ export default defineTranslations({
     keySelect: "Selectare",
     keyComplete: "Completare",
     keyClose: "Închidere",
-    footerAll: "Condițiile alăturate se aplică toate",
     summaryFilters: "Filtre: {filters}.",
     summaryNoFilters: "Fără filtre.",
     summarySearch: "Căutare: {search}.",

@@ -78,7 +78,6 @@ export default defineTranslations({
     keySelect: "בחירה",
     keyComplete: "השלמה",
     keyClose: "סגירה",
-    footerAll: "כל התנאים הסמוכים חלים",
     summaryFilters: "מסננים: {filters}.",
     summaryNoFilters: "אין מסננים.",
     summarySearch: "חיפוש: {search}.",

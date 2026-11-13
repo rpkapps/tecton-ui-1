@@ -78,7 +78,6 @@ export default defineTranslations({
     keySelect: "Atlasīt",
     keyComplete: "Pabeigt",
     keyClose: "Aizvērt",
-    footerAll: "Blakus esošie nosacījumi tiek piemēroti visi",
     summaryFilters: "Filtri: {filters}.",
     summaryNoFilters: "Nav filtru.",
     summarySearch: "Meklēšana: {search}.",

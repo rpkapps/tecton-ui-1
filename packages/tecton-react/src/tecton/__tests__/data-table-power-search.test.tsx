@@ -230,6 +230,10 @@ describe("DataTableSearch syntax=query: suggestions", () => {
       "spuddate:Spud dateDate",
       "active:ActiveYes or no",
     ])
+    // Under them, the keys they take, and nothing else.
+    expect(
+      document.querySelector('[data-slot="data-table-query-keys"]')
+    ).toHaveTextContent(/^↑↓Move↵SelectTabCompleteEscClose$/)
     await user.type(field(), "sta")
     expect(options()[0]).toBe("status:StatusOptions")
     // A free word: Enter is the search's, ↓ picks the column.

@@ -62,7 +62,6 @@ export default defineTranslations({
     keySelect: "선택",
     keyComplete: "완성",
     keyClose: "닫기",
-    footerAll: "나란히 입력한 조건은 모두 적용",
     summaryFilters: "필터: {filters}.",
     summaryNoFilters: "필터 없음.",
     summarySearch: "검색: {search}.",

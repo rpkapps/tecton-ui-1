@@ -74,7 +74,6 @@ export default defineTranslations({
     keySelect: "Selecteren",
     keyComplete: "Aanvullen",
     keyClose: "Sluiten",
-    footerAll: "Termen naast elkaar gelden allemaal",
     summaryFilters: "Filters: {filters}.",
     summaryNoFilters: "Geen filters.",
     summarySearch: "Zoeken: {search}.",

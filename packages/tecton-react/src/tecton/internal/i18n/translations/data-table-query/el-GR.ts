@@ -74,7 +74,6 @@ export default defineTranslations({
     keySelect: "Επιλογή",
     keyComplete: "Συμπλήρωση",
     keyClose: "Κλείσιμο",
-    footerAll: "Οι όροι δίπλα-δίπλα ισχύουν όλοι",
     summaryFilters: "Φίλτρα: {filters}.",
     summaryNoFilters: "Χωρίς φίλτρα.",
     summarySearch: "Αναζήτηση: {search}.",

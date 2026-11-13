@@ -74,7 +74,6 @@ export default defineTranslations({
     keySelect: "Valitse",
     keyComplete: "Täydennä",
     keyClose: "Sulje",
-    footerAll: "Vierekkäiset ehdot pätevät kaikki",
     summaryFilters: "Suodattimet: {filters}.",
     summaryNoFilters: "Ei suodattimia.",
     summarySearch: "Haku: {search}.",

@@ -61,7 +61,6 @@ export default defineTranslations({
     keySelect: "選擇",
     keyComplete: "補全",
     keyClose: "關閉",
-    footerAll: "並排的條件全部生效",
     summaryFilters: "篩選條件：{filters}。",
     summaryNoFilters: "沒有篩選條件。",
     summarySearch: "搜尋：{search}。",
