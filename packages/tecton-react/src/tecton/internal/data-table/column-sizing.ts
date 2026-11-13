@@ -410,45 +410,55 @@ function widthOf(element: Element) {
 
 /**
  * The width a column needs for its header cell: the cell, or, where its
- * menu button floats over the end of the label (absolutely placed, taking
- * no room, with a fine pointer), whichever is wider of that and the
- * padding on the label's side, the label at its own width, a small gap,
- * the button and its offset from the cell's edge (the button sits in the
- * padding on its own side, so that padding is not counted again). A column
- * as wide as its label alone would have the button over its sort arrow.
+ * menu button floats beside its label (absolutely placed, taking no room,
+ * with a fine pointer; `MENU_BUTTON` in `header.tsx`), whichever is wider
+ * of that and the cell's padding, the label at its own width, and the room
+ * the button needs past the padding on its side: a small gap, the button
+ * and `MENU_EDGE` (twice over for a centred label, which keeps as much
+ * room on its other side).
+ *
+ * The side is the label's alignment (`data-align`), which places the
+ * button: before the label in a column aligned to the end, after it
+ * otherwise. Never the button's computed insets: a positioned element's
+ * are resolved to px, `auto` ones too, so they say nothing of the side.
  */
 function headerWidthOf(cell: Element) {
   const width = widthOf(cell)
   const button = cell.querySelector<HTMLElement>(
     '[data-slot="data-table-column-menu"]'
   )
-  const content = cell.firstElementChild as HTMLElement | null
+  const label = cell.querySelector<HTMLElement>(
+    '[data-slot="data-table-header-label"]'
+  )
   const view = cell.ownerDocument.defaultView
-  if (!button || !content || !view) return width
-  const placed = view.getComputedStyle(button)
-  if (placed.position !== "absolute") return width
+  if (!button || !label || !view) return width
+  if (view.getComputedStyle(button).position !== "absolute") return width
   const box = view.getComputedStyle(cell)
-  // The button is placed from the end edge, or from the start edge in a
-  // column aligned to the end.
-  const atEnd = placed.insetInlineEnd !== "auto"
-  const offset =
-    parseFloat(atEnd ? placed.insetInlineEnd : placed.insetInlineStart) || 0
-  const padding =
-    parseFloat(atEnd ? box.paddingInlineStart : box.paddingInlineEnd) || 0
-  // The label at its own width, not stretched to the column's.
-  const saved = content.style.width
-  content.style.width = "max-content"
+  const start = parseFloat(box.paddingInlineStart) || 0
+  const end = parseFloat(box.paddingInlineEnd) || 0
+  const align = label.dataset.align
+  // The padding the button sits in: the start's before an end-aligned
+  // label, the end's after any other.
+  const padding = align === "end" ? start : end
+  const past = Math.max(0, MENU_GAP + widthOf(button) + MENU_EDGE - padding)
+  // The label at its own width, not narrowed by the room it leaves the
+  // button while that shows (the menu is open as it fits the column).
+  const saved = label.style.maxWidth
+  label.style.maxWidth = "none"
   try {
     const room =
-      padding + widthOf(content) + MENU_GAP + widthOf(button) + offset
+      start + end + widthOf(label) + (align === "center" ? 2 * past : past)
     return Math.max(width, room)
   } finally {
-    content.style.width = saved
+    label.style.maxWidth = saved
   }
 }
 
-/** Between a header's sort arrow and its floating menu button, in px. */
-const MENU_GAP = 4
+/** Between a header's label and its floating menu button, in px (`ms-0.5` / `me-0.5`). */
+const MENU_GAP = 2
+
+/** Between a header's menu button and the cell's edge, in px (`MENU_ROOM` in `header.tsx`). */
+const MENU_EDGE = 2
 
 /** The width of the vertical scrollbar of the table's container. */
 function scrollbarOf(container: HTMLElement | null) {

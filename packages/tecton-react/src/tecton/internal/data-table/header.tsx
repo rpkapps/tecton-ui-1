@@ -94,41 +94,62 @@ const JUSTIFY = {
 } as const
 
 /**
- * A column's menu button: at the cell's end edge, over the end of its label
- * (in the header's fill), taking no room; shown while the header row is
- * hovered, the cell holds focus or the menu is open. Where there is no
- * hover (a touch screen), always shown, with its room kept.
+ * A header's label: its sort button (or text) and its description's info
+ * button, as wide as they are, at the column's alignment. The column's
+ * menu button is placed from it (`MENU_BUTTON`), whatever the column's
+ * width; `column-sizing.ts` reads its `data-align` to measure the room the
+ * button takes.
+ */
+const HEAD_LABEL = "relative flex min-w-0 items-center gap-0.5"
+
+/**
+ * A column's menu button: shown while the header row is hovered, the cell
+ * holds focus or the menu is open. Where there is no hover (a touch
+ * screen), always shown, with its room kept.
  */
 const MENU_SHOWN =
   "pointer-events-none opacity-0 group-focus-within/head:pointer-events-auto group-focus-within/head:opacity-100 data-popup-open:pointer-events-auto data-popup-open:opacity-100 pointer-coarse:pointer-events-auto pointer-coarse:opacity-100 [tr:hover_&]:pointer-events-auto [tr:hover_&]:opacity-100"
 
-const MENU_BUTTON = cn(
-  "absolute end-2 top-1/2 -translate-y-1/2 bg-table-header",
+/**
+ * Where the menu button goes, by the column's alignment: just outside the
+ * label (`HEAD_LABEL`), a small gap away, on the side away from the
+ * column's edge (after the label's end, or before its start in a column
+ * aligned to the end, whose label ends at the cell's end), in the
+ * header's fill and taking no room, so it covers neither the label nor
+ * the sort arrow, and stays beside them in a column wider than its
+ * content. On a touch screen it is in the label's row, on that side.
+ */
+const MENU_AFTER = cn(
+  "absolute start-full top-1/2 ms-0.5 -translate-y-1/2 bg-table-header",
   MENU_SHOWN,
-  "pointer-coarse:static pointer-coarse:ms-auto pointer-coarse:translate-y-0"
+  "pointer-coarse:static pointer-coarse:translate-y-0"
 )
+const MENU_BUTTON = {
+  start: MENU_AFTER,
+  center: MENU_AFTER,
+  end: cn(
+    "absolute end-full top-1/2 me-0.5 -translate-y-1/2 bg-table-header",
+    MENU_SHOWN,
+    "pointer-coarse:static pointer-coarse:order-first pointer-coarse:translate-y-0"
+  ),
+} as const
 
 /**
- * In a column aligned to the end (numbers), whose label ends at the cell's
- * end, the button sits at the start edge instead, mostly in the cell's
- * padding, and the content makes the rest of the room while it shows
- * (`MENU_ROOM`): it covers neither the label nor the sort arrow.
+ * The room a label leaves its menu button while the button shows, in a
+ * column narrower than both: the button (24 px) and its gap (2 px), 2 px
+ * in from the cell's edge, less the cell's padding (16 px) it sits in:
+ * 12 px (a centred label, on both sides). In a column at least as wide as
+ * its label and that room, as a measured one is (`column-sizing.ts`
+ * counts the same room), the label does not move as the button shows.
  */
-const MENU_BUTTON_START = cn(
-  "absolute start-1 top-1/2 -translate-y-1/2 bg-table-header",
-  MENU_SHOWN,
-  "pointer-coarse:static pointer-coarse:ms-auto pointer-coarse:translate-y-0"
-)
-
-/** The start room an end-aligned header's content keeps while its menu button shows. */
-const MENU_ROOM =
-  "pointer-fine:group-focus-within/head:ps-3 pointer-fine:has-data-popup-open:ps-3 pointer-fine:[tr:hover_&]:ps-3"
-
-/**
- * In a header with a description, whose info button ends the label, the
- * menu button keeps its room beside it rather than cover it.
- */
-const MENU_BUTTON_BESIDE = cn("ms-auto", MENU_SHOWN)
+const MENU_ROOM_ONE_SIDE =
+  "pointer-fine:group-focus-within/head:max-w-[calc(100%-0.75rem)] pointer-fine:has-data-popup-open:max-w-[calc(100%-0.75rem)] pointer-fine:[tr:hover_&]:max-w-[calc(100%-0.75rem)]"
+const MENU_ROOM = {
+  start: MENU_ROOM_ONE_SIDE,
+  center:
+    "pointer-fine:group-focus-within/head:max-w-[calc(100%-1.5rem)] pointer-fine:has-data-popup-open:max-w-[calc(100%-1.5rem)] pointer-fine:[tr:hover_&]:max-w-[calc(100%-1.5rem)]",
+  end: MENU_ROOM_ONE_SIDE,
+} as const
 
 /**
  * The divider at a column group's edges, through every header row below
@@ -530,13 +551,7 @@ function DataTableColumnHeader<T>({
       resizerRef={resizerRef}
       onFit={(event) => fit(event)}
       onResetWidth={hasWidth ? (event) => setWidth(null, event) : undefined}
-      className={
-        column.description
-          ? MENU_BUTTON_BESIDE
-          : column.align === "end"
-            ? MENU_BUTTON_START
-            : MENU_BUTTON
-      }
+      className={MENU_BUTTON[column.align]}
     />
   )
   const drag = draggable ? columnDragProps(order, column.id) : null
@@ -567,85 +582,78 @@ function DataTableColumnHeader<T>({
       )}
       style={pin && pinStyle(pin)}
     >
-      <div
-        className={cn(
-          "flex min-w-0 items-center gap-0.5",
-          JUSTIFY[column.align],
-          column.align === "end" &&
-            !column.description &&
-            hasColumnMenu(menu) &&
-            MENU_ROOM
-        )}
-      >
-        {canSort ? (
-          <Button
-            variant="ghost"
-            // The sizes whose text is the header's own (`text-sm`, and
-            // `text-xs` in a small table), so every label matches.
-            size={options.size === "sm" ? "xs" : "default"}
-            data-slot="data-table-sort-button"
-            className={cn("min-w-0 shrink", BUTTON_EDGE[column.align])}
-            onClick={press}
-          >
-            <span className="truncate">{label}</span>
-            {/* The place in a multi-sort sits on the arrow's outer corner,
+      <div className={cn("flex min-w-0 items-center", JUSTIFY[column.align])}>
+        <div
+          data-slot="data-table-header-label"
+          data-align={column.align}
+          className={cn(
+            HEAD_LABEL,
+            hasColumnMenu(menu) && MENU_ROOM[column.align]
+          )}
+        >
+          {canSort ? (
+            <Button
+              variant="ghost"
+              // The sizes whose text is the header's own (`text-sm`, and
+              // `text-xs` in a small table), so every label matches.
+              size={options.size === "sm" ? "xs" : "default"}
+              data-slot="data-table-sort-button"
+              className={cn("min-w-0 shrink", BUTTON_EDGE[column.align])}
+              onClick={press}
+            >
+              <span className="truncate">{label}</span>
+              {/* The place in a multi-sort sits on the arrow's outer corner,
                 over the button's padding, so the button keeps its width as
                 columns join the sort. */}
-            <span className="relative flex">
-              {direction === "ascending" ? (
-                <ArrowUpIcon aria-hidden />
-              ) : direction === "descending" ? (
-                <ArrowDownIcon aria-hidden />
-              ) : (
-                <ArrowUpDownIcon aria-hidden className="opacity-50" />
-              )}
+              <span className="relative flex">
+                {direction === "ascending" ? (
+                  <ArrowUpIcon aria-hidden />
+                ) : direction === "descending" ? (
+                  <ArrowDownIcon aria-hidden />
+                ) : (
+                  <ArrowUpDownIcon aria-hidden className="opacity-50" />
+                )}
+                {multi && (
+                  <span
+                    aria-hidden
+                    data-slot="data-table-sort-position"
+                    className={cn(
+                      SORT_POSITION,
+                      column.align === "end" ? "-start-3" : "-end-3"
+                    )}
+                  >
+                    {at + 1}
+                  </span>
+                )}
+              </span>
+              {/* A word apart from the label in the button's name (the flex
+                container draws no space). */}
+              {multi && " "}
               {multi && (
-                <span
-                  aria-hidden
-                  data-slot="data-table-sort-position"
-                  className={cn(
-                    SORT_POSITION,
-                    column.align === "end" ? "-start-3" : "-end-3"
-                  )}
-                >
-                  {at + 1}
+                <span className="sr-only">
+                  {direction === "ascending"
+                    ? t("sortPositionAscending", {
+                        position: at + 1,
+                        total: sorting.length,
+                      })
+                    : t("sortPositionDescending", {
+                        position: at + 1,
+                        total: sorting.length,
+                      })}
                 </span>
               )}
-            </span>
-            {/* A word apart from the label in the button's name (the flex
-                container draws no space). */}
-            {multi && " "}
-            {multi && (
-              <span className="sr-only">
-                {direction === "ascending"
-                  ? t("sortPositionAscending", {
-                      position: at + 1,
-                      total: sorting.length,
-                    })
-                  : t("sortPositionDescending", {
-                      position: at + 1,
-                      total: sorting.length,
-                    })}
-              </span>
-            )}
-          </Button>
-        ) : (
-          <span
-            className={cn(
-              "min-w-0 truncate",
-              column.align === "center" && "mx-auto"
-            )}
-          >
-            {label}
-          </span>
-        )}
-        {column.description && (
-          <ColumnDescription
-            name={column.header}
-            description={column.description}
-          />
-        )}
-        {columnMenu}
+            </Button>
+          ) : (
+            <span className="min-w-0 truncate">{label}</span>
+          )}
+          {column.description && (
+            <ColumnDescription
+              name={column.header}
+              description={column.description}
+            />
+          )}
+          {columnMenu}
+        </div>
       </div>
       {canResize && !Resizer && resizer.placeholder(grip)}
       {canResize && Resizer && (

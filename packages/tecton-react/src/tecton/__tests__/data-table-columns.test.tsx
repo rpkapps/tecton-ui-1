@@ -368,6 +368,51 @@ describe("DataTable column widths", () => {
     expect(cols()).toEqual(["123px", "123px", "123px", "123px", "123px", ""])
   })
 
+  it("measures a column with a floating menu button to its label and the button's room, whichever side the button is on", () => {
+    // A header laid out as a browser lays it out: 16 px of padding on each
+    // side, a 60 px label, a 24 px menu button placed absolutely, whose
+    // computed insets are resolved to px on both sides (never "auto").
+    measured = 92
+    const style = window.getComputedStyle
+    const withValues = (computed: CSSStyleDeclaration, values: object) =>
+      new Proxy(computed, {
+        get: (target, name) =>
+          name in values
+            ? values[name as keyof typeof values]
+            : Reflect.get(target, name, target),
+      })
+    vi.spyOn(window, "getComputedStyle").mockImplementation((element) => {
+      const computed = style(element)
+      if (element.matches('[data-slot="data-table-column-menu"]'))
+        return withValues(computed, {
+          position: "absolute",
+          insetInlineStart: "4px",
+          insetInlineEnd: "64px",
+        })
+      if (element.matches("thead th"))
+        return withValues(computed, {
+          paddingInlineStart: "16px",
+          paddingInlineEnd: "16px",
+        })
+      return computed
+    })
+    const rect = Element.prototype.getBoundingClientRect
+    Element.prototype.getBoundingClientRect = function (this: Element) {
+      const width = this.matches('[data-slot="data-table-column-menu"]')
+        ? 24
+        : this.matches('[data-slot="data-table-header-label"], thead th > div')
+          ? 60
+          : null
+      return width === null ? rect.call(this) : { ...rect.call(this), width }
+    }
+    render(<Fields resizableColumns />)
+    // The padding, the label, and past the padding on the button's side its
+    // gap (2), the button (24) and its distance from the edge (2): 104 px,
+    // the same for a number column (the button before its label) as for a
+    // text one, not nearly twice the column's width.
+    expect(cols()).toEqual(["104px", "104px", "104px", "104px", "104px", ""])
+  })
+
   it("measures again once rows come, after a table that had none or was loading", () => {
     measured = 60
     const { rerender } = render(<Fields resizableColumns items={[]} />)
@@ -2092,18 +2137,67 @@ describe("DataTable around other tables and surfaces", () => {
     )
   })
 
-  it("puts a column's menu button over the end of its header, taking no room but on touch screens", () => {
-    render(<Fields hideableColumns />)
-    const button = screen.getByRole("button", { name: "Operator options" })
-    expect(button).toHaveClass("absolute", "end-2", "bg-table-header")
-    expect(button).toHaveClass("pointer-coarse:static")
-    // In a column aligned to the end, at the start edge, with room made.
+  it("puts a column's menu button beside its label, after it or before it in a column aligned to the end, taking no room but on touch screens", () => {
+    render(
+      <Fields
+        hideableColumns
+        columns={createColumns<Field>([
+          ...DEFINITIONS,
+          { id: "id", header: "Code", align: "center" },
+        ])}
+      />
+    )
+    const label = (button: HTMLElement) =>
+      button.closest<HTMLElement>('[data-slot="data-table-header-label"]')!
+    // After the label's end, a small gap away, in the header's fill, in
+    // the label's row on a touch screen.
+    const text = screen.getByRole("button", { name: "Operator options" })
+    expect(text).toHaveClass(
+      "absolute",
+      "start-full",
+      "ms-0.5",
+      "bg-table-header"
+    )
+    expect(text).not.toHaveClass("end-2", "end-full")
+    expect(text).toHaveClass("pointer-coarse:static")
+    expect(label(text)).toHaveAttribute("data-align", "start")
+    expect(label(text)).toHaveClass("relative")
+    // The label is as wide as its text, at the cell's start, and leaves the
+    // button its room while it shows.
+    expect(label(text).parentElement).toHaveClass("justify-start")
+    expect(label(text)).toHaveClass(
+      "pointer-fine:[tr:hover_&]:max-w-[calc(100%-0.75rem)]"
+    )
+    // In a column aligned to the end, before the label's start, wherever
+    // the label is: never at the cell's start edge.
     const numbers = screen.getByRole("button", { name: "Oil options" })
-    expect(numbers).toHaveClass("absolute", "start-1")
-    expect(numbers.parentElement).toHaveClass("pointer-fine:[tr:hover_&]:ps-3")
-    // Beside a description's info button, never over it.
+    expect(numbers).toHaveClass(
+      "absolute",
+      "end-full",
+      "me-0.5",
+      "bg-table-header"
+    )
+    expect(numbers).not.toHaveClass("start-1", "start-full")
+    expect(numbers).toHaveClass(
+      "pointer-coarse:static",
+      "pointer-coarse:order-first"
+    )
+    expect(label(numbers)).toHaveAttribute("data-align", "end")
+    expect(label(numbers).parentElement).toHaveClass("justify-end")
+    expect(label(numbers)).toHaveClass(
+      "pointer-fine:[tr:hover_&]:max-w-[calc(100%-0.75rem)]"
+    )
+    // Centred: after the label, with as much room on its other side.
+    const centred = screen.getByRole("button", { name: "Code options" })
+    expect(centred).toHaveClass("absolute", "start-full")
+    expect(label(centred)).toHaveClass(
+      "pointer-fine:[tr:hover_&]:max-w-[calc(100%-1.5rem)]"
+    )
+    // After a description's info button, never over it.
     const beside = screen.getByRole("button", { name: "Field options" })
-    expect(beside).not.toHaveClass("absolute")
-    expect(beside).toHaveClass("ms-auto")
+    expect(beside).toHaveClass("absolute", "start-full")
+    expect(
+      within(label(beside)).getByRole("button", { name: "About Field" })
+    ).toBeInTheDocument()
   })
 })
