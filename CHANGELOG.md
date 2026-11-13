@@ -43,9 +43,9 @@ write entries and cut a release.
   `maxDate`, range presets (bounded by `minDate` / `maxDate`), a Clear button, `name` for forms,
   and dates written in the provider locale.
 - `Table` takes `size` (`"default"` or `"sm"`, compact) and `striped` (every even body row on an
-  alternate surface; hovered and selected rows keep their own fill, and a virtualized table keeps
-  each row on its stripe as it scrolls). `TableBody` takes `empty`, shown in one row across every
-  column when there are no rows.
+  alternate surface; hovered and selected rows keep their own fill, a virtualized table keeps each
+  row on its stripe as it scrolls, and a row that sorting moves takes its new stripe at once).
+  `TableBody` takes `empty`, shown in one row across every column when there are no rows.
 - `TableColumnResizer` takes `edge="start"`, for a column that grows toward its start (one pinned
   to the table's end).
 - `Progress` with `value={null}` is indeterminate: a segment sweeps across the track (right to left

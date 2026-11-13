@@ -276,6 +276,24 @@ describe("Table striped", () => {
     expect(background(row("Average"))).toBe(PLAIN)
   })
 
+  it("does not fade a row's fill, so a row that sorting moves takes its new stripe at once", async () => {
+    // A row moved from an even place to an odd one would otherwise carry
+    // its old stripe for the fade's length.
+    const { rerender } = render(<Wells striped />)
+    await applyStyles()
+    for (const well of WELLS) {
+      const property = getComputedStyle(row(well)).transitionProperty
+      expect(property).toContain("color")
+      expect(property).not.toContain("background-color")
+    }
+    // Without stripes the hover still fades in.
+    rerender(<Wells />)
+    for (const well of WELLS)
+      expect(getComputedStyle(row(well)).transitionProperty).toContain(
+        "background-color"
+      )
+  })
+
   it("leaves the rows plain without striped", async () => {
     render(<Wells />)
     await applyStyles()

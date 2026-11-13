@@ -290,7 +290,11 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   `TableHead`s `h-8` and `TableCell`s `py-1` (`[:where([data-size=sm]>*>tr)>&]:`, so a table
   nested in a cell keeps its own size; the horizontal padding stays), while `striped` gives
   every even, unselected row of the table's own body `bg-surface-alt`
-  (`[&:where([data-striped]>tbody>:nth-child(even):not([data-selected=true],[data-state=selected]))]:`).
+  (`[&:where([data-striped]>tbody>:nth-child(even):not([data-selected=true],[data-state=selected]))]:`),
+  and a striped table's rows no longer transition their background
+  (`[&:where([data-striped]>tbody>*)]:transition-[color,border-color,outline-color]`): a row that
+  sorting moves from an even place to an odd one would otherwise carry its old stripe for the
+  transition's 150 ms.
   The conditions are in `:where()`, no more specific than the part's class, so the hover and
   expanded fills win over the stripe; a selected row is left out of it, because shadcn's
   `data-selected:` variant is a `:where()` too and would tie with the stripe, which comes later
