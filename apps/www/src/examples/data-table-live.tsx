@@ -1,16 +1,28 @@
 "use client"
 
 import * as React from "react"
-import { PauseIcon, PlayIcon } from "lucide-react"
+import { FilesIcon, LayersIcon, PauseIcon, PlayIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/button"
-import { DropdownMenuItem } from "@tecton/react/dropdown-menu"
+import {
+  DropdownMenuCheckboxItem,
+  DropdownMenuItem,
+} from "@tecton/react/dropdown-menu"
+import {
+  OverflowItem,
+  OverflowLabel,
+  OverflowSpacer,
+} from "@tecton/react/overflow"
+import { Toggle } from "@tecton/react/toggle"
 import {
   createColumns,
   DataTable,
   DataTableContent,
+  DataTableFooter,
+  DataTablePagination,
   DataTableRowActions,
   DataTableToolbar,
+  type DataTablePartialView,
 } from "@tecton/react/data-table"
 
 type Alarm = {
@@ -99,6 +111,10 @@ const columns = createColumns<Alarm>([
   },
 ])
 
+const SORTING: DataTablePartialView["sorting"] = [
+  { column: "pressure", direction: "descending" },
+]
+
 export default function DataTableLive() {
   const [random] = React.useState(() => seeded(20261113))
   const [alarms, setAlarms] = React.useState(() =>
@@ -107,6 +123,15 @@ export default function DataTableLive() {
   // Paused until the reader starts it.
   const [running, setRunning] = React.useState(false)
   const full = alarms.length >= MOST
+  // The cases to try: a page at a time, rows grouped by severity.
+  const [paged, setPaged] = React.useState(false)
+  const [view, setView] = React.useState<DataTablePartialView>({
+    sorting: SORTING,
+    columns: { pinned: { start: ["well"] } },
+  })
+  const grouped = (view.grouping ?? []).length > 0
+  const setGrouped = (on: boolean) =>
+    setView((current) => ({ ...current, grouping: on ? ["severity"] : [] }))
 
   // A new alarm every two seconds while the feed runs.
   React.useEffect(() => {
@@ -125,15 +150,17 @@ export default function DataTableLive() {
       selectionMode="multiple"
       striped
       size="sm"
-      defaultView={{
-        sorting: [{ column: "pressure", direction: "descending" }],
-        columns: { pinned: { start: ["well"] } },
-      }}
-      // A bounded height: the rows scroll, and the new ones out of view
-      // are counted at its edges.
-      className="h-96 w-full"
+      groupable
+      view={view}
+      onViewChange={setView}
+      // Ten rows a page: new alarms land on other pages too.
+      pagination={paged}
+      defaultPageSize={10}
+      // Without pages, a bounded height: the rows scroll, and the new ones
+      // out of view are counted at its edges.
+      className={paged ? "w-full" : "h-96 w-full"}
     >
-      <DataTableToolbar>
+      <DataTableToolbar aria-label="Alarm feed">
         <Button
           variant="outline"
           size="sm"
@@ -151,11 +178,61 @@ export default function DataTableLive() {
               ? "Resume feed"
               : "Start feed"}
         </Button>
-        <span className="text-sm text-muted-foreground tabular-nums">
+        <OverflowItem
+          value="pages"
+          overflow={
+            <DropdownMenuCheckboxItem
+              checked={paged}
+              onCheckedChange={setPaged}
+            >
+              <FilesIcon />
+              Pages
+            </DropdownMenuCheckboxItem>
+          }
+        >
+          <Toggle
+            variant="outline"
+            size="sm"
+            pressed={paged}
+            onPressedChange={setPaged}
+          >
+            <FilesIcon data-icon="inline-start" aria-hidden />
+            <OverflowLabel>Pages</OverflowLabel>
+          </Toggle>
+        </OverflowItem>
+        <OverflowItem
+          value="group"
+          overflow={
+            <DropdownMenuCheckboxItem
+              checked={grouped}
+              onCheckedChange={setGrouped}
+            >
+              <LayersIcon />
+              Group by severity
+            </DropdownMenuCheckboxItem>
+          }
+        >
+          <Toggle
+            variant="outline"
+            size="sm"
+            pressed={grouped}
+            onPressedChange={setGrouped}
+          >
+            <LayersIcon data-icon="inline-start" aria-hidden />
+            <OverflowLabel>Group by severity</OverflowLabel>
+          </Toggle>
+        </OverflowItem>
+        <OverflowSpacer />
+        <span className="text-sm whitespace-nowrap text-muted-foreground tabular-nums">
           {alarms.length} alarms
         </span>
       </DataTableToolbar>
-      <DataTableContent aria-label="Pressure alarms" virtualized />
+      <DataTableContent aria-label="Pressure alarms" virtualized={!paged} />
+      {paged && (
+        <DataTableFooter>
+          <DataTablePagination />
+        </DataTableFooter>
+      )}
     </DataTable>
   )
 }

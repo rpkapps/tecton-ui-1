@@ -303,7 +303,7 @@ With `"button"`, the button spins while the batch loads and keeps focus; once no
 
 ## Live data
 
-For rows that arrive while the user watches (alarms, events, readings pushed by a subscription), `highlightChanges` shows what came without moving what the user is looking at. Put each new record in `items`, as for any change. Here, once you start the feed, an alarm is raised every two seconds and lands where the sort by pressure puts it: scroll down, point at a row or open its menu, and pause the feed to compare.
+For rows that arrive while the user watches (alarms, events, readings pushed by a subscription), `highlightChanges` shows what came without moving what the user is looking at. Put each new record in `items`, as for any change. Here, once you start the feed, an alarm is raised every two seconds and lands where the sort by pressure puts it. Scroll down, point at a row or open its menu, and pause the feed to compare; **Pages** shows ten rows a page instead of a scrolling table, and **Group by severity** puts the alarms in groups (close one to see its row take the highlight).
 
 <ComponentPreview name="data-table-live" align="start" />
 
@@ -313,9 +313,10 @@ For rows that arrive while the user watches (alarms, events, readings pushed by 
 </DataTable>
 ```
 
-- **Highlighted where it lands.** A row added after the first render appears in its sorted place with a light tint of the info colour, neither the hover's nor the selection's, that fades out over 1.5 s, across the whole row, pinned columns included; a striped, hovered or selected row keeps its own fill under it. A row added inside a closed group, or under a closed tree row, highlights the group's or the tree row's row. `highlightChanges={{ duration: 3000 }}` lengthens the highlight.
-- **Counted when out of view.** Rows that land above or below the rows in view, or on another page, are counted in a button at that edge of the table: "↑ 3 new rows", "↓ 2 new rows", "3 new rows on other pages". It scrolls (or turns the page) to the first of them, which is highlighted again, and goes away; a row the user scrolls to is no longer counted, and is still highlighted if its 1.5 s are not over. Rows the search or filters hide are not counted.
-- **Rows in view stay still.** Scrolled into the rows, rows added above the view go above it: the rows on screen do not move. While the pointer is over the rows, focus is in them or a row's menu or popover is open, rows that would show in the view, even cut by its edge, or land on an earlier page are held back and counted in "Show 2 new rows"; they come in, highlighted, 0.3 s after the user is done, or when the button is pressed. Rows the application removes or changes are applied at once: only additions wait.
+- **Highlighted until seen.** A row added after the first render goes straight to its sorted place with a light tint of the info colour, neither the hover's nor the selection's, across the whole row, pinned columns included; a striped, hovered or selected row keeps its own fill under it. The tint stays at full strength until the row is seen, half of it in view on the page shown, and then fades out over 1.5 s: a row that lands in view fades at once, one that lands out of view or on another page keeps its tint until the user scrolls or pages to it. A row added inside a closed group, or under a closed tree row, highlights the group's or the tree row's row. `highlightChanges={{ duration: 3000 }}` lengthens the fade.
+- **Counted when out of view.** New rows not seen yet are counted in one button at each edge of the table. At the top, "↑ 3 new rows" for rows above the view: it scrolls up to the topmost of them. At the bottom, "↓ 2 new rows" for rows below the view on this page, which scrolls down to the nearest; once none are below, "3 new rows on other pages", which turns to the first one's page. A button stays until each row it counts has been seen, and its name says the whole of it ("3 new rows above"). Rows the search or filters hide are not counted.
+- **The row the user is on never moves.** As rows land or go above it, the row the user is on keeps its place on screen: the row whose menu or popover is open, else the row with focus, else the row under the pointer, else, once the table is scrolled, the first row in view. Rows added above it go above it, out of view if need be, where the top button counts them; a row landing below it moves the rows under it down. At the top of the table, with nothing in use, new rows push the others down.
+- **Pages.** With `pagination`, a row added to an earlier page would move every row of the page shown, so while the pointer is over the rows, focus is in them or a row's menu is open, such rows wait, counted in "on other pages", and come 0.3 s after the user is done. Rows the application removes or changes are applied at once: only those additions wait.
 
 Which rows are added: the ids in `items` that the previous `items` did not have. In client mode `items` are compared, not the rows the view shows, so a search or filter that brings back rows adds none. Not added:
 
@@ -324,7 +325,7 @@ Which rows are added: the ids in `items` that the previous `items` did not have.
 - in server mode, the rows of a new view: the first `items` after the search, filters, sorting, grouping, page or page size change. Only `items` that change while the view stays the same are compared, so set `loading` while the server answers a view change;
 - the children of a tree row loaded as it opens. A child added to a row whose children were there is added, open or not.
 
-Screen readers hear "3 rows added" at most once a second, for the rows the view shows. The button is a real button, after the table in the tab order, and never takes focus by itself; pressed from the keyboard, focus moves to the first new row. It scrolls smoothly to rows near the view and jumps to rows further away; with reduced motion it always jumps, and the highlight still fades, a change of colour, not of place.
+Screen readers hear "3 rows added" at most once a second, for the rows the view shows. The buttons are real buttons, after the table in the tab order while they show, and never take focus by themselves; pressed from the keyboard, focus moves to the new row. They scroll smoothly to rows near the view and jump to rows further away; with reduced motion they always jump, show and hide without moving, and the highlight still fades, a change of colour, not of place.
 
 ## Trees and detail rows
 
@@ -504,7 +505,7 @@ Set `size="sm"` and `striped` on `DataTable` for dense data; show the states wit
 
 <Do>
 
-With `dataMode="server"`, pass the page's `items`, `rowCount` and `loading`, and load from `onViewChange` (its `view.sorting` lists every sort, first one first), `onPageChange` and `onPageSizeChange`; keep a saved view with `defaultView` and `onViewChange`. A part of your own reads the table with `useDataTable()` (`value`, `clearSelection`, `exportCsv`). For live data, set `highlightChanges` and put each new record (with its own `id`) in `items`: the table highlights it where it lands, counts the new rows out of view and keeps the rows in view still while the user works in them, so never tint, animate or scroll rows yourself; in server mode, set `loading` while a new view loads, so its rows are not taken for additions.
+With `dataMode="server"`, pass the page's `items`, `rowCount` and `loading`, and load from `onViewChange` (its `view.sorting` lists every sort, first one first), `onPageChange` and `onPageSizeChange`; keep a saved view with `defaultView` and `onViewChange`. A part of your own reads the table with `useDataTable()` (`value`, `clearSelection`, `exportCsv`). For live data, set `highlightChanges` and put each new record (with its own `id`) in `items`: the table highlights it where it lands until it is seen, counts the new rows out of view in a button at that edge and keeps the row the user is on still, so never tint, animate or scroll rows yourself; in server mode, set `loading` while a new view loads, so its rows are not taken for additions.
 
 </Do>
 
@@ -625,7 +626,7 @@ The root `div`. Every `on…Change` gets the new value and `eventDetails` (`reas
 | `onLoadMore` | `() => void` | - | Called to load the next rows: when the end of the rows nears, or on Show more. |
 | `size` | `"default" \| "sm"` | `"default"` | Compact rows. |
 | `striped` | `boolean` | `false` | Alternate row fills. |
-| `highlightChanges` | `boolean \| { added?: boolean; duration?: number }` | `false` | Live data: highlights rows added to `items` where they land (for `duration` ms, 1500 by default), counts those out of view, and keeps the rows in view still while the user works in them ([Live data](#live-data)). |
+| `highlightChanges` | `boolean \| { added?: boolean; duration?: number }` | `false` | Live data: highlights rows added to `items` where they land until they are seen, then fades the tint over `duration` ms (1500 by default); counts those out of view, and keeps the row the user is on still ([Live data](#live-data)). |
 | `sortable` | `boolean` | `true` | Headers sort. |
 | `multiSort` | `boolean` | `true` | Sorting by several columns: <Kbd>Shift</Kbd> + click, Add to sort. |
 | `filterable` | `boolean` | `false` | Turns on search and filters. |
