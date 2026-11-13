@@ -13,7 +13,8 @@
  *   `group` (groups as ranges), `sort` (rank-based sorting) and `rows`
  *   (display rows and pages; the content adds detail rows with
  *   `withDetailRows`); `idle` prepares ranks and the search index.
- * - `facets`: what a column's filter offers and counts.
+ * - `facets` (left out here, so that only the parts that count facets
+ *   bundle them): what a column's filter offers and counts.
  * - `changes`: the rows a change of items added (`addedIds`, for live
  *   data's highlights).
  * - `aggregate`, `pagination`, `selection`: what group rows, the footer
@@ -59,8 +60,6 @@ export {
   resolveLocale,
 } from "./format"
 export type { FormatLabels, Formatter, NumberUnit } from "./format"
-export { getFacets, getNumberFacets, hasEmptyValues } from "./facets"
-export type { Facets, NumberFacets } from "./facets"
 export { layoutColumns } from "./layout"
 export type { ColumnLayout } from "./layout"
 export {

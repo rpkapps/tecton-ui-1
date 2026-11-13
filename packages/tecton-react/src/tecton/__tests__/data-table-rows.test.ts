@@ -11,9 +11,7 @@ import {
   createDataTableEngine,
   createDefaultView,
   getColumnModel,
-  getFacets,
   getFormatter,
-  getNumberFacets,
   layoutColumns,
   reconcileView,
   selectAllIds,
@@ -27,6 +25,10 @@ import {
   type ItemRow,
 } from "../internal/data-table/engine"
 import { toCsv } from "../internal/data-table/engine/csv"
+import {
+  getFacets,
+  getNumberFacets,
+} from "../internal/data-table/engine/facets"
 import { createSearchIndex } from "../internal/data-table/engine/filter"
 import { hasRanks, sortRows } from "../internal/data-table/engine/sort"
 

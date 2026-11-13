@@ -61,10 +61,12 @@ import {
   getFacets,
   getNumberFacets,
   hasEmptyValues,
+  type NumberFacets,
+} from "./engine/facets"
+import {
   numberUnit,
   type DataTableFilterValue,
   type EngineColumn,
-  type NumberFacets,
 } from "./engine/index"
 import { dayOf, startOfDay } from "./engine/values"
 import { useFeature } from "./lazy"
