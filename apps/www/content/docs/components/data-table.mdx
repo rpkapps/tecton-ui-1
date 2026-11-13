@@ -44,7 +44,9 @@ const columns = createColumns<Well>([
 </DataTable>
 ```
 
-Each item needs an `id` (or pass `itemToId`). Make the columns once, at module level or in a `React.useMemo`. Use [Table](/docs/components/table) for a short table that is read, not worked with.
+- Each item needs an `id`, or pass `itemToId`.
+- Make the columns once, at module level or in a `React.useMemo`.
+- For a short table that is read, not worked with, use [Table](/docs/components/table).
 
 ## Composition
 
@@ -63,31 +65,50 @@ DataTable
     └── DataTablePagination
 ```
 
-The root holds the state and turns features on (`selectionMode`, `pagination`, `filterable`, `groupable`, `…Columns`); a part for a feature that is off renders nothing and warns in development.
+The root holds the state and turns features on: `selectionMode`, `pagination`, `filterable`, `groupable` and the `…Columns` props. A part whose feature is off renders nothing and warns in development.
 
-A `DataTableFooter` right after `DataTableContent` is the table's last band, inside its border and below the totals row: its rows scroll above it in a virtualized table. Put `DataTablePagination` there. A second footer, or one placed elsewhere, is a plain row under the table.
+Put `DataTablePagination` in a `DataTableFooter` right after `DataTableContent`. That footer is the table's last band: inside its border, below the totals row, and fixed while a virtualized table's rows scroll. A second footer, or one placed elsewhere, is a plain row under the table.
 
 ## Columns
 
-A column's `type` sets how its values are shown, aligned and sorted; `cell` draws your own content ([Custom cells](#custom-cells)), and a column with `columns` is a group. With `reorderableColumns`, as here, drag a header to move its column (a grouped column moves among its group's, a group with its columns); a line shows where it will drop.
+A column's `type` sets how its values are shown, aligned and sorted. A `cell` draws your own content ([Custom cells](#custom-cells)), and a column with `columns` is a group.
+
+This example has `reorderableColumns`: drag a header to move its column. A line shows where it will drop.
 
 <ComponentPreview name="data-table-columns" align="start" />
 
-| `type` | Align | Shown as | Sorted |
-| --- | --- | --- | --- |
-| `"text"` (default) | start | the text | natural, case-insensitive |
-| `"number"` | end | `Intl.NumberFormat` with `format` | numerically |
-| `"date"` | start | `Intl.DateTimeFormat` with `format` | chronologically |
-| `"boolean"` | center | a check for `true` | `false` first |
-| `"options"` | start | a [Badge](/docs/components/badge) per option | in `options` order |
+| `type`             | Align  | Shown as                                     | Sorted                    |
+| ------------------ | ------ | -------------------------------------------- | ------------------------- |
+| `"text"` (default) | start  | the text                                     | natural, case-insensitive |
+| `"number"`         | end    | `Intl.NumberFormat` with `format`            | numerically               |
+| `"date"`           | start  | `Intl.DateTimeFormat` with `format`          | chronologically           |
+| `"boolean"`        | center | a check for `true`                           | `false` first             |
+| `"options"`        | start  | a [Badge](/docs/components/badge) per option | in `options` order        |
 
-Numbers and dates are numeric readouts, in IBM Plex Mono with tabular figures, so a column's values line up and a changing value keeps its width. Empty values sort last and show a muted dash ([Empty values](#empty-values)). Return raw numbers and `Date`s from `accessor`, not formatted text.
+- Return raw numbers and `Date`s from `accessor`, not formatted text.
+- Numbers and dates use IBM Plex Mono with tabular figures. A column's values line up, and a changing value keeps its width.
+- Empty values sort last and show a muted dash ([Empty values](#empty-values)).
+- A column in a group moves only among its group's columns. A group moves with all its columns.
 
 ### Sorting by several columns
 
-A click on a header sorts by that column alone; <Kbd>Shift</Kbd> + click (or <Kbd>Shift</Kbd> + <Kbd>Enter</Kbd>) adds it as the next sort, or turns it round where it is. The table above starts sorted by Field, then MD: while two or more columns sort, each sorted header shows its place by the arrow, and screen readers hear it with the direction ("2 of 2 in sort order").
+Click a header to sort by that column alone. <Kbd>Shift</Kbd> + click adds it as the next sort.
 
-With a column menu (`resizableColumns`, `hideableColumns`, `pinnableColumns` or `groupable`), the menu does the same without the keyboard: while another column sorts, **Add to sort** with Ascending or Descending appends the column; on a column already in the sort, the group shows its place (**Sort order: 2 of 3**) and changes its direction there, and **Remove from sort** takes it out. **Sort ascending** and **Sort descending** still sort by the column alone, and **Clear sort** removes every sort.
+- <Kbd>Shift</Kbd> + click, or <Kbd>Shift</Kbd> + <Kbd>Enter</Kbd>, adds a
+  column to the sort. On a column already in the sort, it reverses the
+  direction.
+- While two or more columns sort, each sorted header shows its place beside the arrow. Screen readers hear it with the direction: "2 of 2 in sort order".
+- The table above starts sorted by Field, then MD.
+
+Column menus do the same without the keyboard. A column has a menu when `resizableColumns`, `hideableColumns`, `pinnableColumns` or `groupable` is on.
+
+| Menu item                                     | Does                                                                |
+| --------------------------------------------- | ------------------------------------------------------------------- |
+| **Sort ascending**, **Sort descending**       | Sorts by this column alone.                                         |
+| **Add to sort**, then Ascending or Descending | Appends the column to the sort. Shown while another column sorts.   |
+| **Sort order: 2 of 3**                        | On a column in the sort: shows its place and changes its direction. |
+| **Remove from sort**                          | Takes the column out of the sort.                                   |
+| **Clear sort**                                | Removes every sort.                                                 |
 
 ```tsx
 <DataTable
@@ -102,21 +123,38 @@ With a column menu (`resizableColumns`, `hideableColumns`, `pinnableColumns` or 
 >
 ```
 
-`view.sorting` lists the sorts in order, first one first; in [server mode](#server-data) the server gets the whole list from `onViewChange`. `multiSort={false}` keeps the table to one sort: <Kbd>Shift</Kbd> + click sorts alone, the menus have no **Add to sort** and a view keeps its first sort.
+- `view.sorting` lists the sorts in order, first one first.
+- In [server mode](#server-data), the server gets the whole list from `onViewChange`.
+- `multiSort={false}` keeps the table to one sort. <Kbd>Shift</Kbd> + click then sorts alone, the menus have no **Add to sort**, and a view keeps only its first sort.
 
 ### Custom cells
 
-`cell(item, details)` draws a column's cell. It only changes how the value looks: sorting, filters, search, power search, grouping, totals and the CSV export still use the `accessor` value and the column's `type`. Here the well links to its page with its field under it, the engineer has an [Avatar](/docs/components/avatar), the water cut has a [Meter](/docs/tecton/meter) beside its number, and the oil rate shows how it moved; the table is sorted by oil rate, and every header still sorts its column by its value.
+`cell(item, details)` draws a column's cell. It changes only how the value looks: sorting, filters, search, power search, grouping, totals and the CSV export still use the `accessor` value and the column's `type`.
+
+In this example, each well links to its page, with its field below. The engineer has an [Avatar](/docs/components/avatar), the water cut has a [Meter](/docs/tecton/meter), and the oil rate shows how it moved. The table is sorted by oil rate, and every header still sorts by the column's value.
 
 <ComponentPreview name="data-table-custom-cells" align="start" />
 
-`details` holds the cell's `value` (from `accessor`), its `text` (the value formatted as the column formats it, with `format` and the provider locale), `emptyValue` (the muted dash read as "No value"), and the row's `id`, the `column` and the row's `depth` in a tree or groups. Draw `text` rather than formatting the value again, and return `emptyValue` for a missing value so the cell keeps the table's convention. Controls in a cell (a link, a button, an input) are reached with <Kbd>Enter</Kbd> or <Kbd>F2</Kbd> from the cell ([Keyboard](#keyboard)). Give a graphic its name (`aria-label` on the meter here) and words for what colour or an icon says (the trend's "since last month").
+| `details` field | Holds                                                                                |
+| --------------- | ------------------------------------------------------------------------------------ |
+| `value`         | The raw value, from `accessor`.                                                      |
+| `text`          | The value formatted as the column formats it, with `format` and the provider locale. |
+| `emptyValue`    | What a missing value shows: the muted dash, read as "No value".                      |
+| `id`            | The row's id.                                                                        |
+| `column`        | The column.                                                                          |
+| `depth`         | The row's depth in a tree or in groups.                                              |
 
-`renderHeader` draws a header's content (`header` stays the plain text menus and screen readers use), and `renderAggregate` a totals or subtotal cell.
+- Draw `text` rather than formatting the value again.
+- For a missing value, return `emptyValue`, so the cell keeps the table's convention.
+- Controls in a cell, such as a link, a button or an input, are reached with <Kbd>Enter</Kbd> or <Kbd>F2</Kbd> from the cell ([Keyboard](#keyboard)).
+- Give a graphic a name, like the meter's `aria-label` here.
+- Put into words what a colour or an icon says, like the trend's "since last month".
+
+`renderHeader` draws a header's content, while `header` stays the plain text that menus and screen readers use. `renderAggregate` draws a totals or subtotal cell.
 
 ## Resizing
 
-`resizableColumns` adds a resizer to each header and Resize, Fit to content and Reset width to the column menus.
+`resizableColumns` adds a resizer to each header, and Resize, Fit to content and Reset width to the column menus.
 
 <ComponentPreview name="data-table-column-resizing" align="start" />
 
@@ -136,72 +174,129 @@ For a plain [Table](/docs/components/table), put a `TableColumnResizer` last in 
 
 ## Hiding, pinning and reordering
 
-`DataTableColumnsMenu` lists the columns to show, hide or pin; each header's menu has the same actions.
+`DataTableColumnsMenu` lists the columns to show, hide or pin. Each header's menu has the same actions.
 
 <ComponentPreview name="data-table-column-pinning" align="start" />
 
-| Root prop | The user | View field | Column opt-out |
-| --- | --- | --- | --- |
-| `resizableColumns` | drags or fits a column's width | `columns.widths` | `resizable: false` |
-| `reorderableColumns` | drags a header to a new place | `columns.order` | `reorderable: false` |
-| `hideableColumns` | hides a column | `columns.hidden` | `hideable: false` |
-| `pinnableColumns` | pins a column to the start or end | `columns.pinned` | `pinnable: false` |
+| Root prop            | The user                          | View field       | Column opt-out       |
+| -------------------- | --------------------------------- | ---------------- | -------------------- |
+| `resizableColumns`   | drags or fits a column's width    | `columns.widths` | `resizable: false`   |
+| `reorderableColumns` | drags a header to a new place     | `columns.order`  | `reorderable: false` |
+| `hideableColumns`    | hides a column                    | `columns.hidden` | `hideable: false`    |
+| `pinnableColumns`    | pins a column to the start or end | `columns.pinned` | `pinnable: false`    |
 
-Pinned cells are opaque in `var(--surface)`; a custom surface sets it: `className="bg-muted [--surface:var(--color-muted)]"`.
+Pinned cells are opaque, filled with `var(--surface)`. On a custom surface, set that variable too: `className="bg-muted [--surface:var(--color-muted)]"`.
 
 ## Search and filters
 
-`filterable` turns on `DataTableSearch`, a `DataTableFilter` per column and `DataTableActiveFilters`. The toolbar collapses its items into an overflow menu when it runs out of room.
+`filterable` turns on `DataTableSearch`, a `DataTableFilter` per column and `DataTableActiveFilters`. When the toolbar runs out of room, it moves its items into an overflow menu.
 
 <ComponentPreview name="data-table-filters" align="start" />
 
-| `type` | Filter | Value in the view |
-| --- | --- | --- |
-| `text` | contains the text | `{ type: "text", value }` |
-| `number` | Min and Max side by side, with the column's unit | `{ type: "number", min?, max?, minExclusive?, maxExclusive? }` |
-| `date` | a [date range picker](/docs/components/date-picker) | `{ type: "date", from?, to? }` |
-| `boolean` | Yes or No, radio buttons with counts | `{ type: "boolean", value? }` |
-| `options` | a checkbox per option, with counts | `{ type: "options", values }` |
+| `type`    | Filter                                              | Value in the view                                              |
+| --------- | --------------------------------------------------- | -------------------------------------------------------------- |
+| `text`    | contains the text                                   | `{ type: "text", value }`                                      |
+| `number`  | Min and Max side by side, with the column's unit    | `{ type: "number", min?, max?, minExclusive?, maxExclusive? }` |
+| `date`    | a [date range picker](/docs/components/date-picker) | `{ type: "date", from?, to? }`                                 |
+| `boolean` | Yes or No, radio buttons with counts                | `{ type: "boolean", value? }`                                  |
+| `options` | a checkbox per option, with counts                  | `{ type: "options", values }`                                  |
 
-A number filter's Min and Max are [number fields](/docs/tecton/number-field), stepped with their minus and plus buttons or the arrow keys, with the column's unit on the side the column writes it (from its `format`: a unit, a percent sign or a currency; a percent is typed as the column shows it, 12.5 for 0.125). Under them, beside "No value" when the column has empty values, the filter says how many rows match ("12 of 120 match") as the bounds are typed, of the rows the search and the other filters keep. In server mode, where the table holds only the rows loaded, it does not show the count. A yes / no filter is laid out as an options filter, with radio buttons: neither chosen keeps every row, and Clear goes back to that. Each filter also offers "No value" (`empty: true`) for a column with empty values. Search matches the shown columns' display text, ignoring case and accents. A column's own `filter(item, value)` replaces its type's.
+- Search matches the shown columns' display text, ignoring case and accents.
+- Each filter offers "No value" (`empty: true`) when the column has empty values ([Empty values](#empty-values)).
+- A column's own `filter(item, value)` replaces its type's filter.
+- A yes / no filter is laid out like an options filter, with radio buttons. With neither chosen it keeps every row, and Clear goes back to that.
 
-A number filter's bounds are included; `minExclusive: true` or `maxExclusive: true` leaves that bound's own number out (more than `min`, less than `max`), as `>` and `<` in a [power search](#power-search) set it. The filter's button and chip then read "> 3,000 m" or "> 1,000 and ≤ 3,000", and editing that bound in the filter includes it again. In server mode, apply them as such: `minExclusive` means `value > min`, else `value >= min`.
+Number filters:
+
+- Min and Max are [number fields](/docs/tecton/number-field). Step them with their minus and plus buttons or the arrow keys.
+- The unit sits on the side where the column writes it: a unit, a percent sign or a currency, from the column's `format`.
+- Type a percent as the column shows it: 12.5 for 0.125.
+- Under the fields, the filter shows how many rows match as you type ("12 of 120 match"). It counts the rows the search and the other filters keep. In server mode there is no count, since the table holds only the loaded rows.
+- Both bounds are included. `minExclusive: true` or `maxExclusive: true` leaves out the bound itself, as `>` and `<` do in a [power search](#power-search).
+- An exclusive bound reads "> 3,000 m" or "> 1,000 and ≤ 3,000" on the button and chip. Editing that bound in the filter includes it again.
+- In server mode, apply exclusive bounds yourself: `minExclusive` means `value > min`, otherwise `value >= min`.
 
 ## Power search
 
-`<DataTableSearch syntax="query" />` turns the search into a query field for people who filter all day: typed terms set the same column filters the filter buttons set, and free words are the search. A filter button, a chip or a controlled `view` writes the query again from the view, keeping the free words. Focus the field for suggestions; its "?" button lists the table's own columns with examples.
+`<DataTableSearch syntax="query" />` turns the search into a query field, for people who filter all day. Typed terms set the same column filters as the filter buttons, and free words are the search.
 
 <ComponentPreview name="data-table-power-search" align="start" />
 
-| Term | Filter |
-| --- | --- |
-| `gullfaks`, `"aker bp"` | the search: text in any shown column |
-| `status:drilling,producing` | an options column: any of the values, by value or label |
-| `subsea:yes` | yes / no |
-| `well:a-12` | a text column contains the text |
-| `td:3000`, `td:>=3000`, `td:>3000`, `td:<3000`, `td:1000..3000` | a number column; `..` includes both ends, `>` and `<` are `minExclusive` / `maxExclusive` |
-| `spud:2015`, `spud:2015-06`, `spud:jun 2015`, `spud:2015-06-30`, `spud:<2015`, `spud:2015..2016` | a date column, by whole days in the column's time zone |
-| `spud:last30d`, `spud:thismonth`, `spud:today` | a relative date (`last<N>d`, `w`, `m`, `y`; kept as such in the field) |
-| `td:none`, `td:>=3000,none` | "No value", alone or beside the rest |
+### Syntax
 
-A column's key is its header or its id, without case, accents, spaces or punctuation (`spuddate`, `spud_date`); numbers and dates are read in the provider locale, and quotes keep spaces together. Terms side by side all apply; `OR`, `NOT` and a leading `-` are not supported and are shown as problems, never applied otherwise (a term behind `-` or after `NOT` is left out with it). Their message says what to type instead, written with the table's own columns: its first options column's values listed with commas (`status:drilling,producing`) for one of several values, and the values to keep for an exclusion. A term with a problem (an unknown column or value, a backwards range) is underlined once the typing pauses, with its message on a tooltip and at the top of the suggestions, and is not applied. Filters the query cannot write (a column's own `filter`, a column with no key) stay in the view.
+| Term                                                                                             | Filter                                                                                    |
+| ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `gullfaks`, `"aker bp"`                                                                          | the search: text in any shown column                                                      |
+| `status:drilling,producing`                                                                      | an options column: any of the values, by value or label                                   |
+| `subsea:yes`                                                                                     | yes / no                                                                                  |
+| `well:a-12`                                                                                      | a text column contains the text                                                           |
+| `td:3000`, `td:>=3000`, `td:>3000`, `td:<3000`, `td:1000..3000`                                  | a number column; `..` includes both ends, `>` and `<` are `minExclusive` / `maxExclusive` |
+| `spud:2015`, `spud:2015-06`, `spud:jun 2015`, `spud:2015-06-30`, `spud:<2015`, `spud:2015..2016` | a date column, by whole days in the column's time zone                                    |
+| `spud:last30d`, `spud:thismonth`, `spud:today`                                                   | a relative date (`last<N>d`, `w`, `m`, `y`; kept as such in the field)                    |
+| `td:none`, `td:>=3000,none`                                                                      | "No value", alone or beside the rest                                                      |
 
-The suggestions follow the caret: columns with their type; an options column's values with their row counts; "No value"; a number's comparisons with the data's range; a date's presets with the days they cover, the years and months of the data and the date filter's calendar, which writes the days it picks. <Kbd>↑</Kbd> / <Kbd>↓</Kbd> move, <Kbd>Enter</Kbd> picks, <Kbd>Tab</Kbd> completes, <Kbd>Escape</Kbd> closes the list, then clears the field. Counts are over the rest of the query, as the filter popovers count. In server mode the field sends the filters and search through `onViewChange` as the filter buttons do; the counts are the options' own `count`.
+- A column's key is its header or its id. Case, accents, spaces and punctuation don't matter, so `spuddate` and `spud_date` both match "Spud date".
+- Numbers and dates are read in the provider's locale. Quotes keep spaces together.
+- Terms side by side all apply.
+- Filters the query cannot write stay in the view: a column's own `filter`, or a column with no key.
+- A filter button, a chip or a controlled `view` rewrites the query from the view, keeping the free words.
 
-The query field loads on demand: a plain field of the same size renders at once and the query layer arrives in idle time or as the field is pointed at or focused; what is typed before is kept and read once it arrives. A table with the plain search never loads it.
+### Problems
+
+A term with a problem is not applied. Examples are an unknown column or value, or a backwards range.
+
+- Once typing pauses, the term is underlined. Its message shows at the top of the suggestions, and in a tooltip on the underline.
+- `OR`, `NOT` and a leading `-` are not supported. They show as problems and are never applied another way. The term after `-` or `NOT` is left out with them.
+- The message says what to type instead, using the table's own columns. For one of several values, it lists the first options column's values with commas (`status:drilling,producing`). For an exclusion, it suggests listing the values to keep.
+
+### Suggestions
+
+The suggestion list opens when the field gets focus and stays open the whole time it has focus. Typing, picking, moving the caret and pressing the field's buttons never close it.
+
+- It closes when focus leaves the field. <Kbd>Escape</Kbd> closes it until you type, click in the field or press <Kbd>↓</Kbd>.
+- A pick that completes a term keeps it open with the next term's columns.
+- With nothing to suggest, it shows one muted line about the term at the caret: "Searching all columns for “pump”", the filter in its chip's words ("TD: ≥ 1,500 m"), or "No suggestions". Screen readers hear it politely.
+- The clear button (✕) empties the field and keeps focus in it, with the list open.
+- The "?" button lists the table's own columns, with examples, in the list's place. A press anywhere in an example's row adds it to the query and returns to the field.
+
+The suggestions follow the caret:
+
+- columns, with their type
+- an options column's values, with their row counts
+- "No value"
+- a number column's comparisons, with the data's range
+- a date column's presets with the days they cover, the data's years and months, and the date filter's calendar, which writes the days it picks
+
+Counts apply the rest of the query, as the filter popovers' counts do.
+
+| Key                         | Does                                                                          |
+| --------------------------- | ----------------------------------------------------------------------------- |
+| <Kbd>↑</Kbd> / <Kbd>↓</Kbd> | Moves through the suggestions                                                 |
+| <Kbd>Enter</Kbd>            | Picks the highlighted suggestion, else applies the query; the list stays open |
+| <Kbd>Tab</Kbd>              | Completes what is typed; with nothing to complete, moves focus on             |
+| <Kbd>Escape</Kbd>           | Closes the list; pressed again, clears the field                              |
+
+### Server mode and loading
+
+- In server mode, the field sends the filters and search through `onViewChange`, as the filter buttons do. The counts are the options' own `count`.
+- The query field loads on demand. A plain field of the same size renders at once.
+- The query code arrives in idle time, or when the field is pointed at or focused. Anything typed before then is kept and read once it arrives.
+- A table with the plain search never loads it.
 
 ## Empty values
 
-A value that is `null`, `undefined`, `""`, `NaN` or an invalid `Date` shows as a muted em dash in the column's alignment, which screen readers read as "No value". Return `null` from `accessor` for a missing value, never a placeholder such as "N/A". Some wells in the example above have no status, TD, spud date or subsea flag.
+A value that is `null`, `undefined`, `""`, `NaN` or an invalid `Date` is empty. It shows as a muted em dash in the column's alignment, which screen readers read as "No value".
 
-| Where | An empty value |
-| --- | --- |
-| Cell | A muted "—", read as "No value"; the column's `emptyValue` replaces it, `null` leaves the cell blank. |
-| Custom `cell` | Gets the column's `emptyValue` in its details, to return when `text` is `""`. |
-| Search, CSV | Empty text: never matched, an empty field. |
-| Sorting | Last, ascending and descending. |
-| Grouping | One group, "No value", last. |
-| Totals | Left out of the built-in aggregates. |
+Return `null` from `accessor` for a missing value, never a placeholder such as "N/A". Some wells in the example above have no status, TD, spud date or subsea flag.
+
+| Where         | An empty value                                                                                        |
+| ------------- | ----------------------------------------------------------------------------------------------------- |
+| Cell          | A muted "—", read as "No value". The column's `emptyValue` replaces it; `null` leaves the cell blank. |
+| Custom `cell` | Gets the column's `emptyValue` in its details, to return when `text` is `""`.                         |
+| Search, CSV   | Empty text: never matched, an empty field.                                                            |
+| Sorting       | Last, ascending and descending.                                                                       |
+| Grouping      | One group, "No value", last.                                                                          |
+| Totals        | Left out of the built-in aggregates.                                                                  |
 
 ```tsx
 const columns = createColumns<Well>([
@@ -209,14 +304,24 @@ const columns = createColumns<Well>([
   {
     id: "report",
     header: "Report",
-    cell: (well, { text, emptyValue }) => (text === "" ? emptyValue : <Link href={well.reportUrl}>{text}</Link>),
+    cell: (well, { text, emptyValue }) =>
+      text === "" ? emptyValue : <Link href={well.reportUrl}>{text}</Link>,
   },
 ])
 ```
 
-While a row has no value in a column, its filter offers "No value": the last option of an options filter, apart, with its count; a checkbox under a text or number filter's fields and beside a date filter's Clear; a checkbox after a yes / no filter's Yes and No, apart, with its count, as in an options filter. It keeps the rows without a value besides those the rest of the filter keeps, or only those when the rest is unset, and its chip reads "Status: Producing, No value", "TD: 1,000 m–2,000 m or no value" or "Subsea: Yes or no value".
+While any row has no value in a column, that column's filter offers "No value":
 
-In the view it is `empty: true` on the filter's value. A value without it matches as before, so saved views keep working; in server mode, where the table sees only the loaded rows, "No value" is always offered and reaches `onViewChange` for the server to apply (`OR depth IS NULL`).
+| Filter       | "No value" is                                          | Chip                              |
+| ------------ | ------------------------------------------------------ | --------------------------------- |
+| Options      | the last option, set apart, with its count             | "Status: Producing, No value"     |
+| Text, number | a checkbox under the fields                            | "TD: 1,000 m–2,000 m or no value" |
+| Date         | a checkbox beside Clear                                |                                   |
+| Yes / no     | a checkbox after Yes and No, set apart, with its count | "Subsea: Yes or no value"         |
+
+- It keeps the rows without a value, as well as those the rest of the filter keeps. When the rest is unset, it keeps only the rows without a value.
+- In the view it is `empty: true` on the filter's value. A value without it matches as before, so saved views keep working.
+- In server mode the table sees only the loaded rows, so "No value" is always offered. It reaches `onViewChange` for the server to apply (`OR depth IS NULL`).
 
 ```ts
 { type: "number", min: 1000, max: 2000, empty: true } // 1,000 to 2,000, or no value
@@ -231,20 +336,21 @@ In the view it is `empty: true` on the filter's value. A value without it matche
 
 <ComponentPreview name="data-table-selection" align="start" />
 
-| Prop | Does |
-| --- | --- |
-| `value` / `onValueChange` | The selected row ids. |
-| `isItemDisabled` | Disables rows; `disabledBehavior="selection"` keeps them focusable and openable. |
-| `onActivate(id, item)` | Called when a row opens: <Kbd>Enter</Kbd>, a double click, or a click while no row is selected. |
-| `itemToHref` | Makes each row header a link, followed through the [TectonProvider](/docs/tecton/provider)'s router. |
+| Prop                      | Does                                                                                                 |
+| ------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `value` / `onValueChange` | The selected row ids.                                                                                |
+| `isItemDisabled`          | Disables rows; `disabledBehavior="selection"` keeps them focusable and openable.                     |
+| `itemToDisabledReason`    | Says why a disabled row cannot be selected.                                                          |
+| `onActivate(id, item)`    | Called when a row opens: <Kbd>Enter</Kbd>, a double click, or a click while no row is selected.      |
+| `itemToHref`              | Makes each row header a link, followed through the [TectonProvider](/docs/tecton/provider)'s router. |
 
-Select all selects every row the view matches, on every page.
-
-`itemToDisabledReason` says why a disabled row cannot be selected: the reason shows in a tooltip on its checkbox, on hover and when the arrow keys reach it (`disabledBehavior="selection"`), and screen readers announce it with the row.
+- **Select all** selects every row the view matches, on every page.
+- The disabled reason shows in a tooltip on the row's checkbox. It appears on hover, and when the arrow keys reach the row (`disabledBehavior="selection"`).
+- Screen readers announce the disabled reason with the row.
 
 ## Row reordering
 
-`reorderableRows` adds a drag handle at the start of each row. Drag it, or reach it with <Kbd>→</Kbd> and press <Kbd>Enter</Kbd>: <Kbd>↑</Kbd> / <Kbd>↓</Kbd> move it one place at a time, each place announced ("Insert between 34/7-D-2 and 2/8-C-3"), <Kbd>Enter</Kbd> drops and <Kbd>Escape</Kbd> cancels. `onRowOrderChange(ids, eventDetails)` gets every item's id in the new order: put `items` in that order.
+`reorderableRows` adds a drag handle at the start of each row. `onRowOrderChange(ids, eventDetails)` gets every item's id in the new order: put `items` in that order.
 
 <ComponentPreview name="data-table-row-reordering" align="start" />
 
@@ -257,13 +363,16 @@ Select all selects every row the view matches, on every page.
 >
 ```
 
-- Rows move in the items' order: while the view sorts, searches, filters or groups, the handles are hidden (their column stays).
-- On pages, a row moves within its page; in a virtualized table, the keyboard steps through every row.
-- Flat lists only: off in a tree.
+- Drag the handle, or reach it with <Kbd>→</Kbd> and press <Kbd>Enter</Kbd>.
+- From the keyboard, <Kbd>↑</Kbd> / <Kbd>↓</Kbd> move the row one place at a time. Each place is announced, such as "Insert between 34/7-D-2 and 2/8-C-3".
+- <Kbd>Enter</Kbd> drops the row and <Kbd>Escape</Kbd> cancels.
+- Rows move in the items' order. While the view sorts, searches, filters or groups, the handles are hidden, but their column stays.
+- With pages, a row moves within its page. In a virtualized table, the keyboard steps through every row.
+- Flat lists only: row reordering is off in a tree.
 
 ## Virtualized rows
 
-`virtualized` on `DataTableContent` renders only the rows in view; give the root or the content a bounded height.
+`virtualized` on `DataTableContent` renders only the rows in view. Give the root or the content a bounded height.
 
 <ComponentPreview name="data-table-virtual" align="start" />
 
@@ -271,7 +380,11 @@ For rows the server sends in batches, see [Load more](#load-more).
 
 ## Load more
 
-For rows sent in batches, `hasMore` says more follow and `onLoadMore` loads the next batch: add it to `items`. Set `loading` while a batch is out, and `error` with `onRetry` when it fails: the error shows after the loaded rows, with Retry. Here the server sends 50 of 500 readings at a time: switch between loading on scroll and with a button, and turn on "Fail the next batch" to see the error.
+For rows sent in batches, `hasMore` says more follow and `onLoadMore` loads the next batch. Add each batch to `items`.
+
+Set `loading` while a batch is out. When it fails, set `error` and `onRetry`: the error shows after the loaded rows, with Retry.
+
+In this example the server sends 500 readings, 50 at a time. Switch between loading on scroll and with a button, and turn on "Fail the next batch" to see the error.
 
 <ComponentPreview name="data-table-load-more" align="start" />
 
@@ -294,16 +407,28 @@ For rows sent in batches, `hasMore` says more follow and `onLoadMore` loads the 
 
 `loadMore` sets how the next batch is asked for:
 
-| `loadMore` | Next batch | Use it when |
-| --- | --- | --- |
-| `"scroll"` (default) | Loads as the end of the rows comes near, with loading rows after the last row. | The table has a bounded height (`virtualized`) or is the last thing on the page: the user only scrolls. |
-| `"button"` | Loads when the user presses Show more, after the last row, beside "Showing 50 of 500" (of `rowCount` in server mode; "Showing 50 rows" without it). | Something follows the table (a footer, the page's next section) that loading on scroll would keep pushing away, or the user should decide when to load. |
+| `loadMore`           | Next batch                                                                     | Use it when                                                                                                         |
+| -------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `"scroll"` (default) | Loads as the end of the rows comes near, with loading rows after the last row. | The table has a bounded height (`virtualized`) or is the last thing on the page, so the user only scrolls.          |
+| `"button"`           | Loads when the user presses Show more, after the last row.                     | Content follows the table and loading on scroll would keep pushing it away, or the user should decide when to load. |
 
-With `"button"`, the button spins while the batch loads and keeps focus; once no more rows follow, focus moves to the first new row, and screen readers hear "Loaded 50 more rows". Load more is off with `pagination`, and in client mode while a search or filter is in effect: use server mode to load what matches.
+- Beside Show more, a count reads "Showing 50 of 500", out of `rowCount` in server mode. Without `rowCount` it reads "Showing 50 rows".
+- The button spins while the batch loads, and keeps focus. Once no more rows follow, focus moves to the first new row.
+- Screen readers hear "Loaded 50 more rows".
+- Load more is off with `pagination`.
+- In client mode, load more is also off while a search or filter is in effect. Use server mode to load what matches.
 
 ## Live data
 
-For rows that arrive while the user watches (alarms, events, readings pushed by a subscription), `highlightChanges` shows what came without moving what the user is looking at. Put each new record in `items`, as for any change. Here, once you start the feed, an alarm is raised every two seconds and lands where the sort by pressure puts it. Scroll down, point at a row or open its menu, and pause the feed to compare; **Pages** shows ten rows a page instead of a scrolling table, **Group by severity** puts the alarms in groups (close one to see its row take the highlight), and **Stripes** turns the alternate row fills on and off under the highlight.
+For rows that arrive while the user watches, set `highlightChanges`. Examples are alarms, events or readings pushed by a subscription. It shows what came without moving what the user is looking at.
+
+Put each new record in `items`, as for any change.
+
+In this example, start the feed: an alarm is raised every two seconds and lands where the sort by pressure puts it. Scroll down, point at a row or open its menu, and pause the feed to compare.
+
+- **Pages** shows ten rows a page instead of a scrolling table.
+- **Group by severity** puts the alarms in groups. Close a group to see its row take the highlight.
+- **Stripes** turns the alternate row fills on and off under the highlight.
 
 <ComponentPreview name="data-table-live" align="start" />
 
@@ -313,55 +438,109 @@ For rows that arrive while the user watches (alarms, events, readings pushed by 
 </DataTable>
 ```
 
-- **Highlighted until seen.** A row added after the first render goes straight to its sorted place with a light tint of the info colour, neither the hover's nor the selection's, across the whole row, pinned columns included; a striped, hovered or selected row keeps its own fill under it. The tint stays at full strength until the row is seen, half of it in view on the page shown, and then fades out over 1.5 s: a row that lands in view fades at once, one that lands out of view or on another page keeps its tint until the user scrolls or pages to it. A row added inside a closed group, or under a closed tree row, highlights the group's or the tree row's row. `highlightChanges={{ duration: 3000 }}` lengthens the fade.
-- **Counted when out of view.** New rows not seen yet are counted in one button at each edge of the table. At the top, "↑ 3 new rows" for rows above the view: it scrolls up to the topmost of them. At the bottom, "↓ 2 new rows" for rows below the view on this page, which scrolls down to the nearest; once none are below, "3 new rows on other pages", which turns to the first one's page. A button stays until each row it counts has been seen, and its name says the whole of it ("3 new rows above"). Rows the search or filters hide are not counted.
-- **The row the user is on never moves.** As rows land or go above it, the row the user is on keeps its place on screen: the row whose menu or popover is open, else the row with focus, else the row under the pointer, else, once the table is scrolled, the first row in view. Rows added above it go above it, out of view if need be, where the top button counts them; a row landing below it moves the rows under it down. At the top of the table, with nothing in use, new rows push the others down.
-- **Pages.** With `pagination`, a row added to an earlier page would move every row of the page shown, so while the pointer is over the rows, focus is in them or a row's menu is open, such rows wait, counted in "on other pages", and come 0.3 s after the user is done. Rows the application removes or changes are applied at once: only those additions wait.
+### Highlight
 
-Which rows are added: the ids in `items` that the previous `items` did not have. In client mode `items` are compared, not the rows the view shows, so a search or filter that brings back rows adds none. Not added:
+A new row goes straight to its sorted place and is tinted until the user sees it.
 
-- the rows of the first render, and the first rows of a table that starts empty;
-- rows that come with a load: while `loading`, in the change that ends it, and the batch `onLoadMore` asked for;
-- in server mode, the rows of a new view: the first `items` after the search, filters, sorting, grouping, page or page size change. Only `items` that change while the view stays the same are compared, so set `loading` while the server answers a view change;
-- the children of a tree row loaded as it opens. A child added to a row whose children were there is added, open or not.
+- The tint is a light shade of the info colour, unlike hover or selection. It covers the whole row, pinned columns included.
+- A striped, hovered or selected row keeps its own fill under the tint.
+- A row counts as seen when half of it is in view, on the page shown. Its tint then fades out over 1.5 s.
+- A row that lands in view fades at once. One that lands out of view, or on another page, keeps its tint until the user scrolls or pages to it.
+- A row added inside a closed group, or under a closed tree row, highlights the group's row or the tree row.
+- `highlightChanges={{ duration: 3000 }}` lengthens the fade.
 
-Screen readers hear "3 rows added" at most once a second, for the rows the view shows. The buttons are real buttons, after the table in the tab order while they show, and never take focus by themselves; pressed from the keyboard, focus moves to the new row. They scroll smoothly to rows near the view and jump to rows further away; with reduced motion they always jump, show and hide without moving, and the highlight still fades, a change of colour, not of place.
+### New-row buttons
+
+New rows the user has not seen are counted in a button at each edge of the table.
+
+| Button                                     | Counts                                   | Pressed                            |
+| ------------------------------------------ | ---------------------------------------- | ---------------------------------- |
+| "↑ 3 new rows", at the top                 | Rows above the view                      | Scrolls up to the topmost of them. |
+| "↓ 2 new rows", at the bottom              | Rows below the view, on this page        | Scrolls down to the nearest.       |
+| "3 new rows on other pages", at the bottom | Rows on other pages, once none are below | Turns to the first one's page.     |
+
+- A button stays until each row it counts has been seen.
+- Its accessible name says it in full, such as "3 new rows above".
+- Rows that the search or filters hide are not counted.
+- The buttons follow the table in the tab order while they show. They never take focus by themselves.
+- Pressed from the keyboard, a button moves focus to the new row.
+- They scroll smoothly to rows near the view, and jump to rows further away.
+
+### The row the user is on
+
+As rows land or leave above it, the row the user is on keeps its place on screen. That row is the first of these:
+
+1. the row whose menu or popover is open
+2. the row with focus
+3. the row under the pointer
+4. once the table is scrolled, the first row in view
+
+- Rows added above it go above it, out of view if need be. The top button counts them.
+- A row landing below it moves the rows under it down.
+- At the top of the table, with nothing in use, new rows push the others down.
+- With `pagination`, a row added to an earlier page would shift the whole page shown. While the pointer is over the rows, focus is in them or a row's menu is open, such rows wait.
+- Waiting rows count in "on other pages", and arrive 0.3 s after the user is done.
+- Only additions wait. Rows the application removes or changes apply at once.
+
+### Which rows are added
+
+A row is added when its id is in `items` but not in the previous `items`. In client mode `items` are compared, not the rows the view shows. A search or filter that brings rows back adds none.
+
+These rows are not added:
+
+- the rows of the first render, and the first rows of a table that starts empty
+- rows that come with a load: while `loading`, in the change that ends it, and the batch `onLoadMore` asked for
+- in server mode, the first `items` after the search, filters, sorting, grouping, page or page size change. Only `items` that change while the view stays the same are compared, so set `loading` while the server answers a view change.
+- the children of a tree row, loaded as it opens. A child added to a row whose children were already there is added, open or not.
+
+### Announcements and motion
+
+- Screen readers hear "3 rows added", at most once a second, for the rows the view shows.
+- With reduced motion, the buttons always jump instead of scrolling, and show and hide without moving.
+- The highlight still fades with reduced motion: it is a change of colour, not of place.
 
 ## Trees and detail rows
 
-`itemToChildren` makes the rows a tree; `renderDetail` on `DataTableContent` gives each row an expandable detail row instead.
+`itemToChildren` makes the rows a tree. `renderDetail` on `DataTableContent` gives each row an expandable detail row instead.
 
 <ComponentPreview name="data-table-tree" align="start" />
 
 ```tsx
-<DataTableContent aria-label="Wells" renderDetail={(well: Well) => <Perforations well={well} />} />
+<DataTableContent
+  aria-label="Wells"
+  renderDetail={(well: Well) => <Perforations well={well} />}
+/>
 ```
 
-Both use `expanded` / `onExpandedChange`. In server mode, a row whose children are `undefined` loads them on open.
+Both use `expanded` / `onExpandedChange`. In server mode, a row whose children are `undefined` loads them when it opens.
 
 ## Grouping and totals
 
-`groupable` with `DataTableGroupBy` groups rows by columns, with subtotals; `totals` on `DataTableContent` adds a footer row.
+`groupable` with `DataTableGroupBy` groups rows by columns, with subtotals. `totals` on `DataTableContent` adds a totals row at the foot.
 
 <ComponentPreview name="data-table-grouping" align="start" />
 
-Number columns sum and boolean columns count by default; set `aggregate` (`"avg"`, `"min"`, `"max"`, `"count"`, `"countDistinct"` or a function) and `renderAggregate` per column.
+Number columns sum and boolean columns count by default. Set a column's `aggregate` to `"avg"`, `"min"`, `"max"`, `"count"`, `"countDistinct"` or a function. `renderAggregate` draws the cell.
 
 ## Editing
 
-Edit a row in a [Dialog](/docs/components/dialog) opened from a `DataTableRowActions` item, and put the saved record in `items`.
+Edit a row in a [Dialog](/docs/components/dialog) opened from a `DataTableRowActions` item. Then put the saved record in `items`.
 
 <ComponentPreview name="data-table-edit-dialog" align="start" />
 
-A `cell` can also render a field: <Kbd>Enter</Kbd> or <Kbd>F2</Kbd> moves into it and <Kbd>Escape</Kbd> returns to the cell.
+A `cell` can also render a field. <Kbd>Enter</Kbd> or <Kbd>F2</Kbd> moves into it, and <Kbd>Escape</Kbd> returns to the cell.
 
 <ComponentPreview name="data-table-editable-cells" align="start" />
 
 ## Size and stripes
 
-`size="sm"` makes the table compact for dense data that is scanned rather than read: shorter rows and smaller text, and a footer to match, with the pager's small arrows, Select and page field. `striped` puts every even row on an alternate surface, which helps the eye along a wide row; a selected or hovered row keeps its own fill.
+`size="sm"` makes the table compact, for dense data that is scanned rather than read. `striped` puts every even row on an alternate surface, which helps the eye along a wide row.
 
 <ComponentPreview name="data-table-size" align="start" />
+
+- Compact rows are shorter, with smaller text.
+- The footer matches: the pager gets small arrows, a small Select and a small page field.
+- A selected or hovered row keeps its own fill over the stripes.
 
 ## States
 
@@ -369,30 +548,32 @@ A `cell` can also render a field: <Kbd>Enter</Kbd> or <Kbd>F2</Kbd> moves into i
 
 <ComponentPreview name="data-table-states" align="start" />
 
-| State | When | Customize |
-| --- | --- | --- |
-| Loading | `loading`: skeleton rows, or a bar over existing rows | - |
-| Error | `error` set | `error` content, `onRetry` |
-| Empty | no rows | `empty` |
-| No results | nothing matches the search and filters | `noResults` |
+| State      | When                                                  | Customize                  |
+| ---------- | ----------------------------------------------------- | -------------------------- |
+| Loading    | `loading`: skeleton rows, or a bar over existing rows | -                          |
+| Error      | `error` set                                           | `error` content, `onRetry` |
+| Empty      | no rows                                               | `empty`                    |
+| No results | nothing matches the search and filters                | `noResults`                |
 
 ## Server data
 
-With `dataMode="server"`, the table reports each view and page change and shows the `items` the server returns; `rowCount` is the server's total. Here <Kbd>Shift</Kbd> + click a second header: `view.sorting` holds both sorts, in order, and the request below carries them.
+With `dataMode="server"`, the table reports each view and page change and shows the `items` the server returns. `rowCount` is the server's total.
+
+In this example, <Kbd>Shift</Kbd> + click a second header. `view.sorting` holds both sorts, in order, and the request below carries them.
 
 <ComponentPreview name="data-table-server" align="start" />
 
-| | Client | Server |
-| --- | --- | --- |
-| Sort, search, filter, page | the table | the server, from `onViewChange` / `onPageChange` |
-| Option counts | from `items` | each option's `count`; none for yes / no |
-| "No value" filter | while a row has no value | always; `empty: true` in the filter |
-| Totals, export | every matching row | the loaded rows |
-| "Select all N" | every matching row | all matching: `eventDetails.allMatching.except` |
+|                            | Client                   | Server                                           |
+| -------------------------- | ------------------------ | ------------------------------------------------ |
+| Sort, search, filter, page | the table                | the server, from `onViewChange` / `onPageChange` |
+| Option counts              | from `items`             | each option's `count`; none for yes / no         |
+| "No value" filter          | while a row has no value | always; `empty: true` in the filter              |
+| Totals, export             | every matching row       | the loaded rows                                  |
+| "Select all N"             | every matching row       | all matching: `eventDetails.allMatching.except`  |
 
 ## The view
 
-The sorting, search, filters, grouping and column layout are one JSON object: start from `defaultView`, or control it with `view` / `onViewChange`.
+The sorting, search, filters, grouping and column layout are one JSON object. Start from `defaultView`, or control it with `view` / `onViewChange`.
 
 ```tsx
 <DataTable
@@ -403,47 +584,47 @@ The sorting, search, filters, grouping and column layout are one JSON object: st
 >
 ```
 
-A saved view is reconciled with the columns: unknown or opted-out columns are dropped, never thrown on.
+A saved view is checked against the columns. Unknown or opted-out columns are dropped, without an error.
 
 ## Custom parts and export
 
-`useDataTable()` gives a component inside `DataTable` its state and actions, such as `exportCsv` for a download button.
+`useDataTable()` gives a component inside `DataTable` the table's state and actions. For example, `exportCsv` backs a download button.
 
 <ComponentPreview name="data-table-export" align="start" />
 
-| `exportCsv` option | Default | Values |
-| --- | --- | --- |
-| `rows` | `"filtered"` | `"filtered"`, `"selected"`, `"page"` |
-| `columns` | `"visible"` | `"visible"`, `"all"` |
-| `header` | `true` | Headers as the first record. |
-| `bom` | `false` | A byte order mark, for Excel. |
-| `escapeFormulas` | `true` | Prefixes cells that start like a formula with `'`. |
+| `exportCsv` option | Default      | Values                                             |
+| ------------------ | ------------ | -------------------------------------------------- |
+| `rows`             | `"filtered"` | `"filtered"`, `"selected"`, `"page"`               |
+| `columns`          | `"visible"`  | `"visible"`, `"all"`                               |
+| `header`           | `true`       | Headers as the first record.                       |
+| `bom`              | `false`      | A byte order mark, for Excel.                      |
+| `escapeFormulas`   | `true`       | Prefixes cells that start like a formula with `'`. |
 
 ## Keyboard
 
-The table is one tab stop; focus is on a row, or on a cell once the arrows move into the row.
+The table is one tab stop. Focus is on a row, or on a cell once the arrow keys move into the row.
 
-| Key | Does |
-| --- | --- |
-| <Kbd>↓</Kbd> / <Kbd>↑</Kbd> | Next / previous row, or cell below / above |
-| <Kbd>→</Kbd> / <Kbd>←</Kbd> | Into and between cells and their controls; opens / closes a tree row, group or detail row |
-| <Kbd>Home</Kbd> / <Kbd>End</Kbd> | First / last row, or cell of the row |
-| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>Home</Kbd> / <Kbd>End</Kbd> | First / last cell of the table |
-| <Kbd>Page Up</Kbd> / <Kbd>Page Down</Kbd> | A screenful of rows |
-| Letters | Next row whose row header starts with the text |
-| <Kbd>Space</Kbd> | Selects or clears the row, or a group's rows |
-| <Kbd>Shift</Kbd> + <Kbd>Space</Kbd> / <Kbd>↓</Kbd> / <Kbd>↑</Kbd> | Extends the selection |
-| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>A</Kbd> | Selects every row |
-| <Kbd>Escape</Kbd> | Clears the selection |
-| <Kbd>Enter</Kbd> | Opens the row (`onActivate`, its link) |
-| <Kbd>Enter</Kbd> / <Kbd>F2</Kbd> | Into a cell's field; <Kbd>Escape</Kbd> back to the cell |
-| <Kbd>Enter</Kbd> on a header's sort button | Sorts by the column: ascending, descending, off |
-| <Kbd>Shift</Kbd> + <Kbd>Enter</Kbd> on a header's sort button | Adds the column to the sort, or turns it round there (`multiSort`) |
-| <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a header | Starts moving the column (`reorderableColumns`) |
-| <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a row's handle | Starts moving the row (`reorderableRows`): <Kbd>↑</Kbd> / <Kbd>↓</Kbd>, then <Kbd>Enter</Kbd> or <Kbd>Escape</Kbd> |
-| <Kbd>←</Kbd> / <Kbd>→</Kbd> on a resizer | Narrows / widens the column; <Kbd>Enter</Kbd> keeps, <Kbd>Escape</Kbd> reverts |
-| <Kbd>Enter</Kbd> in the page field | Opens the page typed, kept within the pages there are |
-| <Kbd>↑</Kbd> / <Kbd>↓</Kbd> in the page field | Next / previous page; <Kbd>Home</Kbd> / <Kbd>End</Kbd> the first / last |
+| Key                                                               | Does                                                                                                               |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| <Kbd>↓</Kbd> / <Kbd>↑</Kbd>                                       | Next / previous row, or cell below / above                                                                         |
+| <Kbd>→</Kbd> / <Kbd>←</Kbd>                                       | Into and between cells and their controls; opens / closes a tree row, group or detail row                          |
+| <Kbd>Home</Kbd> / <Kbd>End</Kbd>                                  | First / last row, or cell of the row                                                                               |
+| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>Home</Kbd> / <Kbd>End</Kbd> | First / last cell of the table                                                                                     |
+| <Kbd>Page Up</Kbd> / <Kbd>Page Down</Kbd>                         | A screenful of rows                                                                                                |
+| Letters                                                           | Next row whose row header starts with the text                                                                     |
+| <Kbd>Space</Kbd>                                                  | Selects or clears the row, or a group's rows                                                                       |
+| <Kbd>Shift</Kbd> + <Kbd>Space</Kbd> / <Kbd>↓</Kbd> / <Kbd>↑</Kbd> | Extends the selection                                                                                              |
+| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>A</Kbd>                     | Selects every row                                                                                                  |
+| <Kbd>Escape</Kbd>                                                 | Clears the selection                                                                                               |
+| <Kbd>Enter</Kbd>                                                  | Opens the row (`onActivate`, its link)                                                                             |
+| <Kbd>Enter</Kbd> / <Kbd>F2</Kbd>                                  | Into a cell's field; <Kbd>Escape</Kbd> back to the cell                                                            |
+| <Kbd>Enter</Kbd> on a header's sort button                        | Sorts by the column: ascending, descending, off                                                                    |
+| <Kbd>Shift</Kbd> + <Kbd>Enter</Kbd> on a header's sort button     | Adds the column to the sort, or turns it round there (`multiSort`)                                                 |
+| <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a header                   | Starts moving the column (`reorderableColumns`)                                                                    |
+| <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a row's handle             | Starts moving the row (`reorderableRows`): <Kbd>↑</Kbd> / <Kbd>↓</Kbd>, then <Kbd>Enter</Kbd> or <Kbd>Escape</Kbd> |
+| <Kbd>←</Kbd> / <Kbd>→</Kbd> on a resizer                          | Narrows / widens the column; <Kbd>Enter</Kbd> keeps, <Kbd>Escape</Kbd> reverts                                     |
+| <Kbd>Enter</Kbd> in the page field                                | Opens the page typed, kept within the pages there are                                                              |
+| <Kbd>↑</Kbd> / <Kbd>↓</Kbd> in the page field                     | Next / previous page; <Kbd>Home</Kbd> / <Kbd>End</Kbd> the first / last                                            |
 
 ## Accessibility
 
@@ -456,7 +637,7 @@ The table is one tab stop; focus is on a row, or on a cell once the arrows move 
 
 ## RTL
 
-Direction and locale come from the [TectonProvider](/docs/tecton/provider): columns, arrow keys and pinning mirror, and numbers, dates and the table's own texts are localized. Column headers are your own texts.
+Direction and locale come from the [TectonProvider](/docs/tecton/provider). Columns, arrow keys and pinning mirror. Numbers, dates and the table's own texts are localized; column headers are your own texts.
 
 {/* guidelines:start */}
 
@@ -464,9 +645,9 @@ Direction and locale come from the [TectonProvider](/docs/tecton/provider): colu
 
 ### Use it when
 
-- An application shows records in columns, a data grid of wells, work orders, run results or documents. Use `DataTable` for every such table, even one that only sorts today, so tables look and behave the same in every application.
-- Rows are sorted, searched, filtered, grouped, selected, paged or opened, or the user hides, pins, resizes or reorders the columns.
-- The rows are many (`virtualized`, or loaded in batches with `hasMore`: as the user scrolls, or from Show more with `loadMore="button"` when content follows the table), come page by page from a server (`dataMode="server"`), form a hierarchy with columns (`itemToChildren`) or detail rows (`renderDetail`), or arrive while the user watches: alarms, events or readings pushed by a subscription (`highlightChanges`).
+- An application shows records in columns: a data grid of wells, work orders, run results or documents. Use `DataTable` for every such table, even one that only sorts today, so all tables look and behave the same.
+- Users sort, search, filter, group, select, page or open rows, or hide, pin, resize or reorder the columns.
+- The rows are many (`virtualized`), load as the user scrolls or presses Show more (`hasMore`), come from a server (`dataMode="server"`), or form a tree (`itemToChildren`) or detail rows (`renderDetail`). Rows that arrive while the user watches, such as alarms, events or readings from a subscription, use `highlightChanges`.
 
 ### Not for
 
@@ -481,31 +662,31 @@ Direction and locale come from the [TectonProvider](/docs/tecton/provider): colu
 
 <Do>
 
-Make the columns once with `createColumns`, at module level or in a `React.useMemo`: each has an `id`, a plain-text `header` and a `type` (`text`, `number`, `date`, `boolean`, `options`) that sets the alignment, format, sort and filter. Return raw numbers and `Date`s from `accessor`, format with `format`, and use `cell(item, { text })` only to draw the value differently. Leave a missing value empty (`null` from `accessor`): the cell shows a muted em dash read as "No value", it exports as an empty field, sorts last, groups under "No value" and is offered as each filter's "No value". Change it per column with `emptyValue`; a `cell` of your own returns `emptyValue` from its details when `text` is `""`.
+Make the columns once with `createColumns`, at module level or in a `React.useMemo`, each with an `id`, a plain-text `header` and a `type`. Return raw numbers and `Date`s from `accessor`, `null` for a missing value, and use `cell` only to draw a value differently.
 
 </Do>
 
 <Do>
 
-Turn features on at the root (`selectionMode`, `pagination`, `filterable`, `groupable`, `resizableColumns`, `reorderableColumns`, `hideableColumns`, `pinnableColumns`; sorting is on, by several columns with Shift + click or a column menu's "Add to sort", one only with `multiSort={false}`), then place their parts: `DataTableToolbar` with `DataTableSearch`, a `DataTableFilter column` per filter, `DataTableGroupBy` and `DataTableColumnsMenu`; `DataTableActiveFilters`; `DataTableContent`; `DataTableFooter` with `DataTablePagination`. A table people filter all day by many columns gets a power search, `<DataTableSearch syntax="query" />`: typed terms (`status:drilling td:>3000 spud:2015`) set the same filters as the filter buttons, which stay beside it, never a query parser of your own; keep the default plain search elsewhere (the query field loads its code on demand).
+Turn features on at the root (`selectionMode`, `pagination`, `filterable`, `groupable`, the `…Columns` props), then place their parts. For a table people filter all day, use the power search `<DataTableSearch syntax="query" />`, never a query parser of your own. Its suggestions and "?" help come with it: add no syntax legend or suggestion list.
 
 </Do>
 
 <Do>
 
-Name the table with `aria-label` on `DataTableContent`, open a row with `itemToHref` or `onActivate` on the root, say why a disabled row cannot be selected with `itemToDisabledReason`, put a row's commands in a `DataTableRowActions` in a column's `cell`, and the actions on the selected rows in `DataTableActionBar` (each in an `OverflowItem`; the bar shows the count and Clear itself).
+Name the table with `aria-label` on `DataTableContent`. Open rows with `itemToHref` or `onActivate`, explain disabled rows with `itemToDisabledReason`, and put actions in `DataTableRowActions` and `DataTableActionBar`.
 
 </Do>
 
 <Do>
 
-Set `size="sm"` and `striped` on `DataTable` for dense data; show the states with `loading`, `error` with `onRetry`, and `empty` / `noResults` on `DataTableContent`.
+Set `size="sm"` and `striped` for dense data. Show states with `loading`, `error` with `onRetry`, and `empty` / `noResults` on `DataTableContent`.
 
 </Do>
 
 <Do>
 
-With `dataMode="server"`, pass the page's `items`, `rowCount` and `loading`, and load from `onViewChange` (its `view.sorting` lists every sort, first one first), `onPageChange` and `onPageSizeChange`; keep a saved view with `defaultView` and `onViewChange`. A part of your own reads the table with `useDataTable()` (`value`, `clearSelection`, `exportCsv`). For live data, set `highlightChanges` and put each new record (with its own `id`) in `items`: the table highlights it where it lands until it is seen, counts the new rows out of view in a button at that edge and keeps the row the user is on still, so never tint, animate or scroll rows yourself; in server mode, set `loading` while a new view loads, so its rows are not taken for additions.
+In server mode, pass the page's `items`, `rowCount` and `loading`, and load from `onViewChange`, `onPageChange` and `onPageSizeChange`. For live data, set `highlightChanges` and never tint, animate or scroll rows yourself.
 
 </Do>
 
@@ -606,102 +787,106 @@ const columns = createColumns<Well>([{ id: "depth", header: "Depth (m)", type: "
 
 The root `div`. Every `on…Change` gets the new value and `eventDetails` (`reason`, `event`, `cancel()`).
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `items` | `ReadonlyArray<T>` | - | The rows; in server mode, the view's page. |
-| `columns` | `DataTableColumns<T>` | - | From `createColumns`. |
-| `itemToId` | `(item: T) => string` | `String(item.id)` | A row's id. |
-| `itemToChildren` | `(item: T) => ReadonlyArray<T> \| undefined` | - | Makes the rows a tree. |
-| `itemToHref` | `(item: T) => string \| undefined` | - | Makes each row a link. |
-| `isItemDisabled` | `(item: T) => boolean` | - | Disables rows. |
-| `itemToDisabledReason` | `(item: T) => ReactNode \| undefined` | - | Why a disabled row cannot be selected: a tooltip on its checkbox. |
-| `disabledBehavior` | `"all" \| "selection"` | `"all"` | What a disabled row cannot do. |
-| `dataMode` | `"client" \| "server"` | `"client"` | Who sorts, filters and pages. |
-| `rowCount` | `number` | - | Server mode: rows the view matches. |
-| `loading` | `boolean` | `false` | Shows the loading state. |
-| `error` | `ReactNode` | - | Shows the error state; `true` for the default text. |
-| `onRetry` | `() => void` | - | Adds Retry to the error state. |
-| `hasMore` | `boolean` | `false` | More rows follow; not with `pagination`. |
-| `loadMore` | `"scroll" \| "button"` | `"scroll"` | How more rows are asked for: as the end of the rows nears, or by Show more after the last row. |
-| `onLoadMore` | `() => void` | - | Called to load the next rows: when the end of the rows nears, or on Show more. |
-| `size` | `"default" \| "sm"` | `"default"` | Compact rows. |
-| `striped` | `boolean` | `false` | Alternate row fills. |
-| `highlightChanges` | `boolean \| { added?: boolean; duration?: number }` | `false` | Live data: highlights rows added to `items` where they land until they are seen, then fades the tint over `duration` ms (1500 by default); counts those out of view, and keeps the row the user is on still ([Live data](#live-data)). |
-| `sortable` | `boolean` | `true` | Headers sort. |
-| `multiSort` | `boolean` | `true` | Sorting by several columns: <Kbd>Shift</Kbd> + click, Add to sort. |
-| `filterable` | `boolean` | `false` | Turns on search and filters. |
-| `groupable` | `boolean` | `false` | Turns on grouping. |
-| `resizableColumns` | `boolean` | `false` | Users resize columns. |
-| `reorderableColumns` | `boolean` | `false` | Users reorder columns. |
-| `hideableColumns` | `boolean` | `false` | Users hide columns. |
-| `pinnableColumns` | `boolean` | `false` | Users pin columns. |
-| `reorderableRows` | `boolean` | `false` | A drag handle per row; flat lists only. |
-| `pagination` | `boolean` | `false` | Shows a page at a time. |
-| `selectionMode` | `"none" \| "single" \| "multiple"` | `"none"` | Row selection. |
-| `value` | `ReadonlyArray<string>` | - | Selected ids (controlled). |
-| `defaultValue` | `ReadonlyArray<string>` | `[]` | Initially selected ids. |
-| `onValueChange` | `(value, eventDetails) => void` | - | Called with the selected ids; `eventDetails.allMatching` in server mode. |
-| `disallowEmptySelection` | `boolean` | `false` | Keeps one row selected. |
-| `view` | `DataTablePartialView` | - | The view (controlled). |
-| `defaultView` | `DataTablePartialView` | - | The initial view. |
-| `onViewChange` | `(view: DataTableView, eventDetails) => void` | - | Called with the whole view. |
-| `searchDelay` | `number` | `0`, `300` in server mode | ms before a search or text filter applies. |
-| `expanded` | `ReadonlyArray<string>` | - | Open tree and detail rows (controlled). |
-| `defaultExpanded` | `ReadonlyArray<string>` | `[]` | Initially open rows. |
-| `onExpandedChange` | `(expanded, eventDetails) => void` | - | Called with the open rows. |
-| `page` | `number` | - | The page, from 1 (controlled). |
-| `defaultPage` | `number` | `1` | The initial page. |
-| `onPageChange` | `(page, eventDetails) => void` | - | Called with the new page; `reason` is `"first"`, `"previous"`, `"next"` or `"last"` (its arrow buttons) or `"page"` (its page field: typed, or stepped with the arrow keys, Home and End) from `DataTablePagination`, else `"reset"`, `"page-size"`, `"clamp"`, `"group"` or `"new-rows"` (the "new rows on other pages" button). |
-| `pageSize` | `number` | - | Rows per page (controlled). |
-| `defaultPageSize` | `number` | `10` | Initial rows per page. |
-| `onPageSizeChange` | `(pageSize, eventDetails) => void` | - | Called with the new page size. |
-| `pageSizes` | `ReadonlyArray<number>` | `[10, 20, 50, 100]` | The page sizes `DataTablePagination` offers. |
-| `onActivate` | `(id: string, item: T) => void` | - | Called when a row opens. |
-| `onRowOrderChange` | `(ids: string[], eventDetails) => void` | - | Called with every item's id in the new order; `reason` is `"pointer"`, `"keyboard"` or `"virtual"`. |
+| Prop                     | Type                                                | Default                   | Description                                                                                                                   |
+| ------------------------ | --------------------------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `items`                  | `ReadonlyArray<T>`                                  | -                         | The rows; in server mode, the view's page.                                                                                    |
+| `columns`                | `DataTableColumns<T>`                               | -                         | From `createColumns`.                                                                                                         |
+| `itemToId`               | `(item: T) => string`                               | `String(item.id)`         | A row's id.                                                                                                                   |
+| `itemToChildren`         | `(item: T) => ReadonlyArray<T> \| undefined`        | -                         | Makes the rows a tree.                                                                                                        |
+| `itemToHref`             | `(item: T) => string \| undefined`                  | -                         | Makes each row a link.                                                                                                        |
+| `isItemDisabled`         | `(item: T) => boolean`                              | -                         | Disables rows.                                                                                                                |
+| `itemToDisabledReason`   | `(item: T) => ReactNode \| undefined`               | -                         | Why a disabled row cannot be selected: a tooltip on its checkbox.                                                             |
+| `disabledBehavior`       | `"all" \| "selection"`                              | `"all"`                   | What a disabled row cannot do.                                                                                                |
+| `dataMode`               | `"client" \| "server"`                              | `"client"`                | Who sorts, filters and pages.                                                                                                 |
+| `rowCount`               | `number`                                            | -                         | Server mode: rows the view matches.                                                                                           |
+| `loading`                | `boolean`                                           | `false`                   | Shows the loading state.                                                                                                      |
+| `error`                  | `ReactNode`                                         | -                         | Shows the error state; `true` for the default text.                                                                           |
+| `onRetry`                | `() => void`                                        | -                         | Adds Retry to the error state.                                                                                                |
+| `hasMore`                | `boolean`                                           | `false`                   | More rows follow; not with `pagination`.                                                                                      |
+| `loadMore`               | `"scroll" \| "button"`                              | `"scroll"`                | Load as the end of the rows nears, or on Show more.                                                                           |
+| `onLoadMore`             | `() => void`                                        | -                         | Called to load the next rows.                                                                                                 |
+| `size`                   | `"default" \| "sm"`                                 | `"default"`               | Compact rows.                                                                                                                 |
+| `striped`                | `boolean`                                           | `false`                   | Alternate row fills.                                                                                                          |
+| `highlightChanges`       | `boolean \| { added?: boolean; duration?: number }` | `false`                   | Highlights rows added to `items` until they are seen, then fades them over `duration` ms (1500). See [Live data](#live-data). |
+| `sortable`               | `boolean`                                           | `true`                    | Headers sort.                                                                                                                 |
+| `multiSort`              | `boolean`                                           | `true`                    | Sorting by several columns: <Kbd>Shift</Kbd> + click, Add to sort.                                                            |
+| `filterable`             | `boolean`                                           | `false`                   | Turns on search and filters.                                                                                                  |
+| `groupable`              | `boolean`                                           | `false`                   | Turns on grouping.                                                                                                            |
+| `resizableColumns`       | `boolean`                                           | `false`                   | Users resize columns.                                                                                                         |
+| `reorderableColumns`     | `boolean`                                           | `false`                   | Users reorder columns.                                                                                                        |
+| `hideableColumns`        | `boolean`                                           | `false`                   | Users hide columns.                                                                                                           |
+| `pinnableColumns`        | `boolean`                                           | `false`                   | Users pin columns.                                                                                                            |
+| `reorderableRows`        | `boolean`                                           | `false`                   | A drag handle per row; flat lists only.                                                                                       |
+| `pagination`             | `boolean`                                           | `false`                   | Shows a page at a time.                                                                                                       |
+| `selectionMode`          | `"none" \| "single" \| "multiple"`                  | `"none"`                  | Row selection.                                                                                                                |
+| `value`                  | `ReadonlyArray<string>`                             | -                         | Selected ids (controlled).                                                                                                    |
+| `defaultValue`           | `ReadonlyArray<string>`                             | `[]`                      | Initially selected ids.                                                                                                       |
+| `onValueChange`          | `(value, eventDetails) => void`                     | -                         | Called with the selected ids; `eventDetails.allMatching` in server mode.                                                      |
+| `disallowEmptySelection` | `boolean`                                           | `false`                   | Keeps one row selected.                                                                                                       |
+| `view`                   | `DataTablePartialView`                              | -                         | The view (controlled).                                                                                                        |
+| `defaultView`            | `DataTablePartialView`                              | -                         | The initial view.                                                                                                             |
+| `onViewChange`           | `(view: DataTableView, eventDetails) => void`       | -                         | Called with the whole view.                                                                                                   |
+| `searchDelay`            | `number`                                            | `0`, `300` in server mode | ms before a search or text filter applies.                                                                                    |
+| `expanded`               | `ReadonlyArray<string>`                             | -                         | Open tree and detail rows (controlled).                                                                                       |
+| `defaultExpanded`        | `ReadonlyArray<string>`                             | `[]`                      | Initially open rows.                                                                                                          |
+| `onExpandedChange`       | `(expanded, eventDetails) => void`                  | -                         | Called with the open rows.                                                                                                    |
+| `page`                   | `number`                                            | -                         | The page, from 1 (controlled).                                                                                                |
+| `defaultPage`            | `number`                                            | `1`                       | The initial page.                                                                                                             |
+| `onPageChange`           | `(page, eventDetails) => void`                      | -                         | Called with the new page. See [DataTablePagination](#datatablepagination) for each `reason`.                                  |
+| `pageSize`               | `number`                                            | -                         | Rows per page (controlled).                                                                                                   |
+| `defaultPageSize`        | `number`                                            | `10`                      | Initial rows per page.                                                                                                        |
+| `onPageSizeChange`       | `(pageSize, eventDetails) => void`                  | -                         | Called with the new page size.                                                                                                |
+| `pageSizes`              | `ReadonlyArray<number>`                             | `[10, 20, 50, 100]`       | The page sizes `DataTablePagination` offers.                                                                                  |
+| `onActivate`             | `(id: string, item: T) => void`                     | -                         | Called when a row opens.                                                                                                      |
+| `onRowOrderChange`       | `(ids: string[], eventDetails) => void`             | -                         | Called with every item's id in the new order; `reason` is `"pointer"`, `"keyboard"` or `"virtual"`.                           |
 
 ### DataTableContent
 
 The table in its frame.
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `aria-label` | `string` | - | The table's name (or `aria-labelledby`). |
-| `aria-describedby` | `string` | - | Id of a longer description. |
-| `virtualized` | `boolean` | `false` | Renders only the rows in view. |
-| `empty` | `ReactNode` | - | Replaces the empty state. |
-| `noResults` | `ReactNode` | - | Replaces the no results state. |
-| `renderDetail` | `(item: T) => ReactNode` | - | A detail row per row; not in a tree. |
-| `totals` | `boolean` | `false` | Adds a totals row. |
+| Prop               | Type                     | Default | Description                              |
+| ------------------ | ------------------------ | ------- | ---------------------------------------- |
+| `aria-label`       | `string`                 | -       | The table's name (or `aria-labelledby`). |
+| `aria-describedby` | `string`                 | -       | Id of a longer description.              |
+| `virtualized`      | `boolean`                | `false` | Renders only the rows in view.           |
+| `empty`            | `ReactNode`              | -       | Replaces the empty state.                |
+| `noResults`        | `ReactNode`              | -       | Replaces the no results state.           |
+| `renderDetail`     | `(item: T) => ReactNode` | -       | A detail row per row; not in a tree.     |
+| `totals`           | `boolean`                | `false` | Adds a totals row.                       |
 
 ### DataTableToolbar
 
-The row above the table: a [Toolbar](/docs/tecton/overflow) (`ToolbarProps`). The search, filters, Group by and Columns placed in it are its overflow items: when the row runs out of room they move into its More menu, and the search stays. Other children stay in the row unless wrapped in an `OverflowItem`; an `OverflowSpacer` pushes what follows to the end.
+The row above the table: a [Toolbar](/docs/tecton/overflow) that takes `ToolbarProps`.
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `aria-label` | `string` | `"Table tools"` | The toolbar's name. |
-| `minimumVisible` | `number` | `1` | Items kept in the row. |
+- When the row runs out of room, the filters, Group by and Columns move into its More menu. The search stays.
+- Other children stay in the row, unless wrapped in an `OverflowItem`.
+- An `OverflowSpacer` pushes what follows it to the end.
+
+| Prop             | Type     | Default         | Description            |
+| ---------------- | -------- | --------------- | ---------------------- |
+| `aria-label`     | `string` | `"Table tools"` | The toolbar's name.    |
+| `minimumVisible` | `number` | `1`             | Items kept in the row. |
 
 ### DataTableSearch
 
 The search field; takes the props of an `input`.
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `syntax` | `"text" \| "query"` | `"text"` | `"query"`: a [power search](#power-search), its terms the columns' filters. |
-| `placeholder` | `string` | `"Search"`, `"Search or filter"` with `syntax="query"` | The placeholder. |
-| `aria-label` | `string` | `"Search"` | The field's name. |
+| Prop          | Type                | Default                                                | Description                                                                 |
+| ------------- | ------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------- |
+| `syntax`      | `"text" \| "query"` | `"text"`                                               | `"query"`: a [power search](#power-search), its terms the columns' filters. |
+| `placeholder` | `string`            | `"Search"`, `"Search or filter"` with `syntax="query"` | The placeholder.                                                            |
+| `aria-label`  | `string`            | `"Search"`                                             | The field's name.                                                           |
 
 ### DataTableFilter
 
 A column's filter button and popover; takes the props of a [Button](/docs/components/button).
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `column` | `string` | - | The column to filter. |
-| `variant` | Button `variant` | `"outline"` | The button's look. |
-| `size` | Button `size` | `"sm"` | The button's size. |
-| `children` | `ReactNode` | header and value | The button's content. |
+| Prop       | Type             | Default          | Description           |
+| ---------- | ---------------- | ---------------- | --------------------- |
+| `column`   | `string`         | -                | The column to filter. |
+| `variant`  | Button `variant` | `"outline"`      | The button's look.    |
+| `size`     | Button `size`    | `"sm"`           | The button's size.    |
+| `children` | `ReactNode`      | header and value | The button's content. |
 
 ### DataTableActiveFilters
 
@@ -711,85 +896,121 @@ The search and filters in effect as removable [Chips](/docs/tecton/chip), then C
 
 The Group by button and menu; takes the props of a [Button](/docs/components/button).
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `variant` | Button `variant` | `"outline"` | The button's look. |
-| `size` | Button `size` | `"sm"` | The button's size. |
-| `children` | `ReactNode` | "Group by" | The button's content. |
+| Prop       | Type             | Default     | Description           |
+| ---------- | ---------------- | ----------- | --------------------- |
+| `variant`  | Button `variant` | `"outline"` | The button's look.    |
+| `size`     | Button `size`    | `"sm"`      | The button's size.    |
+| `children` | `ReactNode`      | "Group by"  | The button's content. |
 
 ### DataTableColumnsMenu
 
 The Columns button and menu; takes the props of a [Button](/docs/components/button).
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `variant` | Button `variant` | `"outline"` | The button's look. |
-| `children` | `ReactNode` | "Columns" | The button's content. |
+| Prop       | Type             | Default     | Description           |
+| ---------- | ---------------- | ----------- | --------------------- |
+| `variant`  | Button `variant` | `"outline"` | The button's look.    |
+| `children` | `ReactNode`      | "Columns"   | The button's content. |
 
 ### DataTableRowActions
 
 A row's "⋯" menu, for a column's `cell`; takes the props of a [Button](/docs/components/button).
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `children` | `ReactNode` | - | [DropdownMenu](/docs/components/dropdown-menu) items. |
-| `align` | `"start" \| "center" \| "end"` | `"end"` | The menu's alignment. |
-| `aria-label` | `string` | `"Row actions"` | The button's name. |
-| `variant`, `size` | Button `variant`, `size` | `"ghost"`, `"icon-sm"` (`"icon-xs"` when `size="sm"`) | The button's look. |
+| Prop              | Type                           | Default                                               | Description                                           |
+| ----------------- | ------------------------------ | ----------------------------------------------------- | ----------------------------------------------------- |
+| `children`        | `ReactNode`                    | -                                                     | [DropdownMenu](/docs/components/dropdown-menu) items. |
+| `align`           | `"start" \| "center" \| "end"` | `"end"`                                               | The menu's alignment.                                 |
+| `aria-label`      | `string`                       | `"Row actions"`                                       | The button's name.                                    |
+| `variant`, `size` | Button `variant`, `size`       | `"ghost"`, `"icon-sm"` (`"icon-xs"` when `size="sm"`) | The button's look.                                    |
 
 ### DataTableActionBar
 
-An [ActionBar](/docs/tecton/action-bar) bound to the selection, shown only while rows are selected: count, total, "Select all N" (all matching in server mode) and Clear. Takes the `ActionBar`'s props but `open`. <Kbd>Escape</Kbd> in the bar clears the selection and focus goes back to the table.
+An [ActionBar](/docs/tecton/action-bar) bound to the selection. It takes the `ActionBar`'s props, except `open`.
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `children` | `ReactNode` | - | The actions, in an overflow [Toolbar](/docs/tecton/overflow): wrap each in an `OverflowItem` to let it move into the More menu. |
-| `placement` | `"toolbar" \| "floating"` | `"toolbar"` | In the flow, or floating over the rows. |
-| `aria-label` | `string` | `"Selected rows"` | The bar's name. |
-| `onOpenChange` | `(open: boolean) => void` | - | Called with `false` on <Kbd>Escape</Kbd>, before the selection clears. |
+- It shows only while rows are selected, with the count, the total, "Select all N" and Clear. In server mode, "Select all N" selects all matching rows.
+- <Kbd>Escape</Kbd> in the bar clears the selection and returns focus to the
+  table.
+
+| Prop           | Type                      | Default           | Description                                                                                                                     |
+| -------------- | ------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `children`     | `ReactNode`               | -                 | The actions, in an overflow [Toolbar](/docs/tecton/overflow): wrap each in an `OverflowItem` to let it move into the More menu. |
+| `placement`    | `"toolbar" \| "floating"` | `"toolbar"`       | In the flow, or floating over the rows.                                                                                         |
+| `aria-label`   | `string`                  | `"Selected rows"` | The bar's name.                                                                                                                 |
+| `onOpenChange` | `(open: boolean) => void` | -                 | Called with `false` on <Kbd>Escape</Kbd>, before the selection clears.                                                          |
 
 ### DataTableFooter
 
-Right after `DataTableContent`, the table's last band (inside its border, on the totals row's fill, outside the rows' scroll area), at least as tall as a body row of the table's `size` (a default band keeps a little room above and below its controls), and in its text size; elsewhere, a row below the table. Takes the props of a `div`; empty, it takes no room.
+A band for `DataTablePagination`. It takes the props of a `div`, and takes no room when empty.
+
+- Right after `DataTableContent`, it is the table's last band: inside its border, on the totals row's fill, and outside the rows' scroll area.
+- There it is at least as tall as a body row of the table's `size`, in the same text size. A default-size band keeps a little room above and below its controls.
+- Anywhere else, it is a row below the table.
 
 ### DataTablePagination
 
-A spreadsheet's page strip, for `pagination`; takes the props of a `div`. At the start, "Rows" and a rows-per-page [Select](/docs/components/select) (named "Rows per page"), then the rows shown ("21–30 of 50"); at the end, [Pagination](/docs/components/pagination) with First, Previous, the page field ("Page [3] of 5", a [Number Field](/docs/tecton/number-field) from 1 to the last page, without its minus and plus buttons), Next and Last. The arrows are disabled at the ends. In the page field, <Kbd>Enter</Kbd> opens the page typed, kept within the pages there are (an empty field goes back to the current page); leaving the field opens it too, but a page outside them, a fraction or nothing goes back to the current page; the up and down arrows, Home and End move through the pages at once. The page resets to 1 when the view changes.
+A spreadsheet-style page strip, for `pagination`. It takes the props of a `div`.
 
-It follows the table's `size`: in a `DataTableFooter` the band is at least as tall as a body row, with `icon-sm` arrows and the default Select and field, or, compact (`size="sm"`), `icon-xs` arrows and the small, borderless Select and field. It stays on one line: as its width shrinks it lets go, in turn, of the "Rows" label (the Select keeps its name), the Select, First and Last, the words around the field ("[3] / 5" instead) and the rows shown; Previous, the field and Next always stay. The widths depend on the size and on the digits of the last page. Its controls keep their places as the page changes: the rows shown keep the width of their widest text, the field the width of the last page's number, and the last page, short of rows, keeps the height of a full one, so the button under the pointer stays there.
+- At the start: "Rows", a rows-per-page [Select](/docs/components/select) named "Rows per page", and the rows shown ("21–30 of 50").
+- At the end: [Pagination](/docs/components/pagination) with First, Previous, the page field, Next and Last. The arrows are disabled at the ends.
+- The page field reads "Page [3] of 5". It is a [Number Field](/docs/tecton/number-field) from 1 to the last page, without minus and plus buttons.
+- The page resets to 1 when the view changes.
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
+In the page field:
+
+- <Kbd>Enter</Kbd> opens the page typed, kept within the pages there are. An
+  empty field goes back to the current page.
+- Leaving the field also opens the page typed. A page out of range, a fraction or an empty field goes back to the current page.
+- <Kbd>↑</Kbd>, <Kbd>↓</Kbd>, <Kbd>Home</Kbd> and <Kbd>End</Kbd> move through
+  the pages at once.
+
+Size and width:
+
+- It follows the table's `size`. The default size has `icon-sm` arrows and the default Select and field. Compact (`size="sm"`) has `icon-xs` arrows and a small, borderless Select and field.
+- It stays on one line. As it narrows, it drops, in turn: the "Rows" label (the Select keeps its name), the Select, First and Last, the words around the field ("[3] / 5" instead), and the rows shown.
+- Previous, the page field and Next always stay. When each part drops depends on the size and on the digits of the last page.
+- Its controls keep their places as the page changes, so the button under the pointer stays put. The rows shown keep the width of their widest text, and the field the width of the last page's number.
+- A last page that is short of rows keeps the height of a full page.
+
+| Prop        | Type                    | Default                | Description                                         |
+| ----------- | ----------------------- | ---------------------- | --------------------------------------------------- |
 | `pageSizes` | `ReadonlyArray<number>` | the root's `pageSizes` | The page sizes offered; `[]` leaves the Select out. |
+
+Each page change calls the root's `onPageChange` with a `reason`:
+
+| `reason`                                       | Source                                                               |
+| ---------------------------------------------- | -------------------------------------------------------------------- |
+| `"first"`, `"previous"`, `"next"`, `"last"`    | The pager's arrow buttons.                                           |
+| `"page"`                                       | The page field: typed, or stepped with the arrow keys, Home and End. |
+| `"new-rows"`                                   | The "new rows on other pages" button ([Live data](#live-data)).      |
+| `"reset"`, `"page-size"`, `"clamp"`, `"group"` | Any other change.                                                    |
 
 ### createColumns
 
 `createColumns<T>(columns)` validates the columns for `DataTable`; it throws on an empty or repeated id.
 
-| Field | Type | Default | Description |
-| --- | --- | --- | --- |
-| `id` | `string` | - | Unique id, used by the view. |
-| `header` | `string` | - | Header text and accessible name. |
-| `type` | `"text" \| "number" \| "date" \| "boolean" \| "options"` | `"text"` | Display, alignment and sort. |
-| `accessor` | `keyof T \| (item: T) => DataTableValue` | `item[id]` | The cell's raw value. |
-| `format` | `Intl.NumberFormatOptions \| Intl.DateTimeFormatOptions` | - | Number or date format. |
-| `options` | `ReadonlyArray<DataTableOption>` | - | `{ value, label, variant?, count? }`, in sort order. |
-| `cell` | `(item: T, details) => ReactNode` | - | Custom cell content. |
-| `emptyValue` | `ReactNode` | muted "—", read as "No value" | A cell without a value; `null` for a blank cell. |
-| `renderHeader` | `(details) => ReactNode` | - | Custom header content. |
-| `align` | `"start" \| "center" \| "end"` | by type | Cell and header alignment. |
-| `compare` | `(a: T, b: T) => number` | - | Custom ascending sort. |
-| `filter` | `(item: T, value: DataTableFilterValue) => boolean` | - | Custom filter. |
-| `aggregate` | `"sum" \| "avg" \| "min" \| "max" \| "count" \| "countDistinct" \| function` | by type | Group and totals figure. |
-| `renderAggregate` | `(value, { items }) => ReactNode` | - | Custom aggregate content. |
-| `rowHeader` | `boolean` | first column | Names each row. |
-| `description` | `string` | - | Info popover in the header. |
-| `width` | `number` | content | Initial width in px. |
-| `minWidth`, `maxWidth` | `number` | `48`, - | Width bounds in px. |
-| `hideBelow` | `"sm" \| "md" \| "lg"` | - | Hidden below the breakpoint. |
-| `wrap` | `boolean` | `false` | Multi-line text; not virtualized. |
-| `sortable`, `filterable`, `groupable` | `false` | - | Opts out of the feature. |
-| `resizable`, `reorderable`, `hideable`, `pinnable` | `false` | - | Opts out of the feature. |
+| Field                                              | Type                                                                         | Default                       | Description                                          |
+| -------------------------------------------------- | ---------------------------------------------------------------------------- | ----------------------------- | ---------------------------------------------------- |
+| `id`                                               | `string`                                                                     | -                             | Unique id, used by the view.                         |
+| `header`                                           | `string`                                                                     | -                             | Header text and accessible name.                     |
+| `type`                                             | `"text" \| "number" \| "date" \| "boolean" \| "options"`                     | `"text"`                      | Display, alignment and sort.                         |
+| `accessor`                                         | `keyof T \| (item: T) => DataTableValue`                                     | `item[id]`                    | The cell's raw value.                                |
+| `format`                                           | `Intl.NumberFormatOptions \| Intl.DateTimeFormatOptions`                     | -                             | Number or date format.                               |
+| `options`                                          | `ReadonlyArray<DataTableOption>`                                             | -                             | `{ value, label, variant?, count? }`, in sort order. |
+| `cell`                                             | `(item: T, details) => ReactNode`                                            | -                             | Custom cell content.                                 |
+| `emptyValue`                                       | `ReactNode`                                                                  | muted "—", read as "No value" | A cell without a value; `null` for a blank cell.     |
+| `renderHeader`                                     | `(details) => ReactNode`                                                     | -                             | Custom header content.                               |
+| `align`                                            | `"start" \| "center" \| "end"`                                               | by type                       | Cell and header alignment.                           |
+| `compare`                                          | `(a: T, b: T) => number`                                                     | -                             | Custom ascending sort.                               |
+| `filter`                                           | `(item: T, value: DataTableFilterValue) => boolean`                          | -                             | Custom filter.                                       |
+| `aggregate`                                        | `"sum" \| "avg" \| "min" \| "max" \| "count" \| "countDistinct" \| function` | by type                       | Group and totals figure.                             |
+| `renderAggregate`                                  | `(value, { items }) => ReactNode`                                            | -                             | Custom aggregate content.                            |
+| `rowHeader`                                        | `boolean`                                                                    | first column                  | Names each row.                                      |
+| `description`                                      | `string`                                                                     | -                             | Info popover in the header.                          |
+| `width`                                            | `number`                                                                     | content                       | Initial width in px.                                 |
+| `minWidth`, `maxWidth`                             | `number`                                                                     | `48`, -                       | Width bounds in px.                                  |
+| `hideBelow`                                        | `"sm" \| "md" \| "lg"`                                                       | -                             | Hidden below the breakpoint.                         |
+| `wrap`                                             | `boolean`                                                                    | `false`                       | Multi-line text; not virtualized.                    |
+| `sortable`, `filterable`, `groupable`              | `false`                                                                      | -                             | Opts out of the feature.                             |
+| `resizable`, `reorderable`, `hideable`, `pinnable` | `false`                                                                      | -                             | Opts out of the feature.                             |
 
 A group is `{ id, header, description?, columns }`. `cell` gets `{ id, column, value, text, depth, emptyValue }`; `renderHeader` gets `{ column, header, sorted }`.
 
@@ -797,7 +1018,10 @@ A group is `{ id, header, description?, columns }`. `cell` gets `{ id, column, v
 
 ```ts
 type DataTableView = {
-  sorting: ReadonlyArray<{ column: string; direction: "ascending" | "descending" }>
+  sorting: ReadonlyArray<{
+    column: string
+    direction: "ascending" | "descending"
+  }>
   search: string
   filters: Readonly<Record<string, DataTableFilterValue>>
   grouping: ReadonlyArray<string>
@@ -834,47 +1058,47 @@ type DataTableFilterValue =
 
 `useDataTable<T>()` returns the enclosing table's state and actions; it throws outside a `DataTable`.
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `view`, `setView` | `DataTableView` | The view. |
-| `setSorting` | `(sorting) => void` | Sets the sorting. |
-| `setSearch` | `(search: string) => void` | Sets the search. |
-| `setFilter` | `(column, value \| null) => void` | Sets or removes a filter. |
-| `clearFilters` | `() => void` | Removes the search and filters. |
-| `setGrouping` | `(grouping) => void` | Sets the grouping. |
-| `resetView` | `() => void` | Back to `defaultView`. |
-| `setColumnOrder` | `(order) => void` | Reorders columns. |
-| `setColumnHidden` | `(column, hidden) => void` | Hides or shows a column. |
-| `setColumnWidth` | `(column, width \| null) => void` | Sets or resets a width. |
-| `setColumnPinned` | `(column, "start" \| "end" \| null) => void` | Pins or unpins a column. |
-| `resetColumns` | `() => void` | Resets the column layout. |
-| `value`, `setValue` | `ReadonlyArray<string>` | The selected ids. |
-| `selectAll`, `selectAllMatching`, `clearSelection` | `() => void` | Change the selection. |
-| `allMatching` | `{ except } \| null` | Server "all matching". |
-| `expanded`, `setExpanded` | `ReadonlyArray<string>` | The open rows. |
-| `expandAllGroups`, `collapseAllGroups` | `() => void` | Open or close every group. |
-| `canExpandAllGroups`, `canCollapseAllGroups` | `boolean` | Whether those would change anything. |
-| `page`, `pageCount`, `pageSize`, `pageSizes` | `number`, `ReadonlyArray<number>` | The paging. |
-| `setPage`, `setPageSize` | `(n: number) => void` | Change the paging. |
-| `rows` | `{ all, filtered, page }` | The items. |
-| `rowCount` | `number` | Rows the view matches. |
-| `columns` | `ReadonlyArray<DataTableLeafColumn<T>>` | The shown columns. |
-| `loading` | `boolean` | The root's `loading`. |
-| `exportCsv` | `(options?) => Promise<string>` | The rows as CSV. |
+| Field                                              | Type                                         | Description                          |
+| -------------------------------------------------- | -------------------------------------------- | ------------------------------------ |
+| `view`, `setView`                                  | `DataTableView`                              | The view.                            |
+| `setSorting`                                       | `(sorting) => void`                          | Sets the sorting.                    |
+| `setSearch`                                        | `(search: string) => void`                   | Sets the search.                     |
+| `setFilter`                                        | `(column, value \| null) => void`            | Sets or removes a filter.            |
+| `clearFilters`                                     | `() => void`                                 | Removes the search and filters.      |
+| `setGrouping`                                      | `(grouping) => void`                         | Sets the grouping.                   |
+| `resetView`                                        | `() => void`                                 | Back to `defaultView`.               |
+| `setColumnOrder`                                   | `(order) => void`                            | Reorders columns.                    |
+| `setColumnHidden`                                  | `(column, hidden) => void`                   | Hides or shows a column.             |
+| `setColumnWidth`                                   | `(column, width \| null) => void`            | Sets or resets a width.              |
+| `setColumnPinned`                                  | `(column, "start" \| "end" \| null) => void` | Pins or unpins a column.             |
+| `resetColumns`                                     | `() => void`                                 | Resets the column layout.            |
+| `value`, `setValue`                                | `ReadonlyArray<string>`                      | The selected ids.                    |
+| `selectAll`, `selectAllMatching`, `clearSelection` | `() => void`                                 | Change the selection.                |
+| `allMatching`                                      | `{ except } \| null`                         | Server "all matching".               |
+| `expanded`, `setExpanded`                          | `ReadonlyArray<string>`                      | The open rows.                       |
+| `expandAllGroups`, `collapseAllGroups`             | `() => void`                                 | Open or close every group.           |
+| `canExpandAllGroups`, `canCollapseAllGroups`       | `boolean`                                    | Whether those would change anything. |
+| `page`, `pageCount`, `pageSize`, `pageSizes`       | `number`, `ReadonlyArray<number>`            | The paging.                          |
+| `setPage`, `setPageSize`                           | `(n: number) => void`                        | Change the paging.                   |
+| `rows`                                             | `{ all, filtered, page }`                    | The items.                           |
+| `rowCount`                                         | `number`                                     | Rows the view matches.               |
+| `columns`                                          | `ReadonlyArray<DataTableLeafColumn<T>>`      | The shown columns.                   |
+| `loading`                                          | `boolean`                                    | The root's `loading`.                |
+| `exportCsv`                                        | `(options?) => Promise<string>`              | The rows as CSV.                     |
 
 ### TableColumnResizer
 
 `@tecton/react/table-column-resizer`: the resize grip of a column header, for a plain [Table](/docs/components/table).
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `value` | `number` | - | Width in px (controlled). |
-| `defaultValue` | `number` | `150` | Initial width. |
-| `onValueChange` | `(value, eventDetails) => void` | - | Called while the width changes. |
-| `onValueCommitted` | `(value, eventDetails) => void` | - | Called when a drag or key ends. |
-| `min` | `number` | `48` | Narrowest width. |
-| `max` | `number` | `1000` | Widest width. |
-| `step` | `number` | `8` | Arrow key step. |
-| `resetValue` | `number` | - | Width on <Kbd>Enter</Kbd> or double click. |
-| `label` | `string` | - | Column name, for `"Resize {label}"`. |
-| `disabled` | `boolean` | `false` | Turns it off. |
+| Prop               | Type                            | Default | Description                                |
+| ------------------ | ------------------------------- | ------- | ------------------------------------------ |
+| `value`            | `number`                        | -       | Width in px (controlled).                  |
+| `defaultValue`     | `number`                        | `150`   | Initial width.                             |
+| `onValueChange`    | `(value, eventDetails) => void` | -       | Called while the width changes.            |
+| `onValueCommitted` | `(value, eventDetails) => void` | -       | Called when a drag or key ends.            |
+| `min`              | `number`                        | `48`    | Narrowest width.                           |
+| `max`              | `number`                        | `1000`  | Widest width.                              |
+| `step`             | `number`                        | `8`     | Arrow key step.                            |
+| `resetValue`       | `number`                        | -       | Width on <Kbd>Enter</Kbd> or double click. |
+| `label`            | `string`                        | -       | Column name, for `"Resize {label}"`.       |
+| `disabled`         | `boolean`                       | `false` | Turns it off.                              |
