@@ -54,14 +54,15 @@ import {
 } from "./engine/index"
 import type { LiveState } from "./live"
 import {
-  FLASH_ANIMATION,
-  syncFlash,
   type Anchor,
   type AnchorSnapshot,
   type LiveBridge,
   type LiveMessage,
 } from "./live-bridge"
 import { FRAME, scrollParentOf } from "./scroll-parent"
+
+/** The highlight's keyframes. */
+const FLASH_ANIMATION = "tecton-live-added"
 
 /**
  * The highlight: a tint of the info colour (the status colour that says
@@ -77,6 +78,22 @@ const LIVE_STYLES = `@property --tecton-live-tint{syntax:"<color>";inherits:true
 [data-live-added]{--tecton-live-color:color-mix(in oklab,var(--info) 24%,transparent);animation:${FLASH_ANIMATION} var(--tecton-live-duration,1.5s) ease-out}
 [data-live-added]>td,[data-live-added]>th{background-image:linear-gradient(var(--tecton-live-tint),var(--tecton-live-tint))}
 @media (forced-colors:active){[data-live-added]{outline:2px solid Highlight;outline-offset:-2px}}`
+
+/**
+ * The highlight's animation on `row`, set on its highlight's clock: a row
+ * that mounts, is recycled for another or moved late shows what is left
+ * of it, not all of it again.
+ */
+function syncFlash(row: HTMLElement) {
+  const start = Number(row.dataset.liveAdded)
+  if (!Number.isFinite(start) || typeof row.getAnimations !== "function") return
+  for (const animation of row.getAnimations())
+    if (
+      (animation as CSSAnimation).animationName === FLASH_ANIMATION &&
+      Math.abs((Number(animation.startTime) || 0) - start) > 1
+    )
+      animation.startTime = start
+}
 
 /** After the user stops using the rows, how long held rows wait to show (ms). */
 const RELEASE_DELAY = 300

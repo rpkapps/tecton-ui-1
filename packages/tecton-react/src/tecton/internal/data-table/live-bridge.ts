@@ -9,8 +9,7 @@
  *   store the rows read (`useLiveRowProps`), which the live module writes.
  *   A row renders its key (`data-live-key`, how the module finds it) and,
  *   while highlighted, `data-live-added`, which the highlight's CSS
- *   animation runs on; `syncFlash` sets that animation on the
- *   highlight's clock.
+ *   animation runs on (the live module sets it on the highlight's clock).
  * - `LiveAnchor` around the table: keeps the rows in view still across a
  *   change of the items, through the module's `Anchor` once it is there.
  */
@@ -24,9 +23,6 @@ type FlashStore = Store<FlashState>
 
 const NO_FLASHES: FlashStore = createStore<FlashState>({ flashes: new Map() })
 
-/** The highlight's keyframes (`live-rows.tsx`). */
-const FLASH_ANIMATION = "tecton-live-added"
-
 /**
  * A row's live attributes (`store` is the table's while live data is on):
  * its key, which the live module finds it by, and its highlight's start.
@@ -38,22 +34,6 @@ function useLiveRowProps(store: FlashStore | null, key: string) {
     "data-live-key": key,
     "data-live-added": start === undefined ? undefined : String(start),
   }
-}
-
-/**
- * The highlight's animation on `row`, set on its highlight's clock: a row
- * that mounts, is recycled for another or moved late shows what is left
- * of it, not all of it again.
- */
-function syncFlash(row: HTMLElement) {
-  const start = Number(row.dataset.liveAdded)
-  if (!Number.isFinite(start) || typeof row.getAnimations !== "function") return
-  for (const animation of row.getAnimations())
-    if (
-      (animation as CSSAnimation).animationName === FLASH_ANIMATION &&
-      Math.abs((Number(animation.startTime) || 0) - start) > 1
-    )
-      animation.startTime = start
 }
 
 /** The first row in view, and the ones after it, where they were. */
@@ -121,13 +101,7 @@ class LiveAnchor extends React.Component<{
   }
 }
 
-export {
-  createLiveBridge,
-  FLASH_ANIMATION,
-  LiveAnchor,
-  syncFlash,
-  useLiveRowProps,
-}
+export { createLiveBridge, LiveAnchor, useLiveRowProps }
 export type {
   Anchor,
   AnchorSnapshot,
