@@ -39,12 +39,15 @@ write entries and cut a release.
   read "> 3,000" or "> 1,000 and ≤ 3,000", and editing that bound in the filter includes it again.
   Server-mode applications that read the filter value should apply both flags.
 - `DataTable` takes `highlightChanges` for live data (`true`, or `{ duration }` in ms): a row added
-  to `items` after the first render takes a neutral tint where it lands, fading over 1.5 s across
-  the whole row (pinned columns too, over its stripe, hover or selection). Rows that land out of
-  view are counted in a button at that edge of the table ("↑ 3 new rows", "↓ 2 new rows", "3 new
-  rows on other pages") that scrolls or pages to them; rows added above the view keep the rows on
-  screen still; and while the pointer is over the rows, focus is in them or a row's menu is open,
-  additions that would move the rows in view wait ("Show 2 new rows") until the user is done.
+  to `items` after the first render goes straight to its sorted place with a neutral tint across
+  the whole row (pinned columns too, over its stripe, hover or selection), which stays until the
+  row is seen (half of it in view, on the page shown) and then fades over 1.5 s. Rows not seen yet
+  are counted in one button per edge of the table, shaped and animated as the message scroller's:
+  "↑ 3 new rows" above the view, "↓ 2 new rows" below it, else "3 new rows on other pages"; it
+  goes to the topmost row above, the nearest below, or the first one's page. The row the user is
+  on never moves: the one with an open menu, else focus, else the pointer, else the first in view
+  once scrolled stays at its place on screen as rows land or go above it. With `pagination`, rows
+  that would land on an earlier page while the user works in the rows come once they are done.
   Rows of the first render, of a load (`loading`, `onLoadMore`) or of a new server view are not
   additions, nor rows a search shows again. Screen readers hear "3 rows added", at most once a
   second; with reduced motion the button jumps instead of scrolling. `onPageChange` has the

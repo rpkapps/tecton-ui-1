@@ -81,7 +81,6 @@ export default defineTranslations({
     newRowsAbove: { other: "上に {total} 件の新しい行" },
     newRowsBelow: { other: "下に {total} 件の新しい行" },
     newRowsOnOtherPages: { other: "他のページに {total} 件の新しい行" },
-    showNewRows: { other: "{total} 件の新しい行を表示" },
     sortPositionAscending: "昇順で並べ替え、並べ替え順 {position}/{total}",
     sortPositionDescending: "降順で並べ替え、並べ替え順 {position}/{total}",
     sortAddedAscending: "{columnName} を昇順で並べ替え、{position}/{total}",

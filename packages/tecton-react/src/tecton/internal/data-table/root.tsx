@@ -177,11 +177,11 @@ type DataTableProps<T> = Omit<
   striped?: boolean
   /**
    * Live data: rows added to `items` after the first render are highlighted
-   * where they land; those out of view are counted in a "new rows" button
-   * at the edge of the table that goes to them; and rows in view do not
-   * move while the user points at, focuses or uses a menu in the rows (the
-   * additions that would move them wait until then). `true`, or `{
-   * duration }` for the highlight's ms (1,500 by default).
+   * where they land, and the highlight fades once the row is seen; those
+   * out of view are counted in a "new rows" button at that edge of the
+   * table that goes to them; and the row the user is on (its menu open,
+   * focused, pointed at, or the first in view) does not move. `true`, or
+   * `{ duration }` for the fade's ms (1,500 by default).
    */
   highlightChanges?: DataTableHighlightChanges
   // Features: on at the root, a column can only turn one off.
@@ -837,8 +837,8 @@ function DataTable<T>({
 
   const labels = React.useMemo(() => ({ yes: t("yes"), no: t("no") }), [t])
   const [engine] = React.useState(() => createDataTableEngine<T>())
-  // Live data: the engine gets the items but the rows held back while the
-  // table is in use (`live.ts`).
+  // Live data: the engine gets the items but the rows kept back from an
+  // earlier page while the table is in use (`live.ts`).
   const liveOptions = resolveHighlightChanges(highlightChanges)
   const shown = useHeldItems({
     on: liveOptions !== null,

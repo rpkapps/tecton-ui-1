@@ -119,12 +119,6 @@ export default defineTranslations({
       many: "{total} nového řádku na jiných stránkách",
       other: "{total} nových řádků na jiných stránkách",
     },
-    showNewRows: {
-      one: "Zobrazit {total} nový řádek",
-      few: "Zobrazit {total} nové řádky",
-      many: "Zobrazit {total} nového řádku",
-      other: "Zobrazit {total} nových řádků",
-    },
     sortPositionAscending:
       "řazeno vzestupně, {position} z {total} v pořadí řazení",
     sortPositionDescending:

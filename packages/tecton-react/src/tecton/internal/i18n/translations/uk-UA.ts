@@ -121,12 +121,6 @@ export default defineTranslations({
       many: "{total} нових рядків на інших сторінках",
       other: "{total} нового рядка на інших сторінках",
     },
-    showNewRows: {
-      one: "Показати {total} новий рядок",
-      few: "Показати {total} нові рядки",
-      many: "Показати {total} нових рядків",
-      other: "Показати {total} нового рядка",
-    },
     sortPositionAscending:
       "відсортовано у висхідному порядку, {position} з {total} у порядку сортування",
     sortPositionDescending:

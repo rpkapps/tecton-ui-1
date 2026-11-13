@@ -182,7 +182,7 @@ type DataTableState<T> = {
    * send.
    */
   readonly clears: number
-  /** Live data (`highlightChanges`): the rows added and held; `null` when off. */
+  /** Live data (`highlightChanges`): the rows added, and those held; `null` when off. */
   readonly live: LiveState | null
 }
 
@@ -267,7 +267,7 @@ type DataTableActions<T> = {
   retry: () => void
   /** The end of the rows came near: `onLoadMore`. */
   loadMore: () => void
-  /** Live data: keeps added rows (by id) from showing while the table is in use. */
+  /** Live data, client pages: keeps added rows (by id) from showing while the table is in use. */
   holdRows: (ids: ReadonlyArray<string>) => void
   /** Live data: shows the rows held. */
   releaseRows: () => void

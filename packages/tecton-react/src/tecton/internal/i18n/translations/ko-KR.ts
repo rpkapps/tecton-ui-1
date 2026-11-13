@@ -81,7 +81,6 @@ export default defineTranslations({
     newRowsAbove: { other: "위에 새 행 {total}개" },
     newRowsBelow: { other: "아래에 새 행 {total}개" },
     newRowsOnOtherPages: { other: "다른 페이지에 새 행 {total}개" },
-    showNewRows: { other: "새 행 {total}개 표시" },
     sortPositionAscending: "오름차순으로 정렬됨, 정렬 순서 {position}/{total}",
     sortPositionDescending: "내림차순으로 정렬됨, 정렬 순서 {position}/{total}",
     sortAddedAscending: "{columnName} 오름차순 정렬, {position}/{total}",

@@ -121,12 +121,6 @@ export default defineTranslations({
       many: "{total} nowych wierszy na innych stronach",
       other: "{total} nowego wiersza na innych stronach",
     },
-    showNewRows: {
-      one: "Pokaż {total} nowy wiersz",
-      few: "Pokaż {total} nowe wiersze",
-      many: "Pokaż {total} nowych wierszy",
-      other: "Pokaż {total} nowego wiersza",
-    },
     sortPositionAscending:
       "posortowano w porządku rosnącym, {position} z {total} w kolejności sortowania",
     sortPositionDescending:

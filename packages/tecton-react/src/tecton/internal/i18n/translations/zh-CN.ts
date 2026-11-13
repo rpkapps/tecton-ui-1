@@ -80,7 +80,6 @@ export default defineTranslations({
     newRowsAbove: { other: "上方新增 {total} 行" },
     newRowsBelow: { other: "下方新增 {total} 行" },
     newRowsOnOtherPages: { other: "其他页面新增 {total} 行" },
-    showNewRows: { other: "显示新增的 {total} 行" },
     sortPositionAscending: "已升序排序，排序顺序 {position}/{total}",
     sortPositionDescending: "已降序排序，排序顺序 {position}/{total}",
     sortAddedAscending: "{columnName} 已按升序排序，{position}/{total}",

@@ -133,14 +133,6 @@ export default defineTranslations({
       many: "{total} صفًا جديدًا في صفحات أخرى",
       other: "{total} صف جديد في صفحات أخرى",
     },
-    showNewRows: {
-      zero: "إظهار {total} صف جديد",
-      one: "إظهار صف جديد واحد",
-      two: "إظهار صفين جديدين",
-      few: "إظهار {total} صفوف جديدة",
-      many: "إظهار {total} صفًا جديدًا",
-      other: "إظهار {total} صف جديد",
-    },
     sortPositionAscending:
       "مرتب بترتيب تصاعدي، {position} من {total} في ترتيب الفرز",
     sortPositionDescending:

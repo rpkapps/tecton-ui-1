@@ -111,11 +111,6 @@ const enUS = {
       one: "{total} new row on another page",
       other: "{total} new rows on other pages",
     },
-    // For added rows held back while the user works in the rows.
-    showNewRows: {
-      one: "Show {total} new row",
-      other: "Show {total} new rows",
-    },
     // In a sort button, when the table sorts by several columns.
     sortPositionAscending:
       "sorted in ascending order, {position} of {total} in sort order",

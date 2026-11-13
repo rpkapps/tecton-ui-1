@@ -102,10 +102,6 @@ export default defineTranslations({
       one: "{total} nuova riga in un’altra pagina",
       other: "{total} nuove righe in altre pagine",
     },
-    showNewRows: {
-      one: "Mostra {total} nuova riga",
-      other: "Mostra {total} nuove righe",
-    },
     sortPositionAscending:
       "in ordine crescente, {position} di {total} nell’ordinamento",
     sortPositionDescending:

@@ -104,10 +104,6 @@ export default defineTranslations({
       one: "{total} нов ред на друга страница",
       other: "{total} нови реда на други страници",
     },
-    showNewRows: {
-      one: "Покажи {total} нов ред",
-      other: "Покажи {total} нови реда",
-    },
     sortPositionAscending:
       "сортирано във възходящ ред, {position} от {total} в реда на сортиране",
     sortPositionDescending:

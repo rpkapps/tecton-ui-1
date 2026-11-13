@@ -1,13 +1,15 @@
 /**
  * Live data (`highlightChanges`): which rows count as added, their
- * highlight, the "new rows" buttons, rows held back while the rows are in
- * use, the rows in view kept still, and the announcements.
+ * highlight (held until seen, then fading), the "new rows" buttons, the
+ * row the user is on kept still, rows kept back from an earlier page while
+ * the rows are in use, and the announcements.
  *
  * jsdom lays nothing out: `geometry()` places the frame, the header and
  * the rows (by `data-index` in a virtualized body, else by their place)
  * in a scroll area of 400 px under a 40 px header, rows 40 px tall, at
- * the container's `scrollTop`. Without it, nothing is laid out and every
- * row rendered counts as in view.
+ * the container's `scrollTop` (or, `geometry({ page: true })`, the page's
+ * scroll, in a window 400 px tall). Without it, nothing is laid out and
+ * every row rendered counts as in view.
  */
 import * as React from "react"
 import { act, fireEvent, render, screen, within } from "@testing-library/react"
@@ -58,6 +60,22 @@ const columns = createColumns<Reading>([
   { id: "value", header: "Value", type: "number" },
 ])
 
+const withMenu = createColumns<Reading>([
+  { id: "name", header: "Reading" },
+  { id: "field", header: "Field" },
+  { id: "value", header: "Value", type: "number" },
+  {
+    id: "actions",
+    header: "Actions",
+    sortable: false,
+    cell: () => (
+      <DataTableRowActions>
+        <DropdownMenuItem>Acknowledge</DropdownMenuItem>
+      </DataTableRowActions>
+    ),
+  },
+])
+
 const SORTED: DataTableView["sorting"] = [
   { column: "value", direction: "ascending" },
 ]
@@ -66,39 +84,51 @@ const HEADER = 40
 const ROW = 40
 const VIEW = 400
 
-/** The scroll position of the table's container (`geometry`). */
+/** The scroll position of the table's container, or of the page (`geometry`). */
 const scroll = { top: 0 }
-/** Each `scrollBy` of the container: its behavior. */
+/** Each `scrollBy` of the container or the page: its behavior. */
 const scrolls: Array<ScrollBehavior | undefined> = []
 
 /** Lays the table out (see the module comment). */
-function geometry() {
+function geometry({ page = false }: { page?: boolean } = {}) {
   scroll.top = 0
   scrolls.length = 0
   const container = (element: Element) =>
     element.matches('[data-slot="table-container"]')
+  // In a page, the table scrolls with it: everything moves.
+  const shift = () => (page ? scroll.top : 0)
   vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockImplementation(
     function (this: HTMLElement) {
-      return container(this) ? VIEW : 0
+      return container(this) && !page ? VIEW : 0
     }
   )
   vi.spyOn(HTMLElement.prototype, "scrollTop", "get").mockImplementation(
     function (this: HTMLElement) {
-      return container(this) ? scroll.top : 0
+      return container(this) && !page ? scroll.top : 0
     }
   )
   vi.spyOn(HTMLElement.prototype, "scrollTop", "set").mockImplementation(
     function (this: HTMLElement, value: number) {
-      if (container(this)) scroll.top = Math.max(0, value)
+      if (container(this) && !page) scroll.top = Math.max(0, value)
     }
   )
   HTMLElement.prototype.scrollBy = function (
     this: HTMLElement,
     options?: ScrollToOptions | number
   ) {
-    if (typeof options !== "object" || !container(this)) return
+    if (typeof options !== "object" || !container(this) || page) return
     scrolls.push(options.behavior)
     scroll.top = Math.max(0, scroll.top + (options.top ?? 0))
+  }
+  if (page) {
+    vi.spyOn(window, "innerHeight", "get").mockReturnValue(VIEW)
+    vi.spyOn(window, "scrollBy").mockImplementation(
+      (options?: ScrollToOptions | number) => {
+        if (typeof options !== "object") return
+        scrolls.push(options.behavior)
+        scroll.top = Math.max(0, scroll.top + (options.top ?? 0))
+      }
+    )
   }
   vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(
     function (this: Element) {
@@ -114,11 +144,13 @@ function geometry() {
           y: top,
           toJSON() {},
         }) as DOMRect
-      if (this.matches('[data-slot="data-table-content"]')) return box(0, VIEW)
-      if (container(this)) return box(0, VIEW)
-      if (this.tagName === "THEAD") return box(0, HEADER)
+      if (this.matches('[data-slot="data-table-content"]'))
+        return box(-shift(), page ? 4000 : VIEW)
+      if (container(this)) return box(-shift(), page ? 4000 : VIEW)
+      if (this.tagName === "THEAD") return box(-shift(), HEADER)
       if (this.tagName === "TABLE") return box(-scroll.top, 4000)
-      if (this.tagName === "TH" && !this.closest("tbody")) return box(0, HEADER)
+      if (this.tagName === "TH" && !this.closest("tbody"))
+        return box(-shift(), HEADER)
       if (this.tagName === "TBODY") return box(HEADER - scroll.top, 4000)
       if (this.tagName === "TR" && this.closest("tbody")) {
         const row = this as HTMLTableRowElement
@@ -142,14 +174,14 @@ function geometry() {
   )
 }
 
-/** Scrolls the container to `top`, as the user would. */
-function scrollTo(top: number) {
+/** Scrolls the container (or the page) to `top`, as the user would. */
+function scrollTo(top: number, { page = false }: { page?: boolean } = {}) {
   const container = document.querySelector<HTMLElement>(
     '[data-slot="table-container"]'
   )!
   act(() => {
     scroll.top = top
-    container.dispatchEvent(new Event("scroll"))
+    ;(page ? window : container).dispatchEvent(new Event("scroll"))
   })
   // The counts are worked out in the next frame.
   act(() => {
@@ -161,16 +193,30 @@ const frame = () =>
   document.querySelector<HTMLElement>('[data-slot="data-table-content"]')!
 const rowOf = (name: string) =>
   screen.getByText(name).closest("tr") as HTMLTableRowElement
+const topOf = (name: string) => rowOf(name).getBoundingClientRect().top
 const shown = (name: string) => screen.queryByText(name) !== null
-/** The highlighted rows, by their row header's text. */
+/** The highlighted rows, by their row header's text: waiting to be seen, or fading. */
 const highlighted = () =>
   [...document.querySelectorAll<HTMLElement>("tr[data-live-added]")].map(
     (row) => row.querySelector("th")?.textContent
   )
-const pill = (kind: "above" | "below" | "pages" | "held") =>
-  document.querySelector<HTMLButtonElement>(
-    `[data-slot="data-table-new-rows"] button[data-kind="${kind}"]`
+/** The highlighted rows still at full strength, waiting to be seen. */
+const waiting = () =>
+  [...document.querySelectorAll<HTMLElement>('tr[data-live-added=""]')].map(
+    (row) => row.querySelector("th")?.textContent
   )
+/** The highlighted rows fading. */
+const fading = () => highlighted().filter((name) => !waiting().includes(name))
+/** The "new rows" button of this kind, while shown. */
+const pill = (kind: "above" | "below" | "pages") =>
+  document.querySelector<HTMLButtonElement>(
+    `[data-slot="data-table-new-rows"] button[data-kind="${kind}"][data-active="true"]`
+  )
+/** The button over an edge, shown or not. */
+const edgeButton = (edge: "top" | "bottom") =>
+  document.querySelector<HTMLButtonElement>(
+    `[data-slot="data-table-new-rows"][data-edge="${edge}"] button`
+  )!
 /** The table's live region. */
 const status = () =>
   document.querySelector('[data-slot="data-table-content"] > [role="status"]')
@@ -533,10 +579,11 @@ describe("DataTable highlightChanges: trees and groups", () => {
 })
 
 describe("DataTable highlightChanges: the highlight", () => {
-  it("ends after its duration (1,500 ms, or its own)", () => {
+  it("fades a row landing in view at once, and ends after its duration (1,500 ms, or its own)", () => {
     geometry()
     const { rerender } = render(<Live />)
     rerender(<Live items={[...READINGS, reading(15)]} />)
+    expect(fading()).toEqual(["Reading 015"])
     act(() => vi.advanceTimersByTime(1400))
     expect(highlighted()).toEqual(["Reading 015"])
     act(() => vi.advanceTimersByTime(200))
@@ -555,6 +602,30 @@ describe("DataTable highlightChanges: the highlight", () => {
     act(() => vi.advanceTimersByTime(2900))
     expect(highlighted()).toEqual(["Reading 025"])
     act(() => vi.advanceTimersByTime(200))
+    expect(highlighted()).toEqual([])
+  })
+
+  it("keeps the full tint of rows landing out of view until each is scrolled to, then fades it", () => {
+    geometry()
+    const { rerender } = render(<Live />)
+    // Rows 0 to 8 are in view: 125 lands at 13, 175 at 19.
+    rerender(<Live items={[...READINGS, reading(125), reading(175)]} />)
+    expect(waiting()).toEqual(["Reading 125", "Reading 175"])
+    act(() => vi.advanceTimersByTime(5000))
+    expect(waiting()).toEqual(["Reading 125", "Reading 175"])
+    expect(pill("below")).toHaveTextContent("2 new rows")
+    // 125 in view (half of it at least): it fades from now; 175 waits.
+    scrollTo(5 * ROW)
+    expect(fading()).toEqual(["Reading 125"])
+    expect(waiting()).toEqual(["Reading 175"])
+    expect(pill("below")).toHaveTextContent("1 new row")
+    act(() => vi.advanceTimersByTime(1500))
+    expect(highlighted()).toEqual(["Reading 175"])
+    act(() => vi.advanceTimersByTime(5000))
+    scrollTo(11 * ROW)
+    expect(fading()).toEqual(["Reading 175"])
+    expect(pill("below")).toBeNull()
+    act(() => vi.advanceTimersByTime(1500))
     expect(highlighted()).toEqual([])
   })
 
@@ -599,32 +670,58 @@ describe("DataTable highlightChanges: the highlight", () => {
       "[data-live-added]>td,[data-live-added]>th"
     )
     expect(style?.textContent).toContain("var(--info)")
+    // Waiting to be seen: the tint at full strength, no animation; the
+    // forced colours' outline for as long as the attribute.
+    expect(style?.textContent).toContain(
+      '[data-live-added=""]{--tecton-live-tint:var(--tecton-live-color);animation:none}'
+    )
+    expect(style?.textContent).toContain("forced-colors:active")
     // Each cell paints the tint over its own fill: the checkbox's and the
     // pinned row header's too, children of the row.
     expect(added.cells[0].tagName).toBe("TD")
     expect(added.querySelector(":scope > th.sticky")).not.toBeNull()
   })
 
-  it("highlights a virtualized row scrolled into view before its highlight ends, not after", () => {
+  it("keeps a virtualized row's full tint as it mounts late, fades it once seen, and keeps the fade's clock as rows are recycled", () => {
     geometry()
     const many = Array.from({ length: 60 }, (_, i) => reading(i * 10))
     const { rerender } = render(<Live items={many} />)
     // Lands at index 51: not rendered at the top.
     rerender(<Live items={[...many, reading(505)]} />)
     expect(shown("Reading 505")).toBe(false)
-    act(() => vi.advanceTimersByTime(700))
+    act(() => vi.advanceTimersByTime(5000))
+    // Rendered beyond the view's bottom edge: still waiting.
+    scrollTo(40 * ROW)
+    expect(rowOf("Reading 505")).toHaveAttribute("data-live-added", "")
     scrollTo(46 * ROW)
-    expect(rowOf("Reading 505")).toHaveAttribute("data-live-added")
+    expect(rowOf("Reading 505").dataset.liveAdded).toMatch(/^\d/)
     // Its rows recycled for others as the view moves on: by key, not element.
     scrollTo(0)
+    expect(
+      [...document.querySelectorAll("tr[data-live-added]")].map(
+        (row) => (row as HTMLElement).dataset.liveKey
+      )
+    ).toEqual([])
     act(() => vi.advanceTimersByTime(900))
     scrollTo(46 * ROW)
+    expect(rowOf("Reading 505")).toHaveAttribute("data-live-added")
+    act(() => vi.advanceTimersByTime(700))
     expect(rowOf("Reading 505")).not.toHaveAttribute("data-live-added")
+  })
+
+  it("keeps the tint of a row on another page until its page shows", () => {
+    const paged = { pagination: true, virtualized: false }
+    const { rerender } = render(<Live {...paged} page={1} />)
+    rerender(<Live {...paged} page={1} items={[...READINGS, reading(155)]} />)
+    act(() => vi.advanceTimersByTime(5000))
+    rerender(<Live {...paged} page={2} items={[...READINGS, reading(155)]} />)
+    expect(waiting()).toEqual([])
+    expect(fading()).toEqual(["Reading 155"])
   })
 })
 
-describe("DataTable highlightChanges: new rows out of view", () => {
-  it("keeps the rows in view still as rows land above them, and counts those in ↑", () => {
+describe("DataTable highlightChanges: the row the user is on stays still", () => {
+  it("keeps the first row in view still as rows land above it, and counts those in ↑", () => {
     geometry()
     const { rerender } = render(<Live />)
     scrollTo(10 * ROW)
@@ -633,20 +730,192 @@ describe("DataTable highlightChanges: new rows out of view", () => {
     )
     // Three rows above: scrolled by as much, so Reading 100 stays put.
     expect(scroll.top).toBe(13 * ROW)
-    expect(rowOf("Reading 100").getBoundingClientRect().top).toBe(HEADER)
+    expect(topOf("Reading 100")).toBe(HEADER)
     const up = pill("above")!
     expect(up).toHaveTextContent("3 new rows")
     expect(up).toHaveAccessibleName("3 new rows above")
     expect(up.closest("[data-edge]")).toHaveAttribute("data-edge", "top")
+    // Scrolled at once, whatever the page's `scroll-behavior`.
+    expect(scrolls).toEqual(["instant"])
   })
 
-  it("moves nothing at the top of the rows: rows added there come into view", () => {
+  it("keeps it still as rows above it are removed", () => {
+    geometry()
+    const { rerender } = render(<Live />)
+    scrollTo(10 * ROW)
+    rerender(<Live items={READINGS.filter((item) => item.value % 40)} />)
+    expect(topOf("Reading 100")).toBe(HEADER)
+  })
+
+  it("moves nothing at the top of the rows while idle: rows added there come into view", () => {
     geometry()
     const { rerender } = render(<Live />)
     rerender(<Live items={[reading(-1), ...READINGS]} />)
     expect(scroll.top).toBe(0)
-    expect(highlighted()).toEqual(["Reading 0-1"])
+    expect(fading()).toEqual(["Reading 0-1"])
     expect(pill("above")).toBeNull()
+  })
+
+  it("keeps the row under the pointer still, at the top too, and never holds a row back", () => {
+    geometry()
+    const { rerender } = render(<Live />)
+    fireEvent.pointerOver(rowOf("Reading 040"))
+    const top = topOf("Reading 040")
+    rerender(
+      <Live
+        items={[
+          reading(-3),
+          reading(-2),
+          reading(-1),
+          reading(15),
+          ...READINGS,
+        ]}
+      />
+    )
+    expect(topOf("Reading 040")).toBe(top)
+    expect(scroll.top).toBe(4 * ROW)
+    // 15 lands in view, above the row: there, highlighted, no button.
+    expect(fading()).toEqual(["Reading 015"])
+    // The three above it went above the view.
+    expect(pill("above")).toHaveAccessibleName("3 new rows above")
+    expect(pill("below")).toBeNull()
+  })
+
+  it("chooses the row with an open menu, else the one with focus, else the one under the pointer, else the first in view", () => {
+    geometry()
+    const live = (items: Array<Reading>) => (
+      <>
+        <button type="button">Elsewhere</button>
+        <Live columns={withMenu} items={items} />
+      </>
+    )
+    let items = [...READINGS]
+    const add = (n: number) => {
+      items = [...items, reading(n)]
+      rerender(live(items))
+    }
+    const { rerender } = render(live(items))
+    scrollTo(2 * ROW)
+
+    // A menu open on 040, focus in it, the pointer on 080: 040 stays.
+    fireEvent.pointerOver(rowOf("Reading 080"))
+    const trigger = within(rowOf("Reading 040")).getByRole("button", {
+      name: "Row actions",
+    })
+    act(() => {
+      trigger.focus()
+      fireEvent.click(trigger)
+    })
+    act(() => vi.advanceTimersByTime(50))
+    expect(trigger).toHaveAttribute("aria-expanded", "true")
+    act(() => screen.getByRole("menuitem", { name: "Acknowledge" }).focus())
+    let before = [topOf("Reading 040"), topOf("Reading 080")]
+    add(45)
+    expect(topOf("Reading 040")).toBe(before[0])
+    expect(topOf("Reading 080")).toBe(before[1] + ROW)
+    act(() => {
+      fireEvent.keyDown(screen.getByRole("menu"), { key: "Escape" })
+    })
+    act(() => vi.advanceTimersByTime(100))
+
+    // Focus on 060, the pointer on 080: 060 stays.
+    act(() => rowOf("Reading 060").focus())
+    before = [topOf("Reading 060"), topOf("Reading 080")]
+    add(65)
+    expect(topOf("Reading 060")).toBe(before[0])
+    expect(topOf("Reading 080")).toBe(before[1] + ROW)
+
+    // Focus out of the rows, the pointer on 080: 080 stays.
+    act(() => screen.getByRole("button", { name: "Elsewhere" }).focus())
+    before = [topOf("Reading 080"), topOf("Reading 040")]
+    add(55)
+    expect(topOf("Reading 080")).toBe(before[0])
+    expect(topOf("Reading 040")).toBe(before[1] - ROW)
+
+    // Nothing in use, scrolled into the rows: the first in view stays.
+    fireEvent.pointerLeave(frame())
+    const first = document.querySelector<HTMLElement>(
+      'tbody tr[data-index="1"]'
+    )!.dataset.liveKey!
+    before = [
+      document
+        .querySelector<HTMLElement>(`tr[data-live-key="${first}"]`)!
+        .getBoundingClientRect().top,
+    ]
+    add(5)
+    expect(
+      document
+        .querySelector<HTMLElement>(`tr[data-live-key="${first}"]`)!
+        .getBoundingClientRect().top
+    ).toBe(before[0])
+  })
+
+  it("keeps the row still in a table that scrolls with the page", () => {
+    geometry({ page: true })
+    const { rerender } = render(<Live virtualized={false} />)
+    scrollTo(10 * ROW, { page: true })
+    fireEvent.pointerOver(rowOf("Reading 120"))
+    const top = topOf("Reading 120")
+    rerender(
+      <Live
+        virtualized={false}
+        items={[reading(-2), reading(-1), ...READINGS]}
+      />
+    )
+    expect(topOf("Reading 120")).toBe(top)
+    expect(scroll.top).toBe(12 * ROW)
+    expect(scrolls).toEqual(["instant"])
+    expect(pill("above")).toHaveAccessibleName("2 new rows above")
+  })
+})
+
+describe("DataTable highlightChanges: the new rows buttons", () => {
+  it("shows one button per edge: hovering a scrolled table as rows land above it and in view, only ↑", () => {
+    geometry()
+    const { rerender } = render(<Live />)
+    scrollTo(10 * ROW)
+    fireEvent.pointerOver(rowOf("Reading 140"))
+    rerender(
+      <Live items={[reading(-2), reading(-1), reading(125), ...READINGS]} />
+    )
+    expect(fading()).toEqual(["Reading 125"])
+    expect(pill("above")).toHaveTextContent("2 new rows")
+    expect(pill("below")).toBeNull()
+    expect(pill("pages")).toBeNull()
+    expect(
+      document.querySelectorAll('[data-slot="data-table-new-rows"] button')
+    ).toHaveLength(2)
+    expect(
+      document.querySelectorAll(
+        '[data-slot="data-table-new-rows"] [data-active="true"]'
+      )
+    ).toHaveLength(1)
+  })
+
+  it("looks and moves as the message scroller's button, and is inert while hidden, keeping its last text", () => {
+    geometry()
+    const { rerender } = render(<Live />)
+    const bottom = edgeButton("bottom")
+    expect(bottom).toHaveAttribute("data-active", "false")
+    expect(bottom).toHaveAttribute("inert")
+    expect(bottom).toHaveAttribute("tabindex", "-1")
+    expect(bottom).toHaveAttribute("data-direction", "end")
+    expect(edgeButton("top")).toHaveAttribute("data-direction", "start")
+    expect(bottom.className).toContain("rounded-full")
+    expect(bottom.className).toContain("transition-[translate,scale,opacity]")
+    expect(bottom.className).toContain(
+      "data-[direction=end]:data-[active=false]:translate-y-full"
+    )
+    expect(bottom.className).toContain("motion-reduce:transition-none")
+    rerender(<Live items={[...READINGS, reading(175)]} />)
+    expect(edgeButton("bottom")).toBe(bottom)
+    expect(bottom).toHaveAttribute("data-active", "true")
+    expect(bottom).not.toHaveAttribute("inert")
+    expect(bottom).not.toHaveAttribute("tabindex")
+    scrollTo(12 * ROW)
+    // Gone: hidden, its text kept while it fades out.
+    expect(bottom).toHaveAttribute("data-active", "false")
+    expect(bottom).toHaveTextContent("1 new row")
   })
 
   it("counts rows below in ↓ until they are seen", () => {
@@ -665,19 +934,41 @@ describe("DataTable highlightChanges: new rows out of view", () => {
     expect(pill("below")).toBeNull()
   })
 
-  it("scrolls to the first of them when pressed, highlights them again and goes", () => {
+  it("scrolls ↑ to the topmost, smoothly, counting nothing it passes as seen until the scroll ends", () => {
     geometry()
     const { rerender } = render(<Live />)
     scrollTo(10 * ROW)
-    rerender(<Live items={[reading(-2), reading(-1), ...READINGS]} />)
-    act(() => vi.advanceTimersByTime(1400))
+    rerender(
+      <Live items={[reading(-2), reading(-1), reading(55), ...READINGS]} />
+    )
+    expect(pill("above")).toHaveTextContent("3 new rows")
+    scrolls.length = 0
+    act(() => vi.advanceTimersByTime(3000))
     fireEvent.click(pill("above")!, { detail: 1 })
-    // To the first (the topmost), smoothly.
     expect(scroll.top).toBe(0)
     expect(scrolls).toEqual(["smooth"])
+    // Under way: nothing seen yet.
+    scrollTo(0)
+    expect(waiting()).toEqual(["Reading 0-2", "Reading 0-1", "Reading 055"])
+    act(() => {
+      document
+        .querySelector('[data-slot="table-container"]')!
+        .dispatchEvent(new Event("scrollend"))
+    })
+    expect(fading()).toEqual(["Reading 0-2", "Reading 0-1", "Reading 055"])
     expect(pill("above")).toBeNull()
+  })
+
+  it("scrolls ↓ to the nearest; the others stay counted", () => {
+    geometry()
+    const { rerender } = render(<Live />)
+    rerender(<Live items={[...READINGS, reading(125), reading(175)]} />)
+    fireEvent.click(pill("below")!, { detail: 1 })
+    // 125, at index 13, brought to the bottom edge.
+    expect(scroll.top).toBe(5 * ROW)
     act(() => vi.advanceTimersByTime(1000))
-    expect(highlighted()).toEqual(["Reading 0-2", "Reading 0-1"])
+    expect(fading()).toEqual(["Reading 125"])
+    expect(pill("below")).toHaveTextContent("1 new row")
   })
 
   it("jumps instead of scrolling with reduced motion", () => {
@@ -694,12 +985,16 @@ describe("DataTable highlightChanges: new rows out of view", () => {
     const { rerender } = render(<Live />)
     scrollTo(10 * ROW)
     rerender(<Live items={[reading(-1), ...READINGS]} />)
+    scrolls.length = 0
     fireEvent.click(pill("above")!, { detail: 1 })
     expect(scroll.top).toBe(0)
-    expect(scrolls).toEqual([])
+    expect(scrolls).toEqual(["instant"])
+    // Seen as the jump's scroll is.
+    scrollTo(0)
+    expect(fading()).toEqual(["Reading 0-1"])
   })
 
-  it("moves focus to the first of them when pressed from the keyboard", () => {
+  it("moves focus to the row when pressed from the keyboard", () => {
     geometry()
     const { rerender } = render(<Live />)
     rerender(<Live items={[...READINGS, reading(185)]} />)
@@ -709,12 +1004,34 @@ describe("DataTable highlightChanges: new rows out of view", () => {
     expect(document.activeElement).toBe(rowOf("Reading 185"))
   })
 
+  it("turns ↓ into 'on other pages' once no new row is below on the page", () => {
+    geometry()
+    const { rerender } = render(<Live pagination />)
+    // 85 lands at index 9 of page 1, below the view; 155 on page 2.
+    rerender(
+      <Live pagination items={[...READINGS, reading(85), reading(155)]} />
+    )
+    const bottom = edgeButton("bottom")
+    expect(pill("below")).toHaveAccessibleName("1 new row below")
+    expect(pill("pages")).toBeNull()
+    scrollTo(2 * ROW)
+    expect(pill("below")).toBeNull()
+    expect(pill("pages")).toHaveAccessibleName("1 new row on another page")
+    // The same button, shown throughout: its content changed.
+    expect(edgeButton("bottom")).toBe(bottom)
+    expect(bottom).toHaveAttribute("data-active", "true")
+  })
+
   it("counts rows on other pages, and turns to the first one's page when pressed", () => {
-    const { rerender } = render(<Live pagination virtualized={false} />)
+    const onPageChange = vi.fn()
+    const { rerender } = render(
+      <Live pagination virtualized={false} onPageChange={onPageChange} />
+    )
     rerender(
       <Live
         pagination
         virtualized={false}
+        onPageChange={onPageChange}
         items={[...READINGS, reading(155), reading(165)]}
       />
     )
@@ -723,114 +1040,88 @@ describe("DataTable highlightChanges: new rows out of view", () => {
     expect(other).toHaveAccessibleName("2 new rows on other pages")
     expect(shown("Reading 155")).toBe(false)
     fireEvent.click(other, { detail: 1 })
+    expect(onPageChange).toHaveBeenCalledWith(
+      2,
+      expect.objectContaining({ reason: "new-rows" })
+    )
     expect(shown("Reading 155")).toBe(true)
-    expect(highlighted()).toEqual(["Reading 155", "Reading 165"])
+    expect(fading()).toEqual(["Reading 155", "Reading 165"])
     expect(pill("pages")).toBeNull()
   })
 })
 
-describe("DataTable highlightChanges: rows held while the table is in use", () => {
-  it("holds rows that would land in view while the pointer is over the rows, and shows them once it leaves", () => {
-    geometry()
-    const { rerender } = render(<Live />)
-    fireEvent.pointerOver(rowOf("Reading 040"))
-    rerender(<Live items={[...READINGS, reading(15), reading(185)]} />)
-    // 15 would move the rows in view: held. 185 lands below: shown, counted.
-    expect(shown("Reading 015")).toBe(false)
-    expect(rowOf("Reading 185")).toHaveAttribute("data-live-added")
-    expect(pill("held")).toHaveAccessibleName("Show 1 new row")
-    expect(pill("below")).toHaveTextContent("1 new row")
-    // Still in use: a while later, still held.
+describe("DataTable highlightChanges: pages, rows kept back while in use", () => {
+  const paged = { pagination: true, defaultPage: 2, virtualized: false }
+
+  it("keeps a row landing on an earlier page back while the pointer is over the rows, counted, then adds it", () => {
+    const { rerender } = render(<Live {...paged} />)
+    fireEvent.pointerOver(rowOf("Reading 120"))
+    rerender(<Live {...paged} items={[...READINGS, reading(5)]} />)
+    // The page's rows did not move; the row is counted with other pages'.
+    expect(rowOf("Reading 100")).toBeInTheDocument()
+    expect(pill("pages")).toHaveAccessibleName("1 new row on another page")
     act(() => vi.advanceTimersByTime(2000))
-    expect(shown("Reading 015")).toBe(false)
+    expect(rowOf("Reading 100")).toBeInTheDocument()
 
     fireEvent.pointerLeave(frame())
     act(() => vi.advanceTimersByTime(299))
-    expect(shown("Reading 015")).toBe(false)
+    expect(shown("Reading 090")).toBe(false)
     act(() => vi.advanceTimersByTime(1))
-    expect(rowOf("Reading 015")).toHaveAttribute("data-live-added")
-    expect(pill("held")).toBeNull()
+    // Added: the page's rows moved on by one, the new row still counted.
+    expect(rowOf("Reading 090")).toBeInTheDocument()
+    expect(pill("pages")).toHaveTextContent("1 new row on another page")
   })
 
-  it("holds a row that would land cut by the view's edge, pushing the row there out", () => {
-    geometry()
-    const { rerender } = render(<Live />)
-    // Reading 090 (index 9) shows its top 10 px at the bottom edge.
-    scrollTo(10)
-    fireEvent.pointerOver(rowOf("Reading 040"))
-    rerender(<Live items={[...READINGS, reading(85)]} />)
-    expect(shown("Reading 085")).toBe(false)
-    expect(rowOf("Reading 090").getBoundingClientRect().top).toBe(390)
-    expect(pill("held")).toHaveAccessibleName("Show 1 new row")
-    // Not over the rows, it lands there: mostly below the view, counted.
-    fireEvent.pointerLeave(frame())
-    act(() => vi.advanceTimersByTime(300))
-    expect(rowOf("Reading 085")).toHaveAttribute("data-live-added")
-    expect(pill("below")).toHaveAccessibleName("1 new row below")
+  it("adds a row landing on the page shown, or a later one, at once", () => {
+    const { rerender } = render(<Live {...paged} />)
+    fireEvent.pointerOver(rowOf("Reading 120"))
+    rerender(
+      <Live {...paged} items={[...READINGS, reading(125), reading(5)]} />
+    )
+    expect(shown("Reading 125")).toBe(true)
+    expect(shown("Reading 005")).toBe(false)
   })
 
-  it("applies removals and changes at once while holding additions", () => {
-    geometry()
-    const { rerender } = render(<Live />)
-    fireEvent.pointerOver(rowOf("Reading 040"))
-    rerender(<Live items={[...READINGS, reading(15)]} />)
-    expect(shown("Reading 015")).toBe(false)
-    const without = READINGS.filter((item) => item.id !== "r20")
+  it("applies removals and changes at once while keeping additions back", () => {
+    const { rerender } = render(<Live {...paged} />)
+    fireEvent.pointerOver(rowOf("Reading 120"))
+    rerender(<Live {...paged} items={[...READINGS, reading(5)]} />)
+    const without = READINGS.filter((item) => item.id !== "r110")
     rerender(
       <Live
+        {...paged}
         items={[
           ...without.map((item) =>
-            item.id === "r30" ? { ...item, name: "Renamed" } : item
+            item.id === "r130" ? { ...item, name: "Renamed" } : item
           ),
-          reading(15),
+          reading(5),
         ]}
       />
     )
-    expect(shown("Reading 020")).toBe(false)
+    expect(shown("Reading 110")).toBe(false)
     expect(shown("Renamed")).toBe(true)
-    expect(shown("Reading 015")).toBe(false)
-    // The application removes the held row: nothing held any more.
-    rerender(<Live items={without} />)
-    expect(pill("held")).toBeNull()
+    // The application removes the row kept back: nothing kept any more.
+    rerender(<Live {...paged} items={without} />)
+    expect(pill("pages")).toBeNull()
   })
 
-  it("holds while focus is in the rows, and while a row's menu is open", async () => {
-    const withMenu = createColumns<Reading>([
-      { id: "name", header: "Reading" },
-      { id: "field", header: "Field" },
-      { id: "value", header: "Value", type: "number" },
-      {
-        id: "actions",
-        header: "Actions",
-        sortable: false,
-        cell: () => (
-          <DataTableRowActions>
-            <DropdownMenuItem>Acknowledge</DropdownMenuItem>
-          </DataTableRowActions>
-        ),
-      },
-    ])
-    const { rerender } = render(
-      <>
-        <button type="button">Elsewhere</button>
-        <Live columns={withMenu} virtualized={false} />
-      </>
-    )
+  it("keeps rows back while focus is in the rows, and while a row's menu is open", async () => {
     const live = (items: Array<Reading>) => (
       <>
         <button type="button">Elsewhere</button>
-        <Live columns={withMenu} virtualized={false} items={items} />
+        <Live {...paged} columns={withMenu} items={items} />
       </>
     )
-    act(() => rowOf("Reading 040").focus())
-    rerender(live([...READINGS, reading(15)]))
-    expect(shown("Reading 015")).toBe(false)
+    const { rerender } = render(live(READINGS))
+    act(() => rowOf("Reading 140").focus())
+    rerender(live([...READINGS, reading(5)]))
+    expect(shown("Reading 090")).toBe(false)
     act(() => screen.getByRole("button", { name: "Elsewhere" }).focus())
     act(() => vi.advanceTimersByTime(300))
-    expect(shown("Reading 015")).toBe(true)
+    expect(shown("Reading 090")).toBe(true)
 
-    // A row's menu: held while it is open, wherever focus and pointer are.
-    const trigger = within(rowOf("Reading 040")).getByRole("button", {
+    // A row's menu: kept back while it is open, wherever focus and pointer are.
+    const trigger = within(rowOf("Reading 140")).getByRole("button", {
       name: "Row actions",
     })
     act(() => {
@@ -840,11 +1131,10 @@ describe("DataTable highlightChanges: rows held while the table is in use", () =
     act(() => vi.advanceTimersByTime(50))
     expect(trigger).toHaveAttribute("aria-expanded", "true")
     const menu = screen.getByRole("menu")
-    // Focus in the menu, outside the table; the pointer nowhere.
     act(() => screen.getByRole("menuitem", { name: "Acknowledge" }).focus())
-    rerender(live([...READINGS, reading(15), reading(25)]))
+    rerender(live([...READINGS, reading(5), reading(6)]))
     act(() => vi.advanceTimersByTime(1000))
-    expect(shown("Reading 025")).toBe(false)
+    expect(shown("Reading 080")).toBe(false)
     // Closed, focus back on its button, in the rows: still in use.
     act(() => {
       fireEvent.keyDown(menu, { key: "Escape" })
@@ -858,44 +1148,20 @@ describe("DataTable highlightChanges: rows held while the table is in use", () =
     })
     expect(trigger).toHaveAttribute("aria-expanded", "false")
     act(() => vi.advanceTimersByTime(400))
-    expect(shown("Reading 025")).toBe(false)
+    expect(shown("Reading 080")).toBe(false)
     act(() => screen.getByRole("button", { name: "Elsewhere" }).focus())
     act(() => vi.advanceTimersByTime(300))
-    expect(shown("Reading 025")).toBe(true)
+    expect(shown("Reading 080")).toBe(true)
   })
 
-  it("shows the held rows when its button is pressed", () => {
-    geometry()
-    const { rerender } = render(<Live />)
-    fireEvent.pointerOver(rowOf("Reading 040"))
-    rerender(<Live items={[...READINGS, reading(15), reading(35)]} />)
-    expect(pill("held")).toHaveTextContent("Show 2 new rows")
-    fireEvent.pointerOver(pill("held")!)
-    fireEvent.click(pill("held")!, { detail: 1 })
-    expect(highlighted()).toEqual(["Reading 015", "Reading 035"])
-    expect(pill("held")).toBeNull()
-  })
-
-  it("holds a row landing on an earlier page, which would move the page's rows", () => {
-    const { rerender } = render(
-      <Live pagination defaultPage={2} virtualized={false} />
-    )
+  it("adds the rows kept back and turns to their page when 'on other pages' is pressed", () => {
+    const { rerender } = render(<Live {...paged} />)
     fireEvent.pointerOver(rowOf("Reading 120"))
-    rerender(
-      <Live
-        pagination
-        defaultPage={2}
-        virtualized={false}
-        items={[...READINGS, reading(5)]}
-      />
-    )
-    expect(rowOf("Reading 100")).toBeInTheDocument()
-    expect(pill("held")).toHaveAccessibleName("Show 1 new row")
-    fireEvent.pointerLeave(frame())
-    act(() => vi.advanceTimersByTime(300))
-    // Shown: the page's rows moved on by one, the new row counted.
-    expect(rowOf("Reading 090")).toBeInTheDocument()
-    expect(pill("pages")).toHaveTextContent("1 new row on another page")
+    rerender(<Live {...paged} items={[...READINGS, reading(5)]} />)
+    fireEvent.pointerOver(pill("pages")!)
+    fireEvent.click(pill("pages")!, { detail: 1 })
+    expect(rowOf("Reading 005")).toHaveAttribute("data-live-added")
+    expect(pill("pages")).toBeNull()
   })
 })
 
@@ -920,17 +1186,17 @@ describe("DataTable highlightChanges: announcements", () => {
     expect(status()).toBe("2 rows added")
   })
 
-  it("says held rows once, as they come, not again as they show", () => {
-    geometry()
-    const { rerender } = render(<Live />)
-    fireEvent.pointerOver(rowOf("Reading 040"))
-    rerender(<Live items={[...READINGS, reading(15)]} />)
+  it("says rows kept back once, as they come, not again as they are added", () => {
+    const paged = { pagination: true, defaultPage: 2, virtualized: false }
+    const { rerender } = render(<Live {...paged} />)
+    fireEvent.pointerOver(rowOf("Reading 120"))
+    rerender(<Live {...paged} items={[...READINGS, reading(5)]} />)
     act(() => vi.advanceTimersByTime(0))
     expect(status()).toBe("1 row added")
     act(() => vi.advanceTimersByTime(2000))
     fireEvent.pointerLeave(frame())
     act(() => vi.advanceTimersByTime(2000))
-    expect(shown("Reading 015")).toBe(true)
+    expect(shown("Reading 090")).toBe(true)
     expect(status()).toBe("1 row added")
   })
 })

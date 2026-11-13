@@ -97,10 +97,6 @@ export default defineTranslations({
       one: "{total} ny række på en anden side",
       other: "{total} nye rækker på andre sider",
     },
-    showNewRows: {
-      one: "Vis {total} ny række",
-      other: "Vis {total} nye rækker",
-    },
     sortPositionAscending:
       "sorteret i stigende rækkefølge, {position} af {total} i sorteringsrækkefølgen",
     sortPositionDescending:

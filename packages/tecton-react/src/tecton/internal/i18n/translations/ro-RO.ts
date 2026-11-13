@@ -113,11 +113,6 @@ export default defineTranslations({
       few: "{total} rânduri noi pe alte pagini",
       other: "{total} de rânduri noi pe alte pagini",
     },
-    showNewRows: {
-      one: "Afișează {total} rând nou",
-      few: "Afișează {total} rânduri noi",
-      other: "Afișează {total} de rânduri noi",
-    },
     sortPositionAscending:
       "sortat în ordine crescătoare, {position} din {total} în ordinea de sortare",
     sortPositionDescending:

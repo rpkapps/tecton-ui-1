@@ -97,10 +97,6 @@ export default defineTranslations({
       one: "{total} uus rida teisel lehel",
       other: "{total} uut rida teistel lehtedel",
     },
-    showNewRows: {
-      one: "Kuva {total} uus rida",
-      other: "Kuva {total} uut rida",
-    },
     sortPositionAscending:
       "sorditud tõusvas järjestuses, {position}/{total} sortimisjärjekorras",
     sortPositionDescending:

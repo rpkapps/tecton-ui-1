@@ -112,11 +112,6 @@ export default defineTranslations({
       few: "{total} nova retka na drugim stranicama",
       other: "{total} novih redaka na drugim stranicama",
     },
-    showNewRows: {
-      one: "Prikaži {total} novi redak",
-      few: "Prikaži {total} nova retka",
-      other: "Prikaži {total} novih redaka",
-    },
     sortPositionAscending:
       "razvrstano rastućim redoslijedom, {position} od {total} u redoslijedu sortiranja",
     sortPositionDescending:

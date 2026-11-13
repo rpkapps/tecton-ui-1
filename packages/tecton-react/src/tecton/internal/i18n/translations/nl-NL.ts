@@ -101,10 +101,6 @@ export default defineTranslations({
       one: "{total} nieuwe rij op een andere pagina",
       other: "{total} nieuwe rijen op andere pagina’s",
     },
-    showNewRows: {
-      one: "{total} nieuwe rij weergeven",
-      other: "{total} nieuwe rijen weergeven",
-    },
     sortPositionAscending:
       "gesorteerd in oplopende volgorde, {position} van {total} in de sorteervolgorde",
     sortPositionDescending:

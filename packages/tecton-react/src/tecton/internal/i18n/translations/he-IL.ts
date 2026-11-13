@@ -114,11 +114,6 @@ export default defineTranslations({
       two: "{total} שורות חדשות בעמודים אחרים",
       other: "{total} שורות חדשות בעמודים אחרים",
     },
-    showNewRows: {
-      one: "הצג {total} שורה חדשה",
-      two: "הצג {total} שורות חדשות",
-      other: "הצג {total} שורות חדשות",
-    },
     sortPositionAscending: "מוין בסדר עולה, {position} מתוך {total} בסדר המיון",
     sortPositionDescending:
       "מוין בסדר יורד, {position} מתוך {total} בסדר המיון",

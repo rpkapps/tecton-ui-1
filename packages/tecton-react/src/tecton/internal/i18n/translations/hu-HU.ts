@@ -91,10 +91,6 @@ export default defineTranslations({
       one: "{total} új sor egy másik oldalon",
       other: "{total} új sor más oldalakon",
     },
-    showNewRows: {
-      one: "{total} új sor megjelenítése",
-      other: "{total} új sor megjelenítése",
-    },
     sortPositionAscending:
       "rendezve növekvő sorrendben, {position}/{total} a rendezési sorrendben",
     sortPositionDescending:

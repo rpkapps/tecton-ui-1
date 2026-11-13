@@ -112,11 +112,6 @@ export default defineTranslations({
       one: "{total} jauna rinda citā lapā",
       other: "{total} jaunas rindas citās lapās",
     },
-    showNewRows: {
-      zero: "Rādīt {total} jaunu rindu",
-      one: "Rādīt {total} jaunu rindu",
-      other: "Rādīt {total} jaunas rindas",
-    },
     sortPositionAscending:
       "kārtots augošā secībā, {position} no {total} kārtošanas secībā",
     sortPositionDescending:

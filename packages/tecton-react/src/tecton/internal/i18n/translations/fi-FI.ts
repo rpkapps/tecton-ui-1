@@ -99,10 +99,6 @@ export default defineTranslations({
       one: "{total} uusi rivi toisella sivulla",
       other: "{total} uutta riviä muilla sivuilla",
     },
-    showNewRows: {
-      one: "Näytä {total} uusi rivi",
-      other: "Näytä {total} uutta riviä",
-    },
     sortPositionAscending:
       "lajiteltu nousevassa järjestyksessä, {position}/{total} lajittelujärjestyksessä",
     sortPositionDescending:

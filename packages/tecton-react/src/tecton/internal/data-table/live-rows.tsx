@@ -2,44 +2,47 @@
 
 /**
  * Live data (`highlightChanges`), the content's side: what the rows added
- * to `items` look like and do (the root works out which they are and holds
- * rows back, `live.ts`). Loaded on demand, as soon as a table with
- * `highlightChanges` mounts (`lazy.ts`): `DataTableContent` renders
- * `DataTableLive` once it is there, and keeps what its rows and the
- * anchor read (`live-bridge.ts`).
+ * to `items` look like and do (the root works out which they are, and
+ * keeps rows back for a page, `live.ts`). Loaded on demand, as soon as a
+ * table with `highlightChanges` mounts (`lazy.ts`): `DataTableContent`
+ * renders `DataTableLive` once it is there, and keeps what its rows and
+ * the anchor read (`live-bridge.ts`).
  *
- * - Highlight: each added row the view shows takes a tint that fades out
- *   over `duration` where it lands, pinned cells too, over its stripe,
- *   hover or selection (`LIVE_STYLES`: a CSS animation of the tint, run by
- *   the row's `data-live-added`). A row in a closed group, or under a
- *   closed tree row, highlights the row that holds it. A highlight belongs
- *   to the row's id and the time it started, not to an element: a row that
- *   scrolls into view (a virtualized row mounting, or one recycled for it)
- *   shows what is left of it, set on the animation's clock
- *   (`syncFlash`). Rows the search or filters hide are left out.
- * - Out of view: the added rows above the visible rows, below them, or on
- *   other pages are counted in a button at the matching edge of the scroll
- *   area ("↑ 3 new rows", "↓ 2 new rows", "3 new rows on other pages"),
- *   until each has been seen (half of it in view) or the button pressed:
- *   it scrolls to the first of them (smoothly to a row rendered near the
- *   view, at once to one further away or with reduced motion), or turns to
- *   its page, and highlights them again. Pressed from the keyboard (no
- *   pointer, `detail` 0), focus goes to that row, the button being gone.
- * - Rows in view stay where they are. Scrolled into the rows, a change of
- *   `items` keeps the first row in view where it was (`LiveAnchor`):
- *   rows added above it go above the view. While the user points at the
- *   rows (or a "new rows" button), has focus in them, or has a row's menu
- *   or popover open, the rows that would show in the view (even cut by its
- *   edge) or land on an earlier page (moving the page's rows) are held
- *   back (`DataTableActions.holdRows`) and counted ("Show 2 new rows");
- *   they come `RELEASE_DELAY` ms after that ends, or when the button is
- *   pressed. Removals and changes are never held.
+ * - Highlight: each added row the view shows takes a tint where it lands,
+ *   pinned cells too, over its stripe, hover or selection (`LIVE_STYLES`).
+ *   It stays at full strength until the row is seen (half of it in the
+ *   scroll area's visible region, on the page shown), and fades over
+ *   `duration` from then: a row landing in view fades at once, one landing
+ *   out of view, or on another page, keeps its tint until scrolled or paged
+ *   to. A row in a closed group, or under a closed tree row, highlights the
+ *   row that holds it. A highlight belongs to the row's key, not to an
+ *   element: a row that mounts as it scrolls into view (virtualized), or one
+ *   recycled for it, shows its state, a fade set on its clock (`syncFlash`).
+ *   Rows the search or filters hide are left out.
+ * - Out of view: the added rows not seen yet are counted in one button per
+ *   edge of the scroll area: "↑ 3 new rows" for those above the view;
+ *   "↓ 2 new rows" for those below it on the page, else "3 new rows on
+ *   other pages". Pressed, it goes to the topmost row above, the nearest
+ *   below, or turns to the first one's page; the row fades once there.
+ *   Smoothly to a row rendered near the view (nothing counts as seen until
+ *   the scroll ends: the rows it passes stay counted), at once to one
+ *   further away or with reduced motion. Pressed from the keyboard (no
+ *   pointer, `detail` 0), focus goes to that row, the button going.
+ * - The row the user is on never moves (`LiveAnchor`, `createAnchor`): a
+ *   change of `items` keeps the row with an open menu or popover, else the
+ *   one with focus, else the one under the pointer, else (scrolled into the
+ *   rows) the first in view where it was. At the top of the rows and idle,
+ *   rows added above push the others down.
+ * - Client pages: a row landing on an earlier page would move every row of
+ *   the page shown. While the user works in the rows (a menu open, focus or
+ *   the pointer in them), such rows are kept back
+ *   (`DataTableActions.holdRows`), counted with the other pages', and come
+ *   `RELEASE_DELAY` ms after that ends.
  * - The table's status region says how many rows came ("3 rows added"),
  *   at most once a second (`ANNOUNCE_INTERVAL`).
  */
 import * as React from "react"
-import { cn } from "cn"
-import { ArrowDownIcon, ArrowUpIcon } from "lucide-react"
+import { ArrowDownIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/button"
 
@@ -67,25 +70,26 @@ const FLASH_ANIMATION = "tecton-live-added"
 /**
  * The highlight: a tint of the info colour (the status colour that says
  * nothing is good or bad, and is neither the selection's nor the hover's
- * neutral) over each cell's own fill, from full to none. The tint is a
+ * neutral) over each cell's own fill, held while the row waits to be seen
+ * (`data-live-added` empty), then faded from full to none. The tint is a
  * registered property, so the animation fades it; a gradient of it is an
  * image over every cell's background, a pinned cell's opaque one too, so
  * stripes, hover and selection show through. In forced colours, an
- * outline instead.
+ * outline instead, for as long.
  */
 const LIVE_STYLES = `@property --tecton-live-tint{syntax:"<color>";inherits:true;initial-value:transparent}
 @keyframes ${FLASH_ANIMATION}{0%,20%{--tecton-live-tint:var(--tecton-live-color)}to{--tecton-live-tint:transparent}}
 [data-live-added]{--tecton-live-color:color-mix(in oklab,var(--info) 24%,transparent);animation:${FLASH_ANIMATION} var(--tecton-live-duration,1.5s) ease-out}
+[data-live-added=""]{--tecton-live-tint:var(--tecton-live-color);animation:none}
 [data-live-added]>td,[data-live-added]>th{background-image:linear-gradient(var(--tecton-live-tint),var(--tecton-live-tint))}
 @media (forced-colors:active){[data-live-added]{outline:2px solid Highlight;outline-offset:-2px}}`
 
 /**
- * The highlight's animation on `row`, set on its highlight's clock: a row
- * that mounts, is recycled for another or moved late shows what is left
- * of it, not all of it again.
+ * The fade on `row`, set on its clock: a row that mounts, is recycled for
+ * another or moved late shows what is left of it, not all of it again.
  */
 function syncFlash(row: HTMLElement) {
-  const start = Number(row.dataset.liveAdded)
+  const start = Number(row.dataset.liveAdded || NaN)
   if (!Number.isFinite(start) || typeof row.getAnimations !== "function") return
   for (const animation of row.getAnimations())
     if (
@@ -95,10 +99,12 @@ function syncFlash(row: HTMLElement) {
       animation.startTime = start
 }
 
-/** After the user stops using the rows, how long held rows wait to show (ms). */
+/** Client pages: after the user stops using the rows, how long rows kept back wait (ms). */
 const RELEASE_DELAY = 300
 /** The least time between two announcements of added rows (ms). */
 const ANNOUNCE_INTERVAL = 1000
+/** The longest a button's smooth scroll is waited for, without `scrollend` (ms). */
+const GLIDE_LIMIT = 1000
 
 function now() {
   return typeof performance === "undefined" ? Date.now() : performance.now()
@@ -231,23 +237,6 @@ function placeOf(key: string, placing: Placing): Place | null {
 }
 
 /**
- * Whether the new row `key`, where it landed, moved rows the user sees:
- * any of it in view (the rows after it went down, a row cut by the edge
- * too), or on an earlier page (the page's rows moved on).
- */
-function movesView(key: string, place: Place | null, placing: Placing) {
-  if (place === "before" || place === "view") return true
-  if (place === "after" || place === null) return false
-  const element = placing.rendered.get(key)
-  if (!element) return false
-  const box = element.getBoundingClientRect()
-  return (
-    box.top < placing.region.bottom - 0.5 &&
-    box.bottom > placing.region.top + 0.5
-  )
-}
-
-/**
  * The row that shows an added item: its own, else that of the outermost
  * closed group it is in, or of the nearest tree row shown above it;
  * `null` when the search or filters hide it.
@@ -292,23 +281,20 @@ function prefersReducedMotion(view: Window | null | undefined) {
   )
 }
 
-/** Scrolls the rows by `delta` px, in their scroll area or the page. */
+/**
+ * Scrolls the rows by `delta` px, in their scroll area or the page; at
+ * once unless `smooth`, whatever the page's `scroll-behavior`.
+ */
 function scrollRowsBy(
   frame: HTMLElement,
   scroller: HTMLElement | null,
   delta: number,
-  behavior: ScrollBehavior = "auto"
+  smooth = false
 ) {
-  if (Math.abs(delta) < 0.5) return
-  if (scroller) {
-    if (behavior === "smooth" && typeof scroller.scrollBy === "function")
-      scroller.scrollBy({ top: delta, behavior })
-    else scroller.scrollTop += delta
-    return
-  }
-  const view = frame.ownerDocument.defaultView
-  if (typeof view?.scrollBy === "function")
-    view.scrollBy({ top: delta, behavior })
+  ;(scroller ?? frame.ownerDocument.defaultView)?.scrollBy({
+    top: delta,
+    behavior: smooth ? "smooth" : "instant",
+  })
 }
 
 /** The first of the rows (in DOM order, top to bottom) whose bottom is past `top`. */
@@ -326,25 +312,14 @@ function firstBelow(rows: HTMLCollectionOf<HTMLTableRowElement>, top: number) {
 }
 
 /** The "new rows" buttons' counts, by where the rows are. */
-type Pills = {
-  above: number
-  below: number
-  pages: number
-  held: number
-}
+type Pills = { above: number; below: number; pages: number }
 
-const NO_PILLS: Pills = { above: 0, below: 0, pages: 0, held: 0 }
+const NO_PILLS: Pills = { above: 0, below: 0, pages: 0 }
 
 type PillKind = keyof Pills
 
-function samePills(a: Pills, b: Pills) {
-  return (
-    a.above === b.above &&
-    a.below === b.below &&
-    a.pages === b.pages &&
-    a.held === b.held
-  )
-}
+const samePills = (a: Pills, b: Pills) =>
+  a.above === b.above && a.below === b.below && a.pages === b.pages
 
 /** Where the buttons go: px from the frame's top and bottom to the scroll area's. */
 type Edges = { top: number; bottom: number }
@@ -402,6 +377,26 @@ type DataTableLiveProps = {
   actions: DataTableActions<unknown>
 }
 
+/** The live module's own state, read by the anchor too. */
+type LiveRowsState = {
+  /** The added rows not seen yet, by item id. */
+  unseen: Set<string>
+  /** The batch last handled. */
+  handled: LiveState["batch"]
+  /** The body row under the pointer; `null` with the pointer off the rows. */
+  pointer: HTMLTableRowElement | null
+  releaseTimer: ReturnType<typeof setTimeout> | null
+  popups: MutationObserver | null
+  /** A row to go to once its page shows. */
+  pending: { key: string; page: number; focus: boolean } | null
+  /** "On other pages" pressed with rows kept back: pressed again once they are in. */
+  pressAfter: { focus: boolean } | null
+  /** A button's smooth scroll under way: what its end calls (one at a time). */
+  glide: (() => void) | null
+  timers: Set<ReturnType<typeof setTimeout>>
+  frame: number
+}
+
 /** Live data for `DataTableContent` (see the module comment). */
 function useLiveRows({
   live,
@@ -442,21 +437,16 @@ function useLiveRows({
   const [pills, setPills] = React.useState<Pills>(NO_PILLS)
   const [edges, setEdges] = React.useState<Edges>({ top: 0, bottom: 0 })
   const announce = useLiveAnnouncer(onMessage)
-  const [state] = React.useState(() => ({
-    /** The added rows not seen yet, by item id. */
-    unseen: new Set<string>(),
-    /** The batch last handled. */
-    handled: null as LiveState["batch"],
-    /** Pointer over the rows or a "new rows" button; focus in either. */
-    pointer: false,
-    focus: false,
-    releaseTimer: null as ReturnType<typeof setTimeout> | null,
-    popups: null as MutationObserver | null,
-    /** "Show N new rows" pressed: the rows it brings are revealed. */
-    revealing: null as { focus: boolean } | null,
-    /** A row to reveal once its page shows. */
-    pending: null as { key: string; page: number; focus: boolean } | null,
-    timers: new Set<ReturnType<typeof setTimeout>>(),
+  const [state] = React.useState<LiveRowsState>(() => ({
+    unseen: new Set(),
+    handled: null,
+    pointer: null,
+    releaseTimer: null,
+    popups: null,
+    pending: null,
+    pressAfter: null,
+    glide: null,
+    timers: new Set(),
     frame: 0,
   }))
 
@@ -480,14 +470,18 @@ function useLiveRows({
       syncFlash(row)
   }, [frame])
 
-  /** Highlights the rows `keys` from `start`, for the duration. */
+  /**
+   * Highlights the rows `keys`: at full strength until seen (`start`
+   * `null`), or fading from `start` for the duration.
+   */
   const flash = React.useCallback(
-    (keys: ReadonlyArray<string>, start: number) => {
+    (keys: ReadonlyArray<string>, start: number | null) => {
       const duration = latest.current.live.duration
       if (keys.length === 0 || duration <= 0) return
       const flashes = new Map(flashStore.get().flashes)
       for (const key of keys) flashes.set(key, start)
       flashStore.set({ flashes })
+      if (start === null) return
       const timer = setTimeout(
         () => {
           state.timers.delete(timer)
@@ -509,17 +503,23 @@ function useLiveRows({
     [flashStore, state, frame, syncFlashes]
   )
 
-  /** The "new rows" counts and where they go, as the rows are now. */
+  /**
+   * The rows as they are now: the added rows seen (half in view) stop
+   * being counted and start to fade, the others are counted by where they
+   * are, and the buttons placed. Nothing is seen during a button's smooth
+   * scroll: the rows it passes stay as they were.
+   */
   const update = React.useCallback(() => {
     const current = latest.current
-    const held = current.live.held.size
     const element = frame.current
     if (!element) {
       setPills((before) => (samePills(before, NO_PILLS) ? before : NO_PILLS))
       return
     }
-    const counts: Pills = { above: 0, below: 0, pages: 0, held }
-    const at = state.unseen.size > 0 ? placing() : null
+    const seeing = !state.glide
+    // Rows kept back are on earlier pages.
+    const counts: Pills = { above: 0, below: 0, pages: current.live.held.size }
+    const at = placing()
     for (const id of [...state.unseen]) {
       if (!current.model.has(id)) {
         state.unseen.delete(id)
@@ -528,12 +528,29 @@ function useLiveRows({
       const target = targetOf(id, current.model, current.closedGroups)
       const place = target !== null && at ? placeOf(target, at) : null
       if (place === null) continue
-      if (place === "view") state.unseen.delete(id)
-      else if (place === "before" || place === "after") counts.pages++
+      if (place === "view") {
+        if (seeing) state.unseen.delete(id)
+      } else if (place === "before" || place === "after") counts.pages++
       else counts[place]++
     }
+    // The tints waiting in view start to fade; a row gone stops waiting.
+    if (seeing && at) {
+      const seen: Array<string> = []
+      let gone: Map<string, number | null> | null = null
+      for (const [key, start] of flashStore.get().flashes) {
+        if (start !== null) continue
+        const place = placeOf(key, at)
+        if (place === "view") seen.push(key)
+        else if (place === null) {
+          gone ??= new Map(flashStore.get().flashes)
+          gone.delete(key)
+        }
+      }
+      if (gone) flashStore.set({ flashes: gone })
+      flash(seen, now())
+    }
     setPills((before) => (samePills(before, counts) ? before : counts))
-    if (counts.above + counts.below + counts.pages + counts.held === 0) return
+    if (counts.above + counts.below + counts.pages === 0) return
     const parts = partsOf(element, current.virtualized)
     if (!parts) return
     const region = regionOf(element, parts)
@@ -550,7 +567,26 @@ function useLiveRows({
         ? before
         : next
     )
-  }, [frame, placing, state])
+  }, [frame, placing, state, flashStore, flash])
+
+  /**
+   * Waits for a button's smooth scroll in `target` to end (`scrollend`, or
+   * `GLIDE_LIMIT`), then looks at the rows again.
+   */
+  const glide = React.useCallback(
+    (target: EventTarget) => {
+      // The first of the two ends it; a later glide's end is its own.
+      const end = () => {
+        if (state.glide !== end) return
+        state.glide = null
+        update()
+      }
+      state.glide = end
+      target.addEventListener("scrollend", end, { once: true })
+      setTimeout(end, GLIDE_LIMIT)
+    },
+    [state, update]
+  )
 
   /** Scrolls to the row `key` (smoothly unless the user prefers reduced motion), or focuses it. */
   const revealRow = React.useCallback(
@@ -572,45 +608,52 @@ function useLiveRows({
             : box.bottom > region.bottom
               ? box.bottom - region.bottom
               : 0
+        if (Math.abs(delta) < 0.5) return
         const view = element.ownerDocument.defaultView
-        scrollRowsBy(
-          element,
-          parts.scroller,
-          delta,
-          prefersReducedMotion(view) ? "auto" : "smooth"
-        )
+        const smooth = !prefersReducedMotion(view)
+        if (smooth && view) glide(parts.scroller ?? view)
+        scrollRowsBy(element, parts.scroller, delta, smooth)
         return
       }
       grid.current?.scrollToIndex(index)
     },
-    [frame, grid]
+    [frame, grid, glide]
   )
 
-  /** Goes to the first of `keys` (on its page, scrolled to), and highlights them all again. */
-  const reveal = React.useCallback(
-    (keys: ReadonlyArray<string>, focus: boolean) => {
-      const { model } = latest.current
-      const sorted = [...keys]
-        .filter((key) => model.indexOfRow(key) >= 0)
-        .sort((a, b) => model.indexOfRow(a) - model.indexOfRow(b))
-      if (sorted.length === 0) return
-      const first = sorted[0]
-      flash(sorted, now())
-      const pages = latest.current.pagination
-      const page = Math.floor(model.indexOfRow(first) / model.pageSize) + 1
-      if (pages && page !== model.page) {
+  /**
+   * Goes to the new rows `kind` counts: the topmost above, the nearest
+   * below, or the first one on another page (turned to).
+   */
+  const goTo = React.useCallback(
+    (kind: PillKind, focus: boolean) => {
+      const { model, closedGroups } = latest.current
+      const at = placing()
+      let first: string | null = null
+      let firstIndex = Infinity
+      for (const id of state.unseen) {
+        const target = targetOf(id, model, closedGroups)
+        const place = target !== null && at ? placeOf(target, at) : null
+        const of = place === "before" || place === "after" ? "pages" : place
+        const index = target === null ? -1 : model.indexOfRow(target)
+        if (of === kind && index >= 0 && index < firstIndex) {
+          first = target
+          firstIndex = index
+        }
+      }
+      if (first === null) return
+      const page = Math.floor(firstIndex / model.pageSize) + 1
+      if (kind === "pages" && page !== model.page) {
         state.pending = { key: first, page, focus }
         actions.setPage(page, "new-rows")
       } else revealRow(first, focus)
     },
-    [flash, revealRow, state, actions]
+    [placing, state, actions, revealRow]
   )
 
-  /** Whether the user is using the rows: pointing, focused, or in a row's popup. */
+  /** Whether the user is using the rows: a row's popup open, focus or the pointer in them. */
   const interacting = React.useCallback(() => {
-    if (state.pointer || state.focus) return true
     const body = partsOf(frame.current, latest.current.virtualized)?.body
-    return !!body?.querySelector('[aria-haspopup][aria-expanded="true"]')
+    return !!body && rowsInUse(body, state.pointer).some(Boolean)
   }, [frame, state])
 
   const stopWatching = React.useCallback(() => {
@@ -621,8 +664,9 @@ function useLiveRows({
   }, [state])
 
   /**
-   * Shows the held rows `RELEASE_DELAY` after the user stops using the
-   * rows (`holding`: rows are being held now, not rendered as held yet).
+   * Client pages: adds the rows kept back `RELEASE_DELAY` after the user
+   * stops using the rows (`holding`: rows are being kept back now, not
+   * rendered as such yet).
    */
   const scheduleRelease = React.useCallback(
     (holding = false) => {
@@ -651,44 +695,32 @@ function useLiveRows({
     [state, interacting, stopWatching, actions, frame]
   )
 
-  // The user's use of the rows: pointer, focus.
+  // The user's use of the rows: the row under the pointer, focus leaving.
   React.useEffect(() => {
     const element = frame.current
     if (!element) return
-    const inRows = (node: EventTarget | null) => {
-      if (!(node instanceof Node)) return false
-      const body = partsOf(element, latest.current.virtualized)?.body
-      if (body?.contains(node)) return true
-      const at = node instanceof Element ? node : node.parentElement
-      const pill = at?.closest(PILLS)
-      return !!pill && pill.closest(CONTENT) === element
-    }
     const over = (event: PointerEvent) => {
-      state.pointer = inRows(event.target)
+      const body = partsOf(element, latest.current.virtualized)?.body
+      const target = event.target
+      state.pointer =
+        target instanceof Element && body?.contains(target)
+          ? target.closest<HTMLTableRowElement>("tr[data-live-key]")
+          : null
       if (!state.pointer) scheduleRelease()
     }
     const leave = () => {
-      state.pointer = false
+      state.pointer = null
       scheduleRelease()
     }
-    const focusIn = (event: FocusEvent) => {
-      state.focus = inRows(event.target)
-    }
-    const focusOut = (event: FocusEvent) => {
-      state.focus = inRows(event.relatedTarget)
-      if (!state.focus) scheduleRelease()
-    }
+    const focusOut = () => scheduleRelease()
     element.addEventListener("pointerover", over)
     element.addEventListener("pointerleave", leave)
-    element.addEventListener("focusin", focusIn)
     element.addEventListener("focusout", focusOut)
     return () => {
       element.removeEventListener("pointerover", over)
       element.removeEventListener("pointerleave", leave)
-      element.removeEventListener("focusin", focusIn)
       element.removeEventListener("focusout", focusOut)
-      state.pointer = false
-      state.focus = false
+      state.pointer = null
     }
   }, [frame, state, scheduleRelease])
 
@@ -743,6 +775,7 @@ function useLiveRows({
   React.useEffect(
     () => () => {
       stopWatching()
+      state.glide = null
       for (const timer of state.timers) clearTimeout(timer)
       state.timers.clear()
       state.unseen.clear()
@@ -752,13 +785,12 @@ function useLiveRows({
   )
 
   // After each render: a new batch of rows, a page turned to for one, the
-  // counts.
+  // counts and fades.
   React.useLayoutEffect(() => {
     const { batch } = live
     if (batch && batch !== state.handled) {
       state.handled = batch
       const at = placing()
-      const start = now()
       const added = new Set(batch.ids)
       const byTarget = new Map<string, Array<string>>()
       let announced = 0
@@ -770,24 +802,21 @@ function useLiveRows({
         if (ids) ids.push(id)
         else byTarget.set(target, [id])
       }
-      const revealing = state.revealing
-      state.revealing = null
-      const using = !revealing && interacting()
+      const using = pagination && interacting()
       const hold: Array<string> = []
-      const shown = new Set<string>()
+      const keys: Array<string> = []
       for (const [target, ids] of byTarget) {
-        const place = at ? placeOf(target, at) : "view"
-        // A row of its own (or a group it makes) landing where it moves
-        // the rows the user is on.
+        // A row of its own (or a group it makes) landing on an earlier
+        // page moves the page's rows: kept back while in use.
         const own =
           added.has(target) ||
           (!model.has(target) &&
             model.groupIds(target).every((id) => added.has(id)))
-        if (using && own && (!at || movesView(target, place, at))) {
+        if (using && own && at && placeOf(target, at) === "before") {
           hold.push(...ids)
           continue
         }
-        shown.add(target)
+        keys.push(target)
         // The groups the row made, new with it, are new too.
         if (added.has(target))
           for (const key of model.groupPath(target))
@@ -795,74 +824,95 @@ function useLiveRows({
               !byTarget.has(key) &&
               model.groupIds(key).every((id) => added.has(id))
             )
-              shown.add(key)
-        if (!revealing && place !== "view" && place !== null)
-          for (const id of ids) state.unseen.add(id)
+              keys.push(key)
+        for (const id of ids) state.unseen.add(id)
       }
       if (announced > 0) announce(announced)
-      if (revealing) reveal([...shown], revealing.focus)
-      else flash([...shown], start)
+      // All wait to be seen; those in view are, below (`update`).
+      flash(keys, null)
       if (hold.length) {
         actions.holdRows(hold)
-        // Shown once the user is done: the pointer and focus say when, a
+        // Added once the user is done: the pointer and focus say when, a
         // row's menu or popover is watched until it closes.
         scheduleRelease(true)
       }
-    } else if (live.held.size === 0) state.revealing = null
+    }
     const pending = state.pending
     if (pending && model.page === pending.page) {
       state.pending = null
       revealRow(pending.key, pending.focus)
     }
-    // Nothing held any more (shown, or removed by the application), and no
-    // hold just asked for: nothing to watch.
+    // Nothing kept back any more (added, or removed by the application),
+    // and none just asked for: nothing to watch.
     if (live.held.size === 0 && !state.releaseTimer) stopWatching()
     syncFlashes()
     update()
+    const press = state.pressAfter
+    if (press && live.held.size === 0) {
+      state.pressAfter = null
+      goTo("pages", press.focus)
+    }
   })
 
   const pressed = React.useCallback(
     (kind: PillKind, event: React.MouseEvent) => {
       // A click from the keyboard (or a screen reader) has no detail: focus
-      // follows to the row, the button being gone.
+      // follows to the row, the button going.
       const focus = event.detail === 0
-      if (kind === "held") {
+      if (kind === "pages" && latest.current.live.held.size > 0) {
         stopWatching()
-        state.revealing = { focus }
+        state.pressAfter = { focus }
         actions.releaseRows()
         return
       }
-      const current = latest.current
-      const at = placing()
-      const keys = new Set<string>()
-      for (const id of [...state.unseen]) {
-        const target = targetOf(id, current.model, current.closedGroups)
-        const place = target !== null && at ? placeOf(target, at) : null
-        const of: PillKind | null =
-          place === "before" || place === "after"
-            ? "pages"
-            : place === "above" || place === "below"
-              ? place
-              : null
-        if (of !== kind || target === null) continue
-        state.unseen.delete(id)
-        keys.add(target)
-      }
-      reveal([...keys], focus)
-      update()
+      goTo(kind, focus)
     },
-    [actions, placing, reveal, state, stopWatching, update]
+    [actions, goTo, state, stopWatching]
   )
 
-  // The content's anchor keeps the rows in view still while this is here.
+  // The content's anchor keeps the row the user is on still while this is here.
   React.useLayoutEffect(() => {
-    bridge.anchor = createAnchor(frame, latest)
+    bridge.anchor = createAnchor(frame, latest, state)
     return () => {
       bridge.anchor = null
     }
-  }, [bridge, frame])
+  }, [bridge, frame, state])
 
   return { pills, edges, pressed }
+}
+
+/** A keyed body row: the row of `node`, if it is one of `body`'s. */
+function rowOf(body: HTMLTableSectionElement, node: Element | null) {
+  const row = node?.closest<HTMLTableRowElement>("tr[data-live-key]")
+  return row?.parentElement === body ? row : null
+}
+
+/** The rows in use: the one whose menu or popover is open, the one with focus, the one under the pointer. */
+function rowsInUse(body: HTMLTableSectionElement, pointer: Element | null) {
+  return [
+    rowOf(body, body.querySelector('[aria-haspopup][aria-expanded="true"]')),
+    rowOf(body, body.ownerDocument.activeElement),
+    rowOf(body, pointer),
+  ]
+}
+
+/**
+ * The row the user is on, which a change of the items keeps still: the
+ * row whose menu or popover is open, else the one with focus, else the
+ * one under the pointer (each while any of it is in view), else, scrolled
+ * into the rows, the first in view. `null` at the top of the rows and
+ * idle: rows added above push the others down.
+ */
+function anchorRow(parts: Parts, region: Region, pointer: Element | null) {
+  const { body } = parts
+  for (const row of rowsInUse(body, pointer)) {
+    const box = row?.getBoundingClientRect()
+    // Any of it in view.
+    if (box && box.bottom > region.top + 0.5 && box.top < region.bottom - 0.5)
+      return row
+  }
+  if (body.getBoundingClientRect().top >= region.top - 0.5) return null
+  return body.rows[firstBelow(body.rows, region.top)] ?? null
 }
 
 /** A content's `Anchor` (see `LiveAnchor`). */
@@ -871,7 +921,8 @@ function createAnchor(
   latest: React.RefObject<{
     virtualized: boolean
     indexOf: (key: string) => number
-  }>
+  }>,
+  state: LiveRowsState
 ): Anchor {
   return {
     capture() {
@@ -880,21 +931,23 @@ function createAnchor(
       if (!element || !parts) return null
       const region = regionOf(element, parts)
       if (!region.laidOut) return null
+      const anchor = anchorRow(parts, region, state.pointer)
+      if (!anchor) return null
+      // The anchor, and the next rows in case it goes.
       const { rows } = parts.body
-      // At the top of the rows: rows added above come into view.
-      if (parts.body.getBoundingClientRect().top >= region.top - 0.5)
-        return null
       const kept: AnchorSnapshot["rows"] = []
       let height = 0
-      for (let at = firstBelow(rows, region.top); at < rows.length; at++) {
+      for (
+        let at = Array.prototype.indexOf.call(rows, anchor);
+        at >= 0 && at < rows.length && kept.length < 3;
+        at++
+      ) {
         const row = rows[at]
         const key = row.dataset.liveKey
         if (key === undefined) continue
         const box = row.getBoundingClientRect()
-        if (box.top >= region.bottom) break
         if (!height) height = box.height
         kept.push({ key, top: box.top, index: latest.current.indexOf(key) })
-        if (kept.length === 3) break
       }
       return kept.length
         ? { rows: kept, height, scroller: parts.scroller }
@@ -934,14 +987,27 @@ function createAnchor(
   }
 }
 
-const PILLS = '[data-slot="data-table-new-rows"]'
-const CONTENT = '[data-slot="data-table-content"]'
+/** A button's content: what it counts, kept while it goes so its text stays. */
+type Shown = { kind: PillKind; count: number }
+
+/** `value`, or the last one while it is `null`. */
+function useLast(value: Shown | null, initial: PillKind): Shown {
+  const [last, setLast] = React.useState<Shown>(
+    value ?? { kind: initial, count: 0 }
+  )
+  if (value && (value.kind !== last.kind || value.count !== last.count))
+    setLast(value)
+  return value ?? last
+}
 
 /**
- * The "new rows" buttons, over the scroll area's top and bottom edges:
- * the rows above the view and those held at the top, those below and on
- * other pages at the bottom. Real buttons, in the tab order after the
- * table; nothing moves focus to them.
+ * The "new rows" buttons, one over each edge of the scroll area: above
+ * the view's rows at the top; below them, else on other pages, at the
+ * bottom. Real buttons, in the tab order after the table while shown;
+ * nothing moves focus to them. They look and move as the message
+ * scroller's (`message-scroller.tsx`'s `MessageScrollerButton`, whose
+ * class list this is): mounted throughout, shown and hidden by
+ * `data-active`, inert while hidden.
  */
 function DataTableNewRows({
   pills,
@@ -954,59 +1020,62 @@ function DataTableNewRows({
 }) {
   const t = useTranslations("dataTable")
   const format = useNumberFormat()
-  const button = (kind: PillKind) => {
-    const count = pills[kind]
-    if (count === 0) return null
+  const top = useLast(
+    pills.above > 0 ? { kind: "above", count: pills.above } : null,
+    "above"
+  )
+  const bottom = useLast(
+    pills.below > 0
+      ? { kind: "below", count: pills.below }
+      : pills.pages > 0
+        ? { kind: "pages", count: pills.pages }
+        : null,
+    "below"
+  )
+  const button = (side: "top" | "bottom", { kind, count }: Shown) => {
+    const active = pills[kind] > 0
     const values = { count, total: format.format(count) }
     const label =
       kind === "above"
         ? t("newRowsAbove", values)
         : kind === "below"
           ? t("newRowsBelow", values)
-          : kind === "pages"
-            ? t("newRowsOnOtherPages", values)
-            : t("showNewRows", values)
-    const Icon =
-      kind === "above" ? ArrowUpIcon : kind === "below" ? ArrowDownIcon : null
+          : t("newRowsOnOtherPages", values)
     return (
-      <Button
-        key={kind}
-        size="sm"
-        data-kind={kind}
-        aria-label={label}
-        className="pointer-events-auto animate-in rounded-full shadow-md fade-in-0 motion-reduce:animate-none"
-        onClick={(event) => onPress(kind, event)}
-      >
-        {Icon && <Icon data-icon="inline-start" aria-hidden />}
-        {kind === "above" || kind === "below" ? t("newRows", values) : label}
-      </Button>
-    )
-  }
-  const edge = (side: "top" | "bottom", kinds: ReadonlyArray<PillKind>) =>
-    kinds.some((kind) => pills[kind] > 0) && (
       <div
         data-slot="data-table-new-rows"
         data-edge={side}
-        className={cn(
-          "pointer-events-none absolute inset-x-0 z-30 flex flex-wrap justify-center gap-2 px-2"
-        )}
-        style={
-          side === "top" ? { top: edges.top + 8 } : { bottom: edges.bottom + 8 }
-        }
+        className="absolute inset-x-0 z-30 h-0"
+        style={side === "top" ? { top: edges.top } : { bottom: edges.bottom }}
       >
-        {kinds.map(button)}
+        <Button
+          variant="secondary"
+          size="sm"
+          data-kind={kind}
+          data-direction={side === "top" ? "start" : "end"}
+          data-active={active}
+          aria-label={label}
+          tabIndex={active ? undefined : -1}
+          inert={!active}
+          // `MessageScrollerButton`'s, and no transition with reduced motion.
+          className="absolute inset-s-1/2 -translate-x-1/2 rounded-full border-border bg-background text-foreground transition-[translate,scale,opacity] duration-200 hover:bg-muted hover:text-foreground data-[active=false]:pointer-events-none data-[active=false]:scale-95 data-[active=false]:opacity-0 data-[active=false]:duration-400 data-[active=false]:ease-[cubic-bezier(0.7,0,0.84,0)] data-[active=true]:translate-y-0 data-[active=true]:scale-100 data-[active=true]:opacity-100 data-[active=true]:ease-[cubic-bezier(0.23,1,0.32,1)] data-[direction=end]:bottom-4 data-[direction=end]:data-[active=false]:translate-y-full data-[direction=start]:top-4 data-[direction=start]:data-[active=false]:-translate-y-full motion-reduce:transition-none rtl:translate-x-1/2 data-[direction=start]:[&_svg]:rotate-180"
+          onClick={(event) => onPress(kind, event)}
+        >
+          {kind !== "pages" && (
+            <ArrowDownIcon data-icon="inline-start" aria-hidden />
+          )}
+          {kind === "pages" ? label : t("newRows", values)}
+        </Button>
       </div>
     )
+  }
   return (
     <>
-      {edge("top", TOP)}
-      {edge("bottom", BOTTOM)}
+      {button("top", top)}
+      {button("bottom", bottom)}
     </>
   )
 }
-
-const TOP: ReadonlyArray<PillKind> = ["held", "above"]
-const BOTTOM: ReadonlyArray<PillKind> = ["below", "pages"]
 
 /** The highlight's rules, in the document head once (a hoistable style). */
 function LiveStyles() {

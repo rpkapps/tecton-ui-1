@@ -97,10 +97,6 @@ export default defineTranslations({
       one: "Başka bir sayfada {total} yeni satır",
       other: "Diğer sayfalarda {total} yeni satır",
     },
-    showNewRows: {
-      one: "{total} yeni satırı göster",
-      other: "{total} yeni satırı göster",
-    },
     sortPositionAscending:
       "artan düzende sıralandı, sıralama düzeninde {position}/{total}",
     sortPositionDescending:

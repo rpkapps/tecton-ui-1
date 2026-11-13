@@ -104,10 +104,6 @@ export default defineTranslations({
       one: "{total} νέα γραμμή σε άλλη σελίδα",
       other: "{total} νέες γραμμές σε άλλες σελίδες",
     },
-    showNewRows: {
-      one: "Εμφάνιση {total} νέας γραμμής",
-      other: "Εμφάνιση {total} νέων γραμμών",
-    },
     sortPositionAscending:
       "ταξινομημένο σε αύξουσα σειρά, {position} από {total} στη σειρά ταξινόμησης",
     sortPositionDescending:

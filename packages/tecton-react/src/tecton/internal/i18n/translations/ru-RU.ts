@@ -120,12 +120,6 @@ export default defineTranslations({
       many: "{total} новых строк на других страницах",
       other: "{total} новой строки на других страницах",
     },
-    showNewRows: {
-      one: "Показать {total} новую строку",
-      few: "Показать {total} новые строки",
-      many: "Показать {total} новых строк",
-      other: "Показать {total} новой строки",
-    },
     sortPositionAscending:
       "отсортировано в порядке возрастания, {position} из {total} в порядке сортировки",
     sortPositionDescending:

@@ -94,10 +94,6 @@ export default defineTranslations({
       one: "{total} ny rad på en annan sida",
       other: "{total} nya rader på andra sidor",
     },
-    showNewRows: {
-      one: "Visa {total} ny rad",
-      other: "Visa {total} nya rader",
-    },
     sortPositionAscending:
       "sorterat i stigande ordning, {position} av {total} i sorteringsordningen",
     sortPositionDescending:

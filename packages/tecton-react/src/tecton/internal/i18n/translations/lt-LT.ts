@@ -119,12 +119,6 @@ export default defineTranslations({
       many: "{total} naujos eilutės kituose puslapiuose",
       other: "{total} naujų eilučių kituose puslapiuose",
     },
-    showNewRows: {
-      one: "Rodyti {total} naują eilutę",
-      few: "Rodyti {total} naujas eilutes",
-      many: "Rodyti {total} naujos eilutės",
-      other: "Rodyti {total} naujų eilučių",
-    },
     sortPositionAscending:
       "surikiuota didėjančia tvarka, {position} iš {total} rikiavimo tvarkoje",
     sortPositionDescending:

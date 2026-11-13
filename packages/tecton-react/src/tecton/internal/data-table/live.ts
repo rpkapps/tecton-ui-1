@@ -2,9 +2,10 @@
 
 /**
  * Live data (`highlightChanges`), the root's side: which rows a change of
- * `items` added, and the rows held back while the table is in use. The
- * content's side (`live-rows.tsx`) highlights them, counts those out of
- * view, keeps the rows in view still, and says what came.
+ * `items` added, and, with client pages, the rows kept back while the
+ * table is in use. The content's side (`live-rows.tsx`) highlights them,
+ * counts those out of view, keeps the row the user is on still, and says
+ * what came.
  *
  * Added rows are the ids of the new `items` that the items before had not
  * (`addedIds`: one pass, O(n)), after the table's first rows. Not
@@ -21,29 +22,31 @@
  * In client mode `items` are compared, not the rows the view shows: a
  * search or filter that shows rows already there adds none.
  *
- * Held rows (`hold`) are left out of the items the engine gets (a tree's
- * children too) until `release`; their ids stay known, so the change that
- * brings them back adds them again, under `released` (already announced).
- * A held row the application removes from `items` is no longer held.
+ * Held rows (`hold`: with client pages, rows that would land on an earlier
+ * page while the user works in the rows) are left out of the items the
+ * engine gets (a tree's children too) until `release`; their ids stay
+ * known, so the change that brings them back adds them again, under
+ * `released` (already announced). A held row the application removes from
+ * `items` is no longer held.
  */
 import * as React from "react"
 
 import { addedIds, type DataTableRowModel } from "./engine/index"
 
 /**
- * `DataTable`'s `highlightChanges`: `true` for added rows, highlighted for
- * 1,500 ms; or which changes, and for how long.
+ * `DataTable`'s `highlightChanges`: `true` for added rows, highlighted
+ * until seen, then fading over 1,500 ms; or which changes, and for how
+ * long.
  */
 type DataTableHighlightChanges =
   | boolean
   | {
       /**
-       * Rows added after the first render: highlighted where they land,
-       * counted while out of view, held back while the table is in use.
-       * On by default.
+       * Rows added after the first render: highlighted where they land
+       * until seen, and counted while out of view. On by default.
        */
       added?: boolean
-      /** How long a row's highlight lasts, in ms: 1,500 by default. */
+      /** How long a row's highlight fades once seen, in ms: 1,500 by default. */
       duration?: number
     }
 
@@ -83,11 +86,11 @@ type LiveState = {
   readonly duration: number
   /** The rows the last change added; a new object for each change. */
   readonly batch: LiveBatch | null
-  /** The rows held back while the table is in use: not shown yet. */
+  /** Client pages: the rows kept back while the table is in use, not shown yet. */
   readonly held: ReadonlySet<string>
 }
 
-/** What the actions call: hold rows back, and show them. */
+/** What the actions call: hold rows back (client pages), and show them. */
 type LiveControl = {
   hold: (ids: ReadonlyArray<string>) => void
   release: () => void

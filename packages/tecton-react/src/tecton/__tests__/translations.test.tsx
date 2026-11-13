@@ -243,7 +243,6 @@ describe("translations", () => {
       "newRowsAbove",
       "newRowsBelow",
       "newRowsOnOtherPages",
-      "showNewRows",
     ]
     for (const [file, table] of await locales()) {
       const categories = new Intl.PluralRules(

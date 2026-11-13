@@ -13,8 +13,9 @@
  * the grid its id, text, level and expanded state.
  *
  * With `highlightChanges`, item and group rows render their key and, while
- * highlighted, their highlight's start (`useLiveRowProps`): a row reads
- * only its own, so a highlight renders that row alone.
+ * highlighted, their highlight's state (`useLiveRowProps`: waiting to be
+ * seen, or the fade's start): a row reads only its own, so a highlight
+ * renders that row alone.
  *
  * With `reorderableRows`, a column of drag handles comes first
  * (`row-order.tsx`): each item row's handle, drawn while the rows are in

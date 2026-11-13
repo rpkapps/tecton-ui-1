@@ -36,10 +36,10 @@
  *
  * Live data (`highlightChanges`): its module, loaded as the table mounts,
  * renders after the table (`live-rows.tsx`: highlights, the "new rows"
- * buttons, rows held while in use); the rows render their key and
- * highlight from a store the content keeps for it, and `LiveAnchor` around
- * the table keeps the rows in view still as items change
- * (`live-bridge.ts`). The status region says how many rows came.
+ * buttons, rows kept back from an earlier page while in use); the rows
+ * render their key and highlight from a store the content keeps for it,
+ * and `LiveAnchor` around the table keeps the row the user is on still as
+ * items change (`live-bridge.ts`). The status region says how many rows came.
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -845,8 +845,8 @@ function DataTableContentImpl({
     context,
     (state) => state.closedGroups
   )
-  // Live data (`highlightChanges`): added rows highlighted, counted while
-  // out of view, held back while the rows are in use. Its module loads as
+  // Live data (`highlightChanges`): added rows highlighted until seen,
+  // counted while out of view, the row in use kept still. Its module loads as
   // the table mounts (`live-rows.tsx`); the rows and the anchor read the
   // bridge, which it writes.
   const live = useDataTableSelector(context, (state) => state.live)
@@ -1299,7 +1299,7 @@ function DataTableContentImpl({
     >
       <DataTableGrid context={context} options={grid}>
         <TableContainerConfig value={containerConfig}>
-          {/* Keeps the rows in view still as items change (live data). */}
+          {/* Keeps the row the user is on still as items change (live data). */}
           <LiveAnchor itemsKey={model.ids} bridge={live ? liveBridge : null}>
             <Table
               size={options.size}

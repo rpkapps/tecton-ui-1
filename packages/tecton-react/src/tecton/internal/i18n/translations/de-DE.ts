@@ -102,10 +102,6 @@ export default defineTranslations({
       one: "{total} neue Zeile auf einer anderen Seite",
       other: "{total} neue Zeilen auf anderen Seiten",
     },
-    showNewRows: {
-      one: "{total} neue Zeile anzeigen",
-      other: "{total} neue Zeilen anzeigen",
-    },
     sortPositionAscending:
       "sortiert in aufsteigender Reihenfolge, {position} von {total} in der Sortierreihenfolge",
     sortPositionDescending:

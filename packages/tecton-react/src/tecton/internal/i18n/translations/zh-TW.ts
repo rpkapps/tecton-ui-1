@@ -81,7 +81,6 @@ export default defineTranslations({
     newRowsAbove: { other: "上方新增 {total} 列" },
     newRowsBelow: { other: "下方新增 {total} 列" },
     newRowsOnOtherPages: { other: "其他頁面新增 {total} 列" },
-    showNewRows: { other: "顯示新增的 {total} 列" },
     sortPositionAscending: "已遞增排序，排序順序 {position}/{total}",
     sortPositionDescending: "已遞減排序，排序順序 {position}/{total}",
     sortAddedAscending: "{columnName} 已遞增排序，{position}/{total}",
