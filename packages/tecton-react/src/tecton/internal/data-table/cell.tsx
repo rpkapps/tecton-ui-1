@@ -407,12 +407,12 @@ function columnClassName<T>(column: EngineColumn<T>) {
 }
 
 /**
- * Numbers and dates draw their digits at one width (tabular figures), so
- * a column's values line up digit for digit and a changing value keeps its
+ * Numbers and dates are in the monospace font: every digit one width, so a
+ * column's values line up digit for digit and a changing value keeps its
  * width.
  */
 function numericClassName<T>(column: EngineColumn<T>) {
-  return (column.type === "number" || column.type === "date") && "tabular-nums"
+  return (column.type === "number" || column.type === "date") && "font-mono"
 }
 
 function bodyClassName<T>(

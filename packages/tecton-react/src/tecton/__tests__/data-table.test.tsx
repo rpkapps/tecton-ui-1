@@ -110,9 +110,9 @@ describe("DataTable", () => {
     const header = cell("34/10-A-12")
     expect(header.tagName).toBe("TH")
     expect(header).toHaveAttribute("scope", "row")
-    // Numbers: at the end, in tabular digits, formatted in the locale.
+    // Numbers: at the end, in the monospace font, formatted in the locale.
     const depth = cell("12,345.5")
-    expect(depth).toHaveClass("text-end", "tabular-nums")
+    expect(depth).toHaveClass("text-end", "font-mono")
     expect(screen.getByRole("columnheader", { name: "Depth (m)" })).toHaveClass(
       "text-end"
     )
@@ -121,10 +121,10 @@ describe("DataTable", () => {
     expect(status).toHaveAttribute("data-slot", "badge")
     expect(status).toHaveAttribute("data-appearance", "outline")
     expect(status).toHaveAttribute("data-variant", "success")
-    // Dates in the column's format, in tabular digits too.
-    expect(cell("Mar 4, 2021")).toHaveClass("tabular-nums")
-    // Text keeps the font's own digits.
-    expect(header).not.toHaveClass("tabular-nums")
+    // Dates in the column's format, in the monospace font too.
+    expect(cell("Mar 4, 2021")).toHaveClass("font-mono")
+    // Text stays in the interface font.
+    expect(header).not.toHaveClass("font-mono")
     // Booleans: a check, and Yes / No for screen readers.
     const yes = screen.getByText("Yes")
     expect(yes).toHaveClass("sr-only")
