@@ -104,11 +104,13 @@ const HEAD_LABEL = "relative flex min-w-0 items-center gap-0.5"
 
 /**
  * A column's menu button: shown while its own header cell is hovered, the cell
- * holds focus or the menu is open. Where there is no hover (a touch
- * screen), always shown, with its room kept.
+ * holds focus or the menu is open or still closing (`data-menu-active`,
+ * `column-menu.tsx`: an item chosen with the pointer on the menu, outside
+ * the cell, keeps it shown until focus is back on it). Where there is no
+ * hover (a touch screen), always shown, with its room kept.
  */
 const MENU_SHOWN =
-  "pointer-events-none opacity-0 group-focus-within/head:pointer-events-auto group-focus-within/head:opacity-100 data-popup-open:pointer-events-auto data-popup-open:opacity-100 pointer-coarse:pointer-events-auto pointer-coarse:opacity-100 group-hover/head:pointer-events-auto group-hover/head:opacity-100"
+  "pointer-events-none opacity-0 group-focus-within/head:pointer-events-auto group-focus-within/head:opacity-100 data-menu-active:pointer-events-auto data-menu-active:opacity-100 pointer-coarse:pointer-events-auto pointer-coarse:opacity-100 group-hover/head:pointer-events-auto group-hover/head:opacity-100"
 
 /**
  * Where the menu button goes, by the column's alignment: just outside the
@@ -143,11 +145,11 @@ const MENU_BUTTON = {
  * counts the same room), the label does not move as the button shows.
  */
 const MENU_ROOM_ONE_SIDE =
-  "pointer-fine:group-focus-within/head:max-w-[calc(100%-0.625rem)] pointer-fine:has-data-popup-open:max-w-[calc(100%-0.625rem)] pointer-fine:group-hover/head:max-w-[calc(100%-0.625rem)]"
+  "pointer-fine:group-focus-within/head:max-w-[calc(100%-0.625rem)] pointer-fine:has-data-popup-open:max-w-[calc(100%-0.625rem)] pointer-fine:has-data-menu-active:max-w-[calc(100%-0.625rem)] pointer-fine:group-hover/head:max-w-[calc(100%-0.625rem)]"
 const MENU_ROOM = {
   start: MENU_ROOM_ONE_SIDE,
   center:
-    "pointer-fine:group-focus-within/head:max-w-[calc(100%-1.25rem)] pointer-fine:has-data-popup-open:max-w-[calc(100%-1.25rem)] pointer-fine:group-hover/head:max-w-[calc(100%-1.25rem)]",
+    "pointer-fine:group-focus-within/head:max-w-[calc(100%-1.25rem)] pointer-fine:has-data-popup-open:max-w-[calc(100%-1.25rem)] pointer-fine:has-data-menu-active:max-w-[calc(100%-1.25rem)] pointer-fine:group-hover/head:max-w-[calc(100%-1.25rem)]",
   end: MENU_ROOM_ONE_SIDE,
 } as const
 

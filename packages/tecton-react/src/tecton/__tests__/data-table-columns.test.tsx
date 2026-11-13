@@ -1508,6 +1508,44 @@ describe("DataTable column header menu", () => {
     await waitFor(() => expect(button).toHaveFocus())
   })
 
+  it("keeps its button shown from an item chosen until the menu has closed and focus is back on it", async () => {
+    const user = userEvent.setup()
+    render(<Fields hideableColumns />)
+    const button = screen.getByRole("button", { name: "Oil options" })
+    // Hidden at rest, shown while the menu is open or closing.
+    expect(button).toHaveClass("opacity-0", "data-menu-active:opacity-100")
+    expect(button).not.toHaveAttribute("data-menu-active")
+    await user.click(button)
+    const menu = await screen.findByRole("menu")
+    expect(button).toHaveAttribute("data-menu-active")
+    // Each frame of the close: the menu still there, focus not yet back
+    // on the button, which stays shown.
+    const frames: Array<{ menu: boolean; focused: boolean; shown: boolean }> =
+      []
+    const observer = new MutationObserver(() =>
+      frames.push({
+        menu: menu.isConnected,
+        focused: document.activeElement === button,
+        shown: button.hasAttribute("data-menu-active"),
+      })
+    )
+    observer.observe(document.body, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+    })
+    await user.click(screen.getByRole("menuitem", { name: "Sort descending" }))
+    await waitFor(() => expect(screen.queryByRole("menu")).toBeNull())
+    await waitFor(() => expect(button).toHaveFocus())
+    observer.disconnect()
+    const closing = frames.filter((frame) => frame.menu)
+    expect(closing.length).toBeGreaterThan(0)
+    expect(closing.filter((frame) => !frame.shown)).toEqual([])
+    // Closed: shown by focus within its cell from here, as before the menu.
+    expect(button).not.toHaveAttribute("data-menu-active")
+    expect(header("Oil")).toHaveAttribute("aria-sort", "descending")
+  })
+
   it("sorts by the column alone, and clears its sort", async () => {
     const user = userEvent.setup()
     const onViewChange = vi.fn()

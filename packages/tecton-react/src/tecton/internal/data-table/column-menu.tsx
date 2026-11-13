@@ -151,17 +151,29 @@ function DataTableColumnMenu<T>({
   // whether the column went); else back to the button.
   const closing: Closing = React.useRef(null)
   const popup = React.useRef<HTMLDivElement | null>(null)
+  // Open, or closing until the menu has gone and focus is back: the button
+  // stays shown (`data-menu-active`, `header.tsx`) through the close, when
+  // neither the pointer (on the menu) nor focus (in it) is in its cell, so
+  // it does not fade out and back in as focus returns to it.
+  const [active, setActive] = React.useState(false)
   return (
     <DropdownMenu
       // Not modal (the default), as the table's other menus: no scroll lock
       // (`part-popup.ts`).
       onOpenChange={(open) => {
-        if (open) closing.current = null
+        if (open) {
+          closing.current = null
+          setActive(true)
+        }
+      }}
+      onOpenChangeComplete={(open) => {
+        if (!open) setActive(false)
       }}
     >
       <DropdownMenuTrigger
         ref={triggerRef}
         data-slot="data-table-column-menu"
+        data-menu-active={active ? "" : undefined}
         aria-label={t("columnMenu", { columnName: props.column.header })}
         onKeyDown={gridMenuKeys}
         // The cell's own press drags the column; this one opens the menu.
