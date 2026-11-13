@@ -34,6 +34,7 @@ export default defineTranslations({
     yearsGroup: "Jaren",
     monthsGroup: "Maanden",
     dataRange: "{min} tot {max} hier",
+    equalTo: "Gelijk aan",
     moreThan: "Meer dan",
     atLeast: "Ten minste",
     lessThan: "Minder dan",

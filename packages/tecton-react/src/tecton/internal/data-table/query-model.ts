@@ -288,6 +288,8 @@ function comparisonLabel(
   if (type === "date")
     return operator.startsWith("<") ? t("before") : t("after")
   switch (operator) {
+    case "=":
+      return t("equalTo")
     case ">":
       return t("moreThan")
     case ">=":

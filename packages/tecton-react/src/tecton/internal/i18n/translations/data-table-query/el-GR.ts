@@ -34,6 +34,7 @@ export default defineTranslations({
     yearsGroup: "Έτη",
     monthsGroup: "Μήνες",
     dataRange: "Εδώ από {min} έως {max}",
+    equalTo: "Ίσο με",
     moreThan: "Περισσότερο από",
     atLeast: "Τουλάχιστον",
     lessThan: "Λιγότερο από",

@@ -34,6 +34,7 @@ export default defineTranslations({
     yearsGroup: "Години",
     monthsGroup: "Месеци",
     dataRange: "Тук от {min} до {max}",
+    equalTo: "Равно на",
     moreThan: "Повече от",
     atLeast: "Поне",
     lessThan: "По-малко от",

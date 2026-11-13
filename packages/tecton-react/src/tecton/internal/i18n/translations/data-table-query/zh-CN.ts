@@ -33,6 +33,7 @@ export default defineTranslations({
     yearsGroup: "年份",
     monthsGroup: "月份",
     dataRange: "此处为 {min} 至 {max}",
+    equalTo: "等于",
     moreThan: "大于",
     atLeast: "至少",
     lessThan: "小于",

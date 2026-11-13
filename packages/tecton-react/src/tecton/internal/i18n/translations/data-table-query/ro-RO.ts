@@ -34,6 +34,7 @@ export default defineTranslations({
     yearsGroup: "Ani",
     monthsGroup: "Luni",
     dataRange: "Aici de la {min} la {max}",
+    equalTo: "Egal cu",
     moreThan: "Mai mult de",
     atLeast: "Cel puțin",
     lessThan: "Mai puțin de",

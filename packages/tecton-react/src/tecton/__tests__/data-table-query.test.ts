@@ -1353,6 +1353,7 @@ describe("suggestQuery", () => {
   it("offers comparisons with the data's range, and No value, for a number column", () => {
     const result = suggest("tdm:|")
     expect(result.items.map(brief)).toEqual([
+      "comparison:=",
       "comparison:>",
       "comparison:>=",
       "comparison:<",
@@ -1361,8 +1362,9 @@ describe("suggestQuery", () => {
       "empty:none=1",
     ])
     expect(result.items[0]).toMatchObject({ min: 1500, max: 4100, caret: 1 })
-    expect(result.items[1]).toMatchObject({ caret: 2 })
-    expect(result.items[4]).toMatchObject({ caret: 0 })
+    expect(result.items[1]).toMatchObject({ caret: 1 })
+    expect(result.items[2]).toMatchObject({ caret: 2 })
+    expect(result.items[5]).toMatchObject({ caret: 0 })
     expect(suggest("tdm:no|").items.map(brief)).toEqual(["empty:none=1"])
     expect(suggest("tdm:>=3|").items).toEqual([])
   })

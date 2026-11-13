@@ -34,6 +34,7 @@ export default defineTranslations({
     yearsGroup: "År",
     monthsGroup: "Måneder",
     dataRange: "{min} til {max} her",
+    equalTo: "Lig med",
     moreThan: "Mere end",
     atLeast: "Mindst",
     lessThan: "Mindre end",

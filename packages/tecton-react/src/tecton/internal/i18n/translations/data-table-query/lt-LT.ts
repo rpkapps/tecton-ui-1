@@ -34,6 +34,7 @@ export default defineTranslations({
     yearsGroup: "Metai",
     monthsGroup: "Mėnesiai",
     dataRange: "Čia nuo {min} iki {max}",
+    equalTo: "Lygu",
     moreThan: "Daugiau nei",
     atLeast: "Bent",
     lessThan: "Mažiau nei",

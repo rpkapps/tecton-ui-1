@@ -42,6 +42,7 @@ const enUS = {
     // rows the rest of the search keeps ({min} and {max} are formatted).
     dataRange: "{min} to {max} here",
     // The comparisons offered for a number column, then for a date column.
+    equalTo: "Equal to",
     moreThan: "More than",
     atLeast: "At least",
     lessThan: "Less than",

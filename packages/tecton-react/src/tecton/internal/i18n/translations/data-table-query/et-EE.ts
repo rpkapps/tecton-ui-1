@@ -34,6 +34,7 @@ export default defineTranslations({
     yearsGroup: "Aastad",
     monthsGroup: "Kuud",
     dataRange: "Siin {min} kuni {max}",
+    equalTo: "Võrdne",
     moreThan: "Rohkem kui",
     atLeast: "Vähemalt",
     lessThan: "Vähem kui",

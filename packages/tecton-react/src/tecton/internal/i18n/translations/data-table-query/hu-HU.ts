@@ -34,6 +34,7 @@ export default defineTranslations({
     yearsGroup: "Évek",
     monthsGroup: "Hónapok",
     dataRange: "Itt {min} és {max} között",
+    equalTo: "Egyenlő",
     moreThan: "Több mint",
     atLeast: "Legalább",
     lessThan: "Kevesebb mint",

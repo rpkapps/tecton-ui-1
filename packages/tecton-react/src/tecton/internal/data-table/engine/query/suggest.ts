@@ -12,7 +12,7 @@
  *   as the filter popover counts): an options column's options, yes and
  *   no, a text column's values that contain what is typed (the most
  *   frequent ones while nothing is), and "No value" while rows have none.
- *   A number column's comparisons (`>`, `>=`, `<`, `<=`, `..`), a date
+ *   A number column's comparisons (`=`, `>`, `>=`, `<`, `<=`, `..`), a date
  *   column's (`<` before, `>` after, `..`), with the data's smallest and
  *   largest value; a date column's presets (and `last<N>` as d / w / m / y as it is
  *   typed), the years of the data (newest first) and, from `2015` or
@@ -81,7 +81,7 @@ type QuerySuggestion = Offer &
     | {
         readonly kind: "comparison"
         readonly column: string
-        readonly operator: ">" | ">=" | "<" | "<=" | ".."
+        readonly operator: "=" | ">" | ">=" | "<" | "<=" | ".."
         /** The rest's smallest and largest number (a date's time). */
         readonly min?: number
         readonly max?: number
@@ -486,7 +486,7 @@ function suggestQuery(
       const extent = source?.extent(column.id, rest) ?? undefined
       const operators =
         column.type === "number"
-          ? ([">", ">=", "<", "<=", ".."] as const)
+          ? (["=", ">", ">=", "<", "<=", ".."] as const)
           : (["<", ">", ".."] as const)
       for (const op of operators)
         out.push({

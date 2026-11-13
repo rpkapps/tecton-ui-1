@@ -34,6 +34,7 @@ export default defineTranslations({
     yearsGroup: "年",
     monthsGroup: "月",
     dataRange: "ここでは {min}〜{max}",
+    equalTo: "等しい",
     moreThan: "より大きい",
     atLeast: "以上",
     lessThan: "より小さい",

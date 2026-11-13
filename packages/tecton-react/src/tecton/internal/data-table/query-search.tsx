@@ -233,6 +233,8 @@ function QuerySearch({
     end: number
   } | null>(null)
   const highlighted = React.useRef<SuggestionRow | undefined>(undefined)
+  // A press that is focusing the field, until its click (`onPointerDown`).
+  const pressed = React.useRef(false)
   const [group, setGroup] = React.useState<HTMLElement | null>(null)
   const [popup, setPopup] = React.useState<HTMLElement | null>(null)
   const [caret, setCaret] = React.useState(draft.length)
@@ -448,15 +450,40 @@ function QuerySearch({
   }, [calendarMode, loadDates])
 
   const popupWanted = open && focused
-  const suggestions = React.useMemo(
-    () =>
-      popupWanted
-        ? suggestQuery(language, parsed, caret, {
-            source: server ? undefined : sourceOf(rowModel.searchParts()),
-          })
-        : null,
-    [popupWanted, language, parsed, caret, server, rowModel]
-  )
+  const suggestions = React.useMemo(() => {
+    if (!popupWanted) return null
+    const options = {
+      source: server ? undefined : sourceOf(rowModel.searchParts()),
+    }
+    const here = suggestQuery(language, parsed, caret, options)
+    // Right after a term that is complete (`td:>3000|`), there is nothing
+    // to offer for it: offer the next term instead, as after a space, so a
+    // field clicked at its end never shows an empty list (or none at all).
+    const atTermEnd =
+      caret > 0 &&
+      !/\s/.test(draft[caret - 1]) &&
+      (caret === draft.length || /\s/.test(draft[caret]))
+    if (here.items.length > 0 || !atTermEnd) return here
+    const spaced = `${draft.slice(0, caret)} ${draft.slice(caret)}`
+    const next = suggestQuery(
+      language,
+      parseQuery(language, spaced),
+      caret + 1,
+      options
+    )
+    if (next.items.length === 0) return here
+    // Written at the caret, after the space this adds.
+    return {
+      ...next,
+      start: caret,
+      end: caret,
+      items: next.items.map((item) => ({
+        ...item,
+        text: ` ${item.text}`,
+        caret: item.caret + 1,
+      })),
+    }
+  }, [popupWanted, language, parsed, caret, server, rowModel, draft])
   const groups = React.useMemo(
     () =>
       suggestions
@@ -689,9 +716,19 @@ function QuerySearch({
               </div>
             </div>
           )}
+          onPointerDown={(event: React.PointerEvent<HTMLInputElement>) => {
+            // Focus from a press comes before the press places the caret:
+            // the list opens on the click, for where the caret ends up, so it
+            // never opens for one place and closes for another.
+            if (
+              event.button === 0 &&
+              document.activeElement !== event.currentTarget
+            )
+              pressed.current = true
+          }}
           onFocus={() => {
             setFocused(true)
-            setOpen(true)
+            if (!pressed.current) setOpen(true)
             readCaret()
           }}
           onBlur={(event: React.FocusEvent<HTMLInputElement>) => {
@@ -699,6 +736,7 @@ function QuerySearch({
             leave()
           }}
           onClick={() => {
+            pressed.current = false
             readCaret()
             setOpen(true)
           }}

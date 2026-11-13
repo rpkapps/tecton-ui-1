@@ -34,6 +34,7 @@ export default defineTranslations({
     yearsGroup: "Vuodet",
     monthsGroup: "Kuukaudet",
     dataRange: "{min}–{max} tässä",
+    equalTo: "Yhtä suuri kuin",
     moreThan: "Enemmän kuin",
     atLeast: "Vähintään",
     lessThan: "Vähemmän kuin",

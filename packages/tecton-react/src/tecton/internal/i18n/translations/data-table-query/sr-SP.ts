@@ -34,6 +34,7 @@ export default defineTranslations({
     yearsGroup: "Godine",
     monthsGroup: "Meseci",
     dataRange: "Ovde od {min} do {max}",
+    equalTo: "Jednako",
     moreThan: "Više od",
     atLeast: "Najmanje",
     lessThan: "Manje od",

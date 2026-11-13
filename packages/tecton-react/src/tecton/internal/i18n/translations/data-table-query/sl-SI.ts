@@ -34,6 +34,7 @@ export default defineTranslations({
     yearsGroup: "Leta",
     monthsGroup: "Meseci",
     dataRange: "Tu od {min} do {max}",
+    equalTo: "Enako",
     moreThan: "Več kot",
     atLeast: "Vsaj",
     lessThan: "Manj kot",

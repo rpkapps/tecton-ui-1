@@ -34,6 +34,7 @@ export default defineTranslations({
     yearsGroup: "Yıllar",
     monthsGroup: "Aylar",
     dataRange: "Burada {min} ile {max} arası",
+    equalTo: "Eşittir",
     moreThan: "Şundan fazla",
     atLeast: "En az",
     lessThan: "Şundan az",

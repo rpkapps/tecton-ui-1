@@ -34,6 +34,7 @@ export default defineTranslations({
     yearsGroup: "Gadi",
     monthsGroup: "Mēneši",
     dataRange: "Šeit no {min} līdz {max}",
+    equalTo: "Vienāds ar",
     moreThan: "Vairāk nekā",
     atLeast: "Vismaz",
     lessThan: "Mazāk nekā",

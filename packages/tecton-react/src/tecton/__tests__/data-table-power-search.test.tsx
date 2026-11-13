@@ -293,13 +293,53 @@ describe("DataTableSearch syntax=query: suggestions", () => {
     expect(listbox).toHaveTextContent(
       `${Math.min(...depths).toLocaleString("en-US")} to ${Math.max(...depths).toLocaleString("en-US")} here`
     )
-    expect(options().slice(0, 5)).toEqual([
+    expect(options().slice(0, 6)).toEqual([
+      "=Equal to",
       ">More than",
       ">=At least",
       "<Less than",
       "<=At most",
       "..Between",
     ])
+  })
+
+  it("opens on a press's click, for where the press leaves the caret, and offers the next term after a complete one", async () => {
+    const user = userEvent.setup({ delay: null })
+    const onViewChange = vi.fn()
+    render(
+      <Wells
+        onViewChange={onViewChange}
+        defaultView={{
+          filters: {
+            depth: { type: "number", min: 3000, minExclusive: true },
+          },
+        }}
+      />
+    )
+    const text = "depthm:>3000"
+    await waitFor(() => expect(field()).toHaveValue(text))
+    // A press focuses the field before it places the caret: no list yet, so
+    // none opens for the caret's old place and closes for its new one.
+    fireEvent.pointerDown(field(), { button: 0 })
+    act(() => field().focus())
+    expect(field()).toHaveFocus()
+    expect(screen.queryByRole("listbox")).toBeNull()
+    // The click, the caret at the end, after a complete term: the next
+    // term's columns, as after a space.
+    ;(field() as HTMLInputElement).setSelectionRange(text.length, text.length)
+    fireEvent.click(field())
+    expect(screen.getByRole("listbox")).toBeInTheDocument()
+    expect(options().some((option) => option.startsWith("status:"))).toBe(true)
+    const status = screen
+      .getAllByRole("option")
+      .find((option) => option.textContent.startsWith("status:"))!
+    await user.click(status)
+    expect(field()).toHaveValue(`${text} status:`)
+    expect(field()).toHaveFocus()
+    // Focus from the keyboard opens the list at once.
+    act(() => field().blur())
+    act(() => field().focus())
+    expect(screen.getByRole("listbox")).toBeInTheDocument()
   })
 
   it("offers a date's presets, years and the calendar, which writes the days it picks", async () => {

@@ -34,6 +34,7 @@ export default defineTranslations({
     yearsGroup: "Roky",
     monthsGroup: "Mesiace",
     dataRange: "Tu od {min} do {max}",
+    equalTo: "Rovná sa",
     moreThan: "Viac ako",
     atLeast: "Aspoň",
     lessThan: "Menej ako",
