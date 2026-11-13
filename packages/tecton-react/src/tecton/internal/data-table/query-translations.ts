@@ -6,14 +6,10 @@
  * and every other locale's when a `TectonProvider` uses it, so a table
  * without the query field neither bundles nor loads them.
  */
-import {
-  registerTranslations,
-  useTranslations,
-  type DeferredSource,
-} from "../i18n/translations"
+import { useDeferredTranslations, type DeferredSource } from "../i18n/deferred"
 import english from "../i18n/translations/data-table-query/en-US"
 
-const SOURCE: DeferredSource = {
+const SOURCE: DeferredSource<"dataTableQuery"> = {
   english,
   loaders: {
     "ar-AE": () => import("../i18n/translations/data-table-query/ar-AE"),
@@ -52,10 +48,9 @@ const SOURCE: DeferredSource = {
   },
 }
 
-/** The query field's translator, its namespace registered first. */
+/** The query field's translator. */
 function useQueryTranslations() {
-  registerTranslations(SOURCE)
-  return useTranslations("dataTableQuery")
+  return useDeferredTranslations("dataTableQuery", SOURCE)
 }
 
 export { useQueryTranslations }

@@ -22,9 +22,9 @@
  * namespace is deferred, a folder of its own (`translations/<namespace>/`,
  * en-US and every other locale, written with `defineTranslations` as
  * above), typed from its `en-US.ts` here (`DeferredTranslations`). The
- * feature's module registers it (`registerTranslations`: its en-US table,
- * imported with the feature, and a loader per locale) before it calls
- * `useTranslations` with it; a locale's strings then load with the
+ * feature translates it with `useDeferredTranslations` (`deferred.ts`,
+ * imported by the feature alone): its en-US table, imported with the
+ * feature, and a loader per locale, whose strings then load with the
  * feature, not with the locale's main table.
  */
 import * as React from "react"
@@ -221,65 +221,19 @@ function loadTranslations(tag: string): Promise<void> {
   )
 }
 
-/** A deferred namespace's tables: en-US, and a loader per other locale. */
-type DeferredSource = {
-  readonly english: { readonly [N in DeferredNamespace]?: Translations[N] }
-  readonly loaders: Readonly<Record<string, LocaleLoader>>
-}
-
-/** The deferred namespaces registered, by namespace. */
-const deferred = new Map<string, DeferredSource>()
-/** A deferred namespace's locales loaded (`namespace|tag`), and loading. */
-const loadedDeferred = new Map<string, LocaleTranslations>()
-const loadingDeferred = new Set<string>()
-
-/**
- * Registers the deferred namespaces of `source.english` (once; later calls
- * change nothing), for `useTranslations` to use them.
- */
-function registerTranslations(source: DeferredSource) {
-  for (const namespace of Object.keys(source.english))
-    if (!deferred.has(namespace)) deferred.set(namespace, source)
-}
-
-/** Loads a deferred namespace's translations for `tag` once. */
-function loadDeferred(namespace: string, tag: string): Promise<void> {
-  const key = `${namespace}|${tag}`
-  const loader = deferred.get(namespace)?.loaders[tag]
-  if (!loader || loadedDeferred.has(key) || loadingDeferred.has(key))
-    return Promise.resolve()
-  loadingDeferred.add(key)
-  return loader().then(
-    (module) => {
-      loadedDeferred.set(key, module.default)
-      for (const listener of [...listeners]) listener()
-    },
-    () => {
-      // Unreachable chunk: the namespace stays on en-US.
-      loadingDeferred.delete(key)
-    }
-  )
-}
-
-/** The en-US strings of `namespace`, bundled or registered. */
-function englishOf(namespace: string): Record<string, Translation> {
-  const bundled = (enUS as TranslationTable)[namespace] as
-    Record<string, Translation> | undefined
-  if (bundled) return bundled
-  const source = deferred.get(namespace)?.english as
-    Record<string, Record<string, Translation>> | undefined
-  return source?.[namespace] ?? {}
-}
-
 /** A translator for `namespace` from `table`, falling back to en-US per key. */
 function createTranslator<TNamespace extends Namespace>(
   namespace: TNamespace,
   locale: string,
-  table?: LocaleTranslations
+  table?: LocaleTranslations,
+  /** A deferred namespace's en-US strings (`deferred.ts`). */
+  deferredEnglish?: Translations[TNamespace]
 ): Translator<TNamespace> {
   const own = table?.[namespace] as
     Partial<Record<string, Translation>> | undefined
-  const english = englishOf(namespace)
+  const english = (deferredEnglish ??
+    (enUS as TranslationTable)[namespace] ??
+    {}) as Record<string, Translation>
   let plurals: Intl.PluralRules | null = null
   return (key: string, values: Record<string, string | number> = {}) => {
     const translation = own?.[key] ?? english[key] ?? key
@@ -308,18 +262,14 @@ function useTranslations<TNamespace extends Namespace>(
   namespace: TNamespace
 ): Translator<TNamespace> {
   const tag = resolveLocale(useLocale().locale)
-  // A deferred namespace's own tables, once registered by its feature.
-  const own = deferred.has(namespace)
   const table = React.useSyncExternalStore(
     subscribe,
-    () => (own ? loadedDeferred.get(`${namespace}|${tag}`) : loaded.get(tag)),
+    () => loaded.get(tag),
     () => undefined
   )
   React.useEffect(() => {
-    if (tag === "en-US") return
-    if (own) void loadDeferred(namespace, tag)
-    else void loadTranslations(tag)
-  }, [tag, own, namespace])
+    if (tag !== "en-US") void loadTranslations(tag)
+  }, [tag])
   return React.useMemo(
     () => createTranslator(namespace, tag, table),
     [namespace, tag, table]
@@ -329,15 +279,13 @@ function useTranslations<TNamespace extends Namespace>(
 export {
   createTranslator,
   defineTranslations,
-  loadDeferred,
   loadTranslations,
-  registerTranslations,
   resolveLocale,
   useTranslations,
 }
 export type {
   DeferredNamespace,
-  DeferredSource,
+  DeferredTranslations,
   LocaleLoader,
   LocaleTranslations,
   Namespace,

@@ -74,7 +74,7 @@ import {
   type QueryLanguage,
   type QuerySource,
   type QuerySuggestion,
-} from "./engine/query"
+} from "./engine/query/index"
 import {
   dayOfDate,
   parseDateLiteral,

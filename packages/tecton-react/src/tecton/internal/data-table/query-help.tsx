@@ -10,14 +10,7 @@ import * as React from "react"
 import { CircleHelpIcon } from "lucide-react"
 
 import { InputGroupButton } from "@tecton/react/input-group"
-import {
-  Popover,
-  PopoverContent,
-  PopoverDescription,
-  PopoverHeader,
-  PopoverTitle,
-  PopoverTrigger,
-} from "@tecton/react/popover"
+import { Popover, PopoverContent, PopoverTrigger } from "@tecton/react/popover"
 import {
   Table,
   TableBody,
@@ -29,7 +22,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@tecton/react/tooltip"
 
 import type { Translator } from "../i18n/translations"
-import type { ParsedQuery } from "./engine/query"
+import type { ParsedQuery } from "./engine/query/index"
 import { QueryText } from "./query-text"
 
 type Example = { readonly parsed: ParsedQuery; readonly finds: string }
@@ -61,6 +54,7 @@ function QueryHelp({
   /** The button's name and the popover's title. */
   title: string
 }) {
+  const id = React.useId()
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
       <Tooltip>
@@ -89,12 +83,21 @@ function QueryHelp({
         finalFocus={finalFocus}
         ref={popupRef}
         data-slot="data-table-query-help-content"
+        aria-labelledby={`${id}-title`}
+        aria-describedby={`${id}-description`}
         className="w-[min(32rem,calc(100vw-2rem))] gap-3 p-0"
       >
-        <PopoverHeader className="px-4 pt-4">
-          <PopoverTitle>{title}</PopoverTitle>
-          <PopoverDescription>{t("helpDescription")}</PopoverDescription>
-        </PopoverHeader>
+        {/* Plain elements, as the popover's header, title and description
+            draw them: the parts a table already bundles stay its only
+            ones (a part used only here would join the table's chunk). */}
+        <div className="flex flex-col gap-1 px-4 pt-4 text-sm">
+          <h2 id={`${id}-title`} className="font-medium">
+            {title}
+          </h2>
+          <p id={`${id}-description`} className="text-muted-foreground">
+            {t("helpDescription")}
+          </p>
+        </div>
         <div className="max-h-[min(24rem,calc(var(--available-height)-9rem))] overflow-y-auto px-2">
           <Table size="sm">
             <TableHeader>

@@ -16,7 +16,7 @@ import type {
   QueryLanguage,
   QuerySuggestion,
   QuerySuggestions,
-} from "./engine/query"
+} from "./engine/query/index"
 import { formatDay, toDay } from "./engine/query/dates"
 import { itemsOf, valueToken } from "./engine/query/syntax"
 import type { DataTableColumnType, DataTableFilterValue } from "./engine/types"

@@ -3,7 +3,7 @@ import { readdirSync } from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { render, screen } from "@testing-library/react"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { TectonProvider } from "@tecton/react/provider"
 import {
@@ -15,13 +15,16 @@ import {
 import {
   createTranslator,
   defineTranslations,
-  loadDeferred,
   loadTranslations,
-  registerTranslations,
   resolveLocale,
   useTranslations,
   type Translation,
 } from "../internal/i18n/translations"
+import {
+  loadDeferred,
+  useDeferredTranslations,
+  type DeferredSource,
+} from "../internal/i18n/deferred"
 import enUS from "../internal/i18n/translations/en-US"
 
 type Table = Record<string, Record<string, Translation>>
@@ -328,18 +331,18 @@ describe("deferred translations", () => {
     }
   })
 
-  it("translates a deferred namespace once registered, its locale loaded with it", async () => {
+  it("translates a deferred namespace, its locale loaded with it", async () => {
     const { default: english } =
       await import("../internal/i18n/translations/data-table-query/en-US")
-    registerTranslations({
+    const de = vi.fn(
+      () => import("../internal/i18n/translations/data-table-query/de-DE")
+    )
+    const source: DeferredSource<"dataTableQuery"> = {
       english,
-      loaders: {
-        "de-DE": () =>
-          import("../internal/i18n/translations/data-table-query/de-DE"),
-      },
-    })
+      loaders: { "de-DE": de },
+    }
     function Label() {
-      const t = useTranslations("dataTableQuery")
+      const t = useDeferredTranslations("dataTableQuery", source)
       return <span>{t("presetLastDays", { count: 30 })}</span>
     }
     render(
@@ -349,12 +352,17 @@ describe("deferred translations", () => {
     )
     expect(screen.getByText("Last 30 days")).toBeInTheDocument()
     expect(await screen.findByText("Letzte 30 Tage")).toBeInTheDocument()
-    await loadDeferred("dataTableQuery", "de-DE")
+    // Loaded once; a locale without a loader stays on en-US.
+    await loadDeferred("dataTableQuery", source, "de-DE")
+    await loadDeferred("dataTableQuery", source, "fr-FR")
+    expect(de).toHaveBeenCalledTimes(1)
     expect(
-      createTranslator("dataTableQuery", "en-US")("summaryProblems", {
-        count: 1,
-        problems: "x",
-      })
+      createTranslator(
+        "dataTableQuery",
+        "en-US",
+        undefined,
+        english.dataTableQuery
+      )("summaryProblems", { count: 1, problems: "x" })
     ).toBe("1 problem: x")
   })
 })

@@ -12,7 +12,7 @@ import { cn } from "cn"
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@tecton/react/tooltip"
 
-import type { ParsedQuery, QuerySpanKind } from "./engine/query"
+import type { ParsedQuery, QuerySpanKind } from "./engine/query/index"
 
 /** Tecton palette steps: a step is the same contrast in both themes. */
 const SPAN_CLASS: Record<QuerySpanKind | "plain", string> = {
