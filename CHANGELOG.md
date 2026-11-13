@@ -7,6 +7,67 @@ write entries and cut a release.
 
 ## [Unreleased]
 
+### Added
+
+- `DataTable` (`@tecton/react/data-table`): the data table for records in an application, built
+  on `Table`. Columns are typed with `createColumns` (text, number, date, yes / no and options,
+  formatted with `Intl` in the provider locale, empty values drawn as a muted dash). The parts add
+  sorting by one or several columns, search, a filter per column with "No value" and the active
+  filters as chips (`DataTableToolbar`, `DataTableSearch`, `DataTableFilter`,
+  `DataTableActiveFilters`), column resizing, reordering, hiding and pinning
+  (`DataTableColumnsMenu`), row selection with `DataTableActionBar` and `itemToDisabledReason`,
+  row actions (`DataTableRowActions`), row reordering, grouping with subtotals
+  (`DataTableGroupBy`), totals, trees and detail rows, virtualized rows, load more on scroll or
+  with a button, pages in a spreadsheet-style footer strip (`DataTableFooter`,
+  `DataTablePagination`, with a page field), `size="sm"` and `striped`, loading, error, empty and
+  no-results states, server mode (`dataMode="server"`), CSV export, keyboard navigation as a grid
+  and the whole view (sort, filters, columns, page) as one controlled or uncontrolled value.
+  `useDataTable()` reads the table from custom parts. Its text is translated into the 34 locales.
+- `DatePicker` and `DateRangePicker` (`@tecton/react/date-picker`): a date or a range picked on a
+  `Calendar` in a popover, from a button or a typed date (`variant="input"`), with `minDate` /
+  `maxDate`, range presets (bounded by `minDate` / `maxDate`), a Clear button, `name` for forms,
+  and dates written in the provider locale.
+- `Table` takes `size` (`"default"` or `"sm"`, compact) and `striped` (every even body row on an
+  alternate surface; hovered and selected rows keep their own fill, and a virtualized table keeps
+  each row on its stripe as it scrolls). `TableBody` takes `empty`, shown in one row across every
+  column when there are no rows.
+- `TableColumnResizer` takes `edge="start"`, for a column that grows toward its start (one pinned
+  to the table's end).
+- `Progress` with `value={null}` is indeterminate: a segment sweeps across the track (right to left
+  in RTL), and the bar pulses slowly instead with reduced motion.
+- Opaque surfaces (`Card`, `Sheet`, `Drawer`, `Dialog`, `Popover`, the menus, `Select`, `Sidebar`,
+  `Panel`, the `AppShell` parts, `ActionBar` and others) set the `--surface` CSS variable to their
+  fill; `DataTable`'s pinned columns are filled with it. A custom surface sets it too.
+
+### Changed
+
+- **BREAKING:** `DropdownMenu` is no longer modal by default: the page keeps scrolling while it is
+  open, and a press outside closes the menu and still reaches what it pressed. Pass `modal` to get
+  the previous behaviour.
+- **BREAKING:** `Select` is no longer modal by default, and `SelectContent` opens its list below
+  the trigger, aligned to its start (`alignItemWithTrigger` now defaults to `false` and `align` to
+  `"start"`), instead of over it with the selected item on the value. Pass `modal` on `Select` and
+  `alignItemWithTrigger` on `SelectContent` to get the previous behaviour; either one locks the
+  page's scroll while the list is open.
+- `ActionBar`: its text ("2 of 9 wells selected", Clear, the clear button's and the toolbar's names)
+  is translated and its numbers are formatted in the provider locale; an inline bar takes its place
+  at once, and only the floating bar fades in.
+- `NumberField`: the minus and plus buttons are named in the provider locale ("Increase" and
+  "Decrease" in English). `Overflow`'s default "More actions" is translated too.
+- `TableColumnResizer`: the line is in the drop line's colour with no tint behind it on hover, the
+  width shows on the tooltip's surface, and the drag guide stops above the table's horizontal
+  scrollbar.
+- `Reorderable`: a keyboard drag starts at the item's own place, announced between its
+  neighbours (a drop there moves nothing), and each arrow key moves it one place.
+
+### Fixed
+
+- `Checkbox`: a disabled checkbox looks disabled outside a `Field` too.
+- `Overflow`: a hidden item whose content changed (a renamed label, a summary cleared from
+  outside) is measured again, so the same width always gives the same layout.
+- `Chip`: after its remove button is pressed, focus goes to the chip now in its place, as after
+  Delete, instead of to the page.
+
 ## [0.3.0] - 2026-11-02
 
 ### Added
