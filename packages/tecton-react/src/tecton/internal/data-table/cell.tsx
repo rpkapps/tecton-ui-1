@@ -36,6 +36,7 @@ import { Link } from "@tecton/react/link"
 import type { Store } from "../store"
 import type { DataTableActions } from "./context"
 import type { EngineColumn, Formatter, GroupRow, ItemRow } from "./engine/index"
+import type { FlashStore } from "./live-bridge"
 import type { RowOrder } from "./row-order"
 
 /** What detail rows draw: `renderDetail`, kept apart so a new one renders only them. */
@@ -104,6 +105,8 @@ type RowShared<T> = {
   handlePin: CellPin | undefined
   /** Columns are pinned: the row is opaque, each cell draws its border. */
   pinned: boolean
+  /** Live data's highlights (`highlightChanges`); `null` when off. */
+  live: FlashStore | null
   actions: DataTableActions<T>
 }
 

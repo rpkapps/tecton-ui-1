@@ -87,6 +87,27 @@ export default defineTranslations({
       one: "Φορτώθηκε {total} ακόμη γραμμή",
       other: "Φορτώθηκαν {total} ακόμη γραμμές",
     },
+    rowsAdded: {
+      one: "Προστέθηκε {total} γραμμή",
+      other: "Προστέθηκαν {total} γραμμές",
+    },
+    newRows: { one: "{total} νέα γραμμή", other: "{total} νέες γραμμές" },
+    newRowsAbove: {
+      one: "{total} νέα γραμμή παραπάνω",
+      other: "{total} νέες γραμμές παραπάνω",
+    },
+    newRowsBelow: {
+      one: "{total} νέα γραμμή παρακάτω",
+      other: "{total} νέες γραμμές παρακάτω",
+    },
+    newRowsOnOtherPages: {
+      one: "{total} νέα γραμμή σε άλλη σελίδα",
+      other: "{total} νέες γραμμές σε άλλες σελίδες",
+    },
+    showNewRows: {
+      one: "Εμφάνιση {total} νέας γραμμής",
+      other: "Εμφάνιση {total} νέων γραμμών",
+    },
     sortPositionAscending:
       "ταξινομημένο σε αύξουσα σειρά, {position} από {total} στη σειρά ταξινόμησης",
     sortPositionDescending:

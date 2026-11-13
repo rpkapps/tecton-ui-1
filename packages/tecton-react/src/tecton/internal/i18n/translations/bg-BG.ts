@@ -87,6 +87,27 @@ export default defineTranslations({
       one: "Зареден е още {total} ред",
       other: "Заредени са още {total} реда",
     },
+    rowsAdded: {
+      one: "Добавен е {total} ред",
+      other: "Добавени са {total} реда",
+    },
+    newRows: { one: "{total} нов ред", other: "{total} нови реда" },
+    newRowsAbove: {
+      one: "{total} нов ред отгоре",
+      other: "{total} нови реда отгоре",
+    },
+    newRowsBelow: {
+      one: "{total} нов ред отдолу",
+      other: "{total} нови реда отдолу",
+    },
+    newRowsOnOtherPages: {
+      one: "{total} нов ред на друга страница",
+      other: "{total} нови реда на други страници",
+    },
+    showNewRows: {
+      one: "Покажи {total} нов ред",
+      other: "Покажи {total} нови реда",
+    },
     sortPositionAscending:
       "сортирано във възходящ ред, {position} от {total} в реда на сортиране",
     sortPositionDescending:

@@ -236,6 +236,37 @@ describe("translations", () => {
     }
   })
 
+  it("carries live data's strings in every locale, a form for each of its plural categories", async () => {
+    const keys = [
+      "rowsAdded",
+      "newRows",
+      "newRowsAbove",
+      "newRowsBelow",
+      "newRowsOnOtherPages",
+      "showNewRows",
+    ]
+    for (const [file, table] of await locales()) {
+      const categories = new Intl.PluralRules(
+        file.replace(/\.ts$/, "")
+      ).resolvedOptions().pluralCategories
+      for (const key of keys) {
+        const translation = table.dataTable[key]
+        expect([file, key, typeof translation]).toEqual([file, key, "object"])
+        const forms = translation as Record<string, string>
+        // Spanish, French, Italian and Portuguese's "many" (a million rows)
+        // reads as "other".
+        for (const category of categories)
+          if (category !== "many" || !/^(es|fr|it|pt)-/.test(file))
+            expect([file, key, category, typeof forms[category]]).toEqual([
+              file,
+              key,
+              category,
+              "string",
+            ])
+      }
+    }
+  })
+
   it("renders the power search's strings in the provider's locale", async () => {
     function Label() {
       const t = useTranslations("dataTableQuery")

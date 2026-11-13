@@ -89,6 +89,36 @@ export default defineTranslations({
       two: "נטענו {total} שורות נוספות",
       other: "נטענו {total} שורות נוספות",
     },
+    rowsAdded: {
+      one: "נוספה {total} שורה",
+      two: "נוספו {total} שורות",
+      other: "נוספו {total} שורות",
+    },
+    newRows: {
+      one: "{total} שורה חדשה",
+      two: "{total} שורות חדשות",
+      other: "{total} שורות חדשות",
+    },
+    newRowsAbove: {
+      one: "{total} שורה חדשה למעלה",
+      two: "{total} שורות חדשות למעלה",
+      other: "{total} שורות חדשות למעלה",
+    },
+    newRowsBelow: {
+      one: "{total} שורה חדשה למטה",
+      two: "{total} שורות חדשות למטה",
+      other: "{total} שורות חדשות למטה",
+    },
+    newRowsOnOtherPages: {
+      one: "{total} שורה חדשה בעמוד אחר",
+      two: "{total} שורות חדשות בעמודים אחרים",
+      other: "{total} שורות חדשות בעמודים אחרים",
+    },
+    showNewRows: {
+      one: "הצג {total} שורה חדשה",
+      two: "הצג {total} שורות חדשות",
+      other: "הצג {total} שורות חדשות",
+    },
     sortPositionAscending: "מוין בסדר עולה, {position} מתוך {total} בסדר המיון",
     sortPositionDescending:
       "מוין בסדר יורד, {position} מתוך {total} בסדר המיון",

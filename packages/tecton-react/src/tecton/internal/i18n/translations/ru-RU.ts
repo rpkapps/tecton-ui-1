@@ -90,6 +90,42 @@ export default defineTranslations({
       many: "Загружено ещё {total} строк",
       other: "Загружено ещё {total} строки",
     },
+    rowsAdded: {
+      one: "Добавлена {total} строка",
+      few: "Добавлены {total} строки",
+      many: "Добавлено {total} строк",
+      other: "Добавлено {total} строки",
+    },
+    newRows: {
+      one: "{total} новая строка",
+      few: "{total} новые строки",
+      many: "{total} новых строк",
+      other: "{total} новой строки",
+    },
+    newRowsAbove: {
+      one: "{total} новая строка выше",
+      few: "{total} новые строки выше",
+      many: "{total} новых строк выше",
+      other: "{total} новой строки выше",
+    },
+    newRowsBelow: {
+      one: "{total} новая строка ниже",
+      few: "{total} новые строки ниже",
+      many: "{total} новых строк ниже",
+      other: "{total} новой строки ниже",
+    },
+    newRowsOnOtherPages: {
+      one: "{total} новая строка на другой странице",
+      few: "{total} новые строки на других страницах",
+      many: "{total} новых строк на других страницах",
+      other: "{total} новой строки на других страницах",
+    },
+    showNewRows: {
+      one: "Показать {total} новую строку",
+      few: "Показать {total} новые строки",
+      many: "Показать {total} новых строк",
+      other: "Показать {total} новой строки",
+    },
     sortPositionAscending:
       "отсортировано в порядке возрастания, {position} из {total} в порядке сортировки",
     sortPositionDescending:

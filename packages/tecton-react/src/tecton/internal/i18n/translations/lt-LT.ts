@@ -89,6 +89,42 @@ export default defineTranslations({
       many: "Įkelta dar {total} eilutės",
       other: "Įkelta dar {total} eilučių",
     },
+    rowsAdded: {
+      one: "Pridėta {total} eilutė",
+      few: "Pridėtos {total} eilutės",
+      many: "Pridėta {total} eilutės",
+      other: "Pridėta {total} eilučių",
+    },
+    newRows: {
+      one: "{total} nauja eilutė",
+      few: "{total} naujos eilutės",
+      many: "{total} naujos eilutės",
+      other: "{total} naujų eilučių",
+    },
+    newRowsAbove: {
+      one: "{total} nauja eilutė viršuje",
+      few: "{total} naujos eilutės viršuje",
+      many: "{total} naujos eilutės viršuje",
+      other: "{total} naujų eilučių viršuje",
+    },
+    newRowsBelow: {
+      one: "{total} nauja eilutė apačioje",
+      few: "{total} naujos eilutės apačioje",
+      many: "{total} naujos eilutės apačioje",
+      other: "{total} naujų eilučių apačioje",
+    },
+    newRowsOnOtherPages: {
+      one: "{total} nauja eilutė kitame puslapyje",
+      few: "{total} naujos eilutės kituose puslapiuose",
+      many: "{total} naujos eilutės kituose puslapiuose",
+      other: "{total} naujų eilučių kituose puslapiuose",
+    },
+    showNewRows: {
+      one: "Rodyti {total} naują eilutę",
+      few: "Rodyti {total} naujas eilutes",
+      many: "Rodyti {total} naujos eilutės",
+      other: "Rodyti {total} naujų eilučių",
+    },
     sortPositionAscending:
       "surikiuota didėjančia tvarka, {position} iš {total} rikiavimo tvarkoje",
     sortPositionDescending:

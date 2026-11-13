@@ -94,6 +94,13 @@ import {
   type DataTableState,
 } from "./context"
 import { loadFeature, usePrefetchFeatures, type FeatureName } from "./lazy"
+import {
+  resolveHighlightChanges,
+  useHeldItems,
+  useLiveFeed,
+  type DataTableHighlightChanges,
+  type LiveControl,
+} from "./live"
 import { viewChangeReason } from "./view-reason"
 import { createWarnings, type Warn } from "./warnings"
 
@@ -172,6 +179,15 @@ type DataTableProps<T> = Omit<
   size?: "default" | "sm"
   /** Every even row on an alternate surface. */
   striped?: boolean
+  /**
+   * Live data: rows added to `items` after the first render are highlighted
+   * where they land; those out of view are counted in a "new rows" button
+   * at the edge of the table that goes to them; and rows in view do not
+   * move while the user points at, focuses or uses a menu in the rows (the
+   * additions that would move them wait until then). `true`, or `{
+   * duration }` for the highlight's ms (1,500 by default).
+   */
+  highlightChanges?: DataTableHighlightChanges
   // Features: on at the root, a column can only turn one off.
   /** Header buttons sort; on by default. */
   sortable?: boolean
@@ -307,6 +323,8 @@ type Latest<T> = {
   onPageSizeChange: DataTableProps<T>["onPageSizeChange"]
   onRetry: DataTableProps<T>["onRetry"]
   onLoadMore: DataTableProps<T>["onLoadMore"]
+  /** Live data's held rows (`highlightChanges`); `null` when off. */
+  live: LiveControl | null
   setClears: React.Dispatch<React.SetStateAction<number>>
   setView: (view: DataTablePartialView) => void
   setValue: (value: ReadonlyArray<string>) => void
@@ -695,7 +713,15 @@ function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
       now().onRetry?.()
     },
     loadMore() {
-      now().onLoadMore?.()
+      const current = now()
+      current.live?.loadMoreAsked()
+      current.onLoadMore?.()
+    },
+    holdRows(ids) {
+      now().live?.hold(ids)
+    },
+    releaseRows() {
+      now().live?.release()
     },
     reorderRows(ids, reason, event) {
       const details = createChangeEventDetails(reason, event)
@@ -780,6 +806,7 @@ function DataTable<T>({
   onLoadMore,
   size = "default",
   striped = false,
+  highlightChanges,
   sortable = true,
   multiSort = true,
   filterable = false,
@@ -879,14 +906,23 @@ function DataTable<T>({
 
   const labels = React.useMemo(() => ({ yes: t("yes"), no: t("no") }), [t])
   const [engine] = React.useState(() => createDataTableEngine<T>())
-  const model = engine.run({
+  // Live data: the engine gets the items but the rows held back while the
+  // table is in use (`live.ts`).
+  const liveOptions = resolveHighlightChanges(highlightChanges)
+  const shown = useHeldItems({
+    on: liveOptions !== null,
     items,
+    itemToId,
+    itemToChildren,
+  })
+  const model = engine.run({
+    items: shown.items,
     columns,
     view,
     locale,
     labels,
     itemToId,
-    itemToChildren,
+    itemToChildren: shown.itemToChildren,
     isItemDisabled,
     dataMode,
     sortable,
@@ -906,6 +942,25 @@ function DataTable<T>({
     return () => (counts ??= countGroups(groupKeys, closedGroups))
   }, [groupKeys, closedGroups])
   const formatter = getFormatter(getColumnModel(columns), locale, labels)
+  const { live, control: liveControl } = useLiveFeed({
+    options: liveOptions,
+    model,
+    server,
+    // In server mode, the rows of a new view are not additions.
+    viewKey:
+      server && liveOptions
+        ? JSON.stringify([
+            view.search,
+            view.filters,
+            view.sorting,
+            view.grouping,
+            pagination ? [page, pageSize] : null,
+          ])
+        : "",
+    loading,
+    held: shown.held,
+    setHeld: shown.setHeld,
+  })
 
   const allMatching =
     matching &&
@@ -1016,6 +1071,7 @@ function DataTable<T>({
       loading,
       error: error ?? null,
       clears,
+      live,
     }),
     [
       columns,
@@ -1035,6 +1091,7 @@ function DataTable<T>({
       loading,
       error,
       clears,
+      live,
     ]
   )
 
@@ -1072,6 +1129,7 @@ function DataTable<T>({
     onPageSizeChange,
     onRetry,
     onLoadMore,
+    live: live ? liveControl : null,
     setClears,
     setView,
     setValue,

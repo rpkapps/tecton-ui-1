@@ -80,6 +80,27 @@ export default defineTranslations({
       one: "Indlæste {total} række mere",
       other: "Indlæste {total} rækker mere",
     },
+    rowsAdded: {
+      one: "{total} række tilføjet",
+      other: "{total} rækker tilføjet",
+    },
+    newRows: { one: "{total} ny række", other: "{total} nye rækker" },
+    newRowsAbove: {
+      one: "{total} ny række ovenfor",
+      other: "{total} nye rækker ovenfor",
+    },
+    newRowsBelow: {
+      one: "{total} ny række nedenfor",
+      other: "{total} nye rækker nedenfor",
+    },
+    newRowsOnOtherPages: {
+      one: "{total} ny række på en anden side",
+      other: "{total} nye rækker på andre sider",
+    },
+    showNewRows: {
+      one: "Vis {total} ny række",
+      other: "Vis {total} nye rækker",
+    },
     sortPositionAscending:
       "sorteret i stigende rækkefølge, {position} af {total} i sorteringsrækkefølgen",
     sortPositionDescending:

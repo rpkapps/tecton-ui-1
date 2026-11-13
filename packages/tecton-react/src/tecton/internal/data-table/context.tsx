@@ -27,6 +27,7 @@ import {
   type DataTableViewChangeReason,
   type Formatter,
 } from "./engine/index"
+import type { LiveState } from "./live"
 import type { Warn } from "./warnings"
 
 // Development only: every warning is behind `process.env.NODE_ENV`,
@@ -74,6 +75,11 @@ type DataTablePageChangeReason =
    * at the top of this one): the page that holds it.
    */
   | "group"
+  /**
+   * "New rows on other pages" pressed (`highlightChanges`): the page of
+   * the first of them.
+   */
+  | "new-rows"
   | "none"
 
 type DataTablePageSizeChangeReason = "select" | "none"
@@ -178,6 +184,8 @@ type DataTableState<T> = {
    * send.
    */
   readonly clears: number
+  /** Live data (`highlightChanges`): the rows added and held; `null` when off. */
+  readonly live: LiveState | null
 }
 
 /** What the parts do; each reads the latest props and state. */
@@ -275,6 +283,10 @@ type DataTableActions<T> = {
   retry: () => void
   /** The end of the rows came near: `onLoadMore`. */
   loadMore: () => void
+  /** Live data: keeps added rows (by id) from showing while the table is in use. */
+  holdRows: (ids: ReadonlyArray<string>) => void
+  /** Live data: shows the rows held. */
+  releaseRows: () => void
   /** Reports a new order of every item's id; `false` when cancelled. */
   reorderRows: (
     ids: ReadonlyArray<string>,

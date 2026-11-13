@@ -92,6 +92,30 @@ const enUS = {
       one: "Loaded {total} more row",
       other: "Loaded {total} more rows",
     },
+    // Live data (`highlightChanges`). Read when rows are added to the
+    // table: the plural form follows the rows added ({total}, formatted).
+    rowsAdded: { one: "{total} row added", other: "{total} rows added" },
+    // The button over the table's edge for added rows out of view: its
+    // text beside an up or down arrow, and its name, which says where
+    // they are.
+    newRows: { one: "{total} new row", other: "{total} new rows" },
+    newRowsAbove: {
+      one: "{total} new row above",
+      other: "{total} new rows above",
+    },
+    newRowsBelow: {
+      one: "{total} new row below",
+      other: "{total} new rows below",
+    },
+    newRowsOnOtherPages: {
+      one: "{total} new row on another page",
+      other: "{total} new rows on other pages",
+    },
+    // For added rows held back while the user works in the rows.
+    showNewRows: {
+      one: "Show {total} new row",
+      other: "Show {total} new rows",
+    },
     // In a sort button, when the table sorts by several columns.
     sortPositionAscending:
       "sorted in ascending order, {position} of {total} in sort order",

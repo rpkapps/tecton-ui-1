@@ -87,6 +87,36 @@ export default defineTranslations({
       one: "Ielādēta vēl {total} rinda",
       other: "Ielādētas vēl {total} rindas",
     },
+    rowsAdded: {
+      zero: "Pievienots {total} rindu",
+      one: "Pievienota {total} rinda",
+      other: "Pievienotas {total} rindas",
+    },
+    newRows: {
+      zero: "{total} jaunu rindu",
+      one: "{total} jauna rinda",
+      other: "{total} jaunas rindas",
+    },
+    newRowsAbove: {
+      zero: "{total} jaunu rindu augšā",
+      one: "{total} jauna rinda augšā",
+      other: "{total} jaunas rindas augšā",
+    },
+    newRowsBelow: {
+      zero: "{total} jaunu rindu apakšā",
+      one: "{total} jauna rinda apakšā",
+      other: "{total} jaunas rindas apakšā",
+    },
+    newRowsOnOtherPages: {
+      zero: "{total} jaunu rindu citās lapās",
+      one: "{total} jauna rinda citā lapā",
+      other: "{total} jaunas rindas citās lapās",
+    },
+    showNewRows: {
+      zero: "Rādīt {total} jaunu rindu",
+      one: "Rādīt {total} jaunu rindu",
+      other: "Rādīt {total} jaunas rindas",
+    },
     sortPositionAscending:
       "kārtots augošā secībā, {position} no {total} kārtošanas secībā",
     sortPositionDescending:

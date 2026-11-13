@@ -88,6 +88,27 @@ export default defineTranslations({
       one: "Se ha cargado {total} fila más",
       other: "Se han cargado {total} filas más",
     },
+    rowsAdded: {
+      one: "Se ha añadido {total} fila",
+      other: "Se han añadido {total} filas",
+    },
+    newRows: { one: "{total} fila nueva", other: "{total} filas nuevas" },
+    newRowsAbove: {
+      one: "{total} fila nueva arriba",
+      other: "{total} filas nuevas arriba",
+    },
+    newRowsBelow: {
+      one: "{total} fila nueva abajo",
+      other: "{total} filas nuevas abajo",
+    },
+    newRowsOnOtherPages: {
+      one: "{total} fila nueva en otra página",
+      other: "{total} filas nuevas en otras páginas",
+    },
+    showNewRows: {
+      one: "Mostrar {total} fila nueva",
+      other: "Mostrar {total} filas nuevas",
+    },
     sortPositionAscending:
       "ordenado en sentido ascendente, {position} de {total} en el orden de clasificación",
     sortPositionDescending:

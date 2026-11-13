@@ -154,6 +154,11 @@ type TableGridController = {
   scrollToRow: (value: string) => void
   /** Focuses the body row at this index (from 0), scrolled to when out of view. */
   focusRow: (index: number) => void
+  /**
+   * Scrolls the body row at this index (from 0) into view, rendered or not
+   * (a virtualized body's), clear of a sticky header and footer.
+   */
+  scrollToIndex: (index: number) => void
 }
 
 /** A body row's grid state, given by `TableRowConfig`. */
@@ -1744,6 +1749,10 @@ function useTableGrid(own: React.ComponentProps<"table">) {
       focusRow: (index) => {
         const at = headRows().length + index
         if (isBody(at)) whenRendered(at, focusElement)
+      },
+      scrollToIndex: (index) => {
+        const at = headRows().length + index
+        if (isBody(at)) whenRendered(at, scrollIntoView)
       },
     }
     return () => {

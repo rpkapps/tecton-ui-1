@@ -91,6 +91,42 @@ export default defineTranslations({
       few: "Naložene so še {total} vrstice",
       other: "Naloženih je še {total} vrstic",
     },
+    rowsAdded: {
+      one: "Dodana je {total} vrstica",
+      two: "Dodani sta {total} vrstici",
+      few: "Dodane so {total} vrstice",
+      other: "Dodanih je {total} vrstic",
+    },
+    newRows: {
+      one: "{total} nova vrstica",
+      two: "{total} novi vrstici",
+      few: "{total} nove vrstice",
+      other: "{total} novih vrstic",
+    },
+    newRowsAbove: {
+      one: "{total} nova vrstica zgoraj",
+      two: "{total} novi vrstici zgoraj",
+      few: "{total} nove vrstice zgoraj",
+      other: "{total} novih vrstic zgoraj",
+    },
+    newRowsBelow: {
+      one: "{total} nova vrstica spodaj",
+      two: "{total} novi vrstici spodaj",
+      few: "{total} nove vrstice spodaj",
+      other: "{total} novih vrstic spodaj",
+    },
+    newRowsOnOtherPages: {
+      one: "{total} nova vrstica na drugi strani",
+      two: "{total} novi vrstici na drugih straneh",
+      few: "{total} nove vrstice na drugih straneh",
+      other: "{total} novih vrstic na drugih straneh",
+    },
+    showNewRows: {
+      one: "Prikaži {total} novo vrstico",
+      two: "Prikaži {total} novi vrstici",
+      few: "Prikaži {total} nove vrstice",
+      other: "Prikaži {total} novih vrstic",
+    },
     sortPositionAscending:
       "razvrščeno v naraščajočem vrstnem redu, {position} od {total} v vrstnem redu razvrščanja",
     sortPositionDescending:

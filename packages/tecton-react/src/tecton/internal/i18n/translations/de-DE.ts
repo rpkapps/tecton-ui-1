@@ -85,6 +85,27 @@ export default defineTranslations({
       one: "{total} weitere Zeile geladen",
       other: "{total} weitere Zeilen geladen",
     },
+    rowsAdded: {
+      one: "{total} Zeile hinzugefügt",
+      other: "{total} Zeilen hinzugefügt",
+    },
+    newRows: { one: "{total} neue Zeile", other: "{total} neue Zeilen" },
+    newRowsAbove: {
+      one: "{total} neue Zeile oben",
+      other: "{total} neue Zeilen oben",
+    },
+    newRowsBelow: {
+      one: "{total} neue Zeile unten",
+      other: "{total} neue Zeilen unten",
+    },
+    newRowsOnOtherPages: {
+      one: "{total} neue Zeile auf einer anderen Seite",
+      other: "{total} neue Zeilen auf anderen Seiten",
+    },
+    showNewRows: {
+      one: "{total} neue Zeile anzeigen",
+      other: "{total} neue Zeilen anzeigen",
+    },
     sortPositionAscending:
       "sortiert in aufsteigender Reihenfolge, {position} von {total} in der Sortierreihenfolge",
     sortPositionDescending:

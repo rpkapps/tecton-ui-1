@@ -80,6 +80,21 @@ export default defineTranslations({
       one: "Lastet inn {total} rad til",
       other: "Lastet inn {total} rader til",
     },
+    rowsAdded: { one: "{total} rad lagt til", other: "{total} rader lagt til" },
+    newRows: { one: "{total} ny rad", other: "{total} nye rader" },
+    newRowsAbove: {
+      one: "{total} ny rad ovenfor",
+      other: "{total} nye rader ovenfor",
+    },
+    newRowsBelow: {
+      one: "{total} ny rad nedenfor",
+      other: "{total} nye rader nedenfor",
+    },
+    newRowsOnOtherPages: {
+      one: "{total} ny rad på en annen side",
+      other: "{total} nye rader på andre sider",
+    },
+    showNewRows: { one: "Vis {total} ny rad", other: "Vis {total} nye rader" },
     sortPositionAscending:
       "sortert i stigende rekkefølge, {position} av {total} i sorteringsrekkefølgen",
     sortPositionDescending:

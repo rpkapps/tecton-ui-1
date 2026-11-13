@@ -84,6 +84,27 @@ export default defineTranslations({
       one: "{total} extra rij geladen",
       other: "{total} extra rijen geladen",
     },
+    rowsAdded: {
+      one: "{total} rij toegevoegd",
+      other: "{total} rijen toegevoegd",
+    },
+    newRows: { one: "{total} nieuwe rij", other: "{total} nieuwe rijen" },
+    newRowsAbove: {
+      one: "{total} nieuwe rij hierboven",
+      other: "{total} nieuwe rijen hierboven",
+    },
+    newRowsBelow: {
+      one: "{total} nieuwe rij hieronder",
+      other: "{total} nieuwe rijen hieronder",
+    },
+    newRowsOnOtherPages: {
+      one: "{total} nieuwe rij op een andere pagina",
+      other: "{total} nieuwe rijen op andere pagina’s",
+    },
+    showNewRows: {
+      one: "{total} nieuwe rij weergeven",
+      other: "{total} nieuwe rijen weergeven",
+    },
     sortPositionAscending:
       "gesorteerd in oplopende volgorde, {position} van {total} in de sorteervolgorde",
     sortPositionDescending:

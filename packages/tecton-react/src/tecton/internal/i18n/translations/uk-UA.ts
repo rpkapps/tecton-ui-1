@@ -91,6 +91,42 @@ export default defineTranslations({
       many: "Завантажено ще {total} рядків",
       other: "Завантажено ще {total} рядка",
     },
+    rowsAdded: {
+      one: "Додано {total} рядок",
+      few: "Додано {total} рядки",
+      many: "Додано {total} рядків",
+      other: "Додано {total} рядка",
+    },
+    newRows: {
+      one: "{total} новий рядок",
+      few: "{total} нові рядки",
+      many: "{total} нових рядків",
+      other: "{total} нового рядка",
+    },
+    newRowsAbove: {
+      one: "{total} новий рядок вище",
+      few: "{total} нові рядки вище",
+      many: "{total} нових рядків вище",
+      other: "{total} нового рядка вище",
+    },
+    newRowsBelow: {
+      one: "{total} новий рядок нижче",
+      few: "{total} нові рядки нижче",
+      many: "{total} нових рядків нижче",
+      other: "{total} нового рядка нижче",
+    },
+    newRowsOnOtherPages: {
+      one: "{total} новий рядок на іншій сторінці",
+      few: "{total} нові рядки на інших сторінках",
+      many: "{total} нових рядків на інших сторінках",
+      other: "{total} нового рядка на інших сторінках",
+    },
+    showNewRows: {
+      one: "Показати {total} новий рядок",
+      few: "Показати {total} нові рядки",
+      many: "Показати {total} нових рядків",
+      other: "Показати {total} нового рядка",
+    },
     sortPositionAscending:
       "відсортовано у висхідному порядку, {position} з {total} у порядку сортування",
     sortPositionDescending:

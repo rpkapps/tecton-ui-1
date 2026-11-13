@@ -88,6 +88,30 @@ export default defineTranslations({
       one: "{total} ligne de plus chargée",
       other: "{total} lignes de plus chargées",
     },
+    rowsAdded: {
+      one: "{total} ligne ajoutée",
+      other: "{total} lignes ajoutées",
+    },
+    newRows: {
+      one: "{total} nouvelle ligne",
+      other: "{total} nouvelles lignes",
+    },
+    newRowsAbove: {
+      one: "{total} nouvelle ligne au-dessus",
+      other: "{total} nouvelles lignes au-dessus",
+    },
+    newRowsBelow: {
+      one: "{total} nouvelle ligne en dessous",
+      other: "{total} nouvelles lignes en dessous",
+    },
+    newRowsOnOtherPages: {
+      one: "{total} nouvelle ligne sur une autre page",
+      other: "{total} nouvelles lignes sur d’autres pages",
+    },
+    showNewRows: {
+      one: "Afficher {total} nouvelle ligne",
+      other: "Afficher {total} nouvelles lignes",
+    },
     sortPositionAscending:
       "trié par ordre croissant, {position} sur {total} dans l’ordre de tri",
     sortPositionDescending:

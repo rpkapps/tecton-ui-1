@@ -83,6 +83,24 @@ export default defineTranslations({
       one: "{total} satır daha yüklendi",
       other: "{total} satır daha yüklendi",
     },
+    rowsAdded: { one: "{total} satır eklendi", other: "{total} satır eklendi" },
+    newRows: { one: "{total} yeni satır", other: "{total} yeni satır" },
+    newRowsAbove: {
+      one: "Yukarıda {total} yeni satır",
+      other: "Yukarıda {total} yeni satır",
+    },
+    newRowsBelow: {
+      one: "Aşağıda {total} yeni satır",
+      other: "Aşağıda {total} yeni satır",
+    },
+    newRowsOnOtherPages: {
+      one: "Başka bir sayfada {total} yeni satır",
+      other: "Diğer sayfalarda {total} yeni satır",
+    },
+    showNewRows: {
+      one: "{total} yeni satırı göster",
+      other: "{total} yeni satırı göster",
+    },
     sortPositionAscending:
       "artan düzende sıralandı, sıralama düzeninde {position}/{total}",
     sortPositionDescending:

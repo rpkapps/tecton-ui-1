@@ -91,6 +91,42 @@ export default defineTranslations({
       many: "Wczytano jeszcze {total} wierszy",
       other: "Wczytano jeszcze {total} wiersza",
     },
+    rowsAdded: {
+      one: "Dodano {total} wiersz",
+      few: "Dodano {total} wiersze",
+      many: "Dodano {total} wierszy",
+      other: "Dodano {total} wiersza",
+    },
+    newRows: {
+      one: "{total} nowy wiersz",
+      few: "{total} nowe wiersze",
+      many: "{total} nowych wierszy",
+      other: "{total} nowego wiersza",
+    },
+    newRowsAbove: {
+      one: "{total} nowy wiersz powyżej",
+      few: "{total} nowe wiersze powyżej",
+      many: "{total} nowych wierszy powyżej",
+      other: "{total} nowego wiersza powyżej",
+    },
+    newRowsBelow: {
+      one: "{total} nowy wiersz poniżej",
+      few: "{total} nowe wiersze poniżej",
+      many: "{total} nowych wierszy poniżej",
+      other: "{total} nowego wiersza poniżej",
+    },
+    newRowsOnOtherPages: {
+      one: "{total} nowy wiersz na innej stronie",
+      few: "{total} nowe wiersze na innych stronach",
+      many: "{total} nowych wierszy na innych stronach",
+      other: "{total} nowego wiersza na innych stronach",
+    },
+    showNewRows: {
+      one: "Pokaż {total} nowy wiersz",
+      few: "Pokaż {total} nowe wiersze",
+      many: "Pokaż {total} nowych wierszy",
+      other: "Pokaż {total} nowego wiersza",
+    },
     sortPositionAscending:
       "posortowano w porządku rosnącym, {position} z {total} w kolejności sortowania",
     sortPositionDescending:

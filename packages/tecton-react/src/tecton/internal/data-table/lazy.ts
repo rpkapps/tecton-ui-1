@@ -53,6 +53,11 @@ const FEATURES = {
    * suggestions and help (its strings are the `dataTableQuery` namespace).
    */
   query: feature(() => import("./query-search")),
+  /**
+   * `highlightChanges`: what added rows look like and do in the content
+   * (`live-rows.tsx`), loaded as soon as the table mounts, before rows come.
+   */
+  live: feature(() => import("./live-rows"), true),
 }
 
 type FeatureName = keyof typeof FEATURES

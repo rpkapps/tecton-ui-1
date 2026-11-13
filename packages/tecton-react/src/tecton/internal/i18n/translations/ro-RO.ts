@@ -88,6 +88,36 @@ export default defineTranslations({
       few: "S-au încărcat încă {total} rânduri",
       other: "S-au încărcat încă {total} de rânduri",
     },
+    rowsAdded: {
+      one: "S-a adăugat {total} rând",
+      few: "S-au adăugat {total} rânduri",
+      other: "S-au adăugat {total} de rânduri",
+    },
+    newRows: {
+      one: "{total} rând nou",
+      few: "{total} rânduri noi",
+      other: "{total} de rânduri noi",
+    },
+    newRowsAbove: {
+      one: "{total} rând nou mai sus",
+      few: "{total} rânduri noi mai sus",
+      other: "{total} de rânduri noi mai sus",
+    },
+    newRowsBelow: {
+      one: "{total} rând nou mai jos",
+      few: "{total} rânduri noi mai jos",
+      other: "{total} de rânduri noi mai jos",
+    },
+    newRowsOnOtherPages: {
+      one: "{total} rând nou pe altă pagină",
+      few: "{total} rânduri noi pe alte pagini",
+      other: "{total} de rânduri noi pe alte pagini",
+    },
+    showNewRows: {
+      one: "Afișează {total} rând nou",
+      few: "Afișează {total} rânduri noi",
+      other: "Afișează {total} de rânduri noi",
+    },
     sortPositionAscending:
       "sortat în ordine crescătoare, {position} din {total} în ordinea de sortare",
     sortPositionDescending:

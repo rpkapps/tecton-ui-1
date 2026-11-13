@@ -85,6 +85,24 @@ export default defineTranslations({
       one: "Ladattiin {total} rivi lisää",
       other: "Ladattiin {total} riviä lisää",
     },
+    rowsAdded: { one: "{total} rivi lisätty", other: "{total} riviä lisätty" },
+    newRows: { one: "{total} uusi rivi", other: "{total} uutta riviä" },
+    newRowsAbove: {
+      one: "{total} uusi rivi yläpuolella",
+      other: "{total} uutta riviä yläpuolella",
+    },
+    newRowsBelow: {
+      one: "{total} uusi rivi alapuolella",
+      other: "{total} uutta riviä alapuolella",
+    },
+    newRowsOnOtherPages: {
+      one: "{total} uusi rivi toisella sivulla",
+      other: "{total} uutta riviä muilla sivuilla",
+    },
+    showNewRows: {
+      one: "Näytä {total} uusi rivi",
+      other: "Näytä {total} uutta riviä",
+    },
     sortPositionAscending:
       "lajiteltu nousevassa järjestyksessä, {position}/{total} lajittelujärjestyksessä",
     sortPositionDescending:

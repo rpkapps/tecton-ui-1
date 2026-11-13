@@ -33,6 +33,13 @@
  * it, or goes to the first new row once there are no more, and the status
  * region says how many rows came. The status region says how many rows
  * match once the search or filters change.
+ *
+ * Live data (`highlightChanges`): its module, loaded as the table mounts,
+ * renders after the table (`live-rows.tsx`: highlights, the "new rows"
+ * buttons, rows held while in use); the rows render their key and
+ * highlight from a store the content keeps for it, and `LiveAnchor` around
+ * the table keeps the rows in view still as items change
+ * (`live-bridge.ts`). The status region says how many rows came.
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -90,8 +97,10 @@ import {
 } from "./engine/index"
 import { useFeature, usePrefetchFeatures } from "./lazy"
 import { DataTableHeader, shownHeaderRows, type HeaderShared } from "./header"
+import { createLiveBridge, LiveAnchor, type LiveMessage } from "./live-bridge"
 import { describeRow, renderRow } from "./row"
 import { createRowOrder, inItemOrder, type RowOrder } from "./row-order"
+import { scrollParentOf } from "./scroll-parent"
 import { DataTableTotals } from "./totals"
 import {
   DataTableEmptyState,
@@ -150,6 +159,7 @@ const NO_OPEN: ReadonlyArray<string> = []
 const NO_FEATURES = [] as const
 const NO_LABEL_WIDTH = { "--data-table-group-label": "initial" }
 const RESIZER = ["resizer"] as const
+const LIVE = ["live"] as const
 
 /** Rows shown while the first rows load, without pages. */
 const LOADING_ROWS = 5
@@ -248,37 +258,6 @@ function useRowOrder(
   }, [order, model, on])
   return { order: movable ? order : null, module: feature.module }
 }
-
-/**
- * Where the loading rows after a table's last row (`element`) scroll into
- * view: the nearest ancestor that clips them vertically, else the page
- * (`null`). An ancestor clips when it scrolls vertically and is bounded:
- * its content taller than it, or a `max-height`. The table's own frame
- * scrolls sideways (`overflow-x: auto` makes its `overflow-y` auto too)
- * but grows with its rows, so it counts only once it is taller inside.
- */
-function scrollParentOf(element: HTMLElement) {
-  const root = element.ownerDocument.documentElement
-  for (
-    let at = element.parentElement;
-    at && at !== root && at !== element.ownerDocument.body;
-    at = at.parentElement
-  ) {
-    const { overflowY, maxHeight } = getComputedStyle(at)
-    if (
-      overflowY !== "auto" &&
-      overflowY !== "scroll" &&
-      overflowY !== "overlay"
-    )
-      continue
-    if (at.scrollHeight > at.clientHeight + 1) return at
-    if (maxHeight !== "none" && maxHeight !== "" && !at.matches(FRAME))
-      return at
-  }
-  return null
-}
-
-const FRAME = '[data-slot="table-container"]'
 
 /**
  * Load more (`hasMore`): calls `loadMore` once the loading rows after the
@@ -638,9 +617,10 @@ function useResults({
 
 /**
  * What the table's live region says: "Loading" while it loads, then the
- * rows loaded, or "No results" when nothing matches, and how many rows
- * match after the search or filters change (`results`). Nothing on the
- * first render: a table that is there from the start is not announced.
+ * rows loaded, or "No results" when nothing matches, how many rows live
+ * data added (`liveAdded`), and how many rows match after the search or
+ * filters change (`results`). Nothing on the first render: a table that
+ * is there from the start is not announced.
  */
 function useStatus({
   failed,
@@ -650,6 +630,7 @@ function useStatus({
   noResults,
   results,
   added,
+  liveAdded,
 }: {
   /** The error state says it, as an alert. */
   failed: boolean
@@ -661,6 +642,8 @@ function useStatus({
   results: number | null
   /** The rows "Show more" brought, to say; `null` for none. */
   added: number | null
+  /** The rows live data added since it last said so; `null` for none. */
+  liveAdded: number | null
 }) {
   const t = useTranslations("dataTable")
   const format = useNumberFormat()
@@ -673,6 +656,8 @@ function useStatus({
   if (failed) return ""
   if (loading) return t("loading")
   if (noResults) return t("noResultsTitle")
+  if (liveAdded !== null)
+    return t("rowsAdded", { count: liveAdded, total: format.format(liveAdded) })
   if (added !== null)
     return t("moreRowsLoaded", { count: added, total: format.format(added) })
   if (results !== null)
@@ -850,6 +835,19 @@ function DataTableContentImpl({
   usePrefetchFeatures(options.resizableColumns ? RESIZER : NO_FEATURES)
 
   const gridController = React.useRef<TableGridController | null>(null)
+  const closedGroups = useDataTableSelector(
+    context,
+    (state) => state.closedGroups
+  )
+  // Live data (`highlightChanges`): added rows highlighted, counted while
+  // out of view, held back while the rows are in use. Its module loads as
+  // the table mounts (`live-rows.tsx`); the rows and the anchor read the
+  // bridge, which it writes.
+  const live = useDataTableSelector(context, (state) => state.live)
+  const liveFeature = useFeature("live", live !== null)
+  usePrefetchFeatures(live ? LIVE : NO_FEATURES)
+  const [liveBridge] = React.useState(createLiveBridge)
+  const [liveMessage, setLiveMessage] = React.useState<LiveMessage | null>(null)
   const rowOrder = useRowOrder(context, frame, gridController, model, handle)
 
   const rowHeader = shownColumns.find(
@@ -933,6 +931,7 @@ function DataTableContentImpl({
       selectionPin,
       handlePin,
       pinned,
+      live: live ? liveBridge.flashes : null,
       actions,
     }),
     [
@@ -967,6 +966,7 @@ function DataTableContentImpl({
       selectionPin,
       handlePin,
       pinned,
+      live ? liveBridge : null,
       actions,
     ]
   )
@@ -1033,10 +1033,6 @@ function DataTableContentImpl({
   })
   // What the last render changed, for `restoreFocusTo`: a group closed on
   // the same page, not the page itself (a page change, rows clamped).
-  const closedGroups = useDataTableSelector(
-    context,
-    (state) => state.closedGroups
-  )
   const lastRender = React.useRef({ closedGroups, page: model.page })
   const groupClosed = React.useRef(false)
   React.useInsertionEffect(() => {
@@ -1191,7 +1187,13 @@ function DataTableContentImpl({
     noResults: !failed && !loading && searching && rows.length === 0,
     results: failed ? null : results,
     added: failed ? null : (showMore.added?.count ?? null),
+    liveAdded: failed || !live ? null : (liveMessage?.count ?? null),
   })
+  // What came last is said: a search, a load or "Show more" after rows
+  // were added replaces their message.
+  React.useEffect(() => {
+    setLiveMessage(null)
+  }, [matchKey, loading, showMore.added])
   const moreRows = React.useRef<HTMLTableSectionElement | null>(null)
   const view = useDataTableSelector(context, (state) => state.view)
   useLoadMore(moreRows, container, {
@@ -1258,6 +1260,13 @@ function DataTableContentImpl({
     order: order.order,
     movable: order.movable,
   }
+  // The highlight's length, read by its animation (`live-rows.tsx`).
+  const Live = live ? liveFeature.module?.DataTableLive : undefined
+  const liveDuration = live
+    ? ({
+        "--tecton-live-duration": `${live.duration}ms`,
+      } as React.CSSProperties)
+    : undefined
   const ReorderColumns = order.module?.DataTableColumnReorder
   const ReorderRows = rowOrder.module?.DataTableRowReorder
 
@@ -1277,120 +1286,150 @@ function DataTableContentImpl({
       )}
       {...props}
       style={
-        sizer.style || labelWidth
-          ? { ...sizer.style, ...labelWidth, ...props.style }
+        sizer.style || labelWidth || liveDuration
+          ? { ...sizer.style, ...labelWidth, ...liveDuration, ...props.style }
           : props.style
       }
     >
       <DataTableGrid context={context} options={grid}>
         <TableContainerConfig value={containerConfig}>
-          <Table
-            size={options.size}
-            striped={options.striped}
-            virtualized={virtualized}
-            className={cn(
-              sizer.mode === "fixed" && "table-fixed",
-              // Each cell draws its border (`cell.tsx`).
-              pinned && "border-separate border-spacing-0"
-            )}
-            style={
-              sizer.mode === "fixed" && sizing ? tableStyle(sizing) : undefined
-            }
-            aria-label={ariaLabel}
-            aria-labelledby={ariaLabelledBy}
-            aria-describedby={ariaDescribedBy}
-            aria-busy={loading || undefined}
-            // Left out, not undefined: a virtualized body counts its own.
-            {...(rowCount === undefined ? {} : { "aria-rowcount": rowCount })}
-          >
-            {sizer.mode === "fixed" && sizing && (
-              <colgroup data-slot="data-table-columns">
-                {handle && <col style={{ width: sizer.controls.handle }} />}
-                {selection && (
-                  <col style={{ width: sizer.controls.selection }} />
-                )}
-                {colWidths(sizing).map((width, index) => (
-                  <col
-                    key={shownColumns[index].id}
-                    className={hideBelowColumn(shownColumns[index])}
-                    style={width === undefined ? undefined : { width }}
-                  />
-                ))}
-              </colgroup>
-            )}
-            <DataTableHeader shared={header} />
-            {/* The loading rows in a body of their own, not the rows':
+          {/* Keeps the rows in view still as items change (live data). */}
+          <LiveAnchor itemsKey={model.ids} bridge={live ? liveBridge : null}>
+            <Table
+              size={options.size}
+              striped={options.striped}
+              virtualized={virtualized}
+              className={cn(
+                sizer.mode === "fixed" && "table-fixed",
+                // Each cell draws its border (`cell.tsx`).
+                pinned && "border-separate border-spacing-0"
+              )}
+              style={
+                sizer.mode === "fixed" && sizing
+                  ? tableStyle(sizing)
+                  : undefined
+              }
+              aria-label={ariaLabel}
+              aria-labelledby={ariaLabelledBy}
+              aria-describedby={ariaDescribedBy}
+              aria-busy={loading || undefined}
+              // Left out, not undefined: a virtualized body counts its own.
+              {...(rowCount === undefined ? {} : { "aria-rowcount": rowCount })}
+            >
+              {sizer.mode === "fixed" && sizing && (
+                <colgroup data-slot="data-table-columns">
+                  {handle && <col style={{ width: sizer.controls.handle }} />}
+                  {selection && (
+                    <col style={{ width: sizer.controls.selection }} />
+                  )}
+                  {colWidths(sizing).map((width, index) => (
+                    <col
+                      key={shownColumns[index].id}
+                      className={hideBelowColumn(shownColumns[index])}
+                      style={width === undefined ? undefined : { width }}
+                    />
+                  ))}
+                </colgroup>
+              )}
+              <DataTableHeader shared={header} />
+              {/* The loading rows in a body of their own, not the rows':
                 a virtualized body locks its columns' widths and measures
                 its rows' height from the first rows it renders, which are
                 to be the rows (a badge, a button), not a line of skeleton
                 each. */}
-            {firstLoad ? (
-              <tbody
-                data-slot="data-table-loading-rows"
-                className="[&_tr:last-child]:border-0"
-              >
-                {loadingRows(
-                  options.pagination ? model.pageSize : LOADING_ROWS,
-                  layout.columns,
-                  shared
-                )}
-              </tbody>
-            ) : (
-              <TableBody items={rows} empty={state}>
-                {render}
-              </TableBody>
-            )}
-            {more &&
-              !inlineError &&
-              (button ? (
-                <tbody data-slot="data-table-loading-more">
-                  <DataTableShowMore
-                    columns={shared.columnCount}
-                    shown={itemCount}
-                    total={options.rowCountKnown ? model.rowCount : undefined}
-                    loading={loading}
-                    onShowMore={showMore.press}
-                  />
+              {firstLoad ? (
+                <tbody
+                  data-slot="data-table-loading-rows"
+                  className="[&_tr:last-child]:border-0"
+                >
+                  {loadingRows(
+                    options.pagination ? model.pageSize : LOADING_ROWS,
+                    layout.columns,
+                    shared
+                  )}
                 </tbody>
               ) : (
-                <tbody
-                  ref={moreRows}
-                  aria-hidden
-                  data-slot="data-table-loading-more"
-                >
-                  {loadingRows(MORE_ROWS, layout.columns, shared)}
+                <TableBody items={rows} empty={state}>
+                  {render}
+                </TableBody>
+              )}
+              {more &&
+                !inlineError &&
+                (button ? (
+                  <tbody data-slot="data-table-loading-more">
+                    <DataTableShowMore
+                      columns={shared.columnCount}
+                      shown={itemCount}
+                      total={options.rowCountKnown ? model.rowCount : undefined}
+                      loading={loading}
+                      onShowMore={showMore.press}
+                    />
+                  </tbody>
+                ) : (
+                  <tbody
+                    ref={moreRows}
+                    aria-hidden
+                    data-slot="data-table-loading-more"
+                  >
+                    {loadingRows(MORE_ROWS, layout.columns, shared)}
+                  </tbody>
+                ))}
+              {inlineError && (
+                <tbody data-slot="data-table-loading-more">
+                  <DataTableMoreError
+                    columns={shared.columnCount}
+                    description={error === true ? undefined : error}
+                    onRetry={options.retryable ? actions.retry : undefined}
+                  />
                 </tbody>
-              ))}
-            {inlineError && (
-              <tbody data-slot="data-table-loading-more">
-                <DataTableMoreError
-                  columns={shared.columnCount}
-                  description={error === true ? undefined : error}
-                  onRetry={options.retryable ? actions.retry : undefined}
+              )}
+              {footerRows > 0 && (
+                <DataTableTotals
+                  model={model}
+                  shared={shared}
+                  virtualized={virtualized}
+                  rowIndex={
+                    rowCount === undefined || rowCount < 0
+                      ? undefined
+                      : rowCount
+                  }
                 />
-              </tbody>
-            )}
-            {footerRows > 0 && (
-              <DataTableTotals
-                model={model}
-                shared={shared}
-                virtualized={virtualized}
-                rowIndex={
-                  rowCount === undefined || rowCount < 0 ? undefined : rowCount
-                }
-              />
-            )}
-          </Table>
+              )}
+            </Table>
+          </LiveAnchor>
         </TableContainerConfig>
       </DataTableGrid>
       {refreshing && <DataTableProgress top={headerHeight} />}
       {ReorderColumns && order.order && <ReorderColumns order={order.order} />}
       {ReorderRows && rowOrder.order && <ReorderRows order={rowOrder.order} />}
+      {live && Live && (
+        <Live
+          live={live}
+          bridge={liveBridge}
+          onMessage={setLiveMessage}
+          frame={frame}
+          virtualized={virtualized}
+          model={model}
+          rows={rows}
+          pagination={options.pagination && !server}
+          closedGroups={closedGroups}
+          grid={gridController}
+          actions={actions}
+        />
+      )}
       {/* One region for the table's life, so each change is read; a new
           text for each batch "Show more" brought, read even when it says
           the same. */}
       <span role="status" className="sr-only">
-        <React.Fragment key={showMore.added?.key ?? 0}>{status}</React.Fragment>
+        <React.Fragment
+          key={
+            live && liveMessage
+              ? `live-${liveMessage.key}`
+              : (showMore.added?.key ?? 0)
+          }
+        >
+          {status}
+        </React.Fragment>
       </span>
     </div>
   )

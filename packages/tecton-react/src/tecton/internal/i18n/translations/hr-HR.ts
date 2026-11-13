@@ -87,6 +87,36 @@ export default defineTranslations({
       few: "Učitana su još {total} retka",
       other: "Učitano je još {total} redaka",
     },
+    rowsAdded: {
+      one: "Dodan je {total} redak",
+      few: "Dodana su {total} retka",
+      other: "Dodano je {total} redaka",
+    },
+    newRows: {
+      one: "{total} novi redak",
+      few: "{total} nova retka",
+      other: "{total} novih redaka",
+    },
+    newRowsAbove: {
+      one: "{total} novi redak iznad",
+      few: "{total} nova retka iznad",
+      other: "{total} novih redaka iznad",
+    },
+    newRowsBelow: {
+      one: "{total} novi redak ispod",
+      few: "{total} nova retka ispod",
+      other: "{total} novih redaka ispod",
+    },
+    newRowsOnOtherPages: {
+      one: "{total} novi redak na drugoj stranici",
+      few: "{total} nova retka na drugim stranicama",
+      other: "{total} novih redaka na drugim stranicama",
+    },
+    showNewRows: {
+      one: "Prikaži {total} novi redak",
+      few: "Prikaži {total} nova retka",
+      other: "Prikaži {total} novih redaka",
+    },
     sortPositionAscending:
       "razvrstano rastućim redoslijedom, {position} od {total} u redoslijedu sortiranja",
     sortPositionDescending:

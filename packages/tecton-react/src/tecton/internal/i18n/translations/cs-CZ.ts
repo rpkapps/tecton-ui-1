@@ -89,6 +89,42 @@ export default defineTranslations({
       many: "Načteno dalších {total} řádku",
       other: "Načteno dalších {total} řádků",
     },
+    rowsAdded: {
+      one: "Přidán {total} řádek",
+      few: "Přidány {total} řádky",
+      many: "Přidáno {total} řádku",
+      other: "Přidáno {total} řádků",
+    },
+    newRows: {
+      one: "{total} nový řádek",
+      few: "{total} nové řádky",
+      many: "{total} nového řádku",
+      other: "{total} nových řádků",
+    },
+    newRowsAbove: {
+      one: "{total} nový řádek nahoře",
+      few: "{total} nové řádky nahoře",
+      many: "{total} nového řádku nahoře",
+      other: "{total} nových řádků nahoře",
+    },
+    newRowsBelow: {
+      one: "{total} nový řádek dole",
+      few: "{total} nové řádky dole",
+      many: "{total} nového řádku dole",
+      other: "{total} nových řádků dole",
+    },
+    newRowsOnOtherPages: {
+      one: "{total} nový řádek na jiné stránce",
+      few: "{total} nové řádky na jiných stránkách",
+      many: "{total} nového řádku na jiných stránkách",
+      other: "{total} nových řádků na jiných stránkách",
+    },
+    showNewRows: {
+      one: "Zobrazit {total} nový řádek",
+      few: "Zobrazit {total} nové řádky",
+      many: "Zobrazit {total} nového řádku",
+      other: "Zobrazit {total} nových řádků",
+    },
     sortPositionAscending:
       "řazeno vzestupně, {position} z {total} v pořadí řazení",
     sortPositionDescending:

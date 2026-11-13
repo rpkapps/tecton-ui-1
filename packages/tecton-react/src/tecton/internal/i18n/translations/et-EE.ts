@@ -83,6 +83,24 @@ export default defineTranslations({
       one: "Laaditi veel {total} rida",
       other: "Laaditi veel {total} rida",
     },
+    rowsAdded: { one: "Lisati {total} rida", other: "Lisati {total} rida" },
+    newRows: { one: "{total} uus rida", other: "{total} uut rida" },
+    newRowsAbove: {
+      one: "{total} uus rida ülal",
+      other: "{total} uut rida ülal",
+    },
+    newRowsBelow: {
+      one: "{total} uus rida all",
+      other: "{total} uut rida all",
+    },
+    newRowsOnOtherPages: {
+      one: "{total} uus rida teisel lehel",
+      other: "{total} uut rida teistel lehtedel",
+    },
+    showNewRows: {
+      one: "Kuva {total} uus rida",
+      other: "Kuva {total} uut rida",
+    },
     sortPositionAscending:
       "sorditud tõusvas järjestuses, {position}/{total} sortimisjärjekorras",
     sortPositionDescending:

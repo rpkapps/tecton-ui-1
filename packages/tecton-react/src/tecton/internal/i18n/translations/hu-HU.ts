@@ -83,6 +83,18 @@ export default defineTranslations({
       one: "További {total} sor betöltve",
       other: "További {total} sor betöltve",
     },
+    rowsAdded: { one: "{total} sor hozzáadva", other: "{total} sor hozzáadva" },
+    newRows: { one: "{total} új sor", other: "{total} új sor" },
+    newRowsAbove: { one: "{total} új sor fent", other: "{total} új sor fent" },
+    newRowsBelow: { one: "{total} új sor lent", other: "{total} új sor lent" },
+    newRowsOnOtherPages: {
+      one: "{total} új sor egy másik oldalon",
+      other: "{total} új sor más oldalakon",
+    },
+    showNewRows: {
+      one: "{total} új sor megjelenítése",
+      other: "{total} új sor megjelenítése",
+    },
     sortPositionAscending:
       "rendezve növekvő sorrendben, {position}/{total} a rendezési sorrendben",
     sortPositionDescending:

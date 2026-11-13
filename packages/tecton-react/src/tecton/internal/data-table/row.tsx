@@ -12,6 +12,10 @@
  * `data-index`) on to its `TableRow`, inside the `TableRowConfig` that tells
  * the grid its id, text, level and expanded state.
  *
+ * With `highlightChanges`, item and group rows render their key and, while
+ * highlighted, their highlight's start (`useLiveRowProps`): a row reads
+ * only its own, so a highlight renders that row alone.
+ *
  * With `reorderableRows`, a column of drag handles comes first
  * (`row-order.tsx`): each item row's handle, drawn while the rows are in
  * the items' order; each row's `tr` is registered for the drag.
@@ -75,6 +79,7 @@ import {
   type GroupRow,
   type ItemRow,
 } from "./engine/index"
+import { useLiveRowProps } from "./live-bridge"
 import { DataTableRowHandle } from "./row-order"
 import { DataTableSelectionCheckbox, hasContent } from "./selection-checkbox"
 
@@ -156,10 +161,12 @@ function ItemRowComponent<T>({
       ? actions.disabledReasonOf(row.item)
       : undefined
   const reasonId = React.useId()
+  const live = useLiveRowProps(shared.live, row.key)
   return (
     <TableRowConfig value={config}>
       <TableRow
         {...props}
+        {...live}
         aria-describedby={hasContent(reason) ? reasonId : undefined}
         ref={shared.order?.register(row.id)}
         aria-rowindex={rowIndex(row.id, props["aria-rowindex"], shared)}
@@ -298,6 +305,7 @@ function GroupRowComponent<T>({
     total: row.count.toLocaleString(shared.formatter.locale),
   })
   const labelId = React.useId()
+  const live = useLiveRowProps(shared.live, row.key)
   const config = React.useMemo<TableRowGridProps>(
     () => ({
       id: row.key,
@@ -470,6 +478,7 @@ function GroupRowComponent<T>({
     <TableRowConfig value={config}>
       <TableRow
         {...props}
+        {...live}
         data-slot="data-table-group-row"
         aria-rowindex={rowIndex(row.id, props["aria-rowindex"], shared)}
         aria-posinset={row.posinset}
