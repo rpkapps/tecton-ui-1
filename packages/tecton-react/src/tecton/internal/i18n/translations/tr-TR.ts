@@ -130,6 +130,8 @@ export default defineTranslations({
     search: "Ara",
     searchChip: "Arama",
     clearSearch: "Aramayı temizle",
+    searchOrFilter: "Ara veya filtrele",
+    searchSyntax: "Arama söz dizimi",
     filterBy: "{columnName} ölçütüne göre filtrele",
     filterContains: "İçerir",
     filterMin: "En az",

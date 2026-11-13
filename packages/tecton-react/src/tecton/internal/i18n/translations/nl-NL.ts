@@ -131,6 +131,8 @@ export default defineTranslations({
     search: "Zoeken",
     searchChip: "Zoekopdracht",
     clearSearch: "Zoekopdracht wissen",
+    searchOrFilter: "Zoeken of filteren",
+    searchSyntax: "Zoeksyntaxis",
     filterBy: "Filteren op {columnName}",
     filterContains: "Bevat",
     filterMin: "Min.",

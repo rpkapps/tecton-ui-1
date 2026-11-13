@@ -126,6 +126,8 @@ export default defineTranslations({
     search: "Sök",
     searchChip: "Sökning",
     clearSearch: "Rensa sökning",
+    searchOrFilter: "Sök eller filtrera",
+    searchSyntax: "Söksyntax",
     filterBy: "Filtrera efter {columnName}",
     filterContains: "Innehåller",
     filterMin: "Min.",

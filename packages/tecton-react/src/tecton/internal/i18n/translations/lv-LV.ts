@@ -134,6 +134,8 @@ export default defineTranslations({
     search: "Meklēt",
     searchChip: "Meklēšana",
     clearSearch: "Notīrīt meklēšanu",
+    searchOrFilter: "Meklēt vai filtrēt",
+    searchSyntax: "Meklēšanas sintakse",
     filterBy: "Filtrēt pēc kolonnas {columnName}",
     filterContains: "Satur",
     filterMin: "Min.",

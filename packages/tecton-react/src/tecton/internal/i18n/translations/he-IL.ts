@@ -133,6 +133,8 @@ export default defineTranslations({
     search: "חיפוש",
     searchChip: "חיפוש",
     clearSearch: "נקה חיפוש",
+    searchOrFilter: "חיפוש או סינון",
+    searchSyntax: "תחביר החיפוש",
     filterBy: "סנן לפי {columnName}",
     filterContains: "מכיל",
     filterMin: "מינימום",

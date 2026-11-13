@@ -138,6 +138,8 @@ export default defineTranslations({
     search: "Iskanje",
     searchChip: "Iskanje",
     clearSearch: "Počistite iskanje",
+    searchOrFilter: "Išči ali filtriraj",
+    searchSyntax: "Skladnja iskanja",
     filterBy: "Filtriraj po stolpcu {columnName}",
     filterContains: "Vsebuje",
     filterMin: "Najm.",

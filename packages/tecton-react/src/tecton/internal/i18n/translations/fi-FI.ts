@@ -131,6 +131,8 @@ export default defineTranslations({
     search: "Hae",
     searchChip: "Haku",
     clearSearch: "Tyhjennä haku",
+    searchOrFilter: "Hae tai suodata",
+    searchSyntax: "Hakusyntaksi",
     filterBy: "Suodata sarakkeen {columnName} mukaan",
     filterContains: "Sisältää",
     filterMin: "Väh.",

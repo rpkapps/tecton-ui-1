@@ -117,6 +117,8 @@ export default defineTranslations({
     search: "搜索",
     searchChip: "搜索",
     clearSearch: "清除搜索",
+    searchOrFilter: "搜索或筛选",
+    searchSyntax: "搜索语法",
     filterBy: "按 {columnName} 筛选",
     filterContains: "包含",
     filterMin: "最小值",

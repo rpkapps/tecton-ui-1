@@ -138,6 +138,8 @@ export default defineTranslations({
     search: "بحث",
     searchChip: "البحث",
     clearSearch: "مسح البحث",
+    searchOrFilter: "بحث أو تصفية",
+    searchSyntax: "صيغة البحث",
     filterBy: "تصفية حسب {columnName}",
     filterContains: "يحتوي على",
     filterMin: "الحد الأدنى",

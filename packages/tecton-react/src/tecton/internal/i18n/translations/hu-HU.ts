@@ -130,6 +130,8 @@ export default defineTranslations({
     search: "Keresés",
     searchChip: "Keresés",
     clearSearch: "Keresés törlése",
+    searchOrFilter: "Keresés vagy szűrés",
+    searchSyntax: "Keresési szintaxis",
     filterBy: "Szűrés {columnName} szerint",
     filterContains: "Tartalmazza",
     filterMin: "Min.",

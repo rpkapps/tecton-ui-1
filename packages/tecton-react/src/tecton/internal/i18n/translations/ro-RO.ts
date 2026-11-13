@@ -134,6 +134,8 @@ export default defineTranslations({
     search: "Căutați",
     searchChip: "Căutare",
     clearSearch: "Ștergeți căutarea",
+    searchOrFilter: "Căutare sau filtrare",
+    searchSyntax: "Sintaxa căutării",
     filterBy: "Filtrați după {columnName}",
     filterContains: "Conține",
     filterMin: "Min.",

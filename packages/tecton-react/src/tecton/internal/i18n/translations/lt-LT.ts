@@ -136,6 +136,8 @@ export default defineTranslations({
     search: "Ieškoti",
     searchChip: "Paieška",
     clearSearch: "Išvalyti paiešką",
+    searchOrFilter: "Ieškoti arba filtruoti",
+    searchSyntax: "Paieškos sintaksė",
     filterBy: "Filtruoti pagal stulpelį {columnName}",
     filterContains: "Yra",
     filterMin: "Min.",

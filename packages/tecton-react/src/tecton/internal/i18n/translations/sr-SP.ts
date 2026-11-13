@@ -132,6 +132,8 @@ export default defineTranslations({
     search: "Pretraži",
     searchChip: "Pretraga",
     clearSearch: "Obrišite pretragu",
+    searchOrFilter: "Pretraži ili filtriraj",
+    searchSyntax: "Sintaksa pretrage",
     filterBy: "Filtriraj po koloni {columnName}",
     filterContains: "Sadrži",
     filterMin: "Min.",

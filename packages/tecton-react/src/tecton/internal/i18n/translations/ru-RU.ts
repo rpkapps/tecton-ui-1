@@ -137,6 +137,8 @@ export default defineTranslations({
     search: "Поиск",
     searchChip: "Поиск",
     clearSearch: "Очистить поиск",
+    searchOrFilter: "Поиск или фильтр",
+    searchSyntax: "Синтаксис поиска",
     filterBy: "Фильтр по столбцу {columnName}",
     filterContains: "Содержит",
     filterMin: "Мин.",

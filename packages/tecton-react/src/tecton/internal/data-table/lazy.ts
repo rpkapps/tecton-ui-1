@@ -48,6 +48,11 @@ const FEATURES = {
   dateInput: feature(() => import("../date-calendar")),
   /** `resizableColumns`: the columns' resizers and their drags. */
   resizer: feature(() => import("../../table-column-resizer")),
+  /**
+   * `DataTableSearch syntax="query"`: the query language, its colours,
+   * suggestions and help, and their strings (`query-translations.ts`).
+   */
+  query: feature(() => import("./query-search")),
 }
 
 type FeatureName = keyof typeof FEATURES

@@ -156,6 +156,11 @@ const enUS = {
     // The search's chip among the active filters ("Search: well 4"): a noun.
     searchChip: "Search",
     clearSearch: "Clear search",
+    // `DataTableSearch syntax="query"`: its placeholder, and its "?"
+    // button and the popover it opens. Bundled, as the field shows them
+    // before its other strings have loaded.
+    searchOrFilter: "Search or filter",
+    searchSyntax: "Search syntax",
     // A filter's button (`DataTableFilter`), named after its column, and
     // the fields in its popover.
     filterBy: "Filter by {columnName}",

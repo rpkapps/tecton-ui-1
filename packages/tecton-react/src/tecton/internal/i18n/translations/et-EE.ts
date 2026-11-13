@@ -128,6 +128,8 @@ export default defineTranslations({
     search: "Otsi",
     searchChip: "Otsing",
     clearSearch: "Tühjenda otsing",
+    searchOrFilter: "Otsi või filtreeri",
+    searchSyntax: "Otsingu süntaks",
     filterBy: "Filtreeri veeru {columnName} järgi",
     filterContains: "Sisaldab",
     filterMin: "Min",

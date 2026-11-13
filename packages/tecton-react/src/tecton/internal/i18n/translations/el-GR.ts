@@ -134,6 +134,8 @@ export default defineTranslations({
     search: "Αναζήτηση",
     searchChip: "Αναζήτηση",
     clearSearch: "Απαλοιφή αναζήτησης",
+    searchOrFilter: "Αναζήτηση ή φιλτράρισμα",
+    searchSyntax: "Σύνταξη αναζήτησης",
     filterBy: "Φιλτράρισμα κατά {columnName}",
     filterContains: "Περιέχει",
     filterMin: "Ελάχ.",

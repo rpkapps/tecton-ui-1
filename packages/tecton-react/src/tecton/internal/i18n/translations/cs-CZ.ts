@@ -134,6 +134,8 @@ export default defineTranslations({
     search: "Hledat",
     searchChip: "Hledání",
     clearSearch: "Vymazat hledání",
+    searchOrFilter: "Hledat nebo filtrovat",
+    searchSyntax: "Syntaxe hledání",
     filterBy: "Filtrovat podle sloupce {columnName}",
     filterContains: "Obsahuje",
     filterMin: "Min.",

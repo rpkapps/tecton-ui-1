@@ -153,9 +153,12 @@ function ToolbarItem({
  */
 function DataTableToolbarSearch({
   label,
+  wide = false,
   children,
 }: {
   label: string
+  /** A query field: wider, for its terms. */
+  wide?: boolean
   children: React.ReactNode
 }) {
   const inToolbar = React.useContext(InToolbar)
@@ -166,7 +169,7 @@ function DataTableToolbarSearch({
       priority={SEARCH_PRIORITY}
       label={label}
       labelBehavior="keep"
-      elastic={{ min: "8rem", max: "16rem" }}
+      elastic={wide ? QUERY_WIDTH : TEXT_WIDTH}
     >
       {children}
     </OverflowItem>
@@ -174,6 +177,10 @@ function DataTableToolbarSearch({
 }
 
 const SEARCH_PRIORITY = 10
+const TEXT_WIDTH = { min: "8rem", max: "16rem" }
+// A query field keeps one width, the toolbar's other items going into its
+// menu first: it does not grow and shrink as filter buttons' values change.
+const QUERY_WIDTH = { min: "min(28rem, 100%)", max: "28rem" }
 
 export { DataTableToolbar, DataTableToolbarItem, DataTableToolbarSearch }
 export type { DataTableToolbarProps }

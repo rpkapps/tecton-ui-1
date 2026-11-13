@@ -138,6 +138,8 @@ export default defineTranslations({
     search: "Пошук",
     searchChip: "Пошук",
     clearSearch: "Очистити пошук",
+    searchOrFilter: "Пошук або фільтр",
+    searchSyntax: "Синтаксис пошуку",
     filterBy: "Фільтр за стовпцем {columnName}",
     filterContains: "Містить",
     filterMin: "Мін.",

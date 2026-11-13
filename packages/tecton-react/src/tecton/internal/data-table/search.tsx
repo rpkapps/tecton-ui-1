@@ -14,10 +14,19 @@
  * button, empties it (Escape on an empty field is left to what is around
  * it, a dialog that closes). Only this part renders as the user types: the
  * rows render when the search reaches the view, and only those that change.
+ *
+ * With `syntax="query"` the field is a power search: the view's filters and
+ * search written as a query (`status:drilling td:>3000 gullfaks`), whose
+ * terms set the same filters the filter buttons do, with colours,
+ * suggestions and help. Its query layer loads on demand (`lazy.ts`, the
+ * `query` feature: `query-search.tsx`), in idle time or as the field is
+ * pointed at or focused; until then this plain field stands in its place,
+ * the same size, and what is typed in it is kept and read once it loads. A
+ * table with the plain search never loads it.
  */
 import * as React from "react"
 import { cn } from "cn"
-import { SearchIcon, XIcon } from "lucide-react"
+import { CircleHelpIcon, SearchIcon, XIcon } from "lucide-react"
 
 import {
   InputGroup,
@@ -34,20 +43,37 @@ import {
 } from "./context"
 import { useDelayedCommit } from "./delayed-commit"
 import { setSearch } from "./engine/index"
+import { useFeature, usePrefetchFeatures, type FeatureName } from "./lazy"
+import type { QueryHandoff } from "./query-search"
 import { DataTableToolbarSearch } from "./toolbar"
 
 type DataTableSearchProps = Omit<
   React.ComponentProps<"input">,
   "value" | "defaultValue" | "onChange" | "type"
->
+> & {
+  /**
+   * `"text"`: the search, matched as text. `"query"`: a power search,
+   * whose typed terms (`status:drilling td:>3000`) set the columns' filters,
+   * with suggestions and help.
+   */
+  syntax?: "text" | "query"
+}
 
-function DataTableSearch({
+function DataTableSearch({ syntax = "text", ...props }: DataTableSearchProps) {
+  return syntax === "query" ? (
+    <QuerySearchField {...props} />
+  ) : (
+    <TextSearch {...props} />
+  )
+}
+
+function TextSearch({
   className,
   placeholder,
   "aria-label": ariaLabel,
   onKeyDown,
   ...props
-}: DataTableSearchProps) {
+}: Omit<DataTableSearchProps, "syntax">) {
   const t = useTranslations("dataTable")
   const context = useDataTableContext<unknown>("DataTableSearch")
   const { actions } = context
@@ -119,6 +145,124 @@ function DataTableSearch({
           </InputGroupAddon>
         )}
       </InputGroup>
+    </DataTableToolbarSearch>
+  )
+}
+
+const QUERY: ReadonlyArray<FeatureName> = ["query"]
+
+/**
+ * `syntax="query"`: the plain field until the query layer has loaded (the
+ * same size and parts, its "?" too), then the query field, handed what was
+ * typed, the selection and focus.
+ */
+function QuerySearchField({
+  className,
+  placeholder,
+  "aria-label": ariaLabel,
+  onKeyDown,
+  ...props
+}: Omit<DataTableSearchProps, "syntax">) {
+  const t = useTranslations("dataTable")
+  const context = useDataTableContext<unknown>("DataTableSearch")
+  const filterable = useDataTableSelector(
+    context,
+    (state) => state.options.filterable
+  )
+  const search = useDataTableSelector(context, (state) => state.view.search)
+  useFeatureWarning(context, !filterable, "DataTableSearch", "`filterable`")
+  usePrefetchFeatures(filterable ? QUERY : [])
+  const { module, load } = useFeature("query", filterable)
+  const handoff = React.useRef<QueryHandoff>({
+    text: null,
+    selectionStart: null,
+    selectionEnd: null,
+    focused: false,
+    help: false,
+  })
+  const [typed, setTyped] = React.useState<string | null>(null)
+  if (!filterable) return null
+
+  const label = ariaLabel ?? t("search")
+  if (module)
+    return (
+      <DataTableToolbarSearch label={label} wide>
+        <module.QuerySearch
+          {...props}
+          className={className}
+          placeholder={placeholder}
+          label={label}
+          onKeyDown={onKeyDown}
+          handoff={handoff.current}
+        />
+      </DataTableToolbarSearch>
+    )
+  const keep = (input: HTMLInputElement, focused: boolean) => {
+    handoff.current = {
+      ...handoff.current,
+      selectionStart: input.selectionStart,
+      selectionEnd: input.selectionEnd,
+      focused,
+    }
+  }
+  return (
+    <DataTableToolbarSearch label={label} wide>
+      <div
+        data-slot="data-table-search"
+        data-syntax="query"
+        className={cn("w-full sm:w-[28rem]", className)}
+        onPointerEnter={load}
+      >
+        <InputGroup className="w-full">
+          <div className="relative flex min-w-0 flex-1 self-stretch">
+            <InputGroupInput
+              className="h-full w-full ps-1.5 pe-1.5"
+              {...props}
+              placeholder={placeholder ?? t("searchOrFilter")}
+              aria-label={label}
+              spellCheck={false}
+              autoCapitalize="off"
+              autoCorrect="off"
+              autoComplete="off"
+              value={typed ?? search}
+              onChange={(event) => {
+                const text = event.currentTarget.value
+                handoff.current = { ...handoff.current, text }
+                keep(event.currentTarget, true)
+                setTyped(text)
+              }}
+              // The caret moved: by a key, a press, a selection.
+              onSelect={(event) => keep(event.currentTarget, true)}
+              onKeyUp={(event) => keep(event.currentTarget, true)}
+              onMouseUp={(event) => keep(event.currentTarget, true)}
+              onFocus={(event) => {
+                keep(event.currentTarget, true)
+                load()
+              }}
+              onBlur={(event) => keep(event.currentTarget, false)}
+              onKeyDown={onKeyDown}
+            />
+          </div>
+          <InputGroupAddon>
+            <SearchIcon aria-hidden />
+          </InputGroupAddon>
+          {/* Where the query field's list button would be: none, as here. */}
+          <InputGroupAddon align="inline-end" />
+          <InputGroupAddon align="inline-end">
+            <InputGroupButton
+              size="icon-xs"
+              aria-label={t("searchSyntax")}
+              data-slot="data-table-query-help"
+              onClick={() => {
+                handoff.current = { ...handoff.current, help: true }
+                load()
+              }}
+            >
+              <CircleHelpIcon aria-hidden />
+            </InputGroupButton>
+          </InputGroupAddon>
+        </InputGroup>
+      </div>
     </DataTableToolbarSearch>
   )
 }

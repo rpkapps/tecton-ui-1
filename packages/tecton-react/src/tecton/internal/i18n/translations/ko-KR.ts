@@ -119,6 +119,8 @@ export default defineTranslations({
     search: "검색",
     searchChip: "검색",
     clearSearch: "검색 지우기",
+    searchOrFilter: "검색 또는 필터",
+    searchSyntax: "검색 구문",
     filterBy: "{columnName}(으)로 필터링",
     filterContains: "포함",
     filterMin: "최소",

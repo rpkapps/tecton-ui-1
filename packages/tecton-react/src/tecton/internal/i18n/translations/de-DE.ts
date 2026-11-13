@@ -132,6 +132,8 @@ export default defineTranslations({
     search: "Suchen",
     searchChip: "Suche",
     clearSearch: "Suche löschen",
+    searchOrFilter: "Suchen oder filtern",
+    searchSyntax: "Suchsyntax",
     filterBy: "Nach {columnName} filtern",
     filterContains: "Enthält",
     filterMin: "Min.",
