@@ -65,6 +65,7 @@ import {
   useNumberFormat,
   type DataTableContextValue,
 } from "./context"
+import { setPageSize } from "./more-actions"
 
 type DataTablePaginationProps = React.ComponentProps<"div"> & {
   /**
@@ -236,7 +237,8 @@ function PageSize({
         value={String(pageSize)}
         onValueChange={(value, eventDetails) => {
           if (value !== null)
-            context.actions.setPageSize(
+            setPageSize(
+              context.actions,
               Number(value),
               "select",
               eventDetails.event

@@ -28,6 +28,7 @@ import {
   type Formatter,
 } from "./engine/index"
 import type { LiveState } from "./live"
+import type { ActionInternals } from "./root"
 import type { Warn } from "./warnings"
 
 // Development only: every warning is behind `process.env.NODE_ENV`,
@@ -188,7 +189,11 @@ type DataTableState<T> = {
   readonly live: LiveState | null
 }
 
-/** What the parts do; each reads the latest props and state. */
+/**
+ * What the parts do; each reads the latest props and state. Those only
+ * some parts and `useDataTable` call are functions of these, in
+ * `more-actions.ts`.
+ */
 type DataTableActions<T> = {
   /** Whether the view changed: `false` when it is the same, or cancelled. */
   setView: (
@@ -200,8 +205,6 @@ type DataTableActions<T> = {
   currentView: () => DataTableView
   /** Removes the search and every filter ("Clear all"); whether the view changed. */
   clearFilters: (event?: Event) => boolean
-  /** Back to the default view; whether it changed. */
-  resetView: (event?: Event) => boolean
   /** Changes the view as it is now, changes not rendered yet included. */
   updateView: (
     change: (view: DataTableView) => DataTableView,
@@ -219,11 +222,6 @@ type DataTableActions<T> = {
    * with `multiSort`.
    */
   sort: (column: string, multi: boolean, event?: Event) => boolean
-  setValue: (
-    value: ReadonlyArray<string>,
-    reason: DataTableSelectionChangeReason,
-    event?: Event
-  ) => void
   /** The grid's own selection changes: rows, Space, Ctrl + A, Escape. */
   gridValueChange: (
     value: Array<string>,
@@ -240,12 +238,6 @@ type DataTableActions<T> = {
   ) => void
   /** Opens or closes a group, by its key. */
   setGroupOpen: (key: string, open: boolean) => void
-  expandAllGroups: () => void
-  collapseAllGroups: () => void
-  selectAll: (event?: Event) => void
-  /** "Select all N": all-matching in server mode, every matching row in client mode. */
-  selectAllMatching: (event?: Event) => void
-  clearSelection: (event?: Event) => void
   setExpanded: (
     expanded: ReadonlyArray<string>,
     reason: DataTableExpandedChangeReason,
@@ -260,11 +252,6 @@ type DataTableActions<T> = {
   setPage: (
     page: number,
     reason: DataTablePageChangeReason,
-    event?: Event
-  ) => void
-  setPageSize: (
-    pageSize: number,
-    reason: DataTablePageSizeChangeReason,
     event?: Event
   ) => void
   /** A row activated (Enter, a click when rows do not select): `onActivate`, then its link. */
@@ -293,9 +280,10 @@ type DataTableActions<T> = {
     reason: DataTableRowOrderChangeReason,
     event?: Event
   ) => boolean
-  exportCsv: (options?: DataTableExportOptions) => Promise<string>
   /** Warns once in development. */
   warn: Warn
+  /** What the actions only some parts call build on (`more-actions.ts`). */
+  internals: ActionInternals<T>
 }
 
 type DataTableContextValue<T> = {

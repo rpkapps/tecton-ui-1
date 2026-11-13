@@ -42,7 +42,6 @@ import { useControlled } from "../primitives/use-controlled"
 import { useTectonRouter } from "../router"
 import { createStore } from "../store"
 import {
-  ALL_CLOSED,
   ALL_OPEN,
   allMatchingValue,
   clampPage,
@@ -51,14 +50,12 @@ import {
   createDefaultView,
   DEFAULT_PAGE_SIZE,
   DEFAULT_PAGE_SIZES,
-  enterAllMatching,
   getColumnModel,
   getFormatter,
   hidesEveryColumn,
   isGroupClosed,
   layoutColumns,
   reconcileView,
-  resolvePageSize,
   sameIds,
   sameView,
   selectAllIds,
@@ -93,7 +90,7 @@ import {
   type DataTableSelectionMode,
   type DataTableState,
 } from "./context"
-import { loadFeature, usePrefetchFeatures, type FeatureName } from "./lazy"
+import { usePrefetchFeatures, type FeatureName } from "./lazy"
 import {
   resolveHighlightChanges,
   useHeldItems,
@@ -388,19 +385,6 @@ function emit<TValue, TReason extends string>(
   return true
 }
 
-/** The rows of `ids`: the matching ones in display order, then the rest. */
-function itemsOf<T>(model: DataTableRowModel<T>, ids: ReadonlyArray<string>) {
-  const wanted = new Set(ids)
-  const items: Array<T> = []
-  for (const id of model.matchingIds())
-    if (wanted.delete(id)) items.push(model.item(id) as T)
-  for (const id of wanted) {
-    const item = model.item(id)
-    if (item !== undefined) items.push(item)
-  }
-  return items
-}
-
 /** The pieces of state a change has set and the root has not rendered yet. */
 type Pending<T> = Partial<
   Pick<
@@ -414,6 +398,34 @@ type Pending<T> = Partial<
     | "pageSize"
   >
 >
+
+/**
+ * What the actions only some parts call (`more-actions.ts`, kept out of a
+ * table's bundle unless a part that calls them is in it) build on: the
+ * steps of the actions here.
+ */
+type ActionInternals<T> = {
+  /** The props and state as of now: the last render's, with the changes made since. */
+  now: () => Latest<T>
+  /** Records changes made, until the root next commits. */
+  set: (patch: Pending<T>) => void
+  /** Reports and applies a new selection; whether it was. */
+  commitSelection: (
+    next: Array<string>,
+    reason: DataTableSelectionChangeReason,
+    event: Event | undefined,
+    allMatching: DataTableAllMatching | null
+  ) => boolean
+  changePage: (
+    page: number,
+    reason: DataTablePageChangeReason,
+    event?: Event
+  ) => void
+  /** The closed groups of the grouping as it is now. */
+  closedNow: () => ClosedGroups
+  /** Closes groups, in the grouping as it is now. */
+  setClosed: (closed: ClosedGroups) => void
+}
 
 /** The modifier keys of the event that activated a row, for its link. */
 function modifiers(event: Event | undefined) {
@@ -541,11 +553,6 @@ function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
       now().setClears((count) => count + 1)
       return actions.updateView(clearFilters, viewChangeReason, event)
     },
-    resetView(event) {
-      const current = now()
-      current.setClears((count) => count + 1)
-      return actions.setView(current.defaults, "reset", event)
-    },
     updateView(change, reason, event) {
       const { view } = now()
       const next = change(view)
@@ -565,9 +572,6 @@ function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
         event
       )
     },
-    setValue(value, reason, event) {
-      commitSelection([...value], reason, event, null)
-    },
     gridValueChange(next, details) {
       if (!changeSelection(next, details.reason, details.event))
         details.cancel()
@@ -585,35 +589,6 @@ function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
       const keys = new Set(closed.keys)
       if (!keys.delete(key)) keys.add(key)
       setClosed({ all: closed.all, keys })
-    },
-    // Every group, those of a grouping set in the same handler too: kept
-    // as "all", not as the groups there are now. Nothing to do without a
-    // grouping, or with every group so already.
-    expandAllGroups() {
-      const closed = closedNow()
-      if (now().view.grouping.length === 0) return
-      if (!closed.all && closed.keys.size === 0) return
-      setClosed(ALL_OPEN)
-    },
-    collapseAllGroups() {
-      const closed = closedNow()
-      if (now().view.grouping.length === 0) return
-      if (closed.all && closed.keys.size === 0) return
-      setClosed(ALL_CLOSED)
-    },
-    selectAll(event) {
-      if (now().selectionMode !== "multiple") return
-      commitSelection([...now().selectable()], "select-all", event, null)
-    },
-    selectAllMatching(event) {
-      const current = now()
-      if (current.selectionMode !== "multiple") return
-      if (!current.server) return actions.selectAll(event)
-      const { value, allMatching } = enterAllMatching(current.model)
-      commitSelection(value, "select-all-matching", event, allMatching)
-    },
-    clearSelection(event) {
-      commitSelection([], "clear", event, null)
     },
     setExpanded(expanded, reason, event) {
       const current = now()
@@ -638,26 +613,6 @@ function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
       // Against the page asked for, which a clamped one may not show yet.
       if (next === current.page) return
       changePage(next, reason, event)
-    },
-    setPageSize(pageSize, reason, event) {
-      const current = now()
-      const next = resolvePageSize(pageSize)
-      if (next === current.pageSize) return
-      if (
-        !emit(
-          current.onPageSizeChange,
-          current.setPageSize,
-          next,
-          reason,
-          event
-        )
-      )
-        return
-      set({ pageSize: next })
-      // The page that holds the first row shown, so the reader stays put.
-      const { model } = current
-      const page = Math.floor(((model.page - 1) * model.pageSize) / next) + 1
-      if (page !== current.page) changePage(page, "page-size", event)
     },
     activate(id, event) {
       const current = now()
@@ -728,25 +683,15 @@ function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
       now().onRowOrderChange?.([...ids], details)
       return !details.isCanceled
     },
-    async exportCsv(options = {}) {
-      const { toCsv } = await loadFeature("csv")
-      // Read once loaded: the state the export was asked for, or later.
-      const { model, layout, formatter, value, view, columns } = now()
-      const rows = options.rows ?? "filtered"
-      const items =
-        rows === "page"
-          ? model.pageItems()
-          : rows === "selected"
-            ? itemsOf(model, value)
-            : model.filteredItems()
-      const { byId } = getColumnModel(columns)
-      const shown =
-        options.columns === "all"
-          ? view.columns.order.flatMap((id) => byId.get(id) ?? [])
-          : layout.columns
-      return toCsv(items, shown, formatter, options)
-    },
     warn,
+    internals: {
+      now,
+      set,
+      commitSelection,
+      changePage,
+      closedNow,
+      setClosed,
+    },
   }
 
   /**
@@ -1295,5 +1240,5 @@ function DataTable<T>({
   )
 }
 
-export { DataTable }
-export type { DataTableProps }
+export { DataTable, emit }
+export type { ActionInternals, DataTableProps }

@@ -43,6 +43,7 @@ import {
 } from "./context"
 import { getColumnModel, sameIds, setGrouping } from "./engine/index"
 import { announceGrouping, toggleGrouping } from "./grouping"
+import { collapseAllGroups, expandAllGroups } from "./more-actions"
 import { useFirstItemFromKeyboard, type PartPopup } from "./part-popup"
 
 /** `list` with the item at `from` moved by `step` places. */
@@ -223,14 +224,14 @@ function GroupByItems({
           <DropdownMenuGroup>
             <DropdownMenuItem
               disabled={!canExpand}
-              onClick={() => actions.expandAllGroups()}
+              onClick={() => expandAllGroups(actions)}
             >
               <ChevronsUpDownIcon />
               {t("expandAllGroups")}
             </DropdownMenuItem>
             <DropdownMenuItem
               disabled={!canCollapse}
-              onClick={() => actions.collapseAllGroups()}
+              onClick={() => collapseAllGroups(actions)}
             >
               <ChevronsDownUpIcon />
               {t("collapseAllGroups")}

@@ -31,6 +31,7 @@ import {
   useNumberFormat,
   type DataTableState,
 } from "./context"
+import { clearSelection, selectAllMatching } from "./more-actions"
 
 type DataTableActionBarProps = Omit<ActionBarProps, "open">
 
@@ -139,7 +140,7 @@ function DataTableActionBar({
       aria-label={ariaLabel ?? t("selectionBar")}
       onOpenChange={(open) => {
         onOpenChange?.(open)
-        if (!open) actions.clearSelection()
+        if (!open) clearSelection(actions)
       }}
       onFocus={(event) => {
         onFocus?.(event)
@@ -160,7 +161,7 @@ function DataTableActionBar({
         count={count}
         total={total}
         clearLabel={t("clearSelection")}
-        onClear={() => actions.clearSelection()}
+        onClear={() => clearSelection(actions)}
       />
       {offerAll && (
         <Button
@@ -179,7 +180,7 @@ function DataTableActionBar({
             })
           }}
           onClick={(event: React.MouseEvent) =>
-            actions.selectAllMatching(event.nativeEvent)
+            selectAllMatching(actions, event.nativeEvent)
           }
         >
           {t("selectAllMatching", {

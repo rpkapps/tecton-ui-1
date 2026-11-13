@@ -32,6 +32,17 @@ import {
   type DataTableSort,
   type DataTableView,
 } from "./engine/index"
+import {
+  clearSelection,
+  collapseAllGroups,
+  expandAllGroups,
+  exportCsv,
+  resetView,
+  selectAll,
+  selectAllMatching,
+  setPageSize,
+  setValue,
+} from "./more-actions"
 import { viewChangeReason } from "./view-reason"
 
 type UseDataTableResult<T> = {
@@ -133,7 +144,7 @@ function createResult<T>(
     setGrouping: (grouping) =>
       update((current) => setGrouping(current, grouping), "group"),
     resetView: () => {
-      actions.resetView()
+      resetView(actions)
     },
     setColumnOrder: (order) =>
       update((current) => setColumnOrder(current, order), "reorder"),
@@ -146,15 +157,15 @@ function createResult<T>(
     resetColumns: () =>
       update((current) => resetColumns(current, state.defaults), "reset"),
     value: state.value,
-    setValue: (value) => actions.setValue(value, "none"),
-    selectAll: () => actions.selectAll(),
-    selectAllMatching: () => actions.selectAllMatching(),
-    clearSelection: () => actions.clearSelection(),
+    setValue: (value) => setValue(actions, value, "none"),
+    selectAll: () => selectAll(actions),
+    selectAllMatching: () => selectAllMatching(actions),
+    clearSelection: () => clearSelection(actions),
     allMatching: state.allMatching,
     expanded: state.expanded,
     setExpanded: (expanded) => actions.setExpanded(expanded, "none"),
-    expandAllGroups: () => actions.expandAllGroups(),
-    collapseAllGroups: () => actions.collapseAllGroups(),
+    expandAllGroups: () => expandAllGroups(actions),
+    collapseAllGroups: () => collapseAllGroups(actions),
     // Counted when read: a part that does not read them costs nothing.
     get canExpandAllGroups() {
       return state.groupCounts().closed > 0
@@ -168,7 +179,7 @@ function createResult<T>(
     pageSize: model.pageSize,
     pageSizes: state.options.pageSizes,
     setPage: (page) => actions.setPage(page, "none"),
-    setPageSize: (pageSize) => actions.setPageSize(pageSize, "none"),
+    setPageSize: (pageSize) => setPageSize(actions, pageSize, "none"),
     // Read when asked for: the model computes each list on first use.
     rows: {
       get all() {
@@ -184,7 +195,7 @@ function createResult<T>(
     rowCount: model.rowCount,
     columns: state.layout.columns.map((column) => column.definition),
     loading: state.loading,
-    exportCsv: actions.exportCsv,
+    exportCsv: (options) => exportCsv(actions, options),
   }
 }
 
