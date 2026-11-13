@@ -1,6 +1,6 @@
 ---
 component: AppFinder
-module: "@tecton/react/tecton/app-finder"
+module: "@tecton/react/app-finder"
 family: navigation
 exports: [AppFinder, AppFinderTrigger, AppFinderMenu, AppFinderInput, AppFinderList, AppFinderGroup, AppFinderItem, AppFinderIcon, appFinderIconVariants]
 notFor:

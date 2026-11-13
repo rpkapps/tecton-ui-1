@@ -1,7 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/base/empty-background.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { RefreshCcwIcon, BellIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Empty,
   EmptyContent,
@@ -9,7 +9,7 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@tecton/react/components/empty"
+} from "@tecton/react/empty"
 
 export function EmptyMuted() {
   return (

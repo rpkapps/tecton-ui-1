@@ -18,7 +18,7 @@
       "properties": {
         "strategy": { "type": "string" },
         "note": { "type": "string" },
-        "overrides": { "type": "object", "additionalProperties": { "type": "string" } },
+        "overrides": { "type": "object", "additionalProperties": { "type": "string", "pattern": "^(--tecton-|derived$)" } },
         "overrideNotes": { "type": "object", "additionalProperties": { "type": "string" } }
       }
     },
@@ -48,7 +48,7 @@
       "required": ["dark", "confidence"],
       "properties": {
         "dark": { "type": "string", "pattern": "^--tecton-" , "description": "Tecton token used in dark mode (and in light mode unless `light` is set)." },
-        "light": { "type": "string", "description": "Tecton token (`--tecton-…`), literal CSS value, or \"derived\" (OKLCH lightness inversion of the dark value)." },
+        "light": { "type": "string", "pattern": "^(--tecton-|derived$)", "description": "Tecton token (`--tecton-…`) or \"derived\" (OKLCH lightness inversion of the dark value). Never a literal colour: every value comes from a Tecton token." },
         "confidence": { "enum": ["exact", "approximated", "derived"] },
         "note": { "type": "string" }
       }

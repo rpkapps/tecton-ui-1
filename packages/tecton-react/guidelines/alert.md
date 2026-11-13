@@ -1,6 +1,6 @@
 ---
 component: Alert
-module: "@tecton/react/components/alert"
+module: "@tecton/react/alert"
 family: feedback
 exports: [Alert, AlertTitle, AlertDescription, AlertAction, alertVariants]
 notFor:

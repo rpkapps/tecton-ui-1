@@ -8,19 +8,16 @@ import {
   SmartphoneIcon,
   TabletIcon,
 } from "lucide-react"
-import { Button, buttonVariants } from "@tecton/react/components/button"
+import { Button, buttonVariants } from "@tecton/react/button"
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from "@tecton/react/components/resizable"
-import { Separator } from "@tecton/react/components/separator"
-import { Tabs, TabsList, TabsTrigger } from "@tecton/react/components/tabs"
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@tecton/react/components/toggle-group"
-import { CopyButton } from "@tecton/react/tecton/copy-button"
+} from "@tecton/react/resizable"
+import { Separator } from "@tecton/react/separator"
+import { Tabs, TabsList, TabsTrigger } from "@tecton/react/tabs"
+import { ToggleGroup, ToggleGroupItem } from "@tecton/react/toggle-group"
+import { CopyButton } from "@tecton/react/copy-button"
 
 import { CodeBlock } from "@/components/code-block"
 import type { BlockMeta } from "@/lib/blocks"
@@ -221,7 +218,7 @@ export function BlockViewer({
             </ToggleGroup>
             <Separator orientation="vertical" className="mx-0.5" />
             <a
-              href={`/view/${block.name}`}
+              href={`${import.meta.env.BASE_URL}view/${block.name}`}
               target="_blank"
               rel="noreferrer"
               aria-label="Open in a new tab"
@@ -234,7 +231,7 @@ export function BlockViewer({
             </a>
           </div>
           <a
-            href={`/view/${block.name}`}
+            href={`${import.meta.env.BASE_URL}view/${block.name}`}
             target="_blank"
             rel="noreferrer"
             aria-label="Open in a new tab"
@@ -269,7 +266,7 @@ export function BlockViewer({
             className="relative aspect-[4/2.5] overflow-hidden rounded-xl border bg-background md:aspect-auto md:h-(--height)"
           >
             <iframe
-              src={`/view/${block.name}`}
+              src={`${import.meta.env.BASE_URL}view/${block.name}`}
               title={block.title}
               loading="lazy"
               className="relative z-20 size-full bg-background"

@@ -2,8 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { toast } from "sonner"
-
+import { toast } from "@tecton/react/toast"
 import {
   Questionnaire,
   QuestionnaireActions,
@@ -16,7 +15,7 @@ import {
   QuestionnaireProgress,
   QuestionnaireSubmit,
   QuestionnaireTitle,
-} from "@tecton/react/components/questionnaire"
+} from "@tecton/react/questionnaire"
 
 const items = [
   { name: "scope", required: true },
@@ -31,9 +30,7 @@ export function QuestionnaireProgressExample() {
 
     const formData = new FormData(event.currentTarget)
 
-    toast("Pull request plan ready", {
-      description: `Scope: ${formData.get("scope") ?? "None"} · Commits: ${formData.get("strategy") ?? "None"} · Tests: ${formData.get("tests") ?? "None"} · Delivery: ${formData.get("delivery") ?? "None"}`,
-    })
+    toast.add({ title: "Pull request plan ready", description: `Scope: ${formData.get("scope") ?? "None"} · Commits: ${formData.get("strategy") ?? "None"} · Tests: ${formData.get("tests") ?? "None"} · Delivery: ${formData.get("delivery") ?? "None"}` })
   }
 
   return (

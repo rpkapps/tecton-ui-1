@@ -9,15 +9,15 @@ import {
   RefreshCwIcon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@tecton/react/components/collapsible"
-import { Spinner } from "@tecton/react/components/spinner"
-import { CopyButton } from "@tecton/react/tecton/copy-button"
-import { LinkButton } from "@tecton/react/tecton/link"
+} from "@tecton/react/collapsible"
+import { Spinner } from "@tecton/react/spinner"
+import { CopyButton } from "@tecton/react/copy-button"
+import { LinkButton } from "@tecton/react/link"
 
 import { LogTrack, LogTrackMarker } from "../../page-state/components/log-track"
 import {

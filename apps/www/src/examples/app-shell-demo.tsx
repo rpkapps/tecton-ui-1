@@ -6,7 +6,7 @@ import {
   AppShellBrand,
   AppShellHeader,
   AppShellMain,
-} from "@tecton/react/tecton/app-shell"
+} from "@tecton/react/app-shell"
 
 export default function AppShellDemo() {
   return (

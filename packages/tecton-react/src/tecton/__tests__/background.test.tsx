@@ -9,7 +9,7 @@ import {
   backgroundSpeeds,
   backgroundTones,
   type BackgroundEffectName,
-} from "@tecton/react/tecton/background"
+} from "@tecton/react/background"
 
 const layer = (container: HTMLElement) =>
   container.querySelector<HTMLElement>('[data-slot="background"]')

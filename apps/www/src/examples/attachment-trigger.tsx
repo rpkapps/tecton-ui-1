@@ -10,7 +10,7 @@ import {
   AttachmentMedia,
   AttachmentTitle,
   AttachmentTrigger,
-} from "@tecton/react/components/attachment"
+} from "@tecton/react/attachment"
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@tecton/react/components/dialog"
+} from "@tecton/react/dialog"
 
 export function AttachmentTriggerDemo() {
   return (

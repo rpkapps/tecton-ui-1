@@ -4,9 +4,9 @@ import * as React from "react"
 import { cn } from "cn"
 import { PlusIcon } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
-import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
+import { Badge } from "@tecton/react/badge"
+import { Button } from "@tecton/react/button"
+import { ColorSwatch } from "@tecton/react/color-swatch"
 import {
   TreeView,
   TreeViewAction,
@@ -14,7 +14,7 @@ import {
   TreeViewItem,
   TreeViewItemContent,
   TreeViewVisibilityToggle,
-} from "@tecton/react/tecton/tree-view"
+} from "@tecton/react/tree-view"
 
 import { projectTree } from "../data"
 import type { ProjectNode } from "../data"

@@ -11,8 +11,8 @@ import {
 } from "@tanstack/react-table"
 import { ArrowUpDown } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
+import { Badge } from "@tecton/react/badge"
+import { Button } from "@tecton/react/button"
 import {
   Table,
   TableBody,
@@ -20,11 +20,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@tecton/react/components/toggle-group"
+} from "@tecton/react/table"
+import { ToggleGroup, ToggleGroupItem } from "@tecton/react/toggle-group"
 
 import { createFastSortedRowModel } from "./lib/fast-sorted-row-model"
 

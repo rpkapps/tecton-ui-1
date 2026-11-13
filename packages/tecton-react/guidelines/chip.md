@@ -1,6 +1,6 @@
 ---
 component: Chip
-module: "@tecton/react/tecton/chip"
+module: "@tecton/react/chip"
 family: labels
 exports: [Chip, ChipGroup, ChipList, ChipRemove]
 notFor:

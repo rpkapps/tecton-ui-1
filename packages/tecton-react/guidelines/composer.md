@@ -1,6 +1,6 @@
 ---
 component: Composer
-module: "@tecton/react/tecton/composer"
+module: "@tecton/react/composer"
 family: conversation
 exports: [Composer, ComposerField, ComposerInput, ComposerToolbar, ComposerSubmit, ComposerHint, ComposerStatusMessage, ComposerAttachments, ComposerSuggestions, ComposerSuggestion, ComposerCommands, useComposer]
 notFor:

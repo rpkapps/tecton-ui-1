@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
-import { CountBadge } from "@tecton/react/tecton/count-badge"
+import { CountBadge } from "@tecton/react/count-badge"
 
 const badge = (container: HTMLElement) =>
   container.querySelector('[data-slot="count-badge"]')

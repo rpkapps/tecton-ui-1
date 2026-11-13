@@ -1,6 +1,6 @@
 ---
 component: ContextMenu
-module: "@tecton/react/components/context-menu"
+module: "@tecton/react/context-menu"
 family: actions
 exports: [ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuPortal, ContextMenuItem, ContextMenuCheckboxItem, ContextMenuRadioGroup, ContextMenuRadioItem, ContextMenuLabel, ContextMenuGroup, ContextMenuSeparator, ContextMenuShortcut, ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent]
 notFor:

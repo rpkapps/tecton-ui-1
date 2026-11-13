@@ -15,7 +15,11 @@
     "noEmit": true,
     "paths": {
       "@tecton/react/*": [
-        "./src/*"
+        "./src/*",
+        "./src/components/*",
+        "./src/tecton/*",
+        "./src/hooks/*",
+        "./src/lib/*"
       ]
     }
   },

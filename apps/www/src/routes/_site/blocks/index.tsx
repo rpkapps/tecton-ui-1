@@ -1,14 +1,14 @@
 import * as React from "react"
 import { createFileRoute, Link } from "@tanstack/react-router"
 
-import { buttonVariants } from "@tecton/react/components/button"
+import { buttonVariants } from "@tecton/react/button"
 import {
   PageHeader,
   PageHeaderActions,
   PageHeaderContent,
   PageHeaderDescription,
   PageHeaderTitle,
-} from "@tecton/react/tecton/page-header"
+} from "@tecton/react/page-header"
 
 import { BlockViewer } from "@/components/block-viewer"
 import { blockCategories, blocks } from "@/lib/blocks"

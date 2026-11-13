@@ -1,6 +1,6 @@
 ---
 component: InputOTP
-module: "@tecton/react/components/input-otp"
+module: "@tecton/react/input-otp"
 family: forms
 exports: [InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator]
 notFor:

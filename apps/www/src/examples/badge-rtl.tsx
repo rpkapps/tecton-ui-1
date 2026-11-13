@@ -8,7 +8,7 @@ import {
   useTranslation,
   type Translations,
 } from "@/components/language-selector"
-import { Badge } from "@tecton/react/components/badge"
+import { Badge } from "@tecton/react/badge"
 
 const translations: Translations = {
   en: {

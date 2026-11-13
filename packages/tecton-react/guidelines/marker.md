@@ -1,6 +1,6 @@
 ---
 component: Marker
-module: "@tecton/react/components/marker"
+module: "@tecton/react/marker"
 family: conversation
 exports: [Marker, MarkerIcon, MarkerContent, markerVariants]
 notFor:

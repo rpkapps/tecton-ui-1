@@ -28,7 +28,7 @@ import {
   ZoomOutIcon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Command,
   CommandDialog,
@@ -39,7 +39,7 @@ import {
   CommandList,
   CommandSeparator,
   CommandShortcut,
-} from "@tecton/react/components/command"
+} from "@tecton/react/command"
 
 export function CommandManyItems() {
   const [open, setOpen] = React.useState(false)

@@ -4,9 +4,9 @@ import * as React from "react"
 import { cn } from "cn"
 import { DownloadIcon, PlusIcon, ShareIcon } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
-import { Sheet, SheetContent, SheetTitle } from "@tecton/react/components/sheet"
+import { Badge } from "@tecton/react/badge"
+import { Button } from "@tecton/react/button"
+import { Sheet, SheetContent, SheetTitle } from "@tecton/react/sheet"
 import {
   AppShell,
   AppShellAside,
@@ -17,7 +17,7 @@ import {
   AppShellSplitHandle,
   AppShellSplitPanel,
   useMinWidth,
-} from "@tecton/react/tecton/app-shell"
+} from "@tecton/react/app-shell"
 import {
   PageHeader,
   PageHeaderActions,
@@ -25,8 +25,8 @@ import {
   PageHeaderDescription,
   PageHeaderEyebrow,
   PageHeaderTitle,
-} from "@tecton/react/tecton/page-header"
-import { useDirection } from "@tecton/react/tecton/provider"
+} from "@tecton/react/page-header"
+import { useDirection } from "@tecton/react/provider"
 
 import { AiAgentPanel, useAgentConversation } from "../ai-agent-panel/page"
 import { CostVsRiskPanel } from "../cost-vs-risk-panel/page"

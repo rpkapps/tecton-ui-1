@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/base/input-basic.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Input } from "@tecton/react/components/input"
+import { Input } from "@tecton/react/input"
 
 export function InputBasic() {
   return <Input placeholder="Enter text" />

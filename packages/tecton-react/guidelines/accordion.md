@@ -1,6 +1,6 @@
 ---
 component: Accordion
-module: "@tecton/react/components/accordion"
+module: "@tecton/react/accordion"
 family: layout
 exports: [Accordion, AccordionItem, AccordionTrigger, AccordionContent]
 notFor:

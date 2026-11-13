@@ -9,7 +9,7 @@ import {
   type ColumnOrderState,
 } from "@tanstack/react-table"
 
-import { Badge } from "@tecton/react/components/badge"
+import { Badge } from "@tecton/react/badge"
 import {
   Table,
   TableBody,
@@ -17,8 +17,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
-import { Reorderable, ReorderableItem } from "@tecton/react/tecton/reorderable"
+} from "@tecton/react/table"
+import { Reorderable, ReorderableItem } from "@tecton/react/reorderable"
 
 type Well = {
   id: string

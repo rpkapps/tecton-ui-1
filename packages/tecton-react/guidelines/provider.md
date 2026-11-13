@@ -1,6 +1,6 @@
 ---
 component: TectonProvider
-module: "@tecton/react/tecton/provider"
+module: "@tecton/react/provider"
 family: infrastructure
 exports: [TectonProvider, useDirection, useLocale]
 notFor:
@@ -42,7 +42,7 @@ Wrong:
 Correct:
 
 ```tsx
-import { TectonProvider } from "@tecton/react/tecton/provider"
+import { TectonProvider } from "@tecton/react/provider"
 
 <TectonProvider locale="ar-EG">
   <App />

@@ -5,7 +5,7 @@ import type { VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 import { XIcon } from "lucide-react"
 
-import { badgeVariants } from "@tecton/react/components/badge"
+import { badgeVariants } from "@tecton/react/badge"
 
 import { ChipPrimitive } from "./internal/primitives/chip/index"
 

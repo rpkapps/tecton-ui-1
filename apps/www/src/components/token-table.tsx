@@ -2,8 +2,8 @@
 
 import { cn } from "cn"
 
-import { Badge } from "@tecton/react/components/badge"
-import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
+import { Badge } from "@tecton/react/badge"
+import { ColorSwatch } from "@tecton/react/color-swatch"
 
 import map from "../../../../packages/tecton-react/tokens/tecton.map.json"
 import theme from "../../../../packages/tecton-react/registry/theme.json"

@@ -4,16 +4,16 @@
 import * as React from "react"
 import { ArrowRightIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import { ButtonGroup } from "@tecton/react/components/button-group"
-import { Input } from "@tecton/react/components/input"
+import { Button } from "@tecton/react/button"
+import { ButtonGroup } from "@tecton/react/button-group"
+import { Input } from "@tecton/react/input"
 import {
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
   SelectTrigger,
-} from "@tecton/react/components/select"
+} from "@tecton/react/select"
 
 const CURRENCIES = [
   { label: "US Dollar", value: "$" },

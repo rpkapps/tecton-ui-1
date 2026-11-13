@@ -4,7 +4,7 @@ import {
   TreeView,
   TreeViewItem,
   TreeViewItemContent,
-} from "@tecton/react/tecton/tree-view"
+} from "@tecton/react/tree-view"
 
 export default function TreeViewStates() {
   const [value, setValue] = React.useState<string[]>(["sele"])

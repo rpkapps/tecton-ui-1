@@ -1,6 +1,6 @@
 ---
 component: Dialog
-module: "@tecton/react/components/dialog"
+module: "@tecton/react/dialog"
 family: overlays
 exports: [Dialog, DialogTrigger, DialogContent, DialogClose, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogOverlay, DialogPortal]
 notFor:

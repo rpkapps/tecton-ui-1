@@ -9,15 +9,15 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@tecton/react/components/breadcrumb"
-import { Button } from "@tecton/react/components/button"
+} from "@tecton/react/breadcrumb"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 
 export function BreadcrumbDemo() {
   return (

@@ -2,8 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { toast } from "sonner"
-
+import { toast } from "@tecton/react/toast"
 import {
   Questionnaire,
   QuestionnaireActions,
@@ -17,7 +16,7 @@ import {
   QuestionnaireProgress,
   QuestionnaireSubmit,
   QuestionnaireTitle,
-} from "@tecton/react/components/questionnaire"
+} from "@tecton/react/questionnaire"
 
 const items = [
   { name: "scope", required: true },
@@ -39,9 +38,7 @@ export function QuestionnaireControlled() {
 
     const formData = new FormData(event.currentTarget)
 
-    toast("Agent workflow configured", {
-      description: `Scope: ${formData.get("scope") ?? "None"} · Verification: ${formData.get("checks") ?? "None"} · Output: ${formData.get("output") ?? "None"}`,
-    })
+    toast.add({ title: "Agent workflow configured", description: `Scope: ${formData.get("scope") ?? "None"} · Verification: ${formData.get("checks") ?? "None"} · Output: ${formData.get("output") ?? "None"}` })
   }
 
   return (

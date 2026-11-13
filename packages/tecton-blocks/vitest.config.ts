@@ -1,13 +1,18 @@
 import { fileURLToPath } from "node:url"
 import { defineConfig } from "vitest/config"
 
+import { flatModuleAliases } from "../tecton-react/scripts/flat-aliases.ts"
+
+const src = fileURLToPath(
+  new URL("../tecton-react/src/", import.meta.url)
+).replace(/\\/g, "/")
+
 export default defineConfig({
   resolve: {
-    alias: {
-      "@tecton/react": fileURLToPath(
-        new URL("../tecton-react/src", import.meta.url)
-      ),
-    },
+    alias: [
+      ...flatModuleAliases(src),
+      { find: /^@tecton\/react\//, replacement: src },
+    ],
   },
   test: {
     environment: "jsdom",

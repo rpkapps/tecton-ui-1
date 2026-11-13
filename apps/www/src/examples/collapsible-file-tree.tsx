@@ -1,14 +1,14 @@
 // Synced from shadcn/ui (apps/v4/examples/base/collapsible-file-tree.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { ChevronRightIcon, FileIcon, FolderIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import { Card, CardContent, CardHeader } from "@tecton/react/components/card"
+import { Button } from "@tecton/react/button"
+import { Card, CardContent, CardHeader } from "@tecton/react/card"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@tecton/react/components/collapsible"
-import { Tabs, TabsList, TabsTrigger } from "@tecton/react/components/tabs"
+} from "@tecton/react/collapsible"
+import { Tabs, TabsList, TabsTrigger } from "@tecton/react/tabs"
 
 type FileTreeItem = { name: string } | { name: string; items: FileTreeItem[] }
 

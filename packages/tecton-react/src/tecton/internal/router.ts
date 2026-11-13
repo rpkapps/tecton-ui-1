@@ -8,7 +8,7 @@
  */
 import * as React from "react"
 
-import { TectonContext } from "@tecton/react/tecton/provider"
+import { TectonContext } from "@tecton/react/provider"
 
 type TectonRouter = {
   navigate?: (href: string, options?: unknown) => void

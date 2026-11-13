@@ -3,7 +3,7 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@tecton/react/components/avatar"
+} from "@tecton/react/avatar"
 
 export function AvatarSizeExample() {
   return (

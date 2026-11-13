@@ -12,7 +12,7 @@ import {
   WrenchIcon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Item,
   ItemContent,
@@ -20,13 +20,9 @@ import {
   ItemGroup,
   ItemMedia,
   ItemTitle,
-} from "@tecton/react/components/item"
-import {
-  Progress,
-  ProgressLabel,
-  ProgressValue,
-} from "@tecton/react/components/progress"
-import { LinkButton } from "@tecton/react/tecton/link"
+} from "@tecton/react/item"
+import { Progress, ProgressLabel, ProgressValue } from "@tecton/react/progress"
+import { LinkButton } from "@tecton/react/link"
 
 import { LogTrack, LogTrackBand } from "../../page-state/components/log-track"
 import {

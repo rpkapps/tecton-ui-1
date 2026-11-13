@@ -4,9 +4,9 @@ import * as React from "react"
 import { cn } from "cn"
 import { GripHorizontalIcon, GripIcon, GripVerticalIcon } from "lucide-react"
 
-import { buttonVariants } from "@tecton/react/components/button"
-import { usePortalTarget } from "@tecton/react/tecton/portal"
-import { useDirection } from "@tecton/react/tecton/provider"
+import { buttonVariants } from "@tecton/react/button"
+import { usePortalTarget } from "@tecton/react/portal"
+import { useDirection } from "@tecton/react/provider"
 
 import {
   animateFrom,

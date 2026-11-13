@@ -11,60 +11,60 @@
  * `bun` or `tsx` without extra installs.
  */
 /// <reference types="node" />
-import { existsSync, readFileSync, readdirSync } from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { existsSync, readFileSync, readdirSync } from "node:fs"
+import path from "node:path"
+import { fileURLToPath } from "node:url"
 
 // ---------------------------------------------------------------------------
 // Paths
 // ---------------------------------------------------------------------------
-const here = path.dirname(fileURLToPath(import.meta.url));
-export const pkgRoot = path.resolve(here, "..");
-export const MANIFEST_PATH = path.join(pkgRoot, "icons/icons.json");
-export const ICONS_SRC_DIR = path.join(pkgRoot, "icons-src");
-export const ICONS_OUT_DIR = path.join(pkgRoot, "src/icons");
+const here = path.dirname(fileURLToPath(import.meta.url))
+export const pkgRoot = path.resolve(here, "..")
+export const MANIFEST_PATH = path.join(pkgRoot, "icons/icons.json")
+export const ICONS_SRC_DIR = path.join(pkgRoot, "icons-src")
+export const ICONS_OUT_DIR = path.join(pkgRoot, "src/icons")
 
 // ---------------------------------------------------------------------------
 // Manifest
 // ---------------------------------------------------------------------------
-export type IconVariant = "outlined" | "filled";
-export const ICON_VARIANTS: readonly IconVariant[] = ["outlined", "filled"];
+export type IconVariant = "outlined" | "filled"
+export const ICON_VARIANTS: readonly IconVariant[] = ["outlined", "filled"]
 
 export interface IconManifestEntry {
   /** PascalCase name without the `Icon` suffix, e.g. `AddCircle`. */
-  name: string;
+  name: string
   /** Exact gallery label, e.g. `AddCircleIcon`. Also the exported identifier. */
-  label: string;
+  label: string
   /** kebab-case id, e.g. `add-circle`. File name of the SVG + generated TSX. */
-  slug: string;
-  description: string;
+  slug: string
+  description: string
   /** Closest lucide icon (kebab-case lucide name) or `null` when none fits. */
-  lucide: string | null;
+  lucide: string | null
   /** `true` for oil & gas / subsurface domain glyphs that have no lucide peer. */
-  domain: boolean;
+  domain: boolean
 }
 
 export interface IconManifest {
-  version: number;
-  source?: string;
-  notes?: string;
-  variants: IconVariant[];
-  sizes: number[];
-  count: number;
-  icons: IconManifestEntry[];
+  version: number
+  source?: string
+  notes?: string
+  variants: IconVariant[]
+  sizes: number[]
+  count: number
+  icons: IconManifestEntry[]
 }
 
 export function loadManifest(file: string = MANIFEST_PATH): IconManifest {
-  const manifest = JSON.parse(readFileSync(file, "utf8")) as IconManifest;
+  const manifest = JSON.parse(readFileSync(file, "utf8")) as IconManifest
   if (!Array.isArray(manifest.icons)) {
-    throw new Error(`${file}: expected an "icons" array`);
+    throw new Error(`${file}: expected an "icons" array`)
   }
   if (manifest.count !== manifest.icons.length) {
     console.warn(
-      `warning: ${path.relative(pkgRoot, file)} says count=${manifest.count} but lists ${manifest.icons.length} icons`,
-    );
+      `warning: ${path.relative(pkgRoot, file)} says count=${manifest.count} but lists ${manifest.icons.length} icons`
+    )
   }
-  return manifest;
+  return manifest
 }
 
 /**
@@ -81,7 +81,7 @@ export function loadManifest(file: string = MANIFEST_PATH): IconManifest {
  * the domain set.
  */
 export function isShippedIcon(entry: IconManifestEntry): boolean {
-  return entry.domain;
+  return entry.domain
 }
 
 // ---------------------------------------------------------------------------
@@ -94,7 +94,7 @@ export function kebabToPascal(kebab: string): string {
     .split(/[-_\s]+/)
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join("");
+    .join("")
 }
 
 /** `AddCircleIcon` → `add-circle`, `ThreeD` → `three-d`, `add_circle.svg` → `add-circle`. */
@@ -111,13 +111,16 @@ export function toSlug(input: string): string {
       .replace(/[^a-z0-9-]/g, "")
       .replace(/-+/g, "-")
       .replace(/^-|-$/g, "")
-  );
+  )
 }
 
 /** Look up a manifest entry by anything that slugifies to its slug. */
-export function findIconBy(manifest: IconManifest, labelOrSlug: string): IconManifestEntry | undefined {
-  const slug = toSlug(labelOrSlug);
-  return manifest.icons.find((icon) => icon.slug === slug);
+export function findIconBy(
+  manifest: IconManifest,
+  labelOrSlug: string
+): IconManifestEntry | undefined {
+  const slug = toSlug(labelOrSlug)
+  return manifest.icons.find((icon) => icon.slug === slug)
 }
 
 // ---------------------------------------------------------------------------
@@ -130,30 +133,40 @@ export function findIconBy(manifest: IconManifest, labelOrSlug: string): IconMan
  * are treated as `outlined`. File names are slugified, so both
  * `AddCircleIcon.svg` and `add-circle.svg` map to slug `add-circle`.
  */
-export function scanIconSources(dir: string = ICONS_SRC_DIR): Record<IconVariant, Map<string, string>> {
-  const result: Record<IconVariant, Map<string, string>> = { outlined: new Map(), filled: new Map() };
-  if (!existsSync(dir)) return result;
+export function scanIconSources(
+  dir: string = ICONS_SRC_DIR
+): Record<IconVariant, Map<string, string>> {
+  const result: Record<IconVariant, Map<string, string>> = {
+    outlined: new Map(),
+    filled: new Map(),
+  }
+  if (!existsSync(dir)) return result
 
   const collect = (folder: string, variant: IconVariant) => {
-    if (!existsSync(folder)) return;
+    if (!existsSync(folder)) return
     // sorted: which of two files that slugify alike wins must not depend on the
     // file system's directory order
-    const entries = readdirSync(folder, { withFileTypes: true }).sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+    const entries = readdirSync(folder, { withFileTypes: true }).sort((a, b) =>
+      a.name < b.name ? -1 : a.name > b.name ? 1 : 0
+    )
     for (const entry of entries) {
-      if (!entry.isFile() || !entry.name.toLowerCase().endsWith(".svg")) continue;
-      const slug = toSlug(entry.name);
-      const file = path.join(folder, entry.name);
+      if (!entry.isFile() || !entry.name.toLowerCase().endsWith(".svg"))
+        continue
+      const slug = toSlug(entry.name)
+      const file = path.join(folder, entry.name)
       if (result[variant].has(slug)) {
-        console.warn(`warning: duplicate ${variant} source for "${slug}": ${file} (ignored)`);
-        continue;
+        console.warn(
+          `warning: duplicate ${variant} source for "${slug}": ${file} (ignored)`
+        )
+        continue
       }
-      result[variant].set(slug, file);
+      result[variant].set(slug, file)
     }
-  };
+  }
 
-  collect(dir, "outlined");
-  for (const variant of ICON_VARIANTS) collect(path.join(dir, variant), variant);
-  return result;
+  collect(dir, "outlined")
+  for (const variant of ICON_VARIANTS) collect(path.join(dir, variant), variant)
+  return result
 }
 
 // ---------------------------------------------------------------------------
@@ -161,7 +174,14 @@ export function scanIconSources(dir: string = ICONS_SRC_DIR): Record<IconVariant
 // ---------------------------------------------------------------------------
 
 /** Values of `fill` / `stroke` that must NOT be rewritten to currentColor. */
-const KEEP_PAINT = new Set(["none", "currentcolor", "inherit", "transparent", "context-fill", "context-stroke"]);
+const KEEP_PAINT = new Set([
+  "none",
+  "currentcolor",
+  "inherit",
+  "transparent",
+  "context-fill",
+  "context-stroke",
+])
 
 /** Root-level attributes injected by MUI / Storybook / editors that carry no glyph data. */
 const DROP_ROOT_ATTRS = new Set([
@@ -180,14 +200,14 @@ const DROP_ROOT_ATTRS = new Set([
   "xmlns:xlink",
   "xmlns:serif",
   "version",
-]);
+])
 
 export interface NormalizeOptions {
   /**
    * When true, `fill`/`stroke` colours are left untouched (used for the few
    * multi-colour glyphs such as `strata`). Gradients (`url(#…)`) are always kept.
    */
-  keepColors?: boolean;
+  keepColors?: boolean
 }
 
 /**
@@ -202,120 +222,145 @@ export interface NormalizeOptions {
  * The parser is regex-based on purpose: icon SVGs are tiny and flat, and
  * avoiding an XML dependency keeps the scripts runnable anywhere.
  */
-export function normalizeSvg(raw: string, options: NormalizeOptions = {}): string {
-  let svg = raw.trim();
+export function normalizeSvg(
+  raw: string,
+  options: NormalizeOptions = {}
+): string {
+  let svg = raw.trim()
 
   // 1. Remove non-glyph noise.
-  svg = svg
-    .replace(/<\?xml[^>]*\?>/gi, "")
-    .replace(/<!DOCTYPE[^>]*>/gi, "")
-    .replace(/<!--[\s\S]*?-->/g, "")
-    .replace(/<(title|desc|metadata)\b[^>]*>[\s\S]*?<\/\1>/gi, "")
-    .trim();
+  let previous: string
+  do {
+    previous = svg
+    svg = svg.replace(/<!--[\s\S]*?(?:-->|$)/g, "")
+  } while (svg !== previous)
+  do {
+    previous = svg
+    svg = svg
+      .replace(/<\?xml[^>]*\?>/gi, "")
+      .replace(/<!DOCTYPE[^>]*>/gi, "")
+      .replace(/<(title|desc|metadata)\b[^>]*>[\s\S]*?<\/\1>/gi, "")
+  } while (svg !== previous)
+  svg = svg.trim()
 
-  const rootMatch = svg.match(/^<svg\b([^>]*)>([\s\S]*)<\/svg>\s*$/i);
-  if (!rootMatch) throw new Error("normalizeSvg: input is not a single <svg> element");
-  const rootAttrs = parseAttributes(rootMatch[1]);
-  let inner = rootMatch[2];
+  const rootMatch = svg.match(/^<svg\b([^>]*)>([\s\S]*)<\/svg>\s*$/i)
+  if (!rootMatch)
+    throw new Error("normalizeSvg: input is not a single <svg> element")
+  const rootAttrs = parseAttributes(rootMatch[1])
+  let inner = rootMatch[2]
 
   // 2. viewBox: keep, or synthesise from width/height.
-  let viewBox = rootAttrs.get("viewBox") ?? rootAttrs.get("viewbox");
+  let viewBox = rootAttrs.get("viewBox") ?? rootAttrs.get("viewbox")
   if (!viewBox) {
-    const w = parseFloat(rootAttrs.get("width") ?? "");
-    const h = parseFloat(rootAttrs.get("height") ?? "");
-    viewBox = Number.isFinite(w) && Number.isFinite(h) ? `0 0 ${w} ${h}` : "0 0 24 24";
+    const w = parseFloat(rootAttrs.get("width") ?? "")
+    const h = parseFloat(rootAttrs.get("height") ?? "")
+    viewBox =
+      Number.isFinite(w) && Number.isFinite(h) ? `0 0 ${w} ${h}` : "0 0 24 24"
   }
 
   // 3. Rebuild the root attribute list, dropping presentational noise.
-  const keptRoot = new Map<string, string>();
-  keptRoot.set("xmlns", "http://www.w3.org/2000/svg");
-  keptRoot.set("viewBox", viewBox.trim().replace(/\s+/g, " "));
+  const keptRoot = new Map<string, string>()
+  keptRoot.set("xmlns", "http://www.w3.org/2000/svg")
+  keptRoot.set("viewBox", viewBox.trim().replace(/\s+/g, " "))
   for (const [name, value] of rootAttrs) {
-    const lower = name.toLowerCase();
-    if (lower === "xmlns" || lower === "viewbox" || DROP_ROOT_ATTRS.has(lower)) continue;
-    if (lower === "id") continue;
-    keptRoot.set(name, value);
+    const lower = name.toLowerCase()
+    if (lower === "xmlns" || lower === "viewbox" || DROP_ROOT_ATTRS.has(lower))
+      continue
+    if (lower === "id") continue
+    keptRoot.set(name, value)
   }
 
   // 4. Colours → currentColor (root + descendants).
   const paintFix = (attrs: Map<string, string>) => {
-    if (options.keepColors) return;
+    if (options.keepColors) return
     for (const prop of ["fill", "stroke"]) {
-      const value = attrs.get(prop);
-      if (value === undefined) continue;
-      const v = value.trim();
-      if (KEEP_PAINT.has(v.toLowerCase()) || v.startsWith("url(")) continue;
-      attrs.set(prop, "currentColor");
+      const value = attrs.get(prop)
+      if (value === undefined) continue
+      const v = value.trim()
+      if (KEEP_PAINT.has(v.toLowerCase()) || v.startsWith("url(")) continue
+      attrs.set(prop, "currentColor")
     }
-    const style = attrs.get("style");
+    const style = attrs.get("style")
     if (style) {
       attrs.set(
         "style",
-        style.replace(/\b(fill|stroke)\s*:\s*([^;]+)/g, (m, prop: string, v: string) => {
-          const t = v.trim();
-          if (KEEP_PAINT.has(t.toLowerCase()) || t.startsWith("url(")) return m;
-          return `${prop}:currentColor`;
-        }),
-      );
+        style.replace(
+          /\b(fill|stroke)\s*:\s*([^;]+)/g,
+          (m, prop: string, v: string) => {
+            const t = v.trim()
+            if (KEEP_PAINT.has(t.toLowerCase()) || t.startsWith("url("))
+              return m
+            return `${prop}:currentColor`
+          }
+        )
+      )
     }
-  };
-  paintFix(keptRoot);
+  }
+  paintFix(keptRoot)
 
   // 5. Which ids are referenced (gradients, clip paths, masks, <use>)?
-  const referenced = new Set<string>();
-  for (const m of inner.matchAll(/url\(\s*['"]?#([^)'"]+)['"]?\s*\)/g)) referenced.add(m[1]);
-  for (const m of inner.matchAll(/(?:xlink:)?href\s*=\s*["']#([^"']+)["']/g)) referenced.add(m[1]);
+  const referenced = new Set<string>()
+  for (const m of inner.matchAll(/url\(\s*['"]?#([^)'"]+)['"]?\s*\)/g))
+    referenced.add(m[1])
+  for (const m of inner.matchAll(/(?:xlink:)?href\s*=\s*["']#([^"']+)["']/g))
+    referenced.add(m[1])
 
   // 6. Walk every descendant tag: fix paint, strip unreferenced ids / classes.
-  inner = inner.replace(/<([a-zA-Z][\w:-]*)\b([^>]*?)(\/?)>/g, (_m, tag: string, attrText: string, selfClose: string) => {
-    const attrs = parseAttributes(attrText);
-    const isStop = tag.toLowerCase() === "stop";
-    if (!isStop) paintFix(attrs);
-    const id = attrs.get("id");
-    if (id !== undefined && !referenced.has(id)) attrs.delete("id");
-    attrs.delete("class");
-    attrs.delete("data-testid");
-    return `<${tag}${serializeAttributes(attrs)}${selfClose ? " /" : ""}>`;
-  });
+  inner = inner.replace(
+    /<([a-zA-Z][\w:-]*)\b([^>]*?)(\/?)>/g,
+    (_m, tag: string, attrText: string, selfClose: string) => {
+      const attrs = parseAttributes(attrText)
+      const isStop = tag.toLowerCase() === "stop"
+      if (!isStop) paintFix(attrs)
+      const id = attrs.get("id")
+      if (id !== undefined && !referenced.has(id)) attrs.delete("id")
+      attrs.delete("class")
+      attrs.delete("data-testid")
+      return `<${tag}${serializeAttributes(attrs)}${selfClose ? " /" : ""}>`
+    }
+  )
 
   // 7. Whitespace: one element per line, two-space indent.
-  inner = inner
-    .replace(/>\s+</g, "><")
-    .replace(/></g, ">\n<")
-    .trim();
-  let depth = 1;
+  inner = inner.replace(/>\s+</g, "><").replace(/></g, ">\n<").trim()
+  let depth = 1
   const indented = inner
     .split("\n")
     .map((raw) => {
-      const line = raw.trim();
-      const isClose = line.startsWith("</");
-      if (isClose) depth = Math.max(1, depth - 1);
-      const out = `${"  ".repeat(depth)}${line}`;
+      const line = raw.trim()
+      const isClose = line.startsWith("</")
+      if (isClose) depth = Math.max(1, depth - 1)
+      const out = `${"  ".repeat(depth)}${line}`
       // an opening tag that is neither self-closing nor closed on the same line nests what follows
-      if (!isClose && line.startsWith("<") && !line.endsWith("/>") && !/<\/[\w:-]+>$/.test(line)) depth++;
-      return out;
+      if (
+        !isClose &&
+        line.startsWith("<") &&
+        !line.endsWith("/>") &&
+        !/<\/[\w:-]+>$/.test(line)
+      )
+        depth++
+      return out
     })
-    .join("\n");
+    .join("\n")
 
-  return `<svg${serializeAttributes(keptRoot)}>\n${indented}\n</svg>\n`;
+  return `<svg${serializeAttributes(keptRoot)}>\n${indented}\n</svg>\n`
 }
 
 /** Parse `a="1" b='2' c` into an ordered map (attribute order is preserved). */
 export function parseAttributes(text: string): Map<string, string> {
-  const attrs = new Map<string, string>();
-  const re = /([^\s=\/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g;
+  const attrs = new Map<string, string>()
+  const re = /([^\s=\/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g
   for (const m of text.matchAll(re)) {
-    const name = m[1];
-    if (!name) continue;
-    attrs.set(name, m[2] ?? m[3] ?? m[4] ?? "");
+    const name = m[1]
+    if (!name) continue
+    attrs.set(name, m[2] ?? m[3] ?? m[4] ?? "")
   }
-  return attrs;
+  return attrs
 }
 
 export function serializeAttributes(attrs: Map<string, string>): string {
-  let out = "";
+  let out = ""
   for (const [name, value] of attrs) {
-    out += ` ${name}="${value.replace(/"/g, "&quot;")}"`;
+    out += ` ${name}="${value.replace(/"/g, "&quot;")}"`
   }
-  return out;
+  return out
 }

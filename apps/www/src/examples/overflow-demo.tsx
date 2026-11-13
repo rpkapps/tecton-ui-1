@@ -10,13 +10,13 @@ import {
   Trash2Icon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   OverflowDivider,
   OverflowItem,
   OverflowLabel,
   Toolbar,
-} from "@tecton/react/tecton/overflow"
+} from "@tecton/react/overflow"
 
 export default function OverflowDemo() {
   return (

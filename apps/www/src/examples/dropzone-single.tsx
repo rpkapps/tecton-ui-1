@@ -10,13 +10,13 @@ import {
   AttachmentDescription,
   AttachmentMedia,
   AttachmentTitle,
-} from "@tecton/react/components/attachment"
+} from "@tecton/react/attachment"
 import {
   EmptyContent,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@tecton/react/components/empty"
+} from "@tecton/react/empty"
 import {
   Dropzone,
   DropzoneArea,
@@ -24,7 +24,7 @@ import {
   DropzoneRemove,
   DropzoneTrigger,
   formatFileSize,
-} from "@tecton/react/tecton/dropzone"
+} from "@tecton/react/dropzone"
 
 /** An object URL for the picked image, revoked when it changes. */
 function usePreview(file: File | undefined) {

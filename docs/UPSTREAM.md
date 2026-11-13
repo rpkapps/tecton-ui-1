@@ -3,12 +3,16 @@
 Every file under `packages/tecton-react/src/components/**`, `src/hooks/**`, `src/lib/**` and the
 scaffold of `src/styles/globals.css` is produced by the shadcn CLI, never by hand.
 
+The generated files import each other through the CLI's folder aliases (`@tecton/react/components/button`,
+`…/lib/utils`, from `components.json`). The package exports every module from its root instead
+(`@tecton/react/button`), so `scripts/build.mts` rewrites those self-imports in `dist/`.
+
 - Repository: https://github.com/shadcn-ui/ui
-- Commit: `3ba91b1cc83e1bbe4ab35a422ff2a694849c5048` (main, 2026-09-12)
-- CLI: `shadcn@4.21.0` (built from the same commit, `packages/shadcn`)
+- Commit: `c2477f311c19982ef6e246085438e6cfec3e35ea` (main, 2026-10-15)
+- CLI: `shadcn@4.21.5` (built from the same commit, `packages/shadcn`)
 - Base / style: `base` (Base UI) / `tecton` → registry style `base-tecton`
 - `components.json` (`packages/tecton-react` and `apps/www`): `"style": "base-tecton"`, `"rtl": true`
-- Runtime package: `shadcn@^4.21.0` (`@import "shadcn/tailwind.css"`)
+- Runtime package: `shadcn@^4.21.5` (`@import "shadcn/tailwind.css"`)
 
 `scripts/registry-mirror.sh` and CI read the commit from the `- Commit:` line above.
 
@@ -49,24 +53,25 @@ export REGISTRY_URL=http://127.0.0.1:4000/r
 # 2. Scaffold (once, in an empty directory, then moved into this repo). The project was
 #    scaffolded on the aria base and moved to base by switching components.json and re-adding
 #    every item.
-pnpm dlx shadcn@4.21.0 init --template start --monorepo --base aria --preset vega --name tecton-ui-1
+pnpm dlx shadcn@4.21.5 init --template start --monorepo --base aria --preset vega --name tecton-ui-1
 #    packages/ui -> packages/tecton-react (@tecton/react), apps/web -> apps/www
 #    components.json: "style": "base-tecton", "rtl": true
 
-# 3. All 59 UI items (with dist/ absent), then the directives
-pnpm dlx shadcn@4.21.0 add accordion alert alert-dialog aspect-ratio attachment avatar badge \
-  breadcrumb bubble button button-group calendar card carousel chart checkbox collapsible \
-  combobox command context-menu dialog direction drawer dropdown-menu empty field hover-card \
-  input input-group input-otp item kbd label marker message message-scroller native-select \
-  pagination popover progress questionnaire radio-group resizable scroll-area select separator \
-  sheet sidebar skeleton slider sonner spinner switch table tabs textarea toggle toggle-group \
-  tooltip --overwrite -c packages/tecton-react
+# 3. All 62 items (with dist/ absent), then the directives
+pnpm dlx shadcn@4.21.5 add accordion alert alert-dialog aspect-ratio attachment avatar badge \
+  breadcrumb bubble button button-group calendar card carousel chart checkbox code-block \
+  collapsible combobox command context-menu dialog direction drawer dropdown-menu empty field \
+  hover-card input input-group input-otp item kbd label marker message message-scroller \
+  native-select pagination popover progress questionnaire radio-group resizable scroll-area \
+  select separator sheet sidebar skeleton slider spinner switch table tabs textarea toast \
+  toggle toggle-group tooltip trace use-highlighted-code --overwrite -c packages/tecton-react
 pnpm --filter @tecton/react use-client:restore
 ```
 
-The items also install `src/hooks/use-mobile.ts` (`sidebar`) and `src/lib/utils.ts`. `add --all`
-is not used: the `base` registry also has `menubar`, `navigation-menu` and `toast`, which Tecton
-does not ship.
+The items also install `src/hooks/use-mobile.ts` (`sidebar`), `src/lib/highlighter.tsx`
+(`use-highlighted-code`, which `code-block`'s highlighting examples use) and `src/lib/utils.ts`.
+`add --all` is not used: the `base` registry also has `menubar`, `navigation-menu` and `sonner`,
+which Tecton does not ship (`toast` is its toast; `UNSHIPPED_ITEMS` in the mirror script).
 
 `"rtl": true` makes the CLI rewrite physical classes to logical ones at install time (`ml-` →
 `ms-`, `left-` → `start-`, `rounded-l-` → `rounded-s-`, `side="right"` → `side="inline-end"`, …);
@@ -79,8 +84,8 @@ this for the physical `side` of sidebar and sheet and `swipeDirection` of drawer
 
 ```bash
 export REGISTRY_URL=http://127.0.0.1:4000/r
-pnpm dlx shadcn@4.21.0 add button --diff button.tsx -c packages/tecton-react   # preview
-pnpm dlx shadcn@4.21.0 add button --overwrite -c packages/tecton-react          # apply
+pnpm dlx shadcn@4.21.5 add button --diff button.tsx -c packages/tecton-react   # preview
+pnpm dlx shadcn@4.21.5 add button --overwrite -c packages/tecton-react          # apply
 pnpm --filter @tecton/react use-client:restore                                  # see below
 pnpm tokens:build                                                               # re-apply Tecton variables
 pnpm generated:check                                                            # nothing hand-edited
@@ -101,7 +106,7 @@ re-add the affected items with `--overwrite` and run `pnpm generated:check`.
    the clone in `.cache/shadcn-ui` keyed on the commit. If upstream changed `style-vega.css`, port
    the change into `style-tecton.css` (`git diff <old>..<new> -- apps/v4/registry/styles/style-vega.css`
    in the clone); if `tecton.patch` conflicts, resolve it in the clone and `export`.
-2. `scripts/registry-mirror.sh build`, re-add all 59 items with `--overwrite`, `pnpm tokens:build`,
+2. `scripts/registry-mirror.sh build`, re-add all 62 items with `--overwrite`, `pnpm tokens:build`,
    `pnpm generated:check`, `pnpm docs:sync`, `pnpm typecheck`.
 
 ## Docs pages and examples
@@ -110,9 +115,9 @@ re-add the affected items with `--overwrite` and run `pnpm generated:check`.
 first line is `// Synced from shadcn/ui …` are synced from the same commit
 (`apps/v4/content/docs/components/base/*.mdx`, `apps/v4/examples/base/*.tsx`) by `pnpm docs:sync`
 (`apps/www/scripts/sync-upstream-docs.mts`, `SHADCN_UPSTREAM_DIR` defaults to `.cache/shadcn-ui`),
-with imports rewritten to `@tecton/react/...`. The `base` docs cover `toast` instead of `sonner`,
-so the sonner page and examples come from the `radix` base (they only call `toast()` from a
-Button's `onClick`); the `direction` page is not synced (applications set the direction with
+with imports rewritten to `@tecton/react/...`. Upstream examples that call sonner's `toast`
+are rewritten to `toast.add` from `@tecton/react/toast` (`rewriteSonner`, which throws on a
+call or option it does not know); the `direction` page is not synced (applications set the direction with
 `TectonProvider`). Tecton sections of a synced page come from `apps/www/scripts/docs-extras/<name>.mdx`,
 inserted before the upstream "API Reference". Consumers never see the libraries under the
 components: the sync drops Base UI `links` from the frontmatter, the "See the Base UI
@@ -158,8 +163,8 @@ pnpm --filter @tecton/react use-client:check     # same, fails instead of writin
 ```
 
 `scripts/restore-use-client.mts` compares each component with the base source in the mirror clone
-(`apps/v4/registry/bases/base/ui`), only ever adds the directive and keeps line endings; 37 of the
-59 items carry it.
+(`apps/v4/registry/bases/base/ui`), only ever adds the directive and keeps line endings; 38 of the
+62 items carry it.
 
 The same quirk makes `shadcn add … --diff` and `--overwrite` disagree on the directive, so
 `scripts/generated-check.sh` (which runs `add <item> --diff <file>` for every file under
@@ -175,8 +180,8 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
 `src/tecton/__tests__/overlay-behaviour.test.tsx` unless noted.
 
 - **Portal target** (`alert-dialog`, `dialog`, `sheet`, `drawer`, `popover`, `tooltip`,
-  `hover-card`, `select`, `combobox`, `dropdown-menu`, `context-menu`) — every overlay portals
-  into `container ?? usePortalTarget()` (`@tecton/react/tecton/portal`, fed by `TectonProvider`'s
+  `hover-card`, `select`, `combobox`, `dropdown-menu`, `context-menu`, `toast`) — every overlay portals
+  into `container ?? usePortalTarget()` (`@tecton/react/portal`, fed by `TectonProvider`'s
   `portalContainer`), so a `container` the caller passes wins. The `*Portal` wrappers take it, and
   every content part gains an optional `container` (`DialogContent`, `AlertDialogContent`,
   `SheetContent`, `DrawerContent` through their `*Portal`; `PopoverContent`, `TooltipContent`,
@@ -248,17 +253,26 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   differed between server and browser, a hydration mismatch).
 - **`pagination`** — `PaginationLink` is a plain `a` with `buttonVariants`: a Base UI `Button`
   rendering an `a` keeps `role="button"`, so the page links were announced as buttons.
-- **`sonner`** — `richColors` and outlined status colours (`--success-*`, `--info-*`,
-  `--warning-*`, `--error-*`), matching `alert` with `appearance="outline"`; upstream's
-  `toastOptions` class (`cn-toast`, outside a `className`) goes.
+- **`toast`** — `Toaster` takes `container` and its `ToastPortal` portals into
+  `container ?? usePortalTarget()`; the focus ring is `ring-2 ring-ring`. The outlined status
+  colours per `data-type` (border and text, `error` on `destructive`), matching `alert` with
+  `appearance="outline"`, are in `style-tecton.css` (`cn-toast`). `toast` is
+  `bridgeToast(createToastManager())` and `Toaster` calls `useToastHost(toastManager)`
+  (`src/tecton/toast-bridge.tsx`): a `Toaster` of the module's own `toast` publishes a versioned
+  host on `globalThis[Symbol.for("@tecton/react/toast-hosts")]`, the oldest one outside
+  any `ThemeRoot` (else the oldest) is elected, and the `toast` of every other copy of the package
+  on the page (micro-frontend remotes) routes `add`/`update`/`close`/`promise` into it, so the
+  page has one toast stack.
 - **`table`** — `Table` takes `virtualized`: its container becomes the scroll element
   (`h-full overflow-auto`, filling a parent of bounded height), `TableHeader` sticks
   (`sticky top-0 z-10`; the colour is on the `th`) and `TableBody` mounts only the rows in view,
   with spacer rows for the rest, `aria-rowcount` / `aria-rowindex` and the focused row kept;
   `TableBody` takes `items` and a render function called only for the rows in view; the columns are
-  locked at their content's first widths (a px `colgroup`, the space left spread over the columns of text and the last column taking the rest, `table-fixed`) unless the caller made the
-  table fixed. The logic is `src/tecton/internal/table-virtualizer.tsx` (on the shared
-  `useVirtualList`); without `virtualized` the markup is unchanged. Tested in `src/tecton/__tests__/table-virtualized.test.tsx`.
+  locked at their content's first widths (a px `colgroup`, the space left spread over the columns
+  of text and the last column taking the rest, `table-fixed`) unless the caller made the table
+  fixed. The logic is `src/tecton/internal/table-virtualizer.tsx` (on the shared
+  `useVirtualList`); without `virtualized` the markup is unchanged. Tested in
+  `src/tecton/__tests__/table-virtualized.test.tsx`.
 
 ## Renaming the package
 

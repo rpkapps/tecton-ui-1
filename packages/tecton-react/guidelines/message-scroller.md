@@ -1,6 +1,6 @@
 ---
 component: MessageScroller
-module: "@tecton/react/components/message-scroller"
+module: "@tecton/react/message-scroller"
 family: conversation
 exports: [MessageScrollerProvider, MessageScroller, MessageScrollerViewport, MessageScrollerContent, MessageScrollerItem, MessageScrollerButton, useMessageScroller, useMessageScrollerScrollable, useMessageScrollerVisibility]
 notFor:

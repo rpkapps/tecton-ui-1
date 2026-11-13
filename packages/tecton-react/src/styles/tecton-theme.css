@@ -108,6 +108,9 @@
   --filled-active: var(--tecton-color-action-filled-bg-active);
   --slider-rail: var(--tecton-color-accent-lilac-muted);
   --progress-track: var(--tecton-color-extended-lilac-260);
+  --input-filled: var(--tecton-color-input-filled-bg);
+  --input-filled-focus: var(--tecton-color-input-filled-bg-focus);
+  --number-field-fill: var(--tecton-color-accent-lilac-muted);
   --content-hover: var(--tecton-color-content-bg-hover);
   --content-pressed: var(--tecton-color-content-bg-press);
   --content-active: var(--tecton-color-content-bg-active);
@@ -218,6 +221,9 @@
   --filled-active: var(--tecton-color-action-filled-bg-active);
   --slider-rail: var(--tecton-color-accent-lilac-muted);
   --progress-track: var(--tecton-color-extended-lilac-260);
+  --input-filled: var(--tecton-color-input-filled-bg);
+  --input-filled-focus: var(--tecton-color-input-filled-bg-focus);
+  --number-field-fill: var(--tecton-color-action-secondary-bg-focus);
   --content-hover: var(--tecton-color-content-bg-hover);
   --content-pressed: var(--tecton-color-content-bg-press);
   --content-active: var(--tecton-color-content-bg-active);
@@ -329,6 +335,9 @@
   --filled-active: var(--tecton-color-action-filled-bg-active);
   --slider-rail: var(--tecton-color-accent-lilac-muted);
   --progress-track: var(--tecton-color-extended-lilac-260);
+  --input-filled: var(--tecton-color-input-filled-bg);
+  --input-filled-focus: var(--tecton-color-input-filled-bg-focus);
+  --number-field-fill: var(--tecton-color-accent-lilac-muted);
   --content-hover: var(--tecton-color-content-bg-hover);
   --content-pressed: var(--tecton-color-content-bg-press);
   --content-active: var(--tecton-color-content-bg-active);
@@ -415,6 +424,9 @@
   --color-filled-active: var(--filled-active);
   --color-slider-rail: var(--slider-rail);
   --color-progress-track: var(--progress-track);
+  --color-input-filled: var(--input-filled);
+  --color-input-filled-focus: var(--input-filled-focus);
+  --color-number-field-fill: var(--number-field-fill);
   --color-content-hover: var(--content-hover);
   --color-content-pressed: var(--content-pressed);
   --color-content-active: var(--content-active);

@@ -15,7 +15,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@tecton/react/components/pagination"
+} from "@tecton/react/pagination"
 
 const translations: Translations = {
   en: {

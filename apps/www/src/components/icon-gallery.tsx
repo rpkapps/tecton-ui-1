@@ -2,19 +2,12 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { toast } from "sonner"
+import { toast } from "@tecton/react/toast"
 
-import { Badge } from "@tecton/react/components/badge"
-import { Input } from "@tecton/react/components/input"
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@tecton/react/components/toggle-group"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@tecton/react/components/tooltip"
+import { Badge } from "@tecton/react/badge"
+import { Input } from "@tecton/react/input"
+import { ToggleGroup, ToggleGroupItem } from "@tecton/react/toggle-group"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@tecton/react/tooltip"
 import { tectonIcons } from "@tecton/react/icons"
 
 const sizes = [16, 20, 24] as const
@@ -105,9 +98,12 @@ export function IconGallery() {
                   // `navigator.clipboard` is undefined in insecure contexts:
                   // the call throws and lands in the catch.
                   await navigator.clipboard.writeText(snippet)
-                  toast(`Copied ${icon.name}Icon import`)
+                  toast.add({ title: `Copied ${icon.name}Icon import` })
                 } catch {
-                  toast.error(`Could not copy the ${icon.name}Icon import`)
+                  toast.add({
+                    title: `Could not copy the ${icon.name}Icon import`,
+                    type: "error",
+                  })
                 }
               }}
             >

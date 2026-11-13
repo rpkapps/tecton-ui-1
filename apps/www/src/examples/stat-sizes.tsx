@@ -1,4 +1,4 @@
-import { Stat, StatLabel, StatValue } from "@tecton/react/tecton/stat"
+import { Stat, StatLabel, StatValue } from "@tecton/react/stat"
 
 export default function StatSizes() {
   return (

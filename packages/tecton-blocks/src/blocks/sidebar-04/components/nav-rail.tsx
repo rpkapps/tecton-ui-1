@@ -14,9 +14,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@tecton/react/components/sidebar"
-import { Link } from "@tecton/react/tecton/link"
-import { useDirection } from "@tecton/react/tecton/provider"
+} from "@tecton/react/sidebar"
+import { Link } from "@tecton/react/link"
+import { useDirection } from "@tecton/react/provider"
 
 import { currentUser, railMain, railSecondary } from "../data"
 import { NavUser } from "./nav-user"

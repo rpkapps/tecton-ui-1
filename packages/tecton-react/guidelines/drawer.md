@@ -1,6 +1,6 @@
 ---
 component: Drawer
-module: "@tecton/react/components/drawer"
+module: "@tecton/react/drawer"
 family: overlays
 exports: [Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose, DrawerPortal, DrawerOverlay, DrawerSwipeHandle]
 notFor:

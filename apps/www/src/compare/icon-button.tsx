@@ -1,7 +1,7 @@
 import * as React from "react"
 import { BoxIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 
 import { Caption, Matrix, Page, Section } from "./matrix"
 

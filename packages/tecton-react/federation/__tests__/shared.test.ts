@@ -60,7 +60,7 @@ describe("shared", () => {
   })
 
   it("types the keys and the flags as literals", () => {
-    const singleton: false = shared.sonner.singleton
+    const singleton: false = shared.react.singleton
     const eager: false = shared.recharts.eager
     expect([singleton, eager]).toEqual([false, false])
   })
@@ -71,21 +71,19 @@ describe("shared", () => {
     }
   })
 
-  it("lists exactly the dependencies a host and a remote have to agree on", () => {
+  it("lists exactly the dependencies worth sharing", () => {
     expect(Object.keys(shared)).toEqual([
       "react",
       "react-dom",
-      "sonner",
-      "@tecton/react/",
-      "@base-ui/react",
-      "@base-ui/react/",
       "recharts",
+      "shiki/",
     ])
   })
 
-  it("shares Tecton's internal libraries, but never as singletons", () => {
-    expect(shared["@base-ui/react"]).toEqual({ singleton: false })
-    expect(shared["@base-ui/react/"]).toEqual({ singleton: false })
+  it("never shares Tecton or the libraries whose contexts it relies on", () => {
+    const specifiers = ["@tecton/react/dialog", ...importsOf("@base-ui/react")]
+    expect(specifiers).toContain("@base-ui/react")
+    expect(specifiers.filter(isShared)).toEqual([])
   })
 
   it("has nothing to share for React Aria: no source imports it", () => {
@@ -101,20 +99,21 @@ describe("shared", () => {
     }
   })
 
-  it("covers every specifier the sources import Base UI by", () => {
-    const specifiers = [...importsOf("@base-ui/react")]
-    // The root barrel and at least one subpath are both in use.
-    expect(specifiers).toContain("@base-ui/react")
-    expect(specifiers.some((s) => s.startsWith("@base-ui/react/"))).toBe(true)
+  it("covers every specifier the sources import shiki by", () => {
+    const specifiers = [...importsOf("shiki")]
+    expect(specifiers.length).toBeGreaterThan(0)
     expect(specifiers.filter((specifier) => !isShared(specifier))).toEqual([])
   })
 
-  it("carries no versions, and marks only recharts as never eager", () => {
+  it("carries no versions, and marks only recharts and shiki as never eager", () => {
     const eager = Object.entries(shared).filter(
       ([, policy]) => "eager" in policy
     )
 
-    expect(eager).toEqual([["recharts", { singleton: false, eager: false }]])
+    expect(eager).toEqual([
+      ["recharts", { singleton: false, eager: false }],
+      ["shiki/", { singleton: false, eager: false }],
+    ])
     expect(
       Object.values(shared).every((policy) => !("requiredVersion" in policy))
     ).toBe(true)

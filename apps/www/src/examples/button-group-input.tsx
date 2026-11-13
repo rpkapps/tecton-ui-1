@@ -1,9 +1,9 @@
 // Synced from shadcn/ui (apps/v4/examples/base/button-group-input.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { SearchIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import { ButtonGroup } from "@tecton/react/components/button-group"
-import { Input } from "@tecton/react/components/input"
+import { Button } from "@tecton/react/button"
+import { ButtonGroup } from "@tecton/react/button-group"
+import { Input } from "@tecton/react/input"
 
 export default function ButtonGroupInput() {
   return (

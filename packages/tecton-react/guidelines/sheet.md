@@ -1,6 +1,6 @@
 ---
 component: Sheet
-module: "@tecton/react/components/sheet"
+module: "@tecton/react/sheet"
 family: overlays
 exports: [Sheet, SheetTrigger, SheetContent, SheetClose, SheetHeader, SheetTitle, SheetDescription, SheetFooter]
 notFor:

@@ -3,8 +3,8 @@
 import * as React from "react"
 import { cn } from "cn"
 
-import { Slider } from "@tecton/react/components/slider"
-import { useLocale } from "@tecton/react/tecton/provider"
+import { Slider } from "@tecton/react/slider"
+import { useLocale } from "@tecton/react/provider"
 
 type ParameterSliderProps = {
   className?: string

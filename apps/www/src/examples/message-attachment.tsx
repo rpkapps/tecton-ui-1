@@ -11,9 +11,9 @@ import {
   AttachmentDescription,
   AttachmentMedia,
   AttachmentTitle,
-} from "@tecton/react/components/attachment"
-import { Bubble, BubbleContent } from "@tecton/react/components/bubble"
-import { Message, MessageContent } from "@tecton/react/components/message"
+} from "@tecton/react/attachment"
+import { Bubble, BubbleContent } from "@tecton/react/bubble"
+import { Message, MessageContent } from "@tecton/react/message"
 
 export function MessageAttachmentDemo() {
   return (

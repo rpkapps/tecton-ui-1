@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/base/drawer-non-modal.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Drawer,
   DrawerClose,
@@ -8,7 +8,7 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@tecton/react/components/drawer"
+} from "@tecton/react/drawer"
 
 export function DrawerNonModal() {
   return (

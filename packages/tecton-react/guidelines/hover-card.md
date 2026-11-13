@@ -1,6 +1,6 @@
 ---
 component: HoverCard
-module: "@tecton/react/components/hover-card"
+module: "@tecton/react/hover-card"
 family: overlays
 exports: [HoverCard, HoverCardTrigger, HoverCardContent]
 notFor:

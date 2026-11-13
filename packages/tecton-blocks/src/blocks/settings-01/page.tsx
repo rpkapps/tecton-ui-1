@@ -15,21 +15,16 @@ import {
   AlertAction,
   AlertDescription,
   AlertTitle,
-} from "@tecton/react/components/alert"
-import { Button } from "@tecton/react/components/button"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@tecton/react/components/tabs"
+} from "@tecton/react/alert"
+import { Button } from "@tecton/react/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecton/react/tabs"
 import {
   PageHeader,
   PageHeaderContent,
   PageHeaderDescription,
   PageHeaderEyebrow,
   PageHeaderTitle,
-} from "@tecton/react/tecton/page-header"
+} from "@tecton/react/page-header"
 
 import {
   AppearanceForm,

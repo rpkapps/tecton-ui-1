@@ -9,7 +9,7 @@ import {
   type ColumnSizingState,
 } from "@tanstack/react-table"
 
-import { Badge } from "@tecton/react/components/badge"
+import { Badge } from "@tecton/react/badge"
 import {
   Table,
   TableBody,
@@ -17,8 +17,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
-import { TableColumnResizer } from "@tecton/react/tecton/table-column-resizer"
+} from "@tecton/react/table"
+import { TableColumnResizer } from "@tecton/react/table-column-resizer"
 
 type Well = {
   id: string

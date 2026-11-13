@@ -1,6 +1,6 @@
 ---
 component: Collapsible
-module: "@tecton/react/components/collapsible"
+module: "@tecton/react/collapsible"
 family: layout
 exports: [Collapsible, CollapsibleTrigger, CollapsibleContent]
 notFor:

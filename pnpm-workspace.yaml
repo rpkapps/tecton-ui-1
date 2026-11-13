@@ -8,5 +8,7 @@ packages:
 allowBuilds:
   esbuild: true
   lightningcss: true
-  unrs-resolver: true
   msw: false
+  unrs-resolver: true
+patchedDependencies:
+  '@tanstack/start-static-server-functions@1.167.34': patches/@tanstack__start-static-server-functions@1.167.34.patch

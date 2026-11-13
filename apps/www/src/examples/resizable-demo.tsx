@@ -3,7 +3,7 @@ import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from "@tecton/react/components/resizable"
+} from "@tecton/react/resizable"
 
 export default function ResizableDemo() {
   return (

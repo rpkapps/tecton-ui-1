@@ -13,8 +13,8 @@ import {
   ComboboxItem,
   ComboboxLabel,
   ComboboxList,
-} from "@tecton/react/components/combobox"
-import { InputGroupAddon } from "@tecton/react/components/input-group"
+} from "@tecton/react/combobox"
+import { InputGroupAddon } from "@tecton/react/input-group"
 
 const timezones = [
   {

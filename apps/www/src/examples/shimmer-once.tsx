@@ -3,7 +3,7 @@
 
 import * as React from "react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 
 export function ShimmerOnce() {
   const [key, setKey] = React.useState(0)

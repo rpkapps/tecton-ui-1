@@ -5,8 +5,8 @@ import {
   FieldGroup,
   FieldLabel,
   FieldSet,
-} from "@tecton/react/components/field"
-import { Input } from "@tecton/react/components/input"
+} from "@tecton/react/field"
+import { Input } from "@tecton/react/input"
 
 export default function FieldInput() {
   return (

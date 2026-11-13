@@ -8,7 +8,7 @@ import {
   UserIcon,
 } from "lucide-react"
 
-import { Avatar, AvatarFallback } from "@tecton/react/components/avatar"
+import { Avatar, AvatarFallback } from "@tecton/react/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,13 +17,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@tecton/react/components/sidebar"
+} from "@tecton/react/sidebar"
 
 type NavUserProps = {
   user: { name: string; initials: string; role: string; email: string }

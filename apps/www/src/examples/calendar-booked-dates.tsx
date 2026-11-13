@@ -3,8 +3,8 @@
 
 import * as React from "react"
 
-import { Calendar } from "@tecton/react/components/calendar"
-import { Card, CardContent } from "@tecton/react/components/card"
+import { Calendar } from "@tecton/react/calendar"
+import { Card, CardContent } from "@tecton/react/card"
 
 export function CalendarBookedDates() {
   const [date, setDate] = React.useState<Date | undefined>(

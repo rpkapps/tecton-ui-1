@@ -12,7 +12,7 @@ import {
   ContextMenuRadioItem,
   ContextMenuSeparator,
   ContextMenuTrigger,
-} from "@tecton/react/components/context-menu"
+} from "@tecton/react/context-menu"
 
 export function ContextMenuRadio() {
   const [user, setUser] = React.useState("pedro")

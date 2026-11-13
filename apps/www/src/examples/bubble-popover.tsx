@@ -5,8 +5,8 @@ import {
   Bubble,
   BubbleContent,
   BubbleReactions,
-} from "@tecton/react/components/bubble"
-import { Button } from "@tecton/react/components/button"
+} from "@tecton/react/bubble"
+import { Button } from "@tecton/react/button"
 import {
   Popover,
   PopoverContent,
@@ -14,7 +14,7 @@ import {
   PopoverHeader,
   PopoverTitle,
   PopoverTrigger,
-} from "@tecton/react/components/popover"
+} from "@tecton/react/popover"
 
 export function BubblePopoverDemo() {
   return (

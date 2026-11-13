@@ -9,14 +9,10 @@ import { cn } from "cn"
 import { oklch } from "culori/css"
 import { formatHex, parse, toGamut } from "culori/fn"
 
-import { Button } from "@tecton/react/components/button"
-import { Input } from "@tecton/react/components/input"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@tecton/react/components/popover"
-import { Separator } from "@tecton/react/components/separator"
+import { Button } from "@tecton/react/button"
+import { Input } from "@tecton/react/input"
+import { Popover, PopoverContent, PopoverTrigger } from "@tecton/react/popover"
+import { Separator } from "@tecton/react/separator"
 
 /**
  * Tecton ColorSwatch — a colour preview chip with an optional label and
@@ -316,56 +312,66 @@ function ColorSwatch({
   )
 }
 
-type ResolvedColors = {
-  current: string | null
-  presets: { preset: string; hex: string; name: string }[]
+type ResolvedPreset = { preset: string; hex: string; name: string }
+
+function resolvePresets(presets: string[], root: Element | null) {
+  return presets.flatMap<ResolvedPreset>((preset) => {
+    const parsed = resolveColor(preset, root)
+    return parsed
+      ? [{ preset, hex: toHex(parsed), name: describeColor(parsed) }]
+      : []
+  })
 }
 
-function resolveColors(
-  color: string,
-  presets: string[],
-  root: Element | null
-): ResolvedColors {
-  const current = resolveColor(color, root)
-  return {
-    current: current ? toHex(current) : null,
-    presets: presets.flatMap((preset) => {
-      const parsed = resolveColor(preset, root)
-      return parsed
-        ? [{ preset, hex: toHex(parsed), name: describeColor(parsed) }]
-        : []
-    }),
-  }
-}
-
-function sameColors(a: ResolvedColors, b: ResolvedColors) {
+function samePresets(a: ResolvedPreset[], b: ResolvedPreset[]) {
   return (
-    a.current === b.current &&
-    a.presets.length === b.presets.length &&
-    a.presets.every(
-      (p, i) => p.preset === b.presets[i].preset && p.hex === b.presets[i].hex
-    )
+    a.length === b.length &&
+    a.every((p, i) => p.preset === b[i].preset && p.hex === b[i].hex)
   )
 }
 
 /**
- * The picker's colours as hex. Parseable values resolve during render; a
- * token (`var(--…)`) needs the DOM, so it is probed in a layout effect once
- * the picker has mounted — never during render — and kept in state.
+ * The current colour as hex, or `null` while unresolved. Parseable values
+ * resolve during render; a token (`var(--…)`) needs the DOM, so it is probed
+ * in a layout effect once the picker has mounted — never during render.
  */
-function useResolvedColors(
-  color: string,
-  presets: string[],
-  root: Element | null
-) {
-  const [resolved, setResolved] = React.useState(() =>
-    resolveColors(color, presets, null)
-  )
+function useResolvedColor(color: string, root: Element | null) {
+  const [hex, setHex] = React.useState(() => {
+    const parsed = resolveColor(color, null)
+    return parsed ? toHex(parsed) : null
+  })
   React.useLayoutEffect(() => {
-    const next = resolveColors(color, presets, root)
-    setResolved((prev) => (sameColors(prev, next) ? prev : next))
-  }, [color, presets, root])
-  return resolved
+    const parsed = resolveColor(color, root)
+    const next = parsed ? toHex(parsed) : null
+    setHex((prev) => (prev === next ? prev : next))
+  }, [color, root])
+  return hex
+}
+
+/**
+ * The presets as hex. Resolved only when the preset values or the picker
+ * change: dragging in the native picker re-renders the caller constantly and
+ * must not re-probe every preset through the DOM each time.
+ */
+function useResolvedPresets(presets: string[], root: Element | null) {
+  const key = presets.join("\u0000")
+  const [state, setState] = React.useState(() => ({
+    key,
+    list: resolvePresets(presets, null),
+  }))
+  // The effect reads the current array but runs on contents, not identity,
+  // so a caller passing a fresh array literal per render costs nothing.
+  const latest = React.useRef(presets)
+  latest.current = presets
+  React.useLayoutEffect(() => {
+    const next = resolvePresets(latest.current, root)
+    setState((prev) =>
+      prev.key === key && samePresets(prev.list, next)
+        ? prev
+        : { key, list: next }
+    )
+  }, [key, root])
+  return state.list
 }
 
 /** A bare hex is accepted without its `#`; anything culori parses works too. */
@@ -431,12 +437,56 @@ function ColorSwatchEditor({
 }) {
   const presetsId = React.useId()
   const [root, setRoot] = React.useState<HTMLElement | null>(null)
-  const { current, presets: presetValues } = useResolvedColors(
-    color,
-    presets,
-    root
-  )
+  const current = useResolvedColor(color, root)
+  const presetValues = useResolvedPresets(presets, root)
   const selected = presetValues.find((p) => p.hex === current)?.preset ?? null
+
+  // The native picker fires on every pointer move. Emitting each one makes
+  // the caller re-render constantly, so the value is throttled to one emit
+  // per animation frame; the native `change` (release or the picker closing)
+  // flushes the final colour so nothing is lost.
+  const nativeRef = React.useRef<HTMLInputElement | null>(null)
+  const pending = React.useRef<string | null>(null)
+  const frame = React.useRef<number | null>(null)
+  const dragging = React.useRef(false)
+  const flush = React.useCallback(() => {
+    if (frame.current !== null) {
+      cancelAnimationFrame(frame.current)
+      frame.current = null
+    }
+    const next = pending.current
+    pending.current = null
+    if (next !== null) onColorChange(next)
+  }, [onColorChange])
+  // Keep the picker in sync with the colour, but never write to it mid-drag:
+  // a late throttled frame would snap the handle back behind the pointer.
+  React.useLayoutEffect(() => {
+    const input = nativeRef.current
+    if (!input || dragging.current) return
+    const hex = (current ?? "#000000").toLowerCase()
+    if (input.value !== hex) input.value = hex
+  }, [current, root])
+  React.useEffect(() => {
+    const input = nativeRef.current
+    if (!root || !input) return
+    const stop = () => {
+      dragging.current = false
+    }
+    const commit = () => {
+      stop()
+      flush()
+    }
+    input.addEventListener("change", commit)
+    input.addEventListener("blur", commit)
+    window.addEventListener("pointerup", stop)
+    return () => {
+      input.removeEventListener("change", commit)
+      input.removeEventListener("blur", commit)
+      window.removeEventListener("pointerup", stop)
+      stop()
+      flush()
+    }
+  }, [root, flush])
   const shapeClass = cn(
     shape === "circle" && "rounded-full",
     shape === "square" && "rounded-sm"
@@ -520,13 +570,23 @@ function ColorSwatchEditor({
                 )}
                 style={{ background: current ?? "#000000" }}
               >
+                {/* Uncontrolled: the picker owns the value while dragging;
+                    the layout effect above keeps it in sync otherwise. */}
                 <input
+                  ref={nativeRef}
                   type="color"
                   aria-label="Pick a custom colour"
-                  value={(current ?? "#000000").toLowerCase()}
-                  onChange={(event) =>
-                    onColorChange(event.target.value.toUpperCase())
-                  }
+                  defaultValue={(current ?? "#000000").toLowerCase()}
+                  onChange={(event) => {
+                    dragging.current = true
+                    pending.current = event.target.value.toUpperCase()
+                    if (frame.current === null) {
+                      frame.current = requestAnimationFrame(() => {
+                        frame.current = null
+                        flush()
+                      })
+                    }
+                  }}
                   className="absolute inset-0 size-full cursor-pointer opacity-0"
                 />
               </label>

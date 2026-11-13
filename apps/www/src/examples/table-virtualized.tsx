@@ -7,7 +7,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
+} from "@tecton/react/table"
 
 const readings = Array.from({ length: 5_000 }, (_, i) => ({
   depth: 1000 + i * 0.5,

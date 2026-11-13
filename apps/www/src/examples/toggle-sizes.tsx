@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/base/toggle-sizes.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Toggle } from "@tecton/react/components/toggle"
+import { Toggle } from "@tecton/react/toggle"
 
 export function ToggleSizes() {
   return (

@@ -1,12 +1,12 @@
 // Synced from shadcn/ui (apps/v4/examples/base/pagination-icons-only.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Field, FieldLabel } from "@tecton/react/components/field"
+import { Field, FieldLabel } from "@tecton/react/field"
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from "@tecton/react/components/pagination"
+} from "@tecton/react/pagination"
 import {
   Select,
   SelectContent,
@@ -14,7 +14,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
+} from "@tecton/react/select"
 
 export function PaginationIconsOnly() {
   return (

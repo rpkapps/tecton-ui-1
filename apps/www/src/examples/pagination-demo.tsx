@@ -7,7 +7,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@tecton/react/components/pagination"
+} from "@tecton/react/pagination"
 
 export default function PaginationDemo() {
   return (

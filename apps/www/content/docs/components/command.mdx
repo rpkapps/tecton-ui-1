@@ -29,7 +29,7 @@ import {
   CommandList,
   CommandSeparator,
   CommandShortcut,
-} from "@tecton/react/components/command"
+} from "@tecton/react/command"
 ```
 
 ```tsx lineNumbers
@@ -131,7 +131,7 @@ Run the action from `onSelect` on `CommandItem`; it fires on click and on Enter.
 
 <Do>
 
-Put `CommandEmpty` inside `CommandList`: it shows only when the filter matches nothing.
+Put `CommandEmpty` inside `CommandList`: it shows only when the filter matches nothing; without it a failed search leaves a blank panel that reads as broken.
 
 </Do>
 
@@ -149,7 +149,7 @@ Group with `CommandGroup heading="…"`, divide with `CommandSeparator`, hint ke
 
 <Do>
 
-Open the palette with `CommandDialog` and its `open` / `onOpenChange` props, wrapping a `Command`.
+Open the palette with `CommandDialog` and its `open` / `onOpenChange` props; it always needs a `Command` root inside it.
 
 </Do>
 
@@ -168,6 +168,36 @@ When a filter narrows a table or list, show the matching count beside it ("42 of
 </DoList>
 
 ### Don't
+
+<Dont severity="CRITICAL" title="CommandDialog without a Command root">
+
+<Wrong>
+
+```tsx
+<CommandDialog open={open} onOpenChange={setOpen}>
+  <CommandInput placeholder="Search…" />
+  <CommandList>{items}</CommandList>
+</CommandDialog>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<CommandDialog open={open} onOpenChange={setOpen}>
+  <Command>
+    <CommandInput placeholder="Search…" />
+    <CommandList>{items}</CommandList>
+  </Command>
+</CommandDialog>
+```
+
+</Correct>
+
+`CommandDialog` is only the dialog surface and adds no `Command` of its own. `CommandInput`, `CommandList` and `CommandItem` read the search state from `Command`, so without it the palette throws as soon as it opens.
+
+</Dont>
 
 <Dont severity="CRITICAL" title="The onAction prop instead of onSelect">
 
@@ -216,37 +246,6 @@ When a filter narrows a table or list, show the matching count beside it ("42 of
 </Correct>
 
 The filter matches an item's `value` and `keywords`; `textValue` is not a prop, so the item is matched on whatever text cmdk reads from its markup and a search for "invoice" finds nothing.
-
-</Dont>
-
-<Dont severity="MEDIUM" title="An empty search that renders nothing">
-
-<Wrong>
-
-```tsx
-<Command>
-  <CommandInput placeholder="Type a command or search…" />
-  <CommandList>{items}</CommandList>
-</Command>
-```
-
-</Wrong>
-
-<Correct>
-
-```tsx
-<Command>
-  <CommandInput placeholder="Type a command or search…" />
-  <CommandList>
-    <CommandEmpty>No results found.</CommandEmpty>
-    {items}
-  </CommandList>
-</Command>
-```
-
-</Correct>
-
-With no `CommandEmpty` a search that matches nothing leaves a blank panel under the input, which reads as the palette having broken.
 
 </Dont>
 

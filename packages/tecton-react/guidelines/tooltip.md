@@ -1,6 +1,6 @@
 ---
 component: Tooltip
-module: "@tecton/react/components/tooltip"
+module: "@tecton/react/tooltip"
 family: overlays
 exports: [Tooltip, TooltipTrigger, TooltipContent, TooltipProvider]
 notFor:

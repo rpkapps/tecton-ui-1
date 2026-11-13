@@ -5,11 +5,7 @@ import {
   TriangleAlertIcon,
 } from "lucide-react"
 
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@tecton/react/components/alert"
+import { Alert, AlertDescription, AlertTitle } from "@tecton/react/alert"
 
 export default function AlertSeverities() {
   return (

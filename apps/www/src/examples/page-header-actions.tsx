@@ -1,14 +1,14 @@
 import { DownloadIcon, PlusIcon, SettingsIcon, ShareIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import { OverflowItem, OverflowLabel } from "@tecton/react/tecton/overflow"
+import { Button } from "@tecton/react/button"
+import { OverflowItem, OverflowLabel } from "@tecton/react/overflow"
 import {
   PageHeader,
   PageHeaderActions,
   PageHeaderContent,
   PageHeaderDescription,
   PageHeaderTitle,
-} from "@tecton/react/tecton/page-header"
+} from "@tecton/react/page-header"
 
 export default function PageHeaderActionsExample() {
   return (

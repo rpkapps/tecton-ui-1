@@ -3,7 +3,7 @@ import { cn } from "cn"
 export function TectonLogo({ className }: { className?: string }) {
   return (
     <img
-      src="/favicon.svg"
+      src={`${import.meta.env.BASE_URL}favicon.svg`}
       alt=""
       aria-hidden
       draggable={false}

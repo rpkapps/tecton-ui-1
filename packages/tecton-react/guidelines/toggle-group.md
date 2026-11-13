@@ -1,6 +1,6 @@
 ---
 component: ToggleGroup
-module: "@tecton/react/components/toggle-group"
+module: "@tecton/react/toggle-group"
 family: selection
 exports: [ToggleGroup, ToggleGroupItem]
 notFor:

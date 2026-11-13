@@ -4,7 +4,8 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
-import { TectonContext, TectonProvider } from "@tecton/react/tecton/provider"
+import { TectonContext, TectonProvider } from "@tecton/react/provider"
+import { ToastHostBoundary } from "@tecton/react/toast-bridge"
 
 import { localeDirection } from "./internal/locale"
 
@@ -38,6 +39,10 @@ import { localeDirection } from "./internal/locale"
  * they feed that `TectonProvider`, and the direction is also written as the
  * `dir` attribute of the root and of the container, which sits outside any
  * `dir` the shell put on an ancestor.
+ *
+ * The page shows a single toast stack: the `toast` calls of every copy go to
+ * one elected `Toaster`, the shell's (the oldest outside any `ThemeRoot`)
+ * when there is one, else the oldest `Toaster` under a `ThemeRoot`.
  *
  * The container is created in an effect, so overlays cannot be open before
  * mount: on the first paint there is no container yet and overlays portal
@@ -154,7 +159,7 @@ function ThemeRoot({
         locale={locale}
         portalContainer={container}
       >
-        {children}
+        <ToastHostBoundary>{children}</ToastHostBoundary>
       </TectonProvider>
     </div>
   )

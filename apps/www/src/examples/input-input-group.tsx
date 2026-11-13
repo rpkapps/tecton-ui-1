@@ -1,13 +1,13 @@
 // Synced from shadcn/ui (apps/v4/examples/base/input-input-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { InfoIcon } from "lucide-react"
 
-import { Field, FieldLabel } from "@tecton/react/components/field"
+import { Field, FieldLabel } from "@tecton/react/field"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
   InputGroupText,
-} from "@tecton/react/components/input-group"
+} from "@tecton/react/input-group"
 
 export function InputInputGroup() {
   return (

@@ -1,7 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/base/item-icon.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { ShieldAlertIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Item,
   ItemActions,
@@ -9,7 +9,7 @@ import {
   ItemDescription,
   ItemMedia,
   ItemTitle,
-} from "@tecton/react/components/item"
+} from "@tecton/react/item"
 
 export function ItemIcon() {
   return (

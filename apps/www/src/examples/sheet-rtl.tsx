@@ -5,9 +5,9 @@ import {
   useTranslation,
   type Translations,
 } from "@/components/language-selector"
-import { Button } from "@tecton/react/components/button"
-import { Field, FieldGroup, FieldLabel } from "@tecton/react/components/field"
-import { Input } from "@tecton/react/components/input"
+import { Button } from "@tecton/react/button"
+import { Field, FieldGroup, FieldLabel } from "@tecton/react/field"
+import { Input } from "@tecton/react/input"
 import {
   Sheet,
   SheetClose,
@@ -17,7 +17,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@tecton/react/components/sheet"
+} from "@tecton/react/sheet"
 
 const translations: Translations = {
   en: {

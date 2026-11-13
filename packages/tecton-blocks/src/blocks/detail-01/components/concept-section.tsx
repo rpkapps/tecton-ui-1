@@ -18,26 +18,26 @@ import {
   WavesIcon,
 } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
+import { Badge } from "@tecton/react/badge"
+import { Button } from "@tecton/react/button"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@tecton/react/components/collapsible"
+} from "@tecton/react/collapsible"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 import {
   Panel,
   PanelContent,
   PanelHeader,
   PanelTitle,
-} from "@tecton/react/tecton/panel"
+} from "@tecton/react/panel"
 
 import { decisionCounts } from "../data"
 import type { Alternative, Concept, Decision } from "../data"

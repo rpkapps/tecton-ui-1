@@ -9,4 +9,9 @@
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
   }
+
+  /* Never fake a bold: a weight with no loaded Figtree face uses the nearest real one. */
+  body {
+    font-synthesis-weight: none;
+  }
 }

@@ -4,12 +4,12 @@ import * as React from "react"
 import { cn } from "cn"
 import { ChevronRightIcon, PlusIcon } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
+import { Badge } from "@tecton/react/badge"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@tecton/react/components/collapsible"
+} from "@tecton/react/collapsible"
 import {
   Sidebar,
   SidebarContent,
@@ -24,8 +24,8 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarTrigger,
-} from "@tecton/react/components/sidebar"
-import { useDirection } from "@tecton/react/tecton/provider"
+} from "@tecton/react/sidebar"
+import { useDirection } from "@tecton/react/provider"
 
 import { project as defaultProject } from "../data"
 import type { Project } from "../data"

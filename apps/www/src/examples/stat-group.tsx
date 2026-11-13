@@ -4,7 +4,7 @@ import {
   StatGroup,
   StatLabel,
   StatValue,
-} from "@tecton/react/tecton/stat"
+} from "@tecton/react/stat"
 
 export default function StatGroupExample() {
   return (

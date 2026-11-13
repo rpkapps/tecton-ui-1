@@ -14,7 +14,7 @@ The `Marker` component displays inline conversation markers such as status updat
 ## Usage
 
 ```tsx lineNumbers
-import { Marker, MarkerContent, MarkerIcon } from "@tecton/react/components/marker"
+import { Marker, MarkerContent, MarkerIcon } from "@tecton/react/marker"
 ```
 
 ```tsx lineNumbers
@@ -79,7 +79,7 @@ Add the [`shimmer`](/docs/utils/shimmer) utility class to `MarkerContent` for an
 
 ## Separator
 
-Use the `separator` variant for labeled dividers, such as dates or section breaks, in a conversation.
+Use the `separator` variant for labeled dividers, such as dates or section breaks, in a conversation. A [Checkpoint](https://ui.shadcn.com/docs/ai-elements/base/checkpoint) is a separator with a button that restores the thread to that point.
 
 <ComponentPreview
   name="marker-separator"
@@ -114,7 +114,7 @@ Turn a marker into a link or button with the `render` prop on `Marker`.
 />
 
 ```tsx lineNumbers
-import { Marker, MarkerContent } from "@tecton/react/components/marker"
+import { Marker, MarkerContent } from "@tecton/react/marker"
 
 export function MarkerLinkDemo() {
   return (

@@ -13,10 +13,7 @@ import {
 } from "lucide-react"
 import type { ContextMenu as ContextMenuPrimitive } from "@base-ui/react/context-menu"
 
-import {
-  ContextMenu,
-  ContextMenuTrigger,
-} from "@tecton/react/components/context-menu"
+import { ContextMenu, ContextMenuTrigger } from "@tecton/react/context-menu"
 
 import {
   defineTreeItem,

@@ -1,0 +1,248 @@
+---
+title: Number Field
+description: "Numeric input with minus and plus buttons, bounds, locale formatting, units, and a slider mode that fills to the value and scrubs on drag."
+---
+
+<ComponentPreview name="number-field-demo" />
+
+## Usage
+
+```tsx
+import {
+  NumberField,
+  NumberFieldDecrement,
+  NumberFieldGroup,
+  NumberFieldIncrement,
+  NumberFieldInput,
+} from "@tecton/react/number-field"
+```
+
+```tsx
+<NumberField defaultValue={12} min={0} max={100}>
+  <NumberFieldGroup>
+    <NumberFieldDecrement />
+    <NumberFieldInput aria-label="Cell size" />
+    <NumberFieldIncrement />
+  </NumberFieldGroup>
+</NumberField>
+```
+
+Minus goes before the input and plus after it; with both, the number is centred. The arrow keys step by `step`, Shift+arrow by `largeStep` and Alt+arrow by `smallStep`. Home and End jump to `min` and `max`. Holding minus or plus repeats it. While the input is focused, the mouse wheel steps it too (pass `allowWheelScrub={false}` to turn that off); an unfocused field lets the page scroll.
+
+## Units
+
+`NumberFieldUnit` puts a unit after the value and describes the input with it, so screen readers announce "8,500 ft". Clicking the unit focuses the input.
+
+<ComponentPreview name="number-field-units" />
+
+## Format
+
+`format` takes `Intl.NumberFormat` options: decimals, percent and the units `Intl` knows. The locale comes from `TectonProvider`; `locale` overrides it.
+
+<ComponentPreview name="number-field-format" />
+
+## Optional value
+
+The value is `number | null`. Clearing the input reports `null`.
+
+<ComponentPreview name="number-field-optional" />
+
+## Slider
+
+`NumberFieldSlider` replaces `NumberFieldGroup` in dense property panels. It fills to the value between `min` and `max`. Dragging sideways changes the value: the width of the field covers the whole range, Shift moves by `largeStep` and Alt by `smallStep`. A click without a drag edits the number as text; a drag still scrubs while you are typing, and commits what you typed first. Escape cancels a drag. On touch screens a sideways swipe scrubs and a vertical swipe scrolls the page. Without `min` and `max` there is no fill, and a drag moves one `step` every `pixelSensitivity` pixels.
+
+<ComponentPreview name="number-field-slider" />
+
+## Scrub from the label
+
+Wrap the label in `NumberFieldScrubArea` to change the value by dragging the label.
+
+<ComponentPreview name="number-field-scrub" />
+
+## In a field
+
+Put the `id` on `NumberField`, which gives it to the input, and point `FieldLabel htmlFor` at it.
+
+<ComponentPreview name="number-field-field" />
+
+## Invalid
+
+Set `aria-invalid` on `NumberFieldInput` and `data-invalid` on `Field`, and show the reason in `FieldError`. `min` and `max` already clamp the value, so use this for limits that depend on something else. Set it to 16.2 or below to clear the error.
+
+<ComponentPreview name="number-field-invalid" />
+
+## Variants
+
+<ComponentPreview name="number-field-variants" />
+
+## RTL
+
+In a right-to-left layout minus sits on the right and plus on the left. The slider fills from the right, and dragging left increases the value. `NumberFieldScrubArea` has no fill, so dragging a label right still increases it. The number is formatted for the `TectonProvider` locale, so Arabic shows Arabic-Indic digits.
+
+<ComponentPreview name="number-field-rtl" direction="rtl" />
+
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- A parameter the user types or nudges: cell size, offset, depth, threshold, opacity.
+- The value has bounds, a step, a unit or a locale-specific format (decimals, percent, thousands separators).
+- A dense property panel needs drag-to-change on the field itself, as in 3D tools: `NumberFieldSlider`.
+- The value is optional: an empty field reports `null`.
+
+### Not for
+
+- an approximate value picked by moving a thumb along a track, or a range with two thumbs: use [Slider](/docs/components/slider)
+- free text, an identifier or a phone number made of digits: use [Input](/docs/components/input)
+- a fixed set of numeric options: use [Select](/docs/components/select)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Compose `NumberField` > `NumberFieldGroup` > `NumberFieldDecrement`, `NumberFieldInput`, `NumberFieldUnit`, `NumberFieldIncrement`: minus first, plus last. Swap the group for `NumberFieldSlider` to get the fill and the drag. `NumberFieldGroup` already draws the border, focus ring and height, so never wrap it, or `NumberFieldInput`, in an `InputGroup`.
+
+</Do>
+
+<Do>
+
+Bound and step it on `NumberField` with `min`, `max`, `step`, `largeStep` (Shift) and `smallStep` (Alt); drive it with `value` / `defaultValue` and `onValueChange(value: number | null)`, and save on `onValueCommitted`.
+
+</Do>
+
+<Do>
+
+Format with `format` (`Intl.NumberFormat` options); the locale comes from `TectonProvider`. Put a unit that `Intl` cannot write ("ft", "psi", "bbl/d") in `NumberFieldUnit`.
+
+</Do>
+
+<Do>
+
+Inside a `Field`, put the `id` on `NumberField` and point `FieldLabel htmlFor` at it; wrap the label in `NumberFieldScrubArea` to scrub from the label. For a value past a soft limit, set `data-invalid` on the `Field` and `aria-invalid` on `NumberFieldInput`, and show the `FieldError` in place of the `FieldDescription`; `min` / `max` stay the hard bounds.
+
+</Do>
+
+<Do>
+
+Give `NumberFieldSlider` both `min` and `max`: the fill and the drag speed come from the range. Pick the surface with `variant="outline" | "filled" | "text"` on the group or the slider.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="HIGH" title="minValue and maxValue instead of min and max">
+
+<Wrong>
+
+```tsx
+<NumberField minValue={0} maxValue={100} defaultValue={20}>
+  <NumberFieldGroup>
+    <NumberFieldInput aria-label="Threshold" />
+  </NumberFieldGroup>
+</NumberField>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<NumberField min={0} max={100} defaultValue={20}>
+  <NumberFieldGroup>
+    <NumberFieldInput aria-label="Threshold" />
+  </NumberFieldGroup>
+</NumberField>
+```
+
+</Correct>
+
+`minValue` and `maxValue` are not number field props, so nothing clamps the value and the minus and plus buttons never disable at the ends.
+
+</Dont>
+
+<Dont severity="HIGH" title="An Input with type number and a suffix span">
+
+<Wrong>
+
+```tsx
+<div className="flex items-center gap-1">
+  <Input
+    type="number"
+    value={depth}
+    onChange={(e) => setDepth(Number(e.target.value))}
+  />
+  <span>ft</span>
+</div>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<NumberField value={depth} onValueChange={setDepth} min={0}>
+  <NumberFieldGroup>
+    <NumberFieldInput aria-label="Depth" />
+    <NumberFieldUnit>ft</NumberFieldUnit>
+  </NumberFieldGroup>
+</NumberField>
+```
+
+</Correct>
+
+`Number("")` turns a cleared field into `0`, the native spinner ignores the locale, and the loose span is never announced with the value; `NumberFieldUnit` describes the input and `onValueChange` reports `null` for an empty field.
+
+</Dont>
+
+{/* guidelines:end */}
+
+## API Reference
+
+### NumberField
+
+The root. It accepts `div` props.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` / `defaultValue` | `number \| null` | - | Controlled / initial value. |
+| `onValueChange` | `(value: number \| null, details) => void` | - | Every change: typing, stepping, scrubbing. |
+| `onValueCommitted` | `(value: number \| null, details) => void` | - | On blur, after a step, at the end of a drag. |
+| `min` / `max` | `number` | - | Bounds. |
+| `step` | `number \| "any"` | `1` | Arrow keys, minus and plus. |
+| `largeStep` / `smallStep` | `number` | `10` / `0.1` | With Shift / Alt. |
+| `snapOnStep` | `boolean` | `false` | Snap stepped values to multiples of `step`. |
+| `allowWheelScrub` | `boolean` | `true` | Step with the mouse wheel while the input is focused. |
+| `format` | `Intl.NumberFormatOptions` | - | Display format. |
+| `locale` | `Intl.LocalesArgument` | the `TectonProvider` locale | Locale of the format. |
+| `id` | `string` | - | The input's `id`, for `FieldLabel htmlFor`. |
+| `name` / `required` / `disabled` / `readOnly` | - | - | Form behaviour. |
+
+### NumberFieldGroup
+
+The bordered box around the input. `variant`: `"outline" | "filled" | "text"` (default `"outline"`).
+
+### NumberFieldInput
+
+The text input. It takes `input` props such as `placeholder` and `aria-label`.
+
+### NumberFieldUnit
+
+A `span` with the unit. It describes the input.
+
+### NumberFieldDecrement / NumberFieldIncrement
+
+The minus and plus buttons, square and borderless. Put minus before the input and plus after it. On touch screens they are 44 px wide. Pass children to change the icon. Their accessible names are "Decrease" and "Increase"; set `aria-label` to change them.
+
+### NumberFieldSlider
+
+Use it in place of `NumberFieldGroup`. It takes `variant` and `pixelSensitivity` (default `2`, pixels per `step` when unbounded). While dragging it has `data-scrubbing`.
+
+### NumberFieldScrubArea
+
+Wraps a label so dragging the label changes the value.

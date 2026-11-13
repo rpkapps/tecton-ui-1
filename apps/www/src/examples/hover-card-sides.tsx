@@ -1,10 +1,10 @@
 // Synced from shadcn/ui (apps/v4/examples/base/hover-card-sides.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@tecton/react/components/hover-card"
+} from "@tecton/react/hover-card"
 
 const HOVER_CARD_SIDES = ["left", "top", "bottom", "right"] as const
 

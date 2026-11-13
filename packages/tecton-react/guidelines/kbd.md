@@ -1,6 +1,6 @@
 ---
 component: Kbd
-module: "@tecton/react/components/kbd"
+module: "@tecton/react/kbd"
 family: labels
 exports: [Kbd, KbdGroup]
 notFor:

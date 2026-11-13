@@ -12,7 +12,7 @@ import {
   Alert,
   AlertDescription,
   AlertTitle,
-} from "@tecton/react/components/alert"
+} from "@tecton/react/alert"
 
 const translations: Translations = {
   en: {

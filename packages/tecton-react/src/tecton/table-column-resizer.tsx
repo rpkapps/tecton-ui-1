@@ -3,7 +3,7 @@
 import * as React from "react"
 import { cn } from "cn"
 
-import { useDirection } from "@tecton/react/tecton/provider"
+import { useDirection } from "@tecton/react/provider"
 
 import { useTranslations } from "./internal/i18n/translations"
 import { trackPointerDrag } from "./internal/primitives/drag-and-drop/pointer-drag"

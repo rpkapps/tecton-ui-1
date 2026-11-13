@@ -1,5 +1,11 @@
 import * as React from "react"
-import { fireEvent, render, screen, within } from "@testing-library/react"
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
@@ -7,8 +13,8 @@ import {
   ColorSwatch,
   colorSwatchPresets,
   colorSwatchVariants,
-} from "@tecton/react/tecton/color-swatch"
-import { PortalProvider } from "@tecton/react/tecton/portal"
+} from "@tecton/react/color-swatch"
+import { PortalProvider } from "@tecton/react/portal"
 
 const swatch = (container: HTMLElement) =>
   container.querySelector<HTMLElement>('[data-slot="color-swatch"]')
@@ -468,9 +474,66 @@ describe("ColorSwatch editable", () => {
     // No presets: only the custom section renders.
     expect(screen.queryByText("Presets")).toBeNull()
     expect(screen.queryByRole("radiogroup")).toBeNull()
-    // jsdom does not open a picker; drive the change event directly.
+    // jsdom does not open a picker; drive the change event directly. The
+    // emit is throttled to one per frame, so it lands a frame later.
     fireEvent.change(input, { target: { value: "#00ff00" } })
-    expect(onChange).toHaveBeenCalledWith("#00FF00")
+    await waitFor(() => expect(onChange).toHaveBeenCalledWith("#00FF00"))
+  })
+
+  it("throttles a native picker drag to one emit per frame", async () => {
+    const onChange = vi.fn()
+    render(
+      <ColorSwatch color="#ff0000" onColorChange={onChange} presets={[]} />
+    )
+    await open()
+    const input = screen.getByLabelText("Pick a custom colour")
+    // A drag fires only `input` events until it commits; simulate that, not
+    // fireEvent.change (which dispatches a real `change` and would commit).
+    const nativeSetter = Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      "value"
+    )!.set!
+    const dragTo = (hex: string) => {
+      // Set through the prototype setter so React's value tracker sees the
+      // change, the way fireEvent.change does.
+      nativeSetter.call(input, hex)
+      fireEvent(input, new Event("input", { bubbles: true }))
+    }
+    // Many changes between frames; only the last is emitted.
+    dragTo("#010203")
+    dragTo("#040506")
+    dragTo("#070809")
+    expect(onChange).not.toHaveBeenCalled()
+    await waitFor(() => expect(onChange).toHaveBeenCalledOnce())
+    expect(onChange).toHaveBeenCalledWith("#070809")
+  })
+
+  it("emits the final colour at once when the picker commits", async () => {
+    const onChange = vi.fn()
+    render(
+      <ColorSwatch color="#ff0000" onColorChange={onChange} presets={[]} />
+    )
+    await open()
+    const input = screen.getByLabelText("Pick a custom colour")
+    fireEvent.change(input, { target: { value: "#0a0b0c" } })
+    // Releasing or closing the picker fires the native `change`, which
+    // flushes the pending colour without waiting for the frame.
+    input.dispatchEvent(new Event("change", { bubbles: true }))
+    expect(onChange).toHaveBeenCalledExactlyOnceWith("#0A0B0C")
+    // The scheduled frame finds nothing pending and does not double-emit.
+    await new Promise((resolve) => requestAnimationFrame(resolve))
+    expect(onChange).toHaveBeenCalledExactlyOnceWith("#0A0B0C")
+  })
+
+  it("keeps the native input in sync with the colour", async () => {
+    render(<Editable presets={["#00ff00", "#0000ff", "#ff0000"]} />)
+    await open()
+    const input = screen.getByLabelText("Pick a custom colour")
+    expect(input).toHaveValue("#ff0000")
+    await userEvent.click(
+      screen.getByRole("radio", { name: "dark vibrant blue" })
+    )
+    expect(input).toHaveValue("#0000ff")
   })
 
   describe("hex field", () => {

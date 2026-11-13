@@ -2,15 +2,15 @@
 
 import * as React from "react"
 
-import { Bubble, BubbleContent } from "@tecton/react/components/bubble"
-import { Message, MessageContent } from "@tecton/react/components/message"
+import { Bubble, BubbleContent } from "@tecton/react/bubble"
+import { Message, MessageContent } from "@tecton/react/message"
 import {
   MessageScroller,
   MessageScrollerContent,
   MessageScrollerItem,
   MessageScrollerProvider,
   MessageScrollerViewport,
-} from "@tecton/react/components/message-scroller"
+} from "@tecton/react/message-scroller"
 import {
   Composer,
   ComposerField,
@@ -20,7 +20,7 @@ import {
   ComposerSubmit,
   ComposerToolbar,
   type ComposerStatus,
-} from "@tecton/react/tecton/composer"
+} from "@tecton/react/composer"
 
 type Turn = { id: string; role: "user" | "assistant"; text: string }
 

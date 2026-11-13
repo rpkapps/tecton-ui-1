@@ -3,7 +3,7 @@ import {
   PanelContent,
   PanelHeader,
   PanelTitle,
-} from "@tecton/react/tecton/panel"
+} from "@tecton/react/panel"
 
 const variants = ["default", "elevated", "flat", "outline"] as const
 

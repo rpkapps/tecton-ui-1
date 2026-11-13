@@ -204,7 +204,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
+} from "@tecton/react/table"
 
 import { features, type DataTableFeatures } from "./data-table-features"
 
@@ -364,7 +364,7 @@ Update our columns definition to add a new `actions` column. The `actions` cell 
 import { createColumnHelper } from "@tanstack/react-table"
 import { MoreHorizontal } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -372,7 +372,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 
 export const columns = columnHelper.columns([
   // ...
@@ -427,7 +427,7 @@ Because our features object includes `rowPaginationFeature` and `createPaginated
 We can add pagination controls to our table using the `<Button />` component and the `table.previousPage()`, `table.nextPage()` API methods.
 
 ```tsx lineNumbers title="app/payments/data-table.tsx" {1,20-37}
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 
 export function DataTable<TData extends RowData>({
   columns,
@@ -573,8 +573,8 @@ import {
   type SortingState,
 } from "@tanstack/react-table"
 
-import { Button } from "@tecton/react/components/button"
-import { Input } from "@tecton/react/components/input"
+import { Button } from "@tecton/react/button"
+import { Input } from "@tecton/react/input"
 
 export function DataTable<TData extends RowData>({
   columns,
@@ -642,13 +642,13 @@ import {
   type SortingState,
 } from "@tanstack/react-table"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 
 export function DataTable<TData extends RowData>({
   columns,
@@ -738,8 +738,8 @@ Next, we're going to add row selection to our table.
 
 import { createColumnHelper } from "@tanstack/react-table"
 
-import { Badge } from "@tecton/react/components/badge"
-import { Checkbox } from "@tecton/react/components/checkbox"
+import { Badge } from "@tecton/react/badge"
+import { Checkbox } from "@tecton/react/checkbox"
 
 export const columns = columnHelper.columns([
   columnHelper.display({
@@ -831,7 +831,7 @@ Here are some components you can use to build your data tables. This is from the
 
 Make any column header sortable and hideable.
 
-<Callout variant="info">The source of this file lives in the upstream shadcn/ui repository: [data-table-column-header.tsx](https://github.com/shadcn-ui/ui/blob/3ba91b1cc83e1bbe4ab35a422ff2a694849c5048/apps/v4/app/(app)/examples/tasks/components/data-table-column-header.tsx).</Callout>
+<Callout variant="info">The source of this file lives in the upstream shadcn/ui repository: [data-table-column-header.tsx](https://github.com/shadcn-ui/ui/blob/c2477f311c19982ef6e246085438e6cfec3e35ea/apps/v4/app/(app)/examples/tasks/components/data-table-column-header.tsx).</Callout>
 
 ```tsx lineNumbers {4}
 export const columns = columnHelper.columns([
@@ -847,7 +847,7 @@ export const columns = columnHelper.columns([
 
 Add pagination controls to your table including page size and selection count.
 
-<Callout variant="info">The source of this file lives in the upstream shadcn/ui repository: [data-table-pagination.tsx](https://github.com/shadcn-ui/ui/blob/3ba91b1cc83e1bbe4ab35a422ff2a694849c5048/apps/v4/app/(app)/examples/tasks/components/data-table-pagination.tsx).</Callout>
+<Callout variant="info">The source of this file lives in the upstream shadcn/ui repository: [data-table-pagination.tsx](https://github.com/shadcn-ui/ui/blob/c2477f311c19982ef6e246085438e6cfec3e35ea/apps/v4/app/(app)/examples/tasks/components/data-table-pagination.tsx).</Callout>
 
 ```tsx
 <DataTablePagination table={table} />
@@ -857,7 +857,7 @@ Add pagination controls to your table including page size and selection count.
 
 A component to toggle column visibility.
 
-<Callout variant="info">The source of this file lives in the upstream shadcn/ui repository: [data-table-view-options.tsx](https://github.com/shadcn-ui/ui/blob/3ba91b1cc83e1bbe4ab35a422ff2a694849c5048/apps/v4/app/(app)/examples/tasks/components/data-table-view-options.tsx).</Callout>
+<Callout variant="info">The source of this file lives in the upstream shadcn/ui repository: [data-table-view-options.tsx](https://github.com/shadcn-ui/ui/blob/c2477f311c19982ef6e246085438e6cfec3e35ea/apps/v4/app/(app)/examples/tasks/components/data-table-view-options.tsx).</Callout>
 
 ```tsx
 <DataTableViewOptions table={table} />
@@ -916,7 +916,7 @@ Hide low-priority columns below `md` with `hidden md:table-cell` on both the hea
 
 ### Column resizing
 
-Register `columnSizingFeature`, keep the `columnSizing` state in React and put a `TableColumnResizer` (from `@tecton/react/tecton/table-column-resizer`) on the end edge of each `TableHead` (`className="relative"`, `style={{ width: header.getSize() }}`). Give the `Table` `table-fixed`, the total width (`table.getTotalSize()`) and `minWidth: "100%"`, leave the last column's width unset so it takes the space left, and let cells `truncate`. The limits come from `defaultColumn` (`minSize`, `maxSize`) or each column's own; `resetValue={column.columnDef.size}` is what Enter and a double click go back to. The resizer is a focusable separator: the arrow keys resize too, mirrored in a right-to-left table.
+Register `columnSizingFeature`, keep the `columnSizing` state in React and put a `TableColumnResizer` (from `@tecton/react/table-column-resizer`) on the end edge of each `TableHead` (`className="relative"`, `style={{ width: header.getSize() }}`). Give the `Table` `table-fixed`, the total width (`table.getTotalSize()`) and `minWidth: "100%"`, leave the last column's width unset so it takes the space left, and let cells `truncate`. The limits come from `defaultColumn` (`minSize`, `maxSize`) or each column's own; `resetValue={column.columnDef.size}` is what Enter and a double click go back to. The resizer is a focusable separator: the arrow keys resize too, mirrored in a right-to-left table.
 
 <ComponentPreview name="data-table-column-resize" align="start" />
 

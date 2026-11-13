@@ -2,8 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { toast } from "sonner"
-
+import { toast } from "@tecton/react/toast"
 import {
   Card,
   CardAction,
@@ -12,7 +11,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@tecton/react/components/card"
+} from "@tecton/react/card"
 import {
   Questionnaire,
   QuestionnaireActions,
@@ -26,7 +25,7 @@ import {
   QuestionnaireProgress,
   QuestionnaireSubmit,
   QuestionnaireTitle,
-} from "@tecton/react/components/questionnaire"
+} from "@tecton/react/questionnaire"
 
 const items = [
   {
@@ -50,9 +49,7 @@ export function QuestionnaireCard() {
 
     const formData = new FormData(event.currentTarget)
 
-    toast("Agent task created", {
-      description: `Task: ${formData.get("task") ?? "None"} · Handoff: ${formData.get("output") ?? "None"}`,
-    })
+    toast.add({ title: "Agent task created", description: `Task: ${formData.get("task") ?? "None"} · Handoff: ${formData.get("output") ?? "None"}` })
   }
 
   return (

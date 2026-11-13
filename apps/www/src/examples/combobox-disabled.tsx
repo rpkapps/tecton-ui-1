@@ -8,7 +8,7 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
-} from "@tecton/react/components/combobox"
+} from "@tecton/react/combobox"
 
 const frameworks = [
   "Next.js",

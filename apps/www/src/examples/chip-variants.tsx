@@ -1,4 +1,4 @@
-import { Chip, ChipGroup, ChipList } from "@tecton/react/tecton/chip"
+import { Chip, ChipGroup, ChipList } from "@tecton/react/chip"
 
 const variants = [
   "secondary",

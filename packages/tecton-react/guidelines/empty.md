@@ -1,6 +1,6 @@
 ---
 component: Empty
-module: "@tecton/react/components/empty"
+module: "@tecton/react/empty"
 family: feedback
 exports: [Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent]
 notFor:

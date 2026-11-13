@@ -11,13 +11,13 @@ import {
   UserIcon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 import {
   AppFinder,
   AppFinderGroup,
@@ -26,7 +26,7 @@ import {
   AppFinderList,
   AppFinderMenu,
   AppFinderTrigger,
-} from "@tecton/react/tecton/app-finder"
+} from "@tecton/react/app-finder"
 import {
   AppShellAction,
   AppShellActions,
@@ -36,7 +36,7 @@ import {
   AppShellNav,
   AppShellOverflow,
   AppShellUserMenu,
-} from "@tecton/react/tecton/app-shell"
+} from "@tecton/react/app-shell"
 
 import { ShellCommandPalette } from "./shell-command-palette"
 import {

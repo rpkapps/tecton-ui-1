@@ -2,7 +2,7 @@ import * as React from "react"
 import { cn } from "cn"
 import { SearchIcon } from "lucide-react"
 
-import { Tabs, TabsList, TabsTrigger } from "@tecton/react/components/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@tecton/react/tabs"
 
 import { Caption, ColumnHeader, Page, Section } from "./matrix"
 

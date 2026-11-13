@@ -4,9 +4,9 @@ import * as React from "react"
 import { cn } from "cn"
 import { XIcon } from "lucide-react"
 
-import { AttachmentAction } from "@tecton/react/components/attachment"
-import { Button } from "@tecton/react/components/button"
-import { Empty } from "@tecton/react/components/empty"
+import { AttachmentAction } from "@tecton/react/attachment"
+import { Button } from "@tecton/react/button"
+import { Empty } from "@tecton/react/empty"
 
 /**
  * Tecton Dropzone — picks files by dragging them onto an `Empty` drop area

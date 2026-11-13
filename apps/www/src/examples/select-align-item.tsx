@@ -9,8 +9,8 @@ import {
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@tecton/react/components/field"
-import { Label } from "@tecton/react/components/label"
+} from "@tecton/react/field"
+import { Label } from "@tecton/react/label"
 import {
   Select,
   SelectContent,
@@ -18,8 +18,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
-import { Switch } from "@tecton/react/components/switch"
+} from "@tecton/react/select"
+import { Switch } from "@tecton/react/switch"
 
 const items = [
   { label: "Select a fruit", value: null },

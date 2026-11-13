@@ -1,6 +1,6 @@
 ---
 component: Link
-module: "@tecton/react/tecton/link"
+module: "@tecton/react/link"
 family: actions
 exports: [Link, LinkButton, linkVariants]
 notFor:

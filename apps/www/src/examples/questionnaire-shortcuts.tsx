@@ -2,12 +2,11 @@
 "use client"
 
 import * as React from "react"
-import { toast } from "sonner"
-
+import { toast } from "@tecton/react/toast"
 import {
   NativeSelect,
   NativeSelectOption,
-} from "@tecton/react/components/native-select"
+} from "@tecton/react/native-select"
 import {
   Questionnaire,
   QuestionnaireActions,
@@ -18,7 +17,7 @@ import {
   QuestionnaireItem,
   QuestionnaireSubmit,
   QuestionnaireTitle,
-} from "@tecton/react/components/questionnaire"
+} from "@tecton/react/questionnaire"
 
 const items = [
   {
@@ -38,9 +37,7 @@ export function QuestionnaireShortcuts() {
 
     const action = new FormData(event.currentTarget).get("action")
 
-    toast("Next action selected", {
-      description: `Action: ${action ?? "None"} · Shortcuts: ${shortcuts ?? "none"}`,
-    })
+    toast.add({ title: "Next action selected", description: `Action: ${action ?? "None"} · Shortcuts: ${shortcuts ?? "none"}` })
   }
 
   return (

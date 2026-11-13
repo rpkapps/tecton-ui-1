@@ -4,9 +4,9 @@
 import * as React from "react"
 import { addDays } from "date-fns"
 
-import { Button } from "@tecton/react/components/button"
-import { Calendar } from "@tecton/react/components/calendar"
-import { Card, CardContent, CardFooter } from "@tecton/react/components/card"
+import { Button } from "@tecton/react/button"
+import { Calendar } from "@tecton/react/calendar"
+import { Card, CardContent, CardFooter } from "@tecton/react/card"
 
 export function CalendarWithPresets() {
   const [date, setDate] = React.useState<Date | undefined>(

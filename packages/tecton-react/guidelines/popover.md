@@ -1,6 +1,6 @@
 ---
 component: Popover
-module: "@tecton/react/components/popover"
+module: "@tecton/react/popover"
 family: overlays
 exports: [Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverTitle, PopoverDescription]
 notFor:

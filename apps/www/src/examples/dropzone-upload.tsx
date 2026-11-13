@@ -16,15 +16,15 @@ import {
   AttachmentDescription,
   AttachmentMedia,
   AttachmentTitle,
-} from "@tecton/react/components/attachment"
+} from "@tecton/react/attachment"
 import {
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@tecton/react/components/empty"
-import { Spinner } from "@tecton/react/components/spinner"
+} from "@tecton/react/empty"
+import { Spinner } from "@tecton/react/spinner"
 import {
   Dropzone,
   DropzoneArea,
@@ -32,7 +32,7 @@ import {
   DropzoneRemove,
   DropzoneTrigger,
   formatFileSize,
-} from "@tecton/react/tecton/dropzone"
+} from "@tecton/react/dropzone"
 
 type Upload = { progress: number; failed: boolean }
 

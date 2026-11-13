@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/base/tabs-disabled.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Tabs, TabsList, TabsTrigger } from "@tecton/react/components/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@tecton/react/tabs"
 
 export function TabsDisabled() {
   return (

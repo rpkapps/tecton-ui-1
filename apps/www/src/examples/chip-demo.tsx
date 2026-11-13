@@ -2,8 +2,8 @@
 
 import * as React from "react"
 
-import { Button } from "@tecton/react/components/button"
-import { Chip, ChipGroup, ChipList } from "@tecton/react/tecton/chip"
+import { Button } from "@tecton/react/button"
+import { Chip, ChipGroup, ChipList } from "@tecton/react/chip"
 
 const initial = [
   { id: "balder", name: "Top Balder" },

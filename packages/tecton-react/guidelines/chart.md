@@ -1,6 +1,6 @@
 ---
 component: ChartContainer
-module: "@tecton/react/components/chart"
+module: "@tecton/react/chart"
 family: data
 exports: [ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartStyle]
 notFor:

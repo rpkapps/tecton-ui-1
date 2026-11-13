@@ -8,37 +8,32 @@ import {
   AlertAction,
   AlertDescription,
   AlertTitle,
-} from "@tecton/react/components/alert"
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
-import { Checkbox } from "@tecton/react/components/checkbox"
-import { Input } from "@tecton/react/components/input"
-import { Label } from "@tecton/react/components/label"
-import { Slider } from "@tecton/react/components/slider"
-import { Switch } from "@tecton/react/components/switch"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@tecton/react/components/tabs"
-import { CircularProgress } from "@tecton/react/tecton/circular-progress"
-import { CountBadge } from "@tecton/react/tecton/count-badge"
-import { Meter } from "@tecton/react/tecton/meter"
+} from "@tecton/react/alert"
+import { Badge } from "@tecton/react/badge"
+import { Button } from "@tecton/react/button"
+import { Checkbox } from "@tecton/react/checkbox"
+import { Input } from "@tecton/react/input"
+import { Label } from "@tecton/react/label"
+import { Slider } from "@tecton/react/slider"
+import { Switch } from "@tecton/react/switch"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecton/react/tabs"
+import { CircularProgress } from "@tecton/react/circular-progress"
+import { CountBadge } from "@tecton/react/count-badge"
+import { Meter } from "@tecton/react/meter"
 import {
   Panel,
   PanelActions,
   PanelContent,
   PanelHeader,
   PanelTitle,
-} from "@tecton/react/tecton/panel"
+} from "@tecton/react/panel"
 import {
   Stat,
   StatDelta,
   StatGroup,
   StatLabel,
   StatValue,
-} from "@tecton/react/tecton/stat"
+} from "@tecton/react/stat"
 
 export function HeroPreview() {
   const [value, setValue] = React.useState(64)

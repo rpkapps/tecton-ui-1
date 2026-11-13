@@ -1,0 +1,19 @@
+## Toaster
+
+`toast.add()` renders nothing until a `Toaster` is mounted. Mount one, once, at the application root, inside the [`TectonProvider`](/docs/tecton/provider):
+
+```tsx lineNumbers
+import { TectonProvider } from "@tecton/react/provider"
+import { Toaster } from "@tecton/react/toast"
+
+export function App({ children }: { children: React.ReactNode }) {
+  return (
+    <TectonProvider>
+      {children}
+      <Toaster />
+    </TectonProvider>
+  )
+}
+```
+
+Like every Tecton overlay, the toasts portal into the `portalContainer` of the nearest `TectonProvider`, else into `document.body`; `container` on `Toaster` overrides both. In a [micro-frontend](/docs/micro-frontends) page, the toasts of every application join the stack of the shell's `Toaster`, so they never overlap.

@@ -8,8 +8,8 @@ import {
   ConstructionIcon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import { LinkButton } from "@tecton/react/tecton/link"
+import { Button } from "@tecton/react/button"
+import { LinkButton } from "@tecton/react/link"
 
 import { LogTrack, LogTrackBand, LogTrackMarker } from "./components/log-track"
 import {

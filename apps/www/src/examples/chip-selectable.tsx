@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { Chip, ChipGroup, ChipList } from "@tecton/react/tecton/chip"
+import { Chip, ChipGroup, ChipList } from "@tecton/react/chip"
 
 const facies = ["Sandstone", "Shale", "Limestone", "Coal"]
 

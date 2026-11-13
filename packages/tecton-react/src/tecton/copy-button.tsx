@@ -4,7 +4,7 @@ import * as React from "react"
 import { cn } from "cn"
 import { CheckIcon, CopyIcon, XIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 
 import { announce as announceLive } from "./internal/primitives/live-announcer"
 

@@ -7,8 +7,8 @@ import {
   AttachmentActions,
   AttachmentContent,
   AttachmentTitle,
-} from "@tecton/react/components/attachment"
-import { EmptyTitle } from "@tecton/react/components/empty"
+} from "@tecton/react/attachment"
+import { EmptyTitle } from "@tecton/react/empty"
 import {
   Dropzone,
   DropzoneArea,
@@ -18,7 +18,7 @@ import {
   formatFileSize,
   useDropzone,
   type DropzoneProps,
-} from "@tecton/react/tecton/dropzone"
+} from "@tecton/react/dropzone"
 
 const file = (name: string, type: string, size = 10) =>
   new File([new Uint8Array(size)], name, { type, lastModified: 1 })

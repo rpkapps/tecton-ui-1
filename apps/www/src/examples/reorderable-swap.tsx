@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { Badge } from "@tecton/react/components/badge"
+import { Badge } from "@tecton/react/badge"
 import {
   Card,
   CardAction,
@@ -10,21 +10,21 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@tecton/react/components/card"
-import { Meter } from "@tecton/react/tecton/meter"
+} from "@tecton/react/card"
+import { Meter } from "@tecton/react/meter"
 import {
   Stat,
   StatDelta,
   StatHelp,
   StatLabel,
   StatValue,
-} from "@tecton/react/tecton/stat"
+} from "@tecton/react/stat"
 import {
   Reorderable,
   ReorderableHandle,
   ReorderableItem,
   ReorderableSlot,
-} from "@tecton/react/tecton/reorderable"
+} from "@tecton/react/reorderable"
 
 /**
  * The layout: the slots and their sizes, in order. It never changes; the

@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { CountBadge } from "@tecton/react/tecton/count-badge"
+import { CountBadge } from "@tecton/react/count-badge"
 
 import { Caption, Matrix, Page } from "./matrix"
 

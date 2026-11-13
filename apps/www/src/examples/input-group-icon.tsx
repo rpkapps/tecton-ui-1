@@ -12,7 +12,7 @@ import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@tecton/react/components/input-group"
+} from "@tecton/react/input-group"
 
 export default function InputGroupIcon() {
   return (

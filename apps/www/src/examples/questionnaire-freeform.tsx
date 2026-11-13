@@ -2,8 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { toast } from "sonner"
-
+import { toast } from "@tecton/react/toast"
 import {
   Questionnaire,
   QuestionnaireActions,
@@ -15,7 +14,7 @@ import {
   QuestionnaireItem,
   QuestionnaireSubmit,
   QuestionnaireTitle,
-} from "@tecton/react/components/questionnaire"
+} from "@tecton/react/questionnaire"
 
 const items = [
   {
@@ -35,9 +34,7 @@ export function QuestionnaireFreeform() {
 
     const approach = new FormData(event.currentTarget).get("approach")
 
-    toast("Approach selected", {
-      description: `Approach: ${approach ?? "None"}`,
-    })
+    toast.add({ title: "Approach selected", description: `Approach: ${approach ?? "None"}` })
   }
 
   return (

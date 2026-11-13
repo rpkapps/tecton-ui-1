@@ -1,6 +1,6 @@
 import { CheckIcon } from "lucide-react"
 
-import { CircularProgress } from "@tecton/react/tecton/circular-progress"
+import { CircularProgress } from "@tecton/react/circular-progress"
 
 export default function CircularProgressValue() {
   return (

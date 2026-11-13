@@ -4,7 +4,7 @@ import { useForm } from "@tanstack/react-form"
 import { XIcon } from "lucide-react"
 import * as z from "zod"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Card,
   CardContent,
@@ -12,7 +12,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@tecton/react/components/card"
+} from "@tecton/react/card"
 import {
   Field,
   FieldContent,
@@ -21,13 +21,13 @@ import {
   FieldGroup,
   FieldLegend,
   FieldSet,
-} from "@tecton/react/components/field"
+} from "@tecton/react/field"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "@tecton/react/components/input-group"
+} from "@tecton/react/input-group"
 
 import { showSubmitted } from "./form-tanstack-demo"
 

@@ -1,8 +1,8 @@
 import * as React from "react"
 
-import { Label } from "@tecton/react/components/label"
-import { Slider } from "@tecton/react/components/slider"
-import { Meter } from "@tecton/react/tecton/meter"
+import { Label } from "@tecton/react/label"
+import { Slider } from "@tecton/react/slider"
+import { Meter } from "@tecton/react/meter"
 
 export default function MeterAutoColor() {
   const [risk, setRisk] = React.useState(25)

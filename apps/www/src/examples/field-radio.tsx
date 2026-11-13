@@ -5,8 +5,8 @@ import {
   FieldLabel,
   FieldLegend,
   FieldSet,
-} from "@tecton/react/components/field"
-import { RadioGroup, RadioGroupItem } from "@tecton/react/components/radio-group"
+} from "@tecton/react/field"
+import { RadioGroup, RadioGroupItem } from "@tecton/react/radio-group"
 
 export function FieldRadio() {
   return (

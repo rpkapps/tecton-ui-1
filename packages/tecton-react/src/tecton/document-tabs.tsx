@@ -12,7 +12,7 @@ import {
   XIcon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   ContextMenu,
   ContextMenuContent,
@@ -20,14 +20,14 @@ import {
   ContextMenuSeparator,
   ContextMenuShortcut,
   ContextMenuTrigger,
-} from "@tecton/react/components/context-menu"
+} from "@tecton/react/context-menu"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
-import { useDirection } from "@tecton/react/tecton/provider"
+} from "@tecton/react/dropdown-menu"
+import { useDirection } from "@tecton/react/provider"
 
 import { useSortable } from "./internal/primitives/drag-and-drop/sortable"
 import { createStore, useStore, type Store } from "./internal/store"

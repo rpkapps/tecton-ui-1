@@ -10,12 +10,12 @@ import {
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "@tecton/react/components/input-group"
+} from "@tecton/react/input-group"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@tecton/react/components/popover"
+} from "@tecton/react/popover"
 
 export default function InputGroupButtonExample() {
   const { copyToClipboard, isCopied } = useCopyToClipboard()

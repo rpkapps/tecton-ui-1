@@ -2,8 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { toast } from "sonner"
-
+import { toast } from "@tecton/react/toast"
 import {
   Questionnaire,
   QuestionnaireActions,
@@ -19,7 +18,7 @@ import {
   QuestionnaireSkip,
   QuestionnaireSubmit,
   QuestionnaireTitle,
-} from "@tecton/react/components/questionnaire"
+} from "@tecton/react/questionnaire"
 
 const questionnaireItems = [
   {
@@ -86,9 +85,7 @@ export function QuestionnaireDemo() {
       timing: formData.get("timing"),
     }
 
-    toast("Agent plan saved", {
-      description: `Direction: ${answers.direction ?? "None"} · Progress signals: ${answers.signals.join(", ") || "None"} · Timing: ${answers.timing ?? "None"}`,
-    })
+    toast.add({ title: "Agent plan saved", description: `Direction: ${answers.direction ?? "None"} · Progress signals: ${answers.signals.join(", ") || "None"} · Timing: ${answers.timing ?? "None"}` })
   }
 
   return (

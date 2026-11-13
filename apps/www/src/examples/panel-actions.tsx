@@ -10,19 +10,15 @@ import {
   ShareIcon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import {
-  OverflowItem,
-  OverflowMenu,
-  Toolbar,
-} from "@tecton/react/tecton/overflow"
+import { Button } from "@tecton/react/button"
+import { OverflowItem, OverflowMenu, Toolbar } from "@tecton/react/overflow"
 import {
   Panel,
   PanelActions,
   PanelContent,
   PanelHeader,
   PanelTitle,
-} from "@tecton/react/tecton/panel"
+} from "@tecton/react/panel"
 
 const actions = [
   { id: "refresh", label: "Refresh", icon: RefreshCwIcon, priority: 2 },

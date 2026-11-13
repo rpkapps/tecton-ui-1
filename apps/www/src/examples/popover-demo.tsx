@@ -1,12 +1,12 @@
 // Synced from shadcn/ui (apps/v4/examples/base/popover-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Button } from "@tecton/react/components/button"
-import { Input } from "@tecton/react/components/input"
-import { Label } from "@tecton/react/components/label"
+import { Button } from "@tecton/react/button"
+import { Input } from "@tecton/react/input"
+import { Label } from "@tecton/react/label"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@tecton/react/components/popover"
+} from "@tecton/react/popover"
 
 export default function PopoverDemo() {
   return (

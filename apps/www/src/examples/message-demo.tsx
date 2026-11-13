@@ -3,20 +3,20 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@tecton/react/components/avatar"
+} from "@tecton/react/avatar"
 import {
   Bubble,
   BubbleContent,
   BubbleGroup,
   BubbleReactions,
-} from "@tecton/react/components/bubble"
-import { Marker, MarkerContent } from "@tecton/react/components/marker"
+} from "@tecton/react/bubble"
+import { Marker, MarkerContent } from "@tecton/react/marker"
 import {
   Message,
   MessageAvatar,
   MessageContent,
   MessageFooter,
-} from "@tecton/react/components/message"
+} from "@tecton/react/message"
 
 export function MessageDemo() {
   return (

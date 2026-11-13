@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
+import { ColorSwatch } from "@tecton/react/color-swatch"
 
 import tokensCss from "../../../../packages/tecton-react/src/styles/tecton-tokens.css?raw"
 

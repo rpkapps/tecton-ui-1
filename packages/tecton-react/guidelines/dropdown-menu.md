@@ -1,6 +1,6 @@
 ---
 component: DropdownMenu
-module: "@tecton/react/components/dropdown-menu"
+module: "@tecton/react/dropdown-menu"
 family: actions
 exports: [DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuPortal, DropdownMenuGroup, DropdownMenuLabel, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent]
 notFor:

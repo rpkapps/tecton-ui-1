@@ -1,6 +1,6 @@
 ---
 component: Field
-module: "@tecton/react/components/field"
+module: "@tecton/react/field"
 family: forms
 exports: [Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSeparator, FieldSet, FieldTitle]
 notFor:

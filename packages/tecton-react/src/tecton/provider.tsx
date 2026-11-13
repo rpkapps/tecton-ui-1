@@ -3,7 +3,7 @@
 import * as React from "react"
 import { DirectionProvider } from "@base-ui/react/direction-provider"
 
-import { PortalProvider } from "@tecton/react/tecton/portal"
+import { PortalProvider } from "@tecton/react/portal"
 
 import { localeDirection } from "./internal/locale"
 

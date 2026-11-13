@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { Toolbar as ToolbarPrimitive } from "@base-ui/react/toolbar"
 import { cn } from "cn"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 
 /**
  * Tecton Canvas — a full-bleed work surface (map, schematic, 3D view) with

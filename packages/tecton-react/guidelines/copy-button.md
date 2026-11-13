@@ -1,6 +1,6 @@
 ---
 component: CopyButton
-module: "@tecton/react/tecton/copy-button"
+module: "@tecton/react/copy-button"
 family: actions
 exports: [CopyButton]
 notFor:

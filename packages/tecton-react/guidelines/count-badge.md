@@ -1,6 +1,6 @@
 ---
 component: CountBadge
-module: "@tecton/react/tecton/count-badge"
+module: "@tecton/react/count-badge"
 family: labels
 exports: [CountBadge]
 notFor:

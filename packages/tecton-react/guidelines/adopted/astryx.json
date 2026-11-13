@@ -128,15 +128,15 @@
       "origin": "Astryx EmptyState #5"
     },
     {
-      "id": "sonner.Toast.3",
-      "component": "sonner",
+      "id": "toast.Toast.3",
+      "component": "toast",
       "where": "do",
-      "text": "Repeating an action replaces its toast instead of stacking another (a stable `id: \"save-model\"`).",
+      "text": "Repeating an action replaces its toast instead of stacking another (keep the id `toast.add` returns and call `toast.update(id, …)`).",
       "origin": "Astryx Toast #3"
     },
     {
-      "id": "sonner.Toast.4",
-      "component": "sonner",
+      "id": "toast.Toast.4",
+      "component": "toast",
       "where": "do",
       "text": "Use an error toast only for background failures the page also shows; failures needing action are a destructive `Alert`.",
       "origin": "Astryx Toast #4"
@@ -565,7 +565,7 @@
       "id": "input.NumberInput.3",
       "component": "input",
       "where": "checklist",
-      "text": "Every numeric value shows its unit (ft, psi, bbl/d): an `InputGroupText` end addon on an `Input`, after the live value on a `Slider`.",
+      "text": "Every numeric value shows its unit (ft, psi, bbl/d): `NumberFieldUnit` in a `NumberField`, after the live value on a `Slider`.",
       "origin": "Astryx NumberInput #3"
     },
     {

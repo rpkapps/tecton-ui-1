@@ -3,7 +3,7 @@ import {
   Progress,
   ProgressLabel,
   ProgressValue,
-} from "@tecton/react/components/progress"
+} from "@tecton/react/progress"
 
 export function ProgressWithLabel() {
   return (

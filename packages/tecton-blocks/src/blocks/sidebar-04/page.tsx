@@ -9,23 +9,23 @@ import {
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
-} from "@tecton/react/components/breadcrumb"
-import { Button } from "@tecton/react/components/button"
-import { Separator } from "@tecton/react/components/separator"
-import { Sheet, SheetContent, SheetTitle } from "@tecton/react/components/sheet"
+} from "@tecton/react/breadcrumb"
+import { Button } from "@tecton/react/button"
+import { Separator } from "@tecton/react/separator"
+import { Sheet, SheetContent, SheetTitle } from "@tecton/react/sheet"
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@tecton/react/components/sidebar"
+} from "@tecton/react/sidebar"
 import {
   AppShellSplit,
   AppShellSplitHandle,
   AppShellSplitPanel,
   useMinWidth,
-} from "@tecton/react/tecton/app-shell"
-import { Link } from "@tecton/react/tecton/link"
-import { useDirection } from "@tecton/react/tecton/provider"
+} from "@tecton/react/app-shell"
+import { Link } from "@tecton/react/link"
+import { useDirection } from "@tecton/react/provider"
 
 import { NavRail } from "./components/nav-rail"
 import { ToolPanel } from "./components/tool-panel"

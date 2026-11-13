@@ -1,7 +1,7 @@
 import * as React from "react"
 
-import { Progress, ProgressValue } from "@tecton/react/components/progress"
-import { CircularProgress } from "@tecton/react/tecton/circular-progress"
+import { Progress, ProgressValue } from "@tecton/react/progress"
+import { CircularProgress } from "@tecton/react/circular-progress"
 
 import { Matrix, Page } from "./matrix"
 

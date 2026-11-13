@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { toast } from "sonner"
+import { toast } from "@tecton/react/toast"
 import { z } from "zod"
 
 import {
@@ -11,7 +11,7 @@ import {
   CardContent,
   CardFooter,
   CardHeader,
-} from "@tecton/react/components/card"
+} from "@tecton/react/card"
 import {
   Questionnaire,
   QuestionnaireActions,
@@ -25,7 +25,7 @@ import {
   QuestionnaireProgress,
   QuestionnaireSubmit,
   QuestionnaireTitle,
-} from "@tecton/react/components/questionnaire"
+} from "@tecton/react/questionnaire"
 
 const items = [
   { name: "detail", required: true },
@@ -89,9 +89,7 @@ export function QuestionnaireValidation() {
 
     if (result.success) {
       setErrors({})
-      toast("Agent response configured", {
-        description: `Detail: ${result.data.detail} · Audience: ${result.data.audience}`,
-      })
+      toast.add({ title: "Agent response configured", description: `Detail: ${result.data.detail} · Audience: ${result.data.audience}` })
       return
     }
 

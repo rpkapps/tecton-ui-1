@@ -9,7 +9,7 @@ description: >
 metadata:
   type: core
   library: "@tecton/react"
-  library_version: "0.1.0"
+  library_version: "0.3.0"
 sources:
   - "guidelines/topics/rules.md"
   - "guidelines/topics/conventions.md"
@@ -44,16 +44,20 @@ The `tecton` command ships with the package (`npx tecton …` or
 
 ## Imports
 
-- `@tecton/react/components/<id>` — the shadcn components (`button`, `select`,
-  `dialog`, `field`, `table`, …).
-- `@tecton/react/tecton/<id>` — Tecton-only components (`chip`, `stat`,
-  `panel`, `app-shell`, `provider`, …) and the Tecton hooks (`use-busy-delay`:
-  a busy flag that never flashes a spinner on fast work). `tecton search`
-  prints the exact path.
+- `@tecton/react/<id>` — every component and hook: the shadcn components
+  (`button`, `select`, `dialog`, `field`, `table`, …), the Tecton-only ones
+  (`chip`, `stat`, `panel`, `app-shell`, `provider`, …), the hooks
+  (`use-mobile`; `use-busy-delay`: a busy flag that never flashes a spinner on
+  fast work) and `utils` (`cn`). `tecton search` prints the exact path.
 - `@tecton/react/icons` — the oil & gas glyphs (`WellIcon`, `SeismicIcon`, …);
   every generic glyph comes from `lucide-react`.
+- Props types come from the same module: every exported part has a
+  `<Part>Props` type (`import type { DialogContentProps } from
+  "@tecton/react/dialog"`), so a wrapper never writes its own.
 - There is no root export, nothing is installed with `shadcn add`, and nothing
-  is imported from `react-aria-components` or `@base-ui/react`.
+  is imported from `react-aria-components`, `@base-ui/react` or
+  `@internationalized/date`, not even a type: never add them as dependencies
+  of the application, and never mention them to the user.
 
 ## Prop conventions
 
@@ -80,7 +84,7 @@ Every line has to hold in the file you wrote. Nothing at build time checks
 them: a wrong one type-checks and renders wrong. (`tecton rules` has each one
 in full; `agent:check` keeps this list in step with it.)
 
-- **Imports** come from the three namespaces above — never the root, a
+- **Imports** come from the two namespaces above — never the root, a
   `components/ui/` folder or the libraries underneath.
 - **No stock Tailwind colour** (`bg-red-500`, `text-zinc-400`,
   `border-slate-300`) — the palette is reset, so they emit no CSS. Use a

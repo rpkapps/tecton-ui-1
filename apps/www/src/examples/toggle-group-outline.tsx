@@ -2,7 +2,7 @@
 import {
   ToggleGroup,
   ToggleGroupItem,
-} from "@tecton/react/components/toggle-group"
+} from "@tecton/react/toggle-group"
 
 export function ToggleGroupOutline() {
   return (

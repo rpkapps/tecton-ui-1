@@ -13,7 +13,7 @@ import {
   ComposerSubmit,
   ComposerToolbar,
   type ComposerCommandItem,
-} from "@tecton/react/tecton/composer"
+} from "@tecton/react/composer"
 
 const COMMANDS: ComposerCommandItem[] = [
   {

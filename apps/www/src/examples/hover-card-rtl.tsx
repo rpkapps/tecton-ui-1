@@ -5,12 +5,12 @@ import {
   useTranslation,
   type Translations,
 } from "@/components/language-selector"
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@tecton/react/components/hover-card"
+} from "@tecton/react/hover-card"
 
 const translations: Translations = {
   en: {

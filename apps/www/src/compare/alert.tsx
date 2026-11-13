@@ -12,8 +12,8 @@ import {
   AlertAction,
   AlertDescription,
   AlertTitle,
-} from "@tecton/react/components/alert"
-import { Button } from "@tecton/react/components/button"
+} from "@tecton/react/alert"
+import { Button } from "@tecton/react/button"
 
 import { Matrix, Page } from "./matrix"
 

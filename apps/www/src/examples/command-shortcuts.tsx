@@ -4,7 +4,7 @@
 import * as React from "react"
 import { CreditCardIcon, SettingsIcon, UserIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Command,
   CommandDialog,
@@ -14,7 +14,7 @@ import {
   CommandItem,
   CommandList,
   CommandShortcut,
-} from "@tecton/react/components/command"
+} from "@tecton/react/command"
 
 export function CommandWithShortcuts() {
   const [open, setOpen] = React.useState(false)

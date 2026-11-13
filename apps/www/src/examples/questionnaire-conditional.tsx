@@ -2,8 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { toast } from "sonner"
-
+import { toast } from "@tecton/react/toast"
 import {
   Questionnaire,
   QuestionnaireActions,
@@ -17,7 +16,7 @@ import {
   QuestionnaireProgress,
   QuestionnaireSubmit,
   QuestionnaireTitle,
-} from "@tecton/react/components/questionnaire"
+} from "@tecton/react/questionnaire"
 
 export function QuestionnaireConditional() {
   const [runtime, setRuntime] = React.useState("local")
@@ -39,9 +38,7 @@ export function QuestionnaireConditional() {
 
     const formData = new FormData(event.currentTarget)
 
-    toast("Execution plan saved", {
-      description: `Runtime: ${formData.get("runtime") ?? "None"} · Environment: ${formData.get("environment") ?? "Not applicable"} · Approval: ${formData.get("approval") ?? "None"}`,
-    })
+    toast.add({ title: "Execution plan saved", description: `Runtime: ${formData.get("runtime") ?? "None"} · Environment: ${formData.get("environment") ?? "Not applicable"} · Approval: ${formData.get("approval") ?? "None"}` })
   }
 
   return (

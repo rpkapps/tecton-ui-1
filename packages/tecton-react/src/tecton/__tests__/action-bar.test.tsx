@@ -7,7 +7,7 @@ import {
   ActionBarActions,
   ActionBarMessage,
   ActionBarSelection,
-} from "@tecton/react/tecton/action-bar"
+} from "@tecton/react/action-bar"
 
 describe("ActionBar", () => {
   it("renders a region in the toolbar placement by default", () => {

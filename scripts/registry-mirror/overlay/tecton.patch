@@ -6,7 +6,7 @@ index ab1dc757..5c849b15 100644
  
  import * as React from "react"
  import { AlertDialog as AlertDialogPrimitive } from "@base-ui/react/alert-dialog"
-+import { usePortalTarget } from "@tecton/react/tecton/portal"
++import { usePortalTarget } from "@tecton/react/portal"
  import { cn } from "cn"
  
  import { Button } from "@/registry/bases/base/ui/button"
@@ -461,7 +461,7 @@ index 8fc7ae79..feec2362 100644
  
  import * as React from "react"
  import { Combobox as ComboboxPrimitive } from "@base-ui/react"
-+import { usePortalTarget } from "@tecton/react/tecton/portal"
++import { usePortalTarget } from "@tecton/react/portal"
  import { cn } from "cn"
  
  import { Button } from "@/registry/bases/base/ui/button"
@@ -493,7 +493,7 @@ index 3fc2b82c..e65dbf36 100644
  
  import * as React from "react"
  import { ContextMenu as ContextMenuPrimitive } from "@base-ui/react/context-menu"
-+import { usePortalTarget } from "@tecton/react/tecton/portal"
++import { usePortalTarget } from "@tecton/react/portal"
  import { cn } from "cn"
  
  import { IconPlaceholder } from "@/app/(create)/components/icon-placeholder"
@@ -546,7 +546,7 @@ index 8c68524a..e9b34576 100644
  
  import * as React from "react"
  import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
-+import { usePortalTarget } from "@tecton/react/tecton/portal"
++import { usePortalTarget } from "@tecton/react/portal"
  import { cn } from "cn"
  
  import { Button } from "@/registry/bases/base/ui/button"
@@ -596,7 +596,7 @@ index bebe3a91..1a632390 100644
  
  import * as React from "react"
  import { Drawer as DrawerPrimitive } from "@base-ui/react/drawer"
-+import { usePortalTarget } from "@tecton/react/tecton/portal"
++import { usePortalTarget } from "@tecton/react/portal"
  import { cn } from "cn"
  
  type DrawerContextProps = {
@@ -683,7 +683,7 @@ index 4c4543e2..74e2002d 100644
  
  import * as React from "react"
  import { Menu as MenuPrimitive } from "@base-ui/react/menu"
-+import { usePortalTarget } from "@tecton/react/tecton/portal"
++import { usePortalTarget } from "@tecton/react/portal"
  import { cn } from "cn"
  
  import { IconPlaceholder } from "@/app/(create)/components/icon-placeholder"
@@ -737,7 +737,7 @@ index f76bbaa2..17940b96 100644
  "use client"
  
  import { PreviewCard as PreviewCardPrimitive } from "@base-ui/react/preview-card"
-+import { usePortalTarget } from "@tecton/react/tecton/portal"
++import { usePortalTarget } from "@tecton/react/portal"
  import { cn } from "cn"
  
  function HoverCard({ ...props }: PreviewCardPrimitive.Root.Props) {
@@ -903,7 +903,7 @@ index 808aa62d..bf903bda 100644
  
  import * as React from "react"
  import { Popover as PopoverPrimitive } from "@base-ui/react/popover"
-+import { usePortalTarget } from "@tecton/react/tecton/portal"
++import { usePortalTarget } from "@tecton/react/portal"
  import { cn } from "cn"
  
  function Popover({ ...props }: PopoverPrimitive.Root.Props) {
@@ -935,7 +935,7 @@ index 2cb76c11..80927f4f 100644
  
  import * as React from "react"
  import { Select as SelectPrimitive } from "@base-ui/react/select"
-+import { usePortalTarget } from "@tecton/react/tecton/portal"
++import { usePortalTarget } from "@tecton/react/portal"
 +import { cva, type VariantProps } from "class-variance-authority"
  import { cn } from "cn"
  
@@ -1071,7 +1071,7 @@ index 72669ad9..3e83f20b 100644
  
  import * as React from "react"
  import { Dialog as SheetPrimitive } from "@base-ui/react/dialog"
-+import { usePortalTarget } from "@tecton/react/tecton/portal"
++import { usePortalTarget } from "@tecton/react/portal"
  import { cn } from "cn"
  
  import { Button } from "@/registry/bases/base/ui/button"
@@ -1295,37 +1295,6 @@ index 2e55a9a0..5789a0fe 100644
            />
          ))}
        </SliderPrimitive.Control>
-diff --git a/apps/v4/registry/bases/base/ui/sonner.tsx b/apps/v4/registry/bases/base/ui/sonner.tsx
-index 0c2e93ea..1071e005 100644
---- a/apps/v4/registry/bases/base/ui/sonner.tsx
-+++ b/apps/v4/registry/bases/base/ui/sonner.tsx
-@@ -70,13 +70,21 @@ const Toaster = ({ ...props }: ToasterProps) => {
-           "--normal-text": "var(--popover-foreground)",
-           "--normal-border": "var(--border)",
-           "--border-radius": "var(--radius)",
-+          "--success-bg": "var(--popover)",
-+          "--success-text": "var(--success)",
-+          "--success-border": "var(--success)",
-+          "--info-bg": "var(--popover)",
-+          "--info-text": "var(--info)",
-+          "--info-border": "var(--info)",
-+          "--warning-bg": "var(--popover)",
-+          "--warning-text": "var(--warning)",
-+          "--warning-border": "var(--warning)",
-+          "--error-bg": "var(--popover)",
-+          "--error-text": "var(--destructive)",
-+          "--error-border": "var(--destructive)",
-         } as React.CSSProperties
-       }
--      toastOptions={{
--        classNames: {
--          toast: "cn-toast",
--        },
--      }}
-+      richColors
-       {...props}
-     />
-   )
 diff --git a/apps/v4/registry/bases/base/ui/table.tsx b/apps/v4/registry/bases/base/ui/table.tsx
 index 160cf7aa..bdf8d2f1 100644
 --- a/apps/v4/registry/bases/base/ui/table.tsx
@@ -1508,6 +1477,71 @@ index 8b8d3f1c..ed9710db 100644
  
 -export { Textarea }
 +export { Textarea, textareaVariants }
+diff --git a/apps/v4/registry/bases/base/ui/toast.tsx b/apps/v4/registry/bases/base/ui/toast.tsx
+index 0c9dfc0a..b3df8900 100644
+--- a/apps/v4/registry/bases/base/ui/toast.tsx
++++ b/apps/v4/registry/bases/base/ui/toast.tsx
+@@ -2,19 +2,29 @@
+ 
+ import * as React from "react"
+ import { Toast as ToastPrimitive } from "@base-ui/react/toast"
++import { usePortalTarget } from "@tecton/react/portal"
++import { bridgeToast, useToastHost } from "@tecton/react/toast-bridge"
+ import { cn } from "cn"
+ 
+ import { Button } from "@/registry/bases/base/ui/button"
+ import { IconPlaceholder } from "@/app/(create)/components/icon-placeholder"
+ 
+-const toast = ToastPrimitive.createToastManager()
++const toast = bridgeToast(ToastPrimitive.createToastManager())
+ 
+ function ToastProvider({ ...props }: ToastPrimitive.Provider.Props) {
+   return <ToastPrimitive.Provider {...props} />
+ }
+ 
+-function ToastPortal({ ...props }: ToastPrimitive.Portal.Props) {
+-  return <ToastPrimitive.Portal data-slot="toast-portal" {...props} />
++function ToastPortal({ container, ...props }: ToastPrimitive.Portal.Props) {
++  const portalTarget = usePortalTarget()
++
++  return (
++    <ToastPrimitive.Portal
++      data-slot="toast-portal"
++      container={container ?? portalTarget}
++      {...props}
++    />
++  )
+ }
+ 
+ function ToastViewport({ className, ...props }: ToastPrimitive.Viewport.Props) {
+@@ -35,7 +45,7 @@ function Toast({ className, ...props }: ToastPrimitive.Root.Props) {
+     <ToastPrimitive.Root
+       data-slot="toast"
+       className={cn(
+-        "cn-toast group/toast pointer-events-auto absolute right-0 bottom-0 z-[calc(1000-var(--toast-index))] w-full origin-bottom border bg-popover text-popover-foreground shadow-lg will-change-transform outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
++        "cn-toast group/toast pointer-events-auto absolute right-0 bottom-0 z-[calc(1000-var(--toast-index))] w-full origin-bottom border bg-popover text-popover-foreground shadow-lg will-change-transform outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring",
+         "[--gap:0.75rem] [--height:var(--toast-frontmost-height,var(--toast-height))] [--offset-y:calc(var(--toast-offset-y)*-1+calc(var(--toast-index)*var(--gap)*-1)+var(--toast-swipe-movement-y))] [--peek:0.75rem] [--scale:calc(max(0,1-(var(--toast-index)*0.1)))] [--shrink:calc(1-var(--scale))]",
+         "h-(--height) [transform:translateX(var(--toast-swipe-movement-x))_translateY(calc(var(--toast-swipe-movement-y)-(var(--toast-index)*var(--peek))-(var(--shrink)*var(--height))))_scale(var(--scale))] [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1),opacity_500ms,height_150ms]",
+         "after:absolute after:top-full after:left-0 after:h-[calc(var(--gap)+1px)] after:w-full after:content-['']",
+@@ -244,12 +254,16 @@ function ToastList() {
+ function Toaster({
+   children,
+   toastManager = toast,
++  container,
+   ...props
+-}: ToastPrimitive.Provider.Props) {
++}: ToastPrimitive.Provider.Props &
++  Pick<ToastPrimitive.Portal.Props, "container">) {
++  useToastHost(toastManager)
++
+   return (
+     <ToastProvider toastManager={toastManager} {...props}>
+       {children}
+-      <ToastPortal>
++      <ToastPortal container={container}>
+         <ToastViewport>
+           <ToastList />
+         </ToastViewport>
 diff --git a/apps/v4/registry/bases/base/ui/toggle.tsx b/apps/v4/registry/bases/base/ui/toggle.tsx
 index b058b4d0..4154ed67 100644
 --- a/apps/v4/registry/bases/base/ui/toggle.tsx
@@ -1529,7 +1563,7 @@ index 8fbd22da..c10b1c90 100644
  "use client"
  
  import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip"
-+import { usePortalTarget } from "@tecton/react/tecton/portal"
++import { usePortalTarget } from "@tecton/react/portal"
  import { cn } from "cn"
  
  function TooltipProvider({

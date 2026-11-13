@@ -4,13 +4,8 @@ import * as React from "react"
 import { cn } from "cn"
 import { TerminalIcon } from "lucide-react"
 
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@tecton/react/components/tabs"
-import { CopyButton } from "@tecton/react/tecton/copy-button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecton/react/tabs"
+import { CopyButton } from "@tecton/react/copy-button"
 
 const PM_KEY = "tecton-docs:package-manager"
 type PackageManager = "pnpm" | "npm" | "yarn" | "bun"

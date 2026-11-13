@@ -9,13 +9,13 @@ import {
   SearchIcon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@tecton/react/components/dialog"
+} from "@tecton/react/dialog"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -29,23 +29,23 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
-import { Input } from "@tecton/react/components/input"
+} from "@tecton/react/dropdown-menu"
+import { Input } from "@tecton/react/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
-import { Toggle } from "@tecton/react/components/toggle"
+} from "@tecton/react/select"
+import { Toggle } from "@tecton/react/toggle"
 import {
   OverflowDivider,
   OverflowGroup,
   OverflowItem,
   OverflowLabel,
   Toolbar,
-} from "@tecton/react/tecton/overflow"
+} from "@tecton/react/overflow"
 
 const fields = ["All fields", "Gullfaks", "Statfjord", "Snorre"]
 const formats = ["CSV", "Excel", "PDF"]

@@ -5,15 +5,15 @@ import { Link, useRouterState } from "@tanstack/react-router"
 import { cn } from "cn"
 import type * as PageTree from "fumadocs-core/page-tree"
 
-import { Button } from "@tecton/react/components/button"
-import { Separator } from "@tecton/react/components/separator"
+import { Button } from "@tecton/react/button"
+import { Separator } from "@tecton/react/separator"
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@tecton/react/components/sheet"
+} from "@tecton/react/sheet"
 
 import { CommandMenu } from "@/components/command-menu"
 import { ModeToggle } from "@/components/mode-toggle"

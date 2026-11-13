@@ -12,7 +12,7 @@ import {
   ComboboxLabel,
   ComboboxList,
   ComboboxSeparator,
-} from "@tecton/react/components/combobox"
+} from "@tecton/react/combobox"
 
 const timezones = [
   {

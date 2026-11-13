@@ -46,7 +46,7 @@
 {"q": "overflow menu", "answers": ["overflow"], "kind": "terse"},
 {"q": "Need to force the user to explicitly confirm before an irreversible delete, not just show an editable popup", "answers": ["alert-dialog"], "kind": "boundary"},
 {"q": "Need a general-purpose modal for editing a record's fields where nothing destructive is being confirmed", "answers": ["dialog"], "kind": "boundary"},
-{"q": "Need a success message that disappears on its own after a few seconds without the user touching it", "answers": ["sonner", "toast"], "kind": "boundary"},
+{"q": "Need a success message that disappears on its own after a few seconds without the user touching it", "answers": ["toast"], "kind": "boundary"},
 {"q": "Need a message that stays on the page until the user reads it and dismisses it themselves", "answers": ["alert"], "kind": "boundary"},
 {"q": "Need a hover preview rich enough to hold a mini profile card with clickable content inside it", "answers": ["hover-card"], "kind": "boundary"},
 {"q": "Need a one-line hint that appears on hover and vanishes the instant the pointer leaves the icon", "answers": ["tooltip"], "kind": "boundary"},

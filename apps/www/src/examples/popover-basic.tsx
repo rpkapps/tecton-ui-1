@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/base/popover-basic.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Popover,
   PopoverContent,
@@ -7,7 +7,7 @@ import {
   PopoverHeader,
   PopoverTitle,
   PopoverTrigger,
-} from "@tecton/react/components/popover"
+} from "@tecton/react/popover"
 
 export function PopoverBasic() {
   return (

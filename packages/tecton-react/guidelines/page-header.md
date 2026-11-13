@@ -1,6 +1,6 @@
 ---
 component: PageHeader
-module: "@tecton/react/tecton/page-header"
+module: "@tecton/react/page-header"
 family: surfaces
 exports: [PageHeader, PageHeaderContent, PageHeaderEyebrow, PageHeaderTitle, PageHeaderDescription, PageHeaderNav, PageHeaderActions]
 notFor:

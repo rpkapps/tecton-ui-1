@@ -3,7 +3,7 @@
 
 import * as React from "react"
 
-import { Checkbox } from "@tecton/react/components/checkbox"
+import { Checkbox } from "@tecton/react/checkbox"
 import {
   Table,
   TableBody,
@@ -11,7 +11,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
+} from "@tecton/react/table"
 
 const tableData = [
   {

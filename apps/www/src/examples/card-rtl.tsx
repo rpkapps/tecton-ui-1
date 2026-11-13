@@ -7,7 +7,7 @@ import {
   useTranslation,
   type Translations,
 } from "@/components/language-selector"
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Card,
   CardAction,
@@ -16,9 +16,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@tecton/react/components/card"
-import { Input } from "@tecton/react/components/input"
-import { Label } from "@tecton/react/components/label"
+} from "@tecton/react/card"
+import { Input } from "@tecton/react/input"
+import { Label } from "@tecton/react/label"
 
 const translations: Translations = {
   en: {

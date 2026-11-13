@@ -2,23 +2,15 @@
 
 import * as React from "react"
 
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@tecton/react/components/toggle-group"
+import { ToggleGroup, ToggleGroupItem } from "@tecton/react/toggle-group"
 import {
   BackgroundEffect,
   backgroundEffects,
   backgroundIntensities,
   backgroundTones,
   type BackgroundEffectName,
-} from "@tecton/react/tecton/background"
-import {
-  Stat,
-  StatDelta,
-  StatLabel,
-  StatValue,
-} from "@tecton/react/tecton/stat"
+} from "@tecton/react/background"
+import { Stat, StatDelta, StatLabel, StatValue } from "@tecton/react/stat"
 
 import { BackgroundPreview } from "@/components/background-preview"
 

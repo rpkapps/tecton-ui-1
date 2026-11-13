@@ -7,7 +7,7 @@ import {
   ItemDescription,
   ItemMedia,
   ItemTitle,
-} from "@tecton/react/components/item"
+} from "@tecton/react/item"
 
 export function ItemSizeDemo() {
   return (

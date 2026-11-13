@@ -15,7 +15,7 @@ import {
   ComposerSuggestions,
   ComposerToolbar,
   type ComposerAttachmentItem,
-} from "@tecton/react/tecton/composer"
+} from "@tecton/react/composer"
 
 export default function ComposerContext() {
   const [items, setItems] = React.useState<ComposerAttachmentItem[]>([

@@ -10,7 +10,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from "@tecton/react/components/chart"
+} from "@tecton/react/chart"
 
 const chartData = [
   { month: "January", desktop: 186, mobile: 80 },

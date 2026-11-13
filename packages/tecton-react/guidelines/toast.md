@@ -1,0 +1,100 @@
+---
+component: Toaster
+module: "@tecton/react/toast"
+family: feedback
+exports: [Toaster, toast, ToastProvider, ToastPortal, ToastViewport, Toast, ToastContent, ToastTitle, ToastDescription, ToastAction, ToastClose, createToastManager, useToastManager]
+notFor:
+  - need: a message that must stay until the user resolves it
+    use: Alert
+  - need: the state of a list that has nothing in it
+    use: Empty
+  - need: the progress of a task the user is watching
+    use: Progress
+related: [Alert, Empty]
+---
+
+## Use it when
+
+- Confirming something the user just did, where the page already shows the result: saved, copied, queued, undone.
+- Reporting the end of a background task the user is not watching: an export finished, a run failed to start.
+- Offering a short-lived undo beside that confirmation.
+
+## Do
+
+- Mount `<Toaster />` once, at the application root (a micro-frontend remote inside its `ThemeRoot`, where its toasts join the shell's stack); everywhere else import `toast` from `@tecton/react/toast` and call `toast.add`.
+- Give the severity with `type` (`"success"`, `"info"`, `"warning"`, `"error"`) so the Toaster's icons and the Tecton outlined status colours apply.
+- Put the headline in `title`, the detail in `description` and a single undo in `actionProps`; a toast is one sentence and at most one action.
+- Let `toast.promise` own a pending toast so it resolves itself, and close one early with `toast.close(id)`.
+
+## Don't
+
+### CRITICAL Calling toast.add() with no Toaster mounted
+
+Wrong:
+
+```tsx
+import { toast } from "@tecton/react/toast"
+
+export function SaveButton() {
+  return <Button onClick={() => toast.add({ title: "Model saved", type: "success" })}>Save</Button>
+}
+```
+
+Correct:
+
+```tsx
+import { toast, Toaster } from "@tecton/react/toast"
+
+export function App() {
+  return (
+    <>
+      <Button onClick={() => toast.add({ title: "Model saved", type: "success" })}>Save</Button>
+      <Toaster />
+    </>
+  )
+}
+```
+
+`toast.add()` pushes onto a queue that only a mounted `Toaster` reads; with none mounted nothing renders and nothing throws, so the confirmation is lost in silence.
+
+### HIGH A pending toast that is never resolved
+
+Wrong:
+
+```tsx
+toast.add({ title: "Running simulation…", type: "loading", timeout: 0 })
+await runSimulation()
+toast.add({ title: "Simulation finished", type: "success" })
+```
+
+Correct:
+
+```tsx
+toast.promise(runSimulation(), {
+  loading: "Running simulation…",
+  success: "Simulation finished",
+  error: "Simulation failed",
+})
+```
+
+A toast with `timeout: 0` stays until it is closed, so unless its id is passed to `toast.close` it stays on screen for the rest of the session and the success toast stacks above it.
+
+### HIGH Colouring a toast by hand
+
+Wrong:
+
+```tsx
+toast.add({ title: "Simulation failed", className: "bg-red-600 text-white" })
+```
+
+Correct:
+
+```tsx
+toast.add({
+  title: "Simulation failed",
+  description: "12 cells have negative volume.",
+  type: "error",
+})
+```
+
+The Toaster maps each `type` onto the Tecton status border and text colours over the popover surface, and `red-600` is not a Tecton step, so the class emits no CSS and the toast shows no severity at all.

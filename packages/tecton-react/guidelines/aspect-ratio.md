@@ -1,6 +1,6 @@
 ---
 component: AspectRatio
-module: "@tecton/react/components/aspect-ratio"
+module: "@tecton/react/aspect-ratio"
 family: layout
 exports: [AspectRatio]
 notFor:

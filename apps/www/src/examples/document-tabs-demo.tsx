@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { Badge } from "@tecton/react/components/badge"
+import { Badge } from "@tecton/react/badge"
 import { WellIcon } from "@tecton/react/icons/well"
 import {
   DocumentTabs,
@@ -12,7 +12,7 @@ import {
   DocumentTabsLabel,
   DocumentTabsList,
   DocumentTabsTrigger,
-} from "@tecton/react/tecton/document-tabs"
+} from "@tecton/react/document-tabs"
 
 type Well = { id: string; name: string; field?: string }
 

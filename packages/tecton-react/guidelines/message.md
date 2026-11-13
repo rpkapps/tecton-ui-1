@@ -1,6 +1,6 @@
 ---
 component: Message
-module: "@tecton/react/components/message"
+module: "@tecton/react/message"
 family: conversation
 exports: [Message, MessageGroup, MessageAvatar, MessageContent, MessageHeader, MessageFooter]
 notFor:

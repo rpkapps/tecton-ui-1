@@ -1,6 +1,6 @@
 ---
 component: Canvas
-module: "@tecton/react/tecton/canvas"
+module: "@tecton/react/canvas"
 family: presentation
 exports: [Canvas, CanvasSurface, CanvasOverlay, CanvasToolbar, CanvasToolbarButton, CanvasLegend, CanvasLegendItem, canvasOverlayVariants, canvasToolbarVariants]
 notFor:

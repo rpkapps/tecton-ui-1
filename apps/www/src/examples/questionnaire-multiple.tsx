@@ -2,8 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { toast } from "sonner"
-
+import { toast } from "@tecton/react/toast"
 import {
   Questionnaire,
   QuestionnaireActions,
@@ -14,7 +13,7 @@ import {
   QuestionnaireItem,
   QuestionnaireSubmit,
   QuestionnaireTitle,
-} from "@tecton/react/components/questionnaire"
+} from "@tecton/react/questionnaire"
 
 const items = [
   {
@@ -35,9 +34,7 @@ export function QuestionnaireMultiple() {
 
     const context = new FormData(event.currentTarget).getAll("context")
 
-    toast("Context selected", {
-      description: `Context: ${context.join(", ") || "None"}`,
-    })
+    toast.add({ title: "Context selected", description: `Context: ${context.join(", ") || "None"}` })
   }
 
   return (

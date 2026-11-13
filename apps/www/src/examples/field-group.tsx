@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/base/field-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Checkbox } from "@tecton/react/components/checkbox"
+import { Checkbox } from "@tecton/react/checkbox"
 import {
   Field,
   FieldDescription,
@@ -7,7 +7,7 @@ import {
   FieldLabel,
   FieldSeparator,
   FieldSet,
-} from "@tecton/react/components/field"
+} from "@tecton/react/field"
 
 export default function FieldGroupExample() {
   return (

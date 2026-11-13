@@ -1,7 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/base/drawer-snap-points.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Drawer,
   DrawerClose,
@@ -11,7 +11,7 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@tecton/react/components/drawer"
+} from "@tecton/react/drawer"
 
 const SNAP_POINTS = ["31rem", 1]
 

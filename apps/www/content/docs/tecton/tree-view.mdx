@@ -12,7 +12,7 @@ import {
   TreeView,
   TreeViewItem,
   TreeViewItemContent,
-} from "@tecton/react/tecton/tree-view"
+} from "@tecton/react/tree-view"
 ```
 
 ```tsx
@@ -101,7 +101,7 @@ Opening a menu moves focus to its row but leaves the selection as it is; the row
 import {
   ContextMenuContent,
   ContextMenuItem,
-} from "@tecton/react/components/context-menu"
+} from "@tecton/react/context-menu"
 
 <TreeView
   aria-label="Horizons"
@@ -127,7 +127,7 @@ A context menu is hard to discover on touch screens and for most keyboard users:
 <ComponentPreview name="tree-view-reorder" />
 
 ```tsx
-import { moveTreeItems, TreeView } from "@tecton/react/tecton/tree-view"
+import { moveTreeItems, TreeView } from "@tecton/react/tree-view"
 
 const [items, setItems] = React.useState(project)
 

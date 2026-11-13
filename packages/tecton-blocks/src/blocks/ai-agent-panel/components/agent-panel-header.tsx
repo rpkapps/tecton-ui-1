@@ -4,24 +4,16 @@ import * as React from "react"
 import { cn } from "cn"
 import { LayersIcon, MoreVerticalIcon, XIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@tecton/react/components/tooltip"
-import {
-  PanelActions,
-  PanelHeader,
-  PanelTitle,
-} from "@tecton/react/tecton/panel"
+} from "@tecton/react/dropdown-menu"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@tecton/react/tooltip"
+import { PanelActions, PanelHeader, PanelTitle } from "@tecton/react/panel"
 
 type AgentPanelHeaderProps = React.ComponentProps<typeof PanelHeader> & {
   title?: string

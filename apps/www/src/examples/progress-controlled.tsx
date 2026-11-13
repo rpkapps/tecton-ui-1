@@ -3,8 +3,8 @@
 
 import * as React from "react"
 
-import { Progress } from "@tecton/react/components/progress"
-import { Slider } from "@tecton/react/components/slider"
+import { Progress } from "@tecton/react/progress"
+import { Slider } from "@tecton/react/slider"
 
 export function ProgressControlled() {
   const [value, setValue] = React.useState(50)

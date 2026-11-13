@@ -5,6 +5,8 @@
 @import "./tecton-palette.css";
 @import "@fontsource/figtree/400.css";
 @import "@fontsource/figtree/500.css";
+@import "@fontsource/figtree/600.css";
+@import "@fontsource/figtree/700.css";
 @import "@fontsource/ibm-plex-mono/400.css";
 @import "@fontsource/ibm-plex-mono/500.css";
 @import "./tecton-base.css";
@@ -132,6 +134,9 @@
     --color-content-pressed: var(--content-pressed);
     --color-content-active: var(--content-active);
     --color-disabled-subtle-foreground: var(--disabled-subtle-foreground);
+    --color-number-field-fill: var(--number-field-fill);
+    --color-input-filled: var(--input-filled);
+    --color-input-filled-focus: var(--input-filled-focus);
 }
 
 :root {
@@ -243,6 +248,9 @@
     --content-pressed: var(--tecton-color-content-bg-press);
     --content-active: var(--tecton-color-content-bg-active);
     --disabled-subtle-foreground: var(--tecton-color-disabled-text-only-text);
+    --number-field-fill: var(--tecton-color-accent-lilac-muted);
+    --input-filled: var(--tecton-color-input-filled-bg);
+    --input-filled-focus: var(--tecton-color-input-filled-bg-focus);
 }
 
 .dark {
@@ -353,6 +361,9 @@
     --content-pressed: var(--tecton-color-content-bg-press);
     --content-active: var(--tecton-color-content-bg-active);
     --disabled-subtle-foreground: var(--tecton-color-disabled-text-only-text);
+    --number-field-fill: var(--tecton-color-action-secondary-bg-focus);
+    --input-filled: var(--tecton-color-input-filled-bg);
+    --input-filled-focus: var(--tecton-color-input-filled-bg-focus);
 }
 
 .light, [data-theme="light"] {
@@ -464,6 +475,9 @@
     --content-pressed: var(--tecton-color-content-bg-press);
     --content-active: var(--tecton-color-content-bg-active);
     --disabled-subtle-foreground: var(--tecton-color-disabled-text-only-text);
+    --number-field-fill: var(--tecton-color-accent-lilac-muted);
+    --input-filled: var(--tecton-color-input-filled-bg);
+    --input-filled-focus: var(--tecton-color-input-filled-bg-focus);
 }
 
 @layer base {

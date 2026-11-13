@@ -27,8 +27,8 @@ import {
   useTranslation,
   type Translations,
 } from "@/components/language-selector"
-import { Button } from "@tecton/react/components/button"
-import { Checkbox } from "@tecton/react/components/checkbox"
+import { Button } from "@tecton/react/button"
+import { Checkbox } from "@tecton/react/checkbox"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -38,8 +38,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
-import { Input } from "@tecton/react/components/input"
+} from "@tecton/react/dropdown-menu"
+import { Input } from "@tecton/react/input"
 import {
   Table,
   TableBody,
@@ -47,7 +47,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
+} from "@tecton/react/table"
 
 const translations: Translations = {
   en: {

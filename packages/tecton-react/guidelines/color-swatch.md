@@ -1,6 +1,6 @@
 ---
 component: ColorSwatch
-module: "@tecton/react/tecton/color-swatch"
+module: "@tecton/react/color-swatch"
 family: data
 exports: [ColorSwatch]
 notFor:

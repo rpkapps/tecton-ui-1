@@ -6,8 +6,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@tecton/react/components/sidebar"
-import { Link } from "@tecton/react/tecton/link"
+} from "@tecton/react/sidebar"
+import { Link } from "@tecton/react/link"
 
 import type { NavLink } from "../data"
 

@@ -4,7 +4,7 @@ import {
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@tecton/react/components/field"
+} from "@tecton/react/field"
 import {
   InputGroup,
   InputGroupAddon,
@@ -12,7 +12,7 @@ import {
   InputGroupInput,
   InputGroupText,
   InputGroupTextarea,
-} from "@tecton/react/components/input-group"
+} from "@tecton/react/input-group"
 
 export function InputGroupBlockEnd() {
   return (

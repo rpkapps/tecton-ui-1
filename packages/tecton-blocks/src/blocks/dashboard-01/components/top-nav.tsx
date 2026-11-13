@@ -11,8 +11,8 @@ import {
   UserIcon,
 } from "lucide-react"
 
-import { Avatar, AvatarFallback } from "@tecton/react/components/avatar"
-import { Button } from "@tecton/react/components/button"
+import { Avatar, AvatarFallback } from "@tecton/react/avatar"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,24 +21,20 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@tecton/react/components/input-group"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@tecton/react/components/tooltip"
+} from "@tecton/react/input-group"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@tecton/react/tooltip"
 import {
   AppShellActions,
   AppShellBrand,
   AppShellHeader,
   AppShellNav,
-} from "@tecton/react/tecton/app-shell"
-import { CountBadge } from "@tecton/react/tecton/count-badge"
+} from "@tecton/react/app-shell"
+import { CountBadge } from "@tecton/react/count-badge"
 
 import { currentUser, navLinks, project } from "../data"
 

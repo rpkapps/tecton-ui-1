@@ -1,7 +1,7 @@
 import { InboxIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import { CountBadge } from "@tecton/react/tecton/count-badge"
+import { Button } from "@tecton/react/button"
+import { CountBadge } from "@tecton/react/count-badge"
 
 function Inbox() {
   return (

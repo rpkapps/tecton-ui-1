@@ -9,7 +9,7 @@ import {
   PageHeaderEyebrow,
   PageHeaderNav,
   PageHeaderTitle,
-} from "@tecton/react/tecton/page-header"
+} from "@tecton/react/page-header"
 
 describe("PageHeader", () => {
   it("composes the title block", () => {

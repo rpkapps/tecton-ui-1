@@ -2,7 +2,7 @@ import {
   TreeView,
   TreeViewItem,
   TreeViewItemContent,
-} from "@tecton/react/tecton/tree-view"
+} from "@tecton/react/tree-view"
 
 export default function TreeViewDemo() {
   return (

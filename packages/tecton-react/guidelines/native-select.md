@@ -1,6 +1,6 @@
 ---
 component: NativeSelect
-module: "@tecton/react/components/native-select"
+module: "@tecton/react/native-select"
 family: selection
 exports: [NativeSelect, NativeSelectOption, NativeSelectOptGroup]
 notFor:
