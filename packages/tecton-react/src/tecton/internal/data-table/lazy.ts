@@ -50,7 +50,7 @@ const FEATURES = {
   resizer: feature(() => import("../../table-column-resizer")),
   /**
    * `DataTableSearch syntax="query"`: the query language, its colours,
-   * suggestions and help, and their strings (`query-translations.ts`).
+   * suggestions and help (its strings are the `dataTableQuery` namespace).
    */
   query: feature(() => import("./query-search")),
 }

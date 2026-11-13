@@ -34,7 +34,6 @@ import {
   type ColumnSample,
 } from "../internal/data-table/query-model"
 import { createTranslator } from "../internal/i18n/translations"
-import queryEnglish from "../internal/i18n/translations/data-table-query/en-US"
 
 const zone = process.env.TZ
 process.env.TZ = "America/Los_Angeles"
@@ -1514,12 +1513,7 @@ describe("suggestQuery", () => {
 })
 
 describe("problemMessage: OR, NOT and a leading minus in words", () => {
-  const t = createTranslator(
-    "dataTableQuery",
-    "en-US",
-    undefined,
-    queryEnglish.dataTableQuery
-  )
+  const t = createTranslator("dataTableQuery", "en-US")
   /** The message of the one problem in `text`, in a table of `of`'s columns (the wells' by default). */
   const message = (
     text: string,

@@ -17,21 +17,11 @@
  * To translate a new component: add a namespace to `translations/en-US.ts`,
  * call `useTranslations("<namespace>")`, and add the namespace to the other
  * locales as translations come.
- *
- * A feature loaded on demand keeps its strings out of the bundle: its
- * namespace is deferred, a folder of its own (`translations/<namespace>/`,
- * en-US and every other locale, written with `defineTranslations` as
- * above), typed from its `en-US.ts` here (`DeferredTranslations`). The
- * feature translates it with `useDeferredTranslations` (`deferred.ts`,
- * imported by the feature alone): its en-US table, imported with the
- * feature, and a loader per locale, whose strings then load with the
- * feature, not with the locale's main table.
  */
 import * as React from "react"
 
 import { useLocale } from "@tecton/react/provider"
 
-import type dataTableQuery from "./translations/data-table-query/en-US"
 import enUS from "./translations/en-US"
 
 type PluralCategory = Intl.LDMLPluralRule | "=0"
@@ -48,12 +38,8 @@ type TranslationTable = {
   readonly [namespace: string]: { readonly [key: string]: Translation }
 }
 
-/** The deferred namespaces (see the module comment), by their en-US tables. */
-type DeferredTranslations = typeof dataTableQuery
-
-type Translations = typeof enUS & DeferredTranslations
+type Translations = typeof enUS
 type Namespace = keyof Translations
-type DeferredNamespace = keyof DeferredTranslations
 type TranslationKey<TNamespace extends Namespace> =
   keyof Translations[TNamespace] & string
 
@@ -142,44 +128,43 @@ function defineTranslations<const TTable extends LocaleTranslations>(
   return table
 }
 
-type LocaleLoader = () => Promise<{ default: LocaleTranslations }>
-
 /** Every locale besides en-US, loaded on first use. */
-const LOADERS: Record<string, LocaleLoader> = {
-  "ar-AE": () => import("./translations/ar-AE"),
-  "bg-BG": () => import("./translations/bg-BG"),
-  "cs-CZ": () => import("./translations/cs-CZ"),
-  "da-DK": () => import("./translations/da-DK"),
-  "de-DE": () => import("./translations/de-DE"),
-  "el-GR": () => import("./translations/el-GR"),
-  "es-ES": () => import("./translations/es-ES"),
-  "et-EE": () => import("./translations/et-EE"),
-  "fi-FI": () => import("./translations/fi-FI"),
-  "fr-FR": () => import("./translations/fr-FR"),
-  "he-IL": () => import("./translations/he-IL"),
-  "hr-HR": () => import("./translations/hr-HR"),
-  "hu-HU": () => import("./translations/hu-HU"),
-  "it-IT": () => import("./translations/it-IT"),
-  "ja-JP": () => import("./translations/ja-JP"),
-  "ko-KR": () => import("./translations/ko-KR"),
-  "lt-LT": () => import("./translations/lt-LT"),
-  "lv-LV": () => import("./translations/lv-LV"),
-  "nb-NO": () => import("./translations/nb-NO"),
-  "nl-NL": () => import("./translations/nl-NL"),
-  "pl-PL": () => import("./translations/pl-PL"),
-  "pt-BR": () => import("./translations/pt-BR"),
-  "pt-PT": () => import("./translations/pt-PT"),
-  "ro-RO": () => import("./translations/ro-RO"),
-  "ru-RU": () => import("./translations/ru-RU"),
-  "sk-SK": () => import("./translations/sk-SK"),
-  "sl-SI": () => import("./translations/sl-SI"),
-  "sr-SP": () => import("./translations/sr-SP"),
-  "sv-SE": () => import("./translations/sv-SE"),
-  "tr-TR": () => import("./translations/tr-TR"),
-  "uk-UA": () => import("./translations/uk-UA"),
-  "zh-CN": () => import("./translations/zh-CN"),
-  "zh-TW": () => import("./translations/zh-TW"),
-}
+const LOADERS: Record<string, () => Promise<{ default: LocaleTranslations }>> =
+  {
+    "ar-AE": () => import("./translations/ar-AE"),
+    "bg-BG": () => import("./translations/bg-BG"),
+    "cs-CZ": () => import("./translations/cs-CZ"),
+    "da-DK": () => import("./translations/da-DK"),
+    "de-DE": () => import("./translations/de-DE"),
+    "el-GR": () => import("./translations/el-GR"),
+    "es-ES": () => import("./translations/es-ES"),
+    "et-EE": () => import("./translations/et-EE"),
+    "fi-FI": () => import("./translations/fi-FI"),
+    "fr-FR": () => import("./translations/fr-FR"),
+    "he-IL": () => import("./translations/he-IL"),
+    "hr-HR": () => import("./translations/hr-HR"),
+    "hu-HU": () => import("./translations/hu-HU"),
+    "it-IT": () => import("./translations/it-IT"),
+    "ja-JP": () => import("./translations/ja-JP"),
+    "ko-KR": () => import("./translations/ko-KR"),
+    "lt-LT": () => import("./translations/lt-LT"),
+    "lv-LV": () => import("./translations/lv-LV"),
+    "nb-NO": () => import("./translations/nb-NO"),
+    "nl-NL": () => import("./translations/nl-NL"),
+    "pl-PL": () => import("./translations/pl-PL"),
+    "pt-BR": () => import("./translations/pt-BR"),
+    "pt-PT": () => import("./translations/pt-PT"),
+    "ro-RO": () => import("./translations/ro-RO"),
+    "ru-RU": () => import("./translations/ru-RU"),
+    "sk-SK": () => import("./translations/sk-SK"),
+    "sl-SI": () => import("./translations/sl-SI"),
+    "sr-SP": () => import("./translations/sr-SP"),
+    "sv-SE": () => import("./translations/sv-SE"),
+    "tr-TR": () => import("./translations/tr-TR"),
+    "uk-UA": () => import("./translations/uk-UA"),
+    "zh-CN": () => import("./translations/zh-CN"),
+    "zh-TW": () => import("./translations/zh-TW"),
+  }
 
 /** The supported locale for `locale`: itself, one of its language, or en-US. */
 function resolveLocale(locale: string): string {
@@ -225,18 +210,14 @@ function loadTranslations(tag: string): Promise<void> {
 function createTranslator<TNamespace extends Namespace>(
   namespace: TNamespace,
   locale: string,
-  table?: LocaleTranslations,
-  /** A deferred namespace's en-US strings (`deferred.ts`). */
-  deferredEnglish?: Translations[TNamespace]
+  table?: LocaleTranslations
 ): Translator<TNamespace> {
   const own = table?.[namespace] as
     Partial<Record<string, Translation>> | undefined
-  const english = (deferredEnglish ??
-    (enUS as Partial<TranslationTable>)[namespace] ??
-    {}) as Partial<Record<string, Translation>>
+  const english = enUS[namespace] as Record<string, Translation>
   let plurals: Intl.PluralRules | null = null
   return (key: string, values: Record<string, string | number> = {}) => {
-    const translation = own?.[key] ?? english[key] ?? key
+    const translation = own?.[key] ?? english[key]
     let text: string
     if (typeof translation === "string") text = translation
     else {
@@ -284,9 +265,6 @@ export {
   useTranslations,
 }
 export type {
-  DeferredNamespace,
-  DeferredTranslations,
-  LocaleLoader,
   LocaleTranslations,
   Namespace,
   PluralTranslation,

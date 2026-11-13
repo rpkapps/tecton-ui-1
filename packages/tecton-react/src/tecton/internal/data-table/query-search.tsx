@@ -53,7 +53,7 @@ import {
 import { Kbd } from "@tecton/react/kbd"
 
 import { CalendarLoading } from "../calendar-loading"
-import { useTranslations } from "../i18n/translations"
+import { useTranslations, type Translator } from "../i18n/translations"
 import {
   useDataTableContext,
   useDataTableSelector,
@@ -99,7 +99,6 @@ import {
   type SuggestionRow,
 } from "./query-model"
 import { MirrorText, type QueryProblem } from "./query-text"
-import { useQueryTranslations } from "./query-translations"
 
 /** How long typing pauses before the problem being typed shows. */
 const TYPING_PAUSE = 650
@@ -152,7 +151,7 @@ function QuerySearch({
   onKeyDown,
   ...props
 }: QuerySearchProps) {
-  const t = useQueryTranslations()
+  const t = useTranslations("dataTableQuery")
   const td = useTranslations("dataTable")
   const context = useDataTableContext<unknown>("DataTableSearch")
   const { actions } = context
@@ -977,7 +976,7 @@ function SuggestionView({
   row: SuggestionRow
   language: QueryLanguage
   format: Intl.NumberFormat
-  t: ReturnType<typeof useQueryTranslations>
+  t: Translator<"dataTableQuery">
 }) {
   if (row.kind === "calendar")
     return (
@@ -1129,7 +1128,7 @@ function QueryCalendar({
   onPick: (text: string) => void
   onEscape: () => void
   onLeave: (next: Element | null) => void
-  t: ReturnType<typeof useQueryTranslations>
+  t: Translator<"dataTableQuery">
 }) {
   const value = term.value?.type === "date" ? term.value : undefined
   const local = (date: Date | undefined) => {
