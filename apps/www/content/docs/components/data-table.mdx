@@ -296,6 +296,12 @@ A `cell` can also render a field: <Kbd>Enter</Kbd> or <Kbd>F2</Kbd> moves into i
 
 <ComponentPreview name="data-table-editable-cells" align="start" />
 
+## Size and stripes
+
+`size="sm"` makes the table compact for dense data that is scanned rather than read: shorter rows and smaller text, and a footer to match, with the pager's small arrows, Select and page field. `striped` puts every even row on an alternate surface, which helps the eye along a wide row; a selected or hovered row keeps its own fill.
+
+<ComponentPreview name="data-table-size" align="start" />
+
 ## States
 
 `loading`, `error` with `onRetry`, and `empty` and `noResults` on `DataTableContent` replace the rows.
