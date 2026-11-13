@@ -74,7 +74,6 @@ export default defineTranslations({
     keySelect: "Selecionar",
     keyComplete: "Completar",
     keyClose: "Fechar",
-    footerAll: "Todos os termos lado a lado se aplicam",
     summaryFilters: "Filtros: {filters}.",
     summaryNoFilters: "Sem filtros.",
     summarySearch: "Pesquisa: {search}.",
@@ -99,9 +98,13 @@ export default defineTranslations({
     backwardsRange:
       "Este intervalo começa depois de terminar: {from} é depois de {to}.",
     unsupportedOr:
-      "OR não é suportado: todos os termos se aplicam. Para encontrar qualquer um de vários valores, separe-os com vírgulas.",
-    unsupportedNot:
-      "A exclusão não é suportada: filtre pelos valores a manter. Para pesquisar este texto, coloque-o entre aspas.",
+      "OR não é suportado. As linhas precisam corresponder a todos os termos. Para encontrar um de vários valores de uma coluna, liste-os separados por vírgulas: {example}",
+    unsupportedOrNoList:
+      "OR não é suportado. As linhas precisam corresponder a todos os termos, então pesquise uma coisa de cada vez.",
+    unsupportedMinus:
+      "A exclusão não é suportada, então este termo é ignorado. Para pesquisar o próprio texto, coloque-o entre aspas. Para restringir as linhas, filtre pelos valores a manter: {example}",
+    unsupportedMinusNoFilter:
+      "A exclusão não é suportada, então este termo é ignorado. Para pesquisar o próprio texto, coloque-o entre aspas.",
     exclusiveComparison: "Use >= ou <= com uma data e hora.",
     notComparable: "{column} não tem ordem: escolha seus valores.",
     multipleBoolean: "{column} é sim ou não, não ambos.",

@@ -7,6 +7,9 @@ import {
   waitFor,
 } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import { flushSync } from "react-dom"
+import { createRoot, hydrateRoot } from "react-dom/client"
+import { renderToString } from "react-dom/server"
 import {
   afterEach,
   beforeEach,
@@ -1089,6 +1092,160 @@ describe("Overflow badge", () => {
     expect(
       document.querySelector('[data-slot="overflow-menu-badge"]')
     ).toBeNull()
+  })
+})
+
+describe("Overflow before it has measured", () => {
+  /**
+   * Whether a browser draws a child of a row invisible: one of the row's
+   * `[&…]:invisible` classes matches it, read as the selector Tailwind
+   * writes for it (jsdom has no Tailwind).
+   */
+  const unseen = (element: Element | null) => {
+    const row = element?.parentElement
+    if (!element || !row) return false
+    return [...row.classList]
+      .filter((name) => name.startsWith("[&") && name.endsWith("]:invisible"))
+      .map((name) =>
+        name
+          .slice(1, -"]:invisible".length)
+          .replace("&", "[data-overflow-root]")
+      )
+      .some((selector) => element.matches(selector))
+  }
+  const menuEl = () => document.querySelector('[data-slot="overflow-menu"]')
+
+  function Tools({ width }: { width: number }) {
+    return (
+      <Toolbar aria-label="Tools" data-w={width} labels="always">
+        <Item id="search" elastic={{ min: "8rem" }} priority={9} />
+        <Item id="pinned" overflow="never" />
+        <span data-id="lead" data-w={40}>
+          lead
+        </span>
+        <Item id="a" priority={2} />
+        <OverflowDivider data-id="divider" />
+        <Item id="b" />
+        <span data-id="trail" data-w={40}>
+          trail
+        </span>
+      </Toolbar>
+    )
+  }
+
+  function serverRendered(width: number) {
+    const container = document.createElement("div")
+    container.innerHTML = renderToString(<Tools width={width} />)
+    document.body.append(container)
+    return container
+  }
+
+  const child = (id: string) =>
+    document.querySelector(`[data-overflow-root] > [data-id="${id}"]`)
+
+  it("renders on the server unmeasured: what may move is unseen, the fixed and elastic children before it show, no More", () => {
+    const container = serverRendered(420)
+    const root = rowEl()
+    expect(root).not.toHaveAttribute("data-measured")
+    // One line, clipped: no second line or scrollbar the measured row removes.
+    expect(root).toHaveClass(
+      "not-data-measured:flex-nowrap",
+      "not-data-measured:overflow-x-clip"
+    )
+    expect(menuEl()).toBeNull()
+    // The items that may go into the menu, a divider, and what follows them.
+    for (const id of ["a", "divider", "b", "trail"]) {
+      expect(unseen(child(id))).toBe(true)
+      expect(child(id)).not.toHaveAttribute("data-overflowing")
+    }
+    // A fixed item and an unwrapped child before them never move; an
+    // elastic item only shrinks.
+    for (const id of ["search", "pinned", "lead"]) {
+      expect(unseen(child(id))).toBe(false)
+    }
+    container.remove()
+  })
+
+  it("hydrates into its measured layout: the items that fit, then More", async () => {
+    const container = serverRendered(420)
+    const recoverable = vi.fn()
+    const root = await act(async () =>
+      hydrateRoot(container, <Tools width={420} />, {
+        onRecoverableError: recoverable,
+      })
+    )
+    expect(recoverable).not.toHaveBeenCalled()
+    expect(rowEl()).toHaveAttribute("data-measured")
+    // search, pinned, lead, a, trail and More take 412 of 420: b leaves.
+    expect(itemEl("a")).not.toHaveAttribute("data-overflowing")
+    expect(itemEl("b")).toHaveAttribute("data-overflowing")
+    expect(menuEl()).toBeInTheDocument()
+    for (const id of ["search", "pinned", "lead", "a", "divider", "trail"]) {
+      expect(unseen(child(id))).toBe(false)
+    }
+    act(() => root.unmount())
+    container.remove()
+  })
+
+  it("never shows a More on a wide row: hydrated, every item is in the row", async () => {
+    const container = serverRendered(1000)
+    const added: Node[] = []
+    const observer = new MutationObserver((records) =>
+      records.forEach((record) => added.push(...record.addedNodes))
+    )
+    observer.observe(container, { childList: true, subtree: true })
+    const root = await act(async () =>
+      hydrateRoot(container, <Tools width={1000} />)
+    )
+    observer.disconnect()
+    expect(rowEl()).toHaveAttribute("data-measured")
+    expect(menuEl()).toBeNull()
+    expect(
+      added.some(
+        (node) =>
+          node instanceof HTMLElement &&
+          node.matches('[data-slot="overflow-menu"]')
+      )
+    ).toBe(false)
+    expect(itemEl("a")).not.toHaveAttribute("data-overflowing")
+    expect(itemEl("b")).not.toHaveAttribute("data-overflowing")
+    act(() => root.unmount())
+    container.remove()
+  })
+
+  describe("mounted in the browser", () => {
+    // `flushSync` outside `act`, as a browser runs it: what the DOM holds
+    // when it returns is what the first frame paints.
+    beforeEach(() => {
+      vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", false)
+    })
+    afterEach(() => {
+      vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true)
+    })
+
+    it("is measured before its first paint", () => {
+      const container = document.createElement("div")
+      document.body.append(container)
+      const root = createRoot(container)
+      flushSync(() => root.render(<Tools width={420} />))
+      expect(rowEl()).toHaveAttribute("data-measured")
+      expect(itemEl("b")).toHaveAttribute("data-overflowing")
+      expect(menuEl()).toBeInTheDocument()
+      expect(unseen(child("a"))).toBe(false)
+      expect(unseen(child("trail"))).toBe(false)
+      flushSync(() => root.unmount())
+      container.remove()
+    })
+
+    it("shows every item when it is not in a live document and cannot measure", () => {
+      const container = document.createElement("div")
+      const root = createRoot(container)
+      flushSync(() => root.render(<Tools width={420} />))
+      const row = container.querySelector("[data-overflow-root]")
+      expect(row).toHaveAttribute("data-measured")
+      expect(container.querySelector('[data-slot="overflow-menu"]')).toBeNull()
+      flushSync(() => root.unmount())
+    })
   })
 })
 

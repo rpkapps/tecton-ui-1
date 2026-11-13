@@ -74,7 +74,6 @@ export default defineTranslations({
     keySelect: "Valitse",
     keyComplete: "Täydennä",
     keyClose: "Sulje",
-    footerAll: "Vierekkäiset ehdot pätevät kaikki",
     summaryFilters: "Suodattimet: {filters}.",
     summaryNoFilters: "Ei suodattimia.",
     summarySearch: "Haku: {search}.",
@@ -99,9 +98,13 @@ export default defineTranslations({
     backwardsRange:
       "Väli alkaa loppunsa jälkeen: {from} on myöhemmin kuin {to}.",
     unsupportedOr:
-      "OR ei ole tuettu: jokainen ehto pätee. Löydä jokin useista arvoista erottamalla ne pilkuilla.",
-    unsupportedNot:
-      "Poissulkeminen ei ole tuettu: suodata sen sijaan säilytettävät arvot. Hae tätä tekstiä laittamalla se lainausmerkkeihin.",
+      "OR ei ole tuettu. Rivien on täytettävä jokainen ehto. Jos haluat löytää jonkin sarakkeen useista arvoista, kirjoita ne pilkuilla erotettuina: {example}",
+    unsupportedOrNoList:
+      "OR ei ole tuettu. Rivien on täytettävä jokainen ehto, joten hae yhtä asiaa kerrallaan.",
+    unsupportedMinus:
+      "Poissulkeminen ei ole tuettu, joten tämä ehto ohitetaan. Jos haluat hakea juuri tätä tekstiä, laita se lainausmerkkeihin. Jos haluat rajata rivejä, suodata sen sijaan säilytettävät arvot: {example}",
+    unsupportedMinusNoFilter:
+      "Poissulkeminen ei ole tuettu, joten tämä ehto ohitetaan. Jos haluat hakea juuri tätä tekstiä, laita se lainausmerkkeihin.",
     exclusiveComparison:
       "Käytä päivämäärän ja kellonajan kanssa merkkejä >= tai <=.",
     notComparable:

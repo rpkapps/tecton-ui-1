@@ -74,7 +74,6 @@ export default defineTranslations({
     keySelect: "Välj",
     keyComplete: "Komplettera",
     keyClose: "Stäng",
-    footerAll: "Termer bredvid varandra gäller alla",
     summaryFilters: "Filter: {filters}.",
     summaryNoFilters: "Inga filter.",
     summarySearch: "Sökning: {search}.",
@@ -98,9 +97,13 @@ export default defineTranslations({
     backwardsRange:
       "Intervallet börjar efter att det slutar: {from} är efter {to}.",
     unsupportedOr:
-      "OR stöds inte: alla termer gäller. Skilj värden åt med kommatecken för att hitta något av flera värden.",
-    unsupportedNot:
-      "Att utesluta stöds inte: filtrera i stället på de värden som ska vara kvar. Sätt texten inom citattecken för att söka efter den.",
+      "OR stöds inte. Raderna måste matcha alla termer. Skriv värdena åtskilda med kommatecken för att hitta ett av flera värden i en kolumn: {example}",
+    unsupportedOrNoList:
+      "OR stöds inte. Raderna måste matcha alla termer, så sök efter en sak i taget.",
+    unsupportedMinus:
+      "Att utesluta stöds inte, så den här termen ignoreras. Sätt texten inom citattecken för att söka efter just den texten. Filtrera i stället på de värden som ska vara kvar för att begränsa raderna: {example}",
+    unsupportedMinusNoFilter:
+      "Att utesluta stöds inte, så den här termen ignoreras. Sätt texten inom citattecken för att söka efter just den texten.",
     exclusiveComparison: "Använd >= eller <= med datum och tid.",
     notComparable: "{column} har ingen ordning: välj dess värden i stället.",
     multipleBoolean: "{column} är ja eller nej, inte båda.",

@@ -82,7 +82,6 @@ export default defineTranslations({
     keySelect: "Vybrat",
     keyComplete: "Doplnit",
     keyClose: "Zavřít",
-    footerAll: "Podmínky vedle sebe platí všechny",
     summaryFilters: "Filtry: {filters}.",
     summaryNoFilters: "Žádné filtry.",
     summarySearch: "Hledání: {search}.",
@@ -107,9 +106,13 @@ export default defineTranslations({
     ambiguousMonth: "„{value}“ může být více měsíců: napište víc z názvu.",
     backwardsRange: "Tento rozsah začíná po svém konci: {from} je po {to}.",
     unsupportedOr:
-      "OR není podporováno: platí všechny podmínky. Chcete-li najít kteroukoli z více hodnot, oddělte je čárkami.",
-    unsupportedNot:
-      "Vylučování není podporováno: filtrujte raději hodnoty, které chcete ponechat. Chcete-li hledat tento text, dejte ho do uvozovek.",
+      "OR není podporováno. Řádky musí splňovat všechny podmínky. Chcete-li najít jednu z více hodnot sloupce, napište je oddělené čárkami: {example}",
+    unsupportedOrNoList:
+      "OR není podporováno. Řádky musí splňovat všechny podmínky, proto hledejte jednu věc po druhé.",
+    unsupportedMinus:
+      "Vylučování není podporováno, proto se tato podmínka nepoužije. Chcete-li hledat přímo tento text, dejte ho do uvozovek. Chcete-li zúžit řádky, filtrujte raději hodnoty, které chcete ponechat: {example}",
+    unsupportedMinusNoFilter:
+      "Vylučování není podporováno, proto se tato podmínka nepoužije. Chcete-li hledat přímo tento text, dejte ho do uvozovek.",
     exclusiveComparison: "U data s časem použijte >= nebo <=.",
     notComparable: "Sloupec {column} nemá pořadí: vyberte raději jeho hodnoty.",
     multipleBoolean: "{column} je ano nebo ne, ne obojí.",

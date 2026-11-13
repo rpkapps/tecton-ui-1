@@ -62,7 +62,6 @@ export default defineTranslations({
     keySelect: "선택",
     keyComplete: "완성",
     keyClose: "닫기",
-    footerAll: "나란히 입력한 조건은 모두 적용",
     summaryFilters: "필터: {filters}.",
     summaryNoFilters: "필터 없음.",
     summarySearch: "검색: {search}.",
@@ -84,9 +83,13 @@ export default defineTranslations({
     backwardsRange:
       "이 범위는 끝난 뒤에 시작합니다. {from}이(가) {to}보다 뒤입니다.",
     unsupportedOr:
-      "OR은 지원되지 않습니다. 모든 조건이 적용됩니다. 여러 값 중 하나와 일치시키려면 쉼표로 구분하세요.",
-    unsupportedNot:
-      "제외는 지원되지 않습니다. 대신 남길 값으로 필터링하세요. 이 텍스트를 검색하려면 따옴표로 묶으세요.",
+      "OR은 지원되지 않습니다. 행은 모든 조건과 일치해야 합니다. 열의 여러 값 중 하나와 일치시키려면 쉼표로 구분해 나열하세요: {example}",
+    unsupportedOrNoList:
+      "OR은 지원되지 않습니다. 행은 모든 조건과 일치해야 하므로 한 번에 하나씩 검색하세요.",
+    unsupportedMinus:
+      "제외는 지원되지 않으므로 이 조건은 무시됩니다. 텍스트 자체를 검색하려면 따옴표로 묶으세요. 행을 좁히려면 대신 남길 값으로 필터링하세요: {example}",
+    unsupportedMinusNoFilter:
+      "제외는 지원되지 않으므로 이 조건은 무시됩니다. 텍스트 자체를 검색하려면 따옴표로 묶으세요.",
     exclusiveComparison: "날짜와 시간에는 >= 또는 <=를 사용하세요.",
     notComparable: "{column}에는 순서가 없습니다. 대신 값을 선택하세요.",
     multipleBoolean: "{column}은(는) 예 또는 아니요 중 하나입니다.",

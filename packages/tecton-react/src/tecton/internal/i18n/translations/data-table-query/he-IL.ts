@@ -78,7 +78,6 @@ export default defineTranslations({
     keySelect: "בחירה",
     keyComplete: "השלמה",
     keyClose: "סגירה",
-    footerAll: "כל התנאים הסמוכים חלים",
     summaryFilters: "מסננים: {filters}.",
     summaryNoFilters: "אין מסננים.",
     summarySearch: "חיפוש: {search}.",
@@ -102,9 +101,13 @@ export default defineTranslations({
     ambiguousMonth: '"{value}" יכול להיות יותר מחודש אחד: כתבו יותר מהשם.',
     backwardsRange: "הטווח הזה מתחיל אחרי שהוא מסתיים: {from} אחרי {to}.",
     unsupportedOr:
-      "OR אינו נתמך: כל התנאים חלים. כדי למצוא אחד מכמה ערכים, הפרידו ביניהם בפסיקים.",
-    unsupportedNot:
-      "החרגה אינה נתמכת: סננו במקום זאת לפי הערכים שנשארים. כדי לחפש את הטקסט הזה, שימו אותו במירכאות.",
+      "OR אינו נתמך. השורות צריכות להתאים לכל התנאים. כדי למצוא אחד מכמה ערכים של עמודה, כתבו אותם מופרדים בפסיקים: {example}",
+    unsupportedOrNoList:
+      "OR אינו נתמך. השורות צריכות להתאים לכל התנאים, לכן חפשו דבר אחד בכל פעם.",
+    unsupportedMinus:
+      "החרגה אינה נתמכת, ולכן התנאי הזה לא מוחל. כדי לחפש את הטקסט עצמו, שימו אותו במירכאות. כדי לצמצם את השורות, סננו במקום זאת לפי הערכים שנשארים: {example}",
+    unsupportedMinusNoFilter:
+      "החרגה אינה נתמכת, ולכן התנאי הזה לא מוחל. כדי לחפש את הטקסט עצמו, שימו אותו במירכאות.",
     exclusiveComparison: "עם תאריך ושעה השתמשו ב־>= או ב־<=.",
     notComparable: "ל־{column} אין סדר: בחרו במקום זאת את הערכים שלה.",
     multipleBoolean: "{column} הוא כן או לא, לא שניהם.",

@@ -32,6 +32,14 @@ import { useTranslations } from "./internal/i18n/translations"
  * Only `OverflowItem`s leave the row; unwrapped children are fixed. Items,
  * dividers and spacers must be direct children of the row.
  *
+ * Rendered on the server, the row cannot know its width: until it has
+ * measured once in the browser (`data-measured` on the row), it keeps to one
+ * line, and the items it may move or collapse, its dividers and whatever
+ * follows the first such item keep their place unseen, so the first layout
+ * drawn is never one the row does not keep. The fixed and elastic items
+ * before them show from the first paint. Mounted in the browser, the row
+ * measures before its first paint.
+ *
  * Cost: one `ResizeObserver` per row, sizes cached per element, the visible
  * set kept in a store outside React. Each item subscribes to its own
  * visibility and the menu to the hidden list; nothing else re-renders, and a
@@ -149,6 +157,12 @@ class OverflowStore {
   private hidden = new Set<string>()
   private compact = false
   private available = 0
+  /**
+   * The row has run its first pass in the browser (or found it has nothing
+   * to measure): what it draws is its real layout from then on.
+   */
+  measured = false
+  private rootSubscribers = new Set<() => void>()
   focusRequested = false
   /** An item that returned from the menu and takes the focus the menu had. */
   focusItem: string | null = null
@@ -164,8 +178,12 @@ class OverflowStore {
 
   attach(root: HTMLElement) {
     // Not in a live document: nothing to measure, and the store stays
-    // detached, so every pass is a no-op.
-    if (!isMeasurable(root)) return
+    // detached, so every pass is a no-op. The row shows every item, as it
+    // would with room for them all.
+    if (!isMeasurable(root)) {
+      this.markMeasured()
+      return
+    }
     this.root = root
     this.observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -218,6 +236,17 @@ class OverflowStore {
       fonts.addEventListener("loadingdone", this.onFontsLoaded)
     }
     if (!this.syncChildren()) this.compute()
+    this.markMeasured()
+  }
+
+  /**
+   * Once: the row's real layout replaces the unmeasured one, in the same
+   * commit as the pass that made it.
+   */
+  private markMeasured() {
+    if (this.measured) return
+    this.measured = true
+    this.rootSubscribers.forEach((cb) => cb())
   }
 
   private onFontsLoaded = () => {
@@ -765,6 +794,11 @@ class OverflowStore {
     return () => set.delete(callback)
   }
 
+  subscribeRoot(callback: () => void) {
+    this.rootSubscribers.add(callback)
+    return () => this.rootSubscribers.delete(callback)
+  }
+
   subscribeMenu(callback: () => void) {
     this.menuSubscribers.add(callback)
     return () => this.menuSubscribers.delete(callback)
@@ -1013,6 +1047,28 @@ function callBoth<TEvent>(
   }
 }
 
+/**
+ * A row that has not measured yet (server rendered, until it hydrates)
+ * cannot know which of its items fit. It lays every child out on one line at
+ * its own size (only elastic items shrink), clipping what runs past its end
+ * (`not-data-measured:` `flex-nowrap` and `overflow-*-clip`): no second line
+ * or scrollbar that the measured row would take away, and the sizes the
+ * first pass reads are the real ones. What may still move is laid out but
+ * not drawn (`visibility: hidden`: neither focusable nor announced): an
+ * item that can go into the menu or lose its label (neither `data-fixed`
+ * nor `data-elastic`), a divider, and every child after the first such
+ * item, whose place depends on it. The fixed and elastic children before it
+ * show. The first pass sets `data-measured` in the commit that hides what
+ * does not fit and renders the More trigger. Written out whole, for
+ * Tailwind to find.
+ */
+const UNMEASURED = [
+  "[&:not([data-measured])>:not([data-elastic])]:shrink-0",
+  "[&:not([data-measured])>[data-slot=overflow-divider]]:invisible",
+  "[&:not([data-measured])>[data-slot=overflow-item]:not([data-fixed]):not([data-elastic])]:invisible",
+  "[&:not([data-measured])>[data-slot=overflow-item]:not([data-fixed]):not([data-elastic])~*]:invisible",
+].join(" ")
+
 function OverflowRoot({
   toolbar,
   className,
@@ -1040,6 +1096,13 @@ function OverflowRoot({
   const ref = React.useRef<HTMLDivElement>(null)
   const mergedRef = useMergedRef(ref, refProp)
   const keyboard = useToolbarKeyboard(ref, orientation)
+  // `false` on the server and while hydrating; set by the first pass, which
+  // runs in a layout effect, so the browser never paints the row before it.
+  const measured = React.useSyncExternalStore(
+    React.useCallback((cb) => store.subscribeRoot(cb), [store]),
+    () => store.measured,
+    () => false
+  )
 
   React.useLayoutEffect(() => {
     store.configure(orientation, labels, minimumVisible)
@@ -1078,6 +1141,7 @@ function OverflowRoot({
         data-slot={toolbar ? "toolbar" : "overflow"}
         data-overflow-root=""
         data-orientation={orientation}
+        data-measured={measured ? "" : undefined}
         className={cn(
           "flex min-w-0 items-center gap-2",
           vertical && "min-h-0 flex-col items-stretch",
@@ -1087,6 +1151,10 @@ function OverflowRoot({
             : lastResort === "wrap"
               ? "flex-wrap"
               : "overflow-x-auto",
+          UNMEASURED,
+          vertical
+            ? "not-data-measured:overflow-y-clip"
+            : "not-data-measured:flex-nowrap not-data-measured:overflow-x-clip",
           className
         )}
         {...props}
@@ -1300,6 +1368,7 @@ function OverflowItem({
         ref={mergedRef}
         data-slot="overflow-item"
         data-overflowing={visible ? undefined : ""}
+        data-fixed={fixed ? "" : undefined}
         data-compact={compact ? "" : undefined}
         data-elastic={elastic ? "" : undefined}
         className={cn(

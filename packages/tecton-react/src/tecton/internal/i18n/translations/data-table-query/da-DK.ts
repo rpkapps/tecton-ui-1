@@ -71,7 +71,6 @@ export default defineTranslations({
     keySelect: "Vælg",
     keyComplete: "Fuldfør",
     keyClose: "Luk",
-    footerAll: "Termer ved siden af hinanden gælder alle",
     summaryFilters: "Filtre: {filters}.",
     summaryNoFilters: "Ingen filtre.",
     summarySearch: "Søgning: {search}.",
@@ -96,9 +95,13 @@ export default defineTranslations({
     backwardsRange:
       "Intervallet starter efter det slutter: {from} er efter {to}.",
     unsupportedOr:
-      "OR understøttes ikke: alle termer gælder. Adskil værdier med kommaer for at finde en af flere værdier.",
-    unsupportedNot:
-      "Udelukkelse understøttes ikke: filtrer i stedet efter de værdier, der skal blive. Sæt teksten i anførselstegn for at søge efter den.",
+      "OR understøttes ikke. Rækkerne skal matche alle termer. Skriv værdierne adskilt af kommaer for at matche en af flere værdier i en kolonne: {example}",
+    unsupportedOrNoList:
+      "OR understøttes ikke. Rækkerne skal matche alle termer, så søg efter én ting ad gangen.",
+    unsupportedMinus:
+      "Udelukkelse understøttes ikke, så denne term ignoreres. Sæt teksten i anførselstegn for at søge efter selve teksten. Filtrer i stedet efter de værdier, der skal blive, for at indsnævre rækkerne: {example}",
+    unsupportedMinusNoFilter:
+      "Udelukkelse understøttes ikke, så denne term ignoreres. Sæt teksten i anførselstegn for at søge efter selve teksten.",
     exclusiveComparison: "Brug >= eller <= med dato og klokkeslæt.",
     notComparable: "{column} har ingen rækkefølge: vælg i stedet dens værdier.",
     multipleBoolean: "{column} er ja eller nej, ikke begge.",

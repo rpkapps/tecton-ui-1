@@ -78,7 +78,6 @@ export default defineTranslations({
     keySelect: "Odaberi",
     keyComplete: "Dovrši",
     keyClose: "Zatvori",
-    footerAll: "Uvjeti jedan uz drugi vrijede svi",
     summaryFilters: "Filtri: {filters}.",
     summaryNoFilters: "Nema filtara.",
     summarySearch: "Pretraživanje: {search}.",
@@ -104,9 +103,13 @@ export default defineTranslations({
     backwardsRange:
       "Ovaj raspon počinje nakon svojeg kraja: {from} je nakon {to}.",
     unsupportedOr:
-      "OR nije podržan: vrijede svi uvjeti. Da biste pronašli bilo koju od više vrijednosti, odvojite ih zarezima.",
-    unsupportedNot:
-      "Isključivanje nije podržano: umjesto toga filtrirajte vrijednosti koje želite zadržati. Da biste pretražili ovaj tekst, stavite ga u navodnike.",
+      "OR nije podržan. Retci moraju zadovoljiti svaki uvjet. Da biste pronašli jednu od više vrijednosti stupca, navedite ih odvojene zarezima: {example}",
+    unsupportedOrNoList:
+      "OR nije podržan. Retci moraju zadovoljiti svaki uvjet, pa tražite jednu po jednu stvar.",
+    unsupportedMinus:
+      "Isključivanje nije podržano, pa se ovaj uvjet zanemaruje. Da biste pretražili upravo ovaj tekst, stavite ga u navodnike. Da biste suzili retke, umjesto toga filtrirajte vrijednosti koje želite zadržati: {example}",
+    unsupportedMinusNoFilter:
+      "Isključivanje nije podržano, pa se ovaj uvjet zanemaruje. Da biste pretražili upravo ovaj tekst, stavite ga u navodnike.",
     exclusiveComparison: "Uz datum i vrijeme koristite >= ili <=.",
     notComparable:
       "{column} nema redoslijed: umjesto toga odaberite vrijednosti.",

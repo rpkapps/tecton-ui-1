@@ -186,17 +186,30 @@ describe("DataTableSearch syntax=query: the query and the view", () => {
         ).toHaveTextContent("OR"),
       { timeout: 2000 }
     )
-    // Atop the list, and in the field's description.
+    // Atop the list, and in the field's description: what happened, and
+    // what to type instead, with the table's own options column.
+    const or =
+      'OR isn\'t supported. Rows must match every term. To match one of several values of a column, list them with commas: status:producing,"shut in"'
     expect(
       document.querySelector('[data-slot="data-table-query-problem-banner"]')
-    ).toHaveTextContent("OR is not supported")
-    const description = document.getElementById(
-      field().getAttribute("aria-describedby")!
-    )
-    expect(description).toHaveTextContent("Filters: Status: Drilling.")
-    expect(description).toHaveTextContent("1 problem: OR is not supported")
-    await user.type(field(), " -gullfaks")
+    ).toHaveTextContent(or)
+    const description = () =>
+      document.getElementById(field().getAttribute("aria-describedby")!)
+    expect(description()).toHaveTextContent("Filters: Status: Drilling.")
+    expect(description()).toHaveTextContent(`1 problem: ${or}`)
+    await user.type(field(), " -gullfaks NOT field:troll")
     expect(lastView(onViewChange).search).toBe("")
+    await waitFor(() =>
+      expect(description()).toHaveTextContent(
+        'Excluding isn\'t supported, so this term is ignored. To search for the text itself, put it in quotes. To narrow the rows, filter for the values to keep instead: status:producing,"shut in"'
+      )
+    )
+    // NOT takes the term after it out with it, as a minus does: never the
+    // opposite of what was meant.
+    expect(description()).toHaveTextContent("3 problems")
+    expect(lastView(onViewChange).filters).toEqual({
+      status: { type: "options", values: ["drilling"] },
+    })
   })
 
   it("names an unknown column or value, with what was meant", async () => {
@@ -230,6 +243,10 @@ describe("DataTableSearch syntax=query: suggestions", () => {
       "spuddate:Spud dateDate",
       "active:ActiveYes or no",
     ])
+    // Under them, the keys they take, and nothing else.
+    expect(
+      document.querySelector('[data-slot="data-table-query-keys"]')
+    ).toHaveTextContent(/^↑↓Move↵SelectTabCompleteEscClose$/)
     await user.type(field(), "sta")
     expect(options()[0]).toBe("status:StatusOptions")
     // A free word: Enter is the search's, ↓ picks the column.

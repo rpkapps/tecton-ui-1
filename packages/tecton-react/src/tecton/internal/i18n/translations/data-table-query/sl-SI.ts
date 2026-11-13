@@ -82,7 +82,6 @@ export default defineTranslations({
     keySelect: "Izberi",
     keyComplete: "Dopolni",
     keyClose: "Zapri",
-    footerAll: "Pogoji drug ob drugem veljajo vsi",
     summaryFilters: "Filtri: {filters}.",
     summaryNoFilters: "Ni filtrov.",
     summarySearch: "Iskanje: {search}.",
@@ -107,9 +106,13 @@ export default defineTranslations({
     ambiguousMonth: "»{value}« je lahko več mesecev: napišite več imena.",
     backwardsRange: "Ta obseg se začne po svojem koncu: {from} je po {to}.",
     unsupportedOr:
-      "OR ni podprt: veljajo vsi pogoji. Če želite najti katero koli od več vrednosti, jih ločite z vejicami.",
-    unsupportedNot:
-      "Izključevanje ni podprto: raje filtrirajte vrednosti, ki jih želite obdržati. Če želite iskati to besedilo, ga postavite v narekovaje.",
+      "OR ni podprt. Vrstice morajo ustrezati vsakemu pogoju. Če želite najti eno od več vrednosti stolpca, jih naštejte, ločene z vejicami: {example}",
+    unsupportedOrNoList:
+      "OR ni podprt. Vrstice morajo ustrezati vsakemu pogoju, zato iščite eno stvar naenkrat.",
+    unsupportedMinus:
+      "Izključevanje ni podprto, zato se ta pogoj ne upošteva. Če želite iskati prav to besedilo, ga postavite v narekovaje. Če želite zožiti vrstice, raje filtrirajte vrednosti, ki jih želite obdržati: {example}",
+    unsupportedMinusNoFilter:
+      "Izključevanje ni podprto, zato se ta pogoj ne upošteva. Če želite iskati prav to besedilo, ga postavite v narekovaje.",
     exclusiveComparison: "Pri datumu s časom uporabite >= ali <=.",
     notComparable:
       "{column} nima vrstnega reda: raje izberite njegove vrednosti.",

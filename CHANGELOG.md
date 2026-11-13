@@ -28,11 +28,12 @@ write entries and cut a release.
   filter button, chip or controlled view writes the query again. The field draws the query in
   colours, suggests columns, values with their row counts, comparisons with the data's range and a
   date's presets, years, months and calendar, explains a term it cannot apply (`OR`, `NOT`, `-`, an
-  unknown column or value) instead of applying it otherwise, lists the table's columns with
-  examples in its "?" help, and works in server mode, RTL and the 34 locales. Its code loads on
-  demand: a table with the plain search (`syntax="text"`, the default) never loads it. What was
-  typed, the focus and the caret carry over when it arrives, also for a field focused before a
-  server-rendered page hydrated.
+  unknown column or value) instead of applying it otherwise, with what to type instead in the
+  table's own terms (`status:drilling,producing` for one of several values), lists the table's
+  columns with examples in its "?" help, and works in server mode, RTL and the 34 locales. Its
+  code loads on demand: a table with the plain search (`syntax="text"`, the default) never loads
+  it. What was typed, the focus and the caret carry over when it arrives, also for a field focused
+  before a server-rendered page hydrated.
 - `DataTable`'s number filter value takes `minExclusive?: true` and `maxExclusive?: true`: the
   bound's own number does not match (more than `min`, less than `max`). Its filter button and chip
   read "> 3,000" or "> 1,000 and ≤ 3,000", and editing that bound in the filter includes it again.
@@ -81,6 +82,13 @@ write entries and cut a release.
 - `Checkbox`: a disabled checkbox looks disabled outside a `Field` too.
 - `Overflow`: a hidden item whose content changed (a renamed label, a summary cleared from
   outside) is measured again, so the same width always gives the same layout.
+- `Overflow` and `Toolbar` (and so `DataTableToolbar`) rendered on the server no longer show every
+  item, without the More button, until the page hydrates. Until the row has measured itself in the
+  browser (`data-measured`), it keeps to one line and what may still move keeps its place unseen:
+  the items that can go into the menu, the dividers and whatever follows them. The fixed and
+  elastic items before them (a table's search) show. Once measured, the items that fit and the
+  More button appear in the same frame, and a row that fits never shows a More button. A row
+  mounted in the browser measures before its first paint, as before.
 - `Chip`: after its remove button is pressed, focus goes to the chip now in its place, as after
   Delete, instead of to the page.
 

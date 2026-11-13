@@ -90,7 +90,6 @@ export default defineTranslations({
     keySelect: "تحديد",
     keyComplete: "إكمال",
     keyClose: "إغلاق",
-    footerAll: "تُطبَّق جميع الشروط المتجاورة",
     summaryFilters: "عوامل التصفية: {filters}.",
     summaryNoFilters: "لا توجد عوامل تصفية.",
     summarySearch: "البحث: {search}.",
@@ -115,9 +114,13 @@ export default defineTranslations({
     ambiguousMonth: 'قد يعني "{value}" أكثر من شهر: اكتب جزءًا أكبر من الاسم.',
     backwardsRange: "يبدأ هذا النطاق بعد نهايته: {from} بعد {to}.",
     unsupportedOr:
-      "OR غير مدعوم: تُطبَّق جميع الشروط. للعثور على أي من عدة قيم، افصلها بفواصل.",
-    unsupportedNot:
-      "الاستبعاد غير مدعوم: صفِّ بدلًا من ذلك القيم التي تريد إبقاءها. للبحث عن هذا النص، ضعه بين علامتي اقتباس.",
+      "OR غير مدعوم. يجب أن تطابق الصفوف كل الشروط. لمطابقة إحدى عدة قيم في عمود، اكتبها مفصولة بفواصل: {example}",
+    unsupportedOrNoList:
+      "OR غير مدعوم. يجب أن تطابق الصفوف كل الشروط، لذا ابحث عن شيء واحد في كل مرة.",
+    unsupportedMinus:
+      "الاستبعاد غير مدعوم، لذا يُتجاهَل هذا الشرط. للبحث عن النص نفسه، ضعه بين علامتي اقتباس. لتضييق الصفوف، صفِّ بدلًا من ذلك القيم التي تريد إبقاءها: {example}",
+    unsupportedMinusNoFilter:
+      "الاستبعاد غير مدعوم، لذا يُتجاهَل هذا الشرط. للبحث عن النص نفسه، ضعه بين علامتي اقتباس.",
     exclusiveComparison: "استخدم >= أو <= مع التاريخ والوقت.",
     notComparable: "لا ترتيب لـ {column}: اختر قيمه بدلًا من ذلك.",
     multipleBoolean: "{column} نعم أو لا، وليس كليهما.",

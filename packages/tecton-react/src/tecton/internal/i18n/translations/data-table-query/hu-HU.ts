@@ -65,7 +65,6 @@ export default defineTranslations({
     keySelect: "Kijelölés",
     keyComplete: "Kiegészítés",
     keyClose: "Bezárás",
-    footerAll: "Az egymás melletti feltételek mind érvényesek",
     summaryFilters: "Szűrők: {filters}.",
     summaryNoFilters: "Nincsenek szűrők.",
     summarySearch: "Keresés: {search}.",
@@ -89,9 +88,13 @@ export default defineTranslations({
     backwardsRange:
       "Ez a tartomány a vége után kezdődik: {from} későbbi, mint {to}.",
     unsupportedOr:
-      "Az OR nem támogatott: minden feltétel érvényes. Több érték bármelyikének kereséséhez válassza el őket vesszővel.",
-    unsupportedNot:
-      "A kizárás nem támogatott: inkább a megtartandó értékekre szűrjön. A szöveg kereséséhez tegye idézőjelbe.",
+      "Az OR nem támogatott. A soroknak minden feltételnek meg kell felelniük. Egy oszlop több értéke közül bármelyik kereséséhez sorolja fel őket vesszővel elválasztva: {example}",
+    unsupportedOrNoList:
+      "Az OR nem támogatott. A soroknak minden feltételnek meg kell felelniük, ezért egyszerre egy dologra keressen.",
+    unsupportedMinus:
+      "A kizárás nem támogatott, ezért ez a feltétel figyelmen kívül marad. Magának a szövegnek a kereséséhez tegye idézőjelbe. A sorok szűkítéséhez inkább a megtartandó értékekre szűrjön: {example}",
+    unsupportedMinusNoFilter:
+      "A kizárás nem támogatott, ezért ez a feltétel figyelmen kívül marad. Magának a szövegnek a kereséséhez tegye idézőjelbe.",
     exclusiveComparison: "Dátummal és idővel használja a >= vagy <= jelet.",
     notComparable:
       "A(z) {column} oszlopnak nincs sorrendje: inkább válassza ki az értékeit.",
