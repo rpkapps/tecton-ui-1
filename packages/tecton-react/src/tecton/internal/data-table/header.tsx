@@ -112,7 +112,7 @@ const MENU_SHOWN =
 
 /**
  * Where the menu button goes, by the column's alignment: just outside the
- * label (`HEAD_LABEL`), a small gap away, on the side away from the
+ * label (`HEAD_LABEL`), touching it, on the side away from the
  * column's edge (after the label's end, or before its start in a column
  * aligned to the end, whose label ends at the cell's end), in the
  * header's fill and taking no room, so it covers neither the label nor
@@ -120,7 +120,7 @@ const MENU_SHOWN =
  * content. On a touch screen it is in the label's row, on that side.
  */
 const MENU_AFTER = cn(
-  "absolute start-full top-1/2 ms-0.5 -translate-y-1/2 bg-table-header",
+  "absolute start-full top-1/2 -translate-y-1/2 bg-table-header",
   MENU_SHOWN,
   "pointer-coarse:static pointer-coarse:translate-y-0"
 )
@@ -128,7 +128,7 @@ const MENU_BUTTON = {
   start: MENU_AFTER,
   center: MENU_AFTER,
   end: cn(
-    "absolute end-full top-1/2 me-0.5 -translate-y-1/2 bg-table-header",
+    "absolute end-full top-1/2 -translate-y-1/2 bg-table-header",
     MENU_SHOWN,
     "pointer-coarse:static pointer-coarse:order-first pointer-coarse:translate-y-0"
   ),
@@ -136,18 +136,18 @@ const MENU_BUTTON = {
 
 /**
  * The room a label leaves its menu button while the button shows, in a
- * column narrower than both: the button (24 px) and its gap (2 px), 2 px
- * in from the cell's edge, less the cell's padding (16 px) it sits in:
- * 12 px (a centred label, on both sides). In a column at least as wide as
+ * column narrower than both: the button (24 px), right against the label
+ * and 2 px in from the cell's edge, less the cell's padding (16 px) it
+ * sits in: 10 px (a centred label, on both sides). In a column at least as wide as
  * its label and that room, as a measured one is (`column-sizing.ts`
  * counts the same room), the label does not move as the button shows.
  */
 const MENU_ROOM_ONE_SIDE =
-  "pointer-fine:group-focus-within/head:max-w-[calc(100%-0.75rem)] pointer-fine:has-data-popup-open:max-w-[calc(100%-0.75rem)] pointer-fine:group-hover/head:max-w-[calc(100%-0.75rem)]"
+  "pointer-fine:group-focus-within/head:max-w-[calc(100%-0.625rem)] pointer-fine:has-data-popup-open:max-w-[calc(100%-0.625rem)] pointer-fine:group-hover/head:max-w-[calc(100%-0.625rem)]"
 const MENU_ROOM = {
   start: MENU_ROOM_ONE_SIDE,
   center:
-    "pointer-fine:group-focus-within/head:max-w-[calc(100%-1.5rem)] pointer-fine:has-data-popup-open:max-w-[calc(100%-1.5rem)] pointer-fine:group-hover/head:max-w-[calc(100%-1.5rem)]",
+    "pointer-fine:group-focus-within/head:max-w-[calc(100%-1.25rem)] pointer-fine:has-data-popup-open:max-w-[calc(100%-1.25rem)] pointer-fine:group-hover/head:max-w-[calc(100%-1.25rem)]",
   end: MENU_ROOM_ONE_SIDE,
 } as const
 

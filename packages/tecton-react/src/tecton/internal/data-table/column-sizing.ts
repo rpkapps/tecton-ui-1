@@ -413,8 +413,8 @@ function widthOf(element: Element) {
  * menu button floats beside its label (absolutely placed, taking no room,
  * with a fine pointer; `MENU_BUTTON` in `header.tsx`), whichever is wider
  * of that and the cell's padding, the label at its own width, and the room
- * the button needs past the padding on its side: a small gap, the button
- * and `MENU_EDGE` (twice over for a centred label, which keeps as much
+ * the button needs past the padding on its side: the button, right
+ * against the label, and `MENU_EDGE` (twice over for a centred label, which keeps as much
  * room on its other side).
  *
  * The side is the label's alignment (`data-align`), which places the
@@ -440,7 +440,7 @@ function headerWidthOf(cell: Element) {
   // The padding the button sits in: the start's before an end-aligned
   // label, the end's after any other.
   const padding = align === "end" ? start : end
-  const past = Math.max(0, MENU_GAP + widthOf(button) + MENU_EDGE - padding)
+  const past = Math.max(0, widthOf(button) + MENU_EDGE - padding)
   // The label at its own width, not narrowed by the room it leaves the
   // button while that shows (the menu is open as it fits the column).
   const saved = label.style.maxWidth
@@ -453,9 +453,6 @@ function headerWidthOf(cell: Element) {
     label.style.maxWidth = saved
   }
 }
-
-/** Between a header's label and its floating menu button, in px (`ms-0.5` / `me-0.5`). */
-const MENU_GAP = 2
 
 /** Between a header's menu button and the cell's edge, in px (`MENU_ROOM` in `header.tsx`). */
 const MENU_EDGE = 2
