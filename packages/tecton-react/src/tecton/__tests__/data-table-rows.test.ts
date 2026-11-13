@@ -407,6 +407,30 @@ describe("facets", () => {
   })
 })
 
+describe("search parts", () => {
+  it("are the rows, formatter, search index and hidden columns, kept while they are", () => {
+    const engine = createDataTableEngine<Well>()
+    const first = run({}, engine)
+    const parts = first.searchParts()
+    expect(first.searchParts()).toBe(parts)
+    expect(parts.core.items).toHaveLength(fleet.length)
+    expect(parts.hidden).toEqual([])
+    // A new sort: a new model, the same rows and search index.
+    const sorted = run(
+      { view: view({ sorting: [{ column: "oil", direction: "ascending" }] }) },
+      engine
+    )
+    expect(sorted.searchParts().index).toBe(parts.index)
+    expect(sorted.searchParts().core).toBe(parts.core)
+    // A hidden column: search does not read it.
+    const hidden = run(
+      { view: view({ columns: { hidden: ["operator"] } }) },
+      engine
+    )
+    expect(hidden.searchParts().hidden).toEqual(["operator"])
+  })
+})
+
 describe("number facets", () => {
   it("are a number column's numbers, sorted, over the rows matching everything but its own filter", () => {
     const result = run({
