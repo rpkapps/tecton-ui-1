@@ -340,16 +340,6 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   the surface the table sits on, through theme changes. Tecton's own surfaces in `src/tecton`
   (`Panel`, the `AppShell` parts, `ActionBar`, the composer's popup, the document tabs' strip)
   set it in their own classes.
-- **Badges in highlighted items** (`style-tecton.css` only) — a highlighted or focused item turns
-  its descendants' text `accent-foreground` (icons, secondary text) with a `**:` class; in the
-  `combobox`, `dropdown-menu` (item, checkbox and radio items, sub-trigger), `select` and
-  `menubar` items that class skips badges and their contents
-  (`**:not-data-[slot=badge]:not-in-data-[slot=badge]:text-accent-foreground`, compiled to
-  `:not([data-slot="badge"]):not(:where([data-slot="badge"]) *)`), and so does the `command`
-  item's selected icon colour (`**:[svg]:not-in-data-[slot=badge]:text-foreground`), so a
-  `Badge` keeps its own text, border and icon colours (the DataTable power search's coloured
-  option values). The destructive variant is unchanged. Tested in
-  `src/tecton/__tests__/item-badge-colours.test.tsx`.
 
 ## Renaming the package
 

@@ -95,10 +95,6 @@ write entries and cut a release.
 ### Fixed
 
 - `Checkbox`: a disabled checkbox looks disabled outside a `Field` too.
-- Badges in highlighted menu, select and combobox items keep their colours: a highlighted or
-  focused `DropdownMenu`, `Select`, `Combobox` or `Command` item no longer turns a `Badge` inside
-  it (text, border and icon) `accent-foreground`, so the power search's coloured option values
-  stay green, blue or amber under the pointer and the arrow keys.
 - `Overflow`: a hidden item whose content changed (a renamed label, a summary cleared from
   outside) is measured again, so the same width always gives the same layout.
 - `Overflow` and `Toolbar` (and so `DataTableToolbar`) rendered on the server no longer show every
