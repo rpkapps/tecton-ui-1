@@ -243,7 +243,13 @@ function PageSize({
             )
         }}
       >
-        <SelectTrigger size={size} aria-label={t("rowsPerPage")}>
+        {/* Borderless when compact, as the page field: the band is a row's
+            height there, with no room around a bordered control. */}
+        <SelectTrigger
+          size={size}
+          variant={size === "sm" ? "filled" : "outline"}
+          aria-label={t("rowsPerPage")}
+        >
           <SelectValue className="tabular-nums">
             {(value: string) => format.format(Number(value))}
           </SelectValue>
@@ -492,6 +498,7 @@ function PageField({
           {/* No minus and plus: the arrows beside it step the pages. */}
           <NumberFieldGroup
             data-size={size}
+            variant={size === "sm" ? "filled" : "outline"}
             // A small `SelectTrigger`'s height when compact.
             className={cn(size === "sm" && "h-7")}
           >

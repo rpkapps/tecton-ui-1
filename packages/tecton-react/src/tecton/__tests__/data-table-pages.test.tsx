@@ -373,6 +373,9 @@ describe("DataTable pages", () => {
     expect(
       screen.getByRole("combobox", { name: "Rows per page" })
     ).toHaveAttribute("data-size", "default")
+    expect(
+      screen.getByRole("combobox", { name: "Rows per page" })
+    ).toHaveAttribute("data-variant", "outline")
     expect(field().closest('[data-slot="number-field-group"]')).toHaveAttribute(
       "data-size",
       "default"
@@ -382,8 +385,16 @@ describe("DataTable pages", () => {
     expect(band()).toHaveAttribute("data-size", "sm")
     expect(band()).toHaveClass(
       "text-xs",
-      "[[data-slot=data-table-content]+&]:min-h-[calc(var(--spacing)*2+1lh+1px)]",
-      "[[data-slot=data-table-content]+&]:py-1"
+      "[[data-slot=data-table-content]+&]:min-h-[calc(var(--spacing)*2+1lh+1px)]"
+    )
+    // No room around its controls, which are borderless instead.
+    expect(band().className).not.toMatch(/py-/)
+    expect(
+      screen.getByRole("combobox", { name: "Rows per page" })
+    ).toHaveAttribute("data-variant", "filled")
+    expect(field().closest('[data-slot="number-field-group"]')).toHaveAttribute(
+      "data-variant",
+      "filled"
     )
     for (const name of [
       "First page",
