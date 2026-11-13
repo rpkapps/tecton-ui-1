@@ -417,7 +417,7 @@ describe("DataTableFilter", () => {
     })
   })
 
-  it("steps a number filter's bounds with the arrow keys, without minus and plus or native spinners", async () => {
+  it("steps a number filter's bounds with its minus and plus and the arrow keys, not native spinners", async () => {
     const user = userEvent.setup({ delay: null })
     const onViewChange = vi.fn()
     render(<Wells onViewChange={onViewChange} />)
@@ -428,14 +428,31 @@ describe("DataTableFilter", () => {
     expect(
       document.querySelector('input[type="number"]:not([aria-hidden])')
     ).toBeNull()
+    // Minus before the number, plus after it, as the field is drawn
+    // everywhere.
+    const group = min.closest<HTMLElement>('[data-slot="number-field-group"]')!
+    const buttons = within(group).getAllByRole("button")
+    expect(buttons.map((button) => button.getAttribute("aria-label"))).toEqual([
+      "Decrease",
+      "Increase",
+    ])
     expect(
-      min.closest('[data-slot="number-field-group"]')!.querySelector("button")
-    ).toBeNull()
+      buttons[0].compareDocumentPosition(min) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy()
+    expect(
+      buttons[1].compareDocumentPosition(min) & Node.DOCUMENT_POSITION_PRECEDING
+    ).toBeTruthy()
     await user.type(min, "2000")
     await user.keyboard("{ArrowUp}")
     expect(min).toHaveValue("2,001")
-    await user.keyboard("{ArrowDown}{Enter}")
+    await user.keyboard("{ArrowDown}")
     expect(min).toHaveValue("2,000")
+    await user.click(buttons[1])
+    expect(min).toHaveValue("2,001")
+    await user.click(buttons[0])
+    expect(min).toHaveValue("2,000")
+    await user.click(min)
+    await user.keyboard("{Enter}")
     expect(onViewChange.mock.calls.at(-1)?.[0].filters).toEqual({
       depth: { type: "number", min: 2000 },
     })
@@ -571,7 +588,12 @@ describe("DataTableFilter", () => {
     const parts = [
       ...min().closest('[data-slot="number-field-group"]')!.children,
     ].map((part) => part.getAttribute("data-slot"))
-    expect(parts).toEqual(["number-field-unit", "number-field-input"])
+    expect(parts).toEqual([
+      "number-field-decrement",
+      "number-field-unit",
+      "number-field-input",
+      "number-field-increment",
+    ])
   })
 
   it("in server mode hints and counts nothing: the table holds only the rows loaded", async () => {
