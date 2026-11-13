@@ -81,7 +81,6 @@ import {
   type DataTableContextValue,
   type DataTableExpandedChangeReason,
   type DataTableOptions,
-  type GroupCounts,
   type DataTablePageChangeReason,
   type DataTablePageSizeChangeReason,
   type DataTableRowOrderChangeReason,
@@ -346,21 +345,6 @@ type Matching = {
 
 const NO_IDS: ReadonlyArray<string> = []
 const NO_GROUPS: Collapsed = { grouping: NO_IDS, closed: ALL_OPEN }
-
-function countGroups(
-  keys: ReadonlyArray<string>,
-  closed: ClosedGroups
-): GroupCounts {
-  let listed = 0
-  if (closed.keys.size > 0) {
-    const shown = new Set(keys)
-    for (const key of closed.keys) if (shown.has(key)) listed++
-  }
-  return {
-    total: keys.length,
-    closed: closed.all ? keys.length - listed : listed,
-  }
-}
 
 function sameMembers(a: ReadonlyArray<string>, b: ReadonlyArray<string>) {
   if (a === b) return true
@@ -878,14 +862,6 @@ function DataTable<T>({
     rowCount,
   })
   const layout = layoutColumns(columns, view)
-  // How many groups (of those the search and filters keep) there are and
-  // how many are closed, for "expand all" / "collapse all": counted when
-  // asked for, once per grouping and closing.
-  const groupKeys = model.groupKeys()
-  const groupCounts = React.useMemo(() => {
-    let counts: GroupCounts | undefined
-    return () => (counts ??= countGroups(groupKeys, closedGroups))
-  }, [groupKeys, closedGroups])
   const formatter = getFormatter(getColumnModel(columns), locale, labels)
   const { live, control: liveControl } = useLiveFeed({
     options: liveOptions,
@@ -1012,7 +988,6 @@ function DataTable<T>({
       allMatching,
       expanded,
       closedGroups,
-      groupCounts,
       loading,
       error: error ?? null,
       clears,
@@ -1032,7 +1007,6 @@ function DataTable<T>({
       allMatching,
       expanded,
       closedGroups,
-      groupCounts,
       loading,
       error,
       clears,

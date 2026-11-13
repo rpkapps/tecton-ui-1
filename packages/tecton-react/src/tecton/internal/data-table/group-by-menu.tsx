@@ -43,7 +43,7 @@ import {
 } from "./context"
 import { getColumnModel, sameIds, setGrouping } from "./engine/index"
 import { announceGrouping, toggleGrouping } from "./grouping"
-import { collapseAllGroups, expandAllGroups } from "./more-actions"
+import { collapseAllGroups, expandAllGroups, groupCounts } from "./more-actions"
 import { useFirstItemFromKeyboard, type PartPopup } from "./part-popup"
 
 /** `list` with the item at `from` moved by `step` places. */
@@ -105,10 +105,10 @@ function GroupByItems({
   const grouping = useDataTableSelector(context, (state) => state.view.grouping)
   const canExpand = useDataTableSelector(
     context,
-    (state) => state.groupCounts().closed > 0
+    (state) => groupCounts(state).closed > 0
   )
   const canCollapse = useDataTableSelector(context, (state) => {
-    const counts = state.groupCounts()
+    const counts = groupCounts(state)
     return counts.closed < counts.total
   })
   const { byId } = getColumnModel(columns)

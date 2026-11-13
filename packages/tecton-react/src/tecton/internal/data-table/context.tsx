@@ -151,7 +151,6 @@ type DataTableOptions = {
 }
 
 /** The groups the search and filters keep, and how many of them are closed. */
-type GroupCounts = { readonly total: number; readonly closed: number }
 
 type DataTableState<T> = {
   readonly columns: DataTableColumns<T>
@@ -174,8 +173,6 @@ type DataTableState<T> = {
   readonly expanded: ReadonlyArray<string>
   /** The closed groups (groups are open unless closed). */
   readonly closedGroups: ClosedGroups
-  /** The groups there are and how many are closed: worked out when read. */
-  readonly groupCounts: () => GroupCounts
   readonly loading: boolean
   /** `error` as given: `true` or content shows the error state. */
   readonly error: React.ReactNode
@@ -367,5 +364,4 @@ export type {
   DataTableSelectionChangeReason,
   DataTableSelectionMode,
   DataTableState,
-  GroupCounts,
 }

@@ -1,14 +1,16 @@
 /**
  * The table's actions that only some parts call: "Select all N" and
  * "Clear" of `DataTableActionBar`, the page size of `DataTablePagination`,
- * "Expand all" and "Collapse all" of `DataTableGroupBy`, and the rest of
- * `useDataTable`. Functions of the table's actions (`DataTableActions`,
- * `root.tsx`), built on the same steps (`internals`), in a module of
- * their own: a table whose parts call none of them does not bundle them.
+ * "Expand all" and "Collapse all" of `DataTableGroupBy` (and the group
+ * counts they are offered by), and the rest of `useDataTable`. Functions
+ * of the table's actions (`DataTableActions`, `root.tsx`), built on the
+ * same steps (`internals`), in a module of their own: a table whose parts
+ * call none of them does not bundle them.
  */
 import {
   ALL_CLOSED,
   ALL_OPEN,
+  type ClosedGroups,
   enterAllMatching,
   getColumnModel,
   resolvePageSize,
@@ -19,6 +21,7 @@ import type {
   DataTableExportOptions,
   DataTablePageSizeChangeReason,
   DataTableSelectionChangeReason,
+  DataTableState,
 } from "./context"
 import { loadFeature } from "./lazy"
 import { emit } from "./root"
@@ -76,6 +79,39 @@ function collapseAllGroups<T>(actions: DataTableActions<T>) {
   if (now().view.grouping.length === 0) return
   if (closed.all && closed.keys.size === 0) return
   setClosed(ALL_CLOSED)
+}
+
+type GroupCounts = { readonly total: number; readonly closed: number }
+
+/** The counts of each set of groups, by their keys and the closed groups. */
+const counted = new WeakMap<
+  ReadonlyArray<string>,
+  WeakMap<ClosedGroups, GroupCounts>
+>()
+
+/**
+ * How many groups (of those the search and filters keep) there are and
+ * how many are closed, for "Expand all" / "Collapse all": counted once
+ * per grouping and closing.
+ */
+function groupCounts<T>({ model, closedGroups }: DataTableState<T>) {
+  const keys = model.groupKeys()
+  let byClosed = counted.get(keys)
+  if (!byClosed) counted.set(keys, (byClosed = new WeakMap()))
+  let counts = byClosed.get(closedGroups)
+  if (!counts) {
+    let listed = 0
+    if (closedGroups.keys.size > 0) {
+      const shown = new Set(keys)
+      for (const key of closedGroups.keys) if (shown.has(key)) listed++
+    }
+    counts = {
+      total: keys.length,
+      closed: closedGroups.all ? keys.length - listed : listed,
+    }
+    byClosed.set(closedGroups, counts)
+  }
+  return counts
 }
 
 function setPageSize<T>(
@@ -138,6 +174,7 @@ export {
   collapseAllGroups,
   expandAllGroups,
   exportCsv,
+  groupCounts,
   resetView,
   selectAll,
   selectAllMatching,

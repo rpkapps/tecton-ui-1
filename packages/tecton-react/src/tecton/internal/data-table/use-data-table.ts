@@ -37,6 +37,7 @@ import {
   collapseAllGroups,
   expandAllGroups,
   exportCsv,
+  groupCounts,
   resetView,
   selectAll,
   selectAllMatching,
@@ -168,10 +169,10 @@ function createResult<T>(
     collapseAllGroups: () => collapseAllGroups(actions),
     // Counted when read: a part that does not read them costs nothing.
     get canExpandAllGroups() {
-      return state.groupCounts().closed > 0
+      return groupCounts(state).closed > 0
     },
     get canCollapseAllGroups() {
-      const counts = state.groupCounts()
+      const counts = groupCounts(state)
       return counts.closed < counts.total
     },
     page: model.page,
