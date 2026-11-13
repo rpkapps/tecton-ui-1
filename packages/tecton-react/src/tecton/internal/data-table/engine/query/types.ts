@@ -52,8 +52,8 @@ type QueryDiagnosticCode =
    */
   | "unsupportedOperator"
   /**
-   * `>` or `<` (`operator`) on a number column (whose filter includes its
-   * ends), or on a date and time.
+   * `>` or `<` (`operator`) on a date and time (an instant): the date
+   * filter includes its ends.
    */
   | "exclusiveComparison"
   /** A comparison or a range (`operator`) on a column that has no order. */

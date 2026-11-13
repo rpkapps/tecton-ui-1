@@ -23,6 +23,10 @@ write entries and cut a release.
   no-results states, server mode (`dataMode="server"`), CSV export, keyboard navigation as a grid
   and the whole view (sort, filters, columns, page) as one controlled or uncontrolled value.
   `useDataTable()` reads the table from custom parts. Its text is translated into the 34 locales.
+- `DataTable`'s number filter value takes `minExclusive?: true` and `maxExclusive?: true`: the
+  bound's own number does not match (more than `min`, less than `max`). Its filter button and chip
+  read "> 3,000" or "> 1,000 and ≤ 3,000", and editing that bound in the filter includes it again.
+  Server-mode applications that read the filter value should apply both flags.
 - `DatePicker` and `DateRangePicker` (`@tecton/react/date-picker`): a date or a range picked on a
   `Calendar` in a popover, from a button or a typed date (`variant="input"`), with `minDate` /
   `maxDate`, range presets (bounded by `minDate` / `maxDate`), a Clear button, `name` for forms,

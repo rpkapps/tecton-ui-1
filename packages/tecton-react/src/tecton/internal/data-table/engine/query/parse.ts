@@ -18,9 +18,8 @@
  * - yes / no: one of them (`subsea:yes`);
  * - text: the text the column's values contain (`name:a-12`);
  * - number: `n` (that number), `>=n`, `<=n`, `a..b`, `a..`, `..b`, ends
- *   included, in the table's locale (`numbers.ts`); `>` and `<` are refused
- *   (`exclusiveComparison`): the number filter includes its ends, and
- *   cannot say "more than";
+ *   included, and `>n`, `<n`, the bound left out (`minExclusive`,
+ *   `maxExclusive`), in the table's locale (`numbers.ts`);
  * - date: a date (`dates.ts`: a year, a month, a day, a preset) is its
  *   days, `>d` the days after them, `>=d` from their first, `<d` before
  *   them, `<=d` up to their last, `a..b` from a's first day to b's last
@@ -305,16 +304,13 @@ class TermReader {
       )
     let min: number | undefined
     let max: number | undefined
+    let exclusive: { minExclusive?: true; maxExclusive?: true } = {}
     if (expression.kind === "compare") {
       const { op, literal: n } = expression
-      if (op === ">" || op === "<") {
-        this.problem("exclusiveComparison", rest.start, rest.end, {
-          operator: op,
-        })
-        return this.result(undefined)
-      }
-      if (op !== "<=") min = n
-      if (op !== ">=") max = n
+      if (op === ">") exclusive = { minExclusive: true }
+      if (op === "<") exclusive = { maxExclusive: true }
+      if (op !== "<=" && op !== "<") min = n
+      if (op !== ">=" && op !== ">") max = n
     } else {
       min = expression.low
       max = expression.high
@@ -327,6 +323,7 @@ class TermReader {
       type: "number",
       ...(min === undefined ? {} : { min }),
       ...(max === undefined ? {} : { max }),
+      ...exclusive,
       ...emptyFlag(empty),
     })
   }

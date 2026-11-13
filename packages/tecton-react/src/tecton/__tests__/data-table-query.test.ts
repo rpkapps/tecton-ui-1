@@ -268,6 +268,76 @@ describe("parseQuery: values by column type", () => {
     })
   })
 
+  it("reads > and < on numbers as exclusive bounds", () => {
+    expect(filterOf("td:>3000", "td")).toEqual({
+      type: "number",
+      min: 3000,
+      minExclusive: true,
+    })
+    expect(filterOf("td:<3000", "td")).toEqual({
+      type: "number",
+      max: 3000,
+      maxExclusive: true,
+    })
+    expect(filterOf("td:>3000,none", "td")).toEqual({
+      type: "number",
+      min: 3000,
+      minExclusive: true,
+      empty: true,
+    })
+    // Two terms on the column: the bounds of both, each exclusive or not
+    // as its term has it, and the stricter one at the same value.
+    expect(filterOf("td:>1000 td:<=3000", "td")).toEqual({
+      type: "number",
+      min: 1000,
+      max: 3000,
+      minExclusive: true,
+    })
+    expect(filterOf("td:>=1000 td:>1000", "td")).toEqual({
+      type: "number",
+      min: 1000,
+      minExclusive: true,
+    })
+    expect(filterOf("td:>1000 td:>=2000", "td")).toEqual({
+      type: "number",
+      min: 2000,
+    })
+    expect(filterOf("td:3000 td:<=3000", "td")).toEqual({
+      type: "number",
+      min: 3000,
+      max: 3000,
+    })
+    // Nothing is more than and less than 3000.
+    const parsed = parse("td:>3000 td:<3000")
+    expect(codes(parsed)).toEqual(["duplicateColumn"])
+    expect(parsed.diagnostics[0].params.reason).toBe("noMatch")
+    expect(codes(parse("td:3000 td:<3000"))).toEqual(["duplicateColumn"])
+  })
+
+  it("writes exclusive bounds as > and <, a range of them as two terms", () => {
+    const write = (value: DataTableFilterValue) =>
+      serializeQuery(en, { filters: { td: value }, search: "" })
+    expect(write({ type: "number", min: 3000, minExclusive: true })).toBe(
+      "tdm:>3000"
+    )
+    expect(write({ type: "number", max: 3000, maxExclusive: true })).toBe(
+      "tdm:<3000"
+    )
+    expect(
+      write({ type: "number", min: 1000, max: 3000, maxExclusive: true })
+    ).toBe("tdm:>=1000 tdm:<3000")
+    expect(
+      write({
+        type: "number",
+        min: 1000,
+        max: 3000,
+        minExclusive: true,
+        maxExclusive: true,
+        empty: true,
+      })
+    ).toBe("tdm:>1000,none tdm:<3000,none")
+  })
+
   it("reads numbers, comparisons and ranges, ends included", () => {
     expect(filterOf("td:3000", "td")).toEqual({
       type: "number",
@@ -650,13 +720,6 @@ describe("parseQuery: problems", () => {
     ],
     ["-gullfaks", "unsupportedOperator", { operator: "-" }, "-gullfaks"],
     [
-      "td:>3000",
-      "exclusiveComparison",
-      { column: "td", operator: ">" },
-      ">3000",
-    ],
-    ["td:<3000", "exclusiveComparison", { operator: "<" }, "<3000"],
-    [
       "spud:>2015-06-30T10:00:00Z",
       "exclusiveComparison",
       { operator: ">" },
@@ -685,11 +748,8 @@ describe("parseQuery: problems", () => {
   })
 
   it("applies the other terms beside a problem", () => {
-    const parsed = parse("status:drilling td:>3000 gullfaks OR")
-    expect(codes(parsed)).toEqual([
-      "exclusiveComparison",
-      "unsupportedOperator",
-    ])
+    const parsed = parse("status:drilling td:abc gullfaks OR")
+    expect(codes(parsed)).toEqual(["notANumber", "unsupportedOperator"])
     expect(parsed.filters).toEqual({
       status: { type: "options", values: ["drilling"] },
     })
@@ -946,12 +1006,20 @@ describe("parse(serialize(view)) is the view", () => {
         if (min !== undefined && max !== undefined && min > max)
           [min, max] = [max, min]
         if (chance(0.15)) max = min
+        // Exclusive bounds, but not on both ends of one number (that
+        // matches nothing, and reads back as a problem).
+        const point = min !== undefined && min === max
+        const minExclusive = min !== undefined && !point && chance(0.3)
+        const maxExclusive = max !== undefined && !point && chance(0.3)
+        if (minExclusive || maxExclusive) types.add("number+exclusive")
         return min === undefined && max === undefined && !e.empty
           ? undefined
           : {
               type: "number",
               ...(min === undefined ? {} : { min }),
               ...(max === undefined ? {} : { max }),
+              ...(minExclusive ? { minExclusive: true as const } : {}),
+              ...(maxExclusive ? { maxExclusive: true as const } : {}),
               ...e,
             }
       }
@@ -992,6 +1060,8 @@ describe("parse(serialize(view)) is the view", () => {
     }
     return undefined
   }
+  /** The kinds of filter written, for the check that each one was. */
+  const types = new Set<string>()
   const SEARCHES = [
     "",
     "gull",
@@ -1012,7 +1082,7 @@ describe("parse(serialize(view)) is the view", () => {
     ["ar-EG", getQueryLanguage(model, "ar-EG")],
     ["fr-FR", getQueryLanguage(model, "fr-FR")],
   ] as const)("in %s, over 400 random views", (_, language) => {
-    const types = new Set<string>()
+    types.clear()
     for (let run = 0; run < 400; run++) {
       const filters: Record<string, DataTableFilterValue> = {}
       for (const column of ["name", "status", "td", "spud", "logged", "subsea"])
@@ -1042,8 +1112,9 @@ describe("parse(serialize(view)) is the view", () => {
           `${value.type}${value.type !== "custom" && value.empty ? "+empty" : ""}`
         )
     }
-    // Every type, with and without "No value", was written.
-    expect(types.size).toBe(10)
+    // Every type, with and without "No value", and exclusive bounds, were
+    // written.
+    expect(types.size).toBe(11)
   })
 
   it("round-trips what the calendar writes", () => {
@@ -1241,13 +1312,16 @@ describe("suggestQuery", () => {
   it("offers comparisons with the data's range, and No value, for a number column", () => {
     const result = suggest("tdm:|")
     expect(result.items.map(brief)).toEqual([
+      "comparison:>",
       "comparison:>=",
+      "comparison:<",
       "comparison:<=",
       "comparison:..",
       "empty:none=1",
     ])
-    expect(result.items[0]).toMatchObject({ min: 1500, max: 4100, caret: 2 })
-    expect(result.items[2]).toMatchObject({ caret: 0 })
+    expect(result.items[0]).toMatchObject({ min: 1500, max: 4100, caret: 1 })
+    expect(result.items[1]).toMatchObject({ caret: 2 })
+    expect(result.items[4]).toMatchObject({ caret: 0 })
     expect(suggest("tdm:no|").items.map(brief)).toEqual(["empty:none=1"])
     expect(suggest("tdm:>=3|").items).toEqual([])
   })
@@ -1267,8 +1341,8 @@ describe("suggestQuery", () => {
       "year:2026=2",
       "year:2016=1",
       "year:2015=2",
-      "comparison:>=",
-      "comparison:<=",
+      "comparison:<",
+      "comparison:>",
       "comparison:..",
       "empty:none=1",
     ])

@@ -165,7 +165,9 @@ type DataTableSort = {
 /**
  * A column's filter, by the column's type; `custom` is for a column with a
  * `filter` function. Number and date ranges include their ends, and a `to`
- * at midnight includes that whole day.
+ * at midnight includes that whole day. A number bound leaves its own value
+ * out with `minExclusive: true` / `maxExclusive: true` (more than `min`,
+ * less than `max`): what the search's `>` and `<` set.
  *
  * `empty: true` is the filter's "No value": the rows without a value match
  * too, besides those the rest of the filter matches, or alone when the rest
@@ -174,7 +176,16 @@ type DataTableSort = {
  */
 type DataTableFilterValue =
   | { type: "text"; value: string; empty?: boolean }
-  | { type: "number"; min?: number; max?: number; empty?: boolean }
+  | {
+      type: "number"
+      min?: number
+      max?: number
+      /** `min` itself does not match: more than `min`. */
+      minExclusive?: true
+      /** `max` itself does not match: less than `max`. */
+      maxExclusive?: true
+      empty?: boolean
+    }
   | { type: "date"; from?: Date; to?: Date; empty?: boolean }
   | { type: "boolean"; value?: boolean; empty?: boolean }
   | { type: "options"; values: ReadonlyArray<string>; empty?: boolean }

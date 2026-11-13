@@ -317,11 +317,23 @@ function reconcileFilter(
       const min = finiteNumber(value.min)
       const max = finiteNumber(value.max)
       if (min === undefined && max === undefined && !empty) return undefined
-      if (kept && min === value.min && max === value.max) return value
+      // An exclusive flag is kept with its bound, and only as `true`.
+      const minExclusive = min !== undefined && value.minExclusive === true
+      const maxExclusive = max !== undefined && value.maxExclusive === true
+      if (
+        kept &&
+        min === value.min &&
+        max === value.max &&
+        (value.minExclusive === undefined || minExclusive) &&
+        (value.maxExclusive === undefined || maxExclusive)
+      )
+        return value
       return {
         type: "number",
         ...(min === undefined ? {} : { min }),
         ...(max === undefined ? {} : { max }),
+        ...(minExclusive ? { minExclusive } : {}),
+        ...(maxExclusive ? { maxExclusive } : {}),
         ...flag,
       }
     }
@@ -474,7 +486,13 @@ function sameFilterValue(a: DataTableFilterValue, b: DataTableFilterValue) {
     case "text":
       return b.type === "text" && a.value === b.value
     case "number":
-      return b.type === "number" && a.min === b.min && a.max === b.max
+      return (
+        b.type === "number" &&
+        a.min === b.min &&
+        a.max === b.max &&
+        (a.minExclusive === true) === (b.minExclusive === true) &&
+        (a.maxExclusive === true) === (b.maxExclusive === true)
+      )
     case "date":
       return (
         b.type === "date" && sameTime(a.from, b.from) && sameTime(a.to, b.to)

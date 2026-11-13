@@ -437,6 +437,25 @@ describe("number facets", () => {
     expect(numbers.count({ type: "number", max: 5 })).toBe(1)
     expect(numbers.count({ type: "number", min: 21, max: 39 })).toBe(0)
     expect(numbers.count({ type: "number", min: 40, max: 5 })).toBe(0)
+    // Exclusive bounds leave their own value out.
+    expect(numbers.count({ type: "number", min: 7, minExclusive: true })).toBe(
+      3
+    )
+    expect(
+      numbers.count({
+        type: "number",
+        min: 7,
+        max: 20,
+        minExclusive: true,
+        maxExclusive: true,
+      })
+    ).toBe(1)
+    expect(numbers.count({ type: "number", max: 5, maxExclusive: true })).toBe(
+      0
+    )
+    expect(
+      numbers.count({ type: "number", min: 10, max: 10, maxExclusive: true })
+    ).toBe(0)
     // "No value": the row without oil, besides or alone.
     expect(numbers.count({ type: "number", empty: true })).toBe(1)
     expect(numbers.count({ type: "number", min: 20, empty: true })).toBe(3)

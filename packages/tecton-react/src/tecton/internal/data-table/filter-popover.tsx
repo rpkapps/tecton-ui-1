@@ -168,16 +168,31 @@ function TextFilter({
 }
 
 /** A number filter's bounds: `null` (its field empty) is none. */
-type Bounds = { min: number | null; max: number | null; empty: boolean }
+type Bounds = {
+  min: number | null
+  max: number | null
+  /** Kept from the view (the search's `>` and `<`) until the bound is edited. */
+  minExclusive: boolean
+  maxExclusive: boolean
+  empty: boolean
+}
 
 /** The filter of `bounds`, or `null` when they filter nothing. */
-function toFilter({ min, max, empty }: Bounds): DataTableFilterValue | null {
+function toFilter({
+  min,
+  max,
+  minExclusive,
+  maxExclusive,
+  empty,
+}: Bounds): DataTableFilterValue | null {
   return min === null && max === null && !empty
     ? null
     : {
         type: "number",
         ...(min === null ? {} : { min }),
         ...(max === null ? {} : { max }),
+        ...(min !== null && minExclusive ? { minExclusive: true } : {}),
+        ...(max !== null && maxExclusive ? { maxExclusive: true } : {}),
         ...emptyFlag(empty),
       }
 }
@@ -209,12 +224,19 @@ function NumberFilter({
     value: {
       min: value?.min ?? null,
       max: value?.max ?? null,
+      minExclusive: value?.minExclusive === true,
+      maxExclusive: value?.maxExclusive === true,
       empty: value?.empty === true,
     },
     commit: (bounds) => set(toFilter(bounds)),
     delay,
     clears,
-    same: (a, b) => a.min === b.min && a.max === b.max && a.empty === b.empty,
+    same: (a, b) =>
+      a.min === b.min &&
+      a.max === b.max &&
+      a.minExclusive === b.minExclusive &&
+      a.maxExclusive === b.maxExclusive &&
+      a.empty === b.empty,
   })
   const { locale } = useLocale()
   const unit = React.useMemo(
@@ -241,8 +263,14 @@ function NumberFilter({
       <NumberField
         id={`${id}-${bound}`}
         value={scaled(draft[bound], unit.scale)}
+        // A bound typed here includes its value: an exclusive one (`>`
+        // or `<` in the search) becomes inclusive as it is edited.
         onValueChange={(next) =>
-          change({ ...draft, [bound]: scaled(next, 1 / unit.scale) })
+          change({
+            ...draft,
+            [bound]: scaled(next, 1 / unit.scale),
+            [bound === "min" ? "minExclusive" : "maxExclusive"]: false,
+          })
         }
       >
         <NumberFieldGroup>

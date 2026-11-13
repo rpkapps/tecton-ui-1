@@ -67,13 +67,28 @@ function intersectFilters(
       const other = b as typeof a
       const has = (v: typeof a) => v.min !== undefined || v.max !== undefined
       if (has(a) && has(other)) {
-        const min = Math.max(a.min ?? -Infinity, other.min ?? -Infinity)
-        const max = Math.min(a.max ?? Infinity, other.max ?? Infinity)
-        if (min <= max)
+        // The higher low bound, exclusive when the one at that value is.
+        const low = (v: typeof a) => v.min ?? -Infinity
+        const high = (v: typeof a) => v.max ?? Infinity
+        const min = Math.max(low(a), low(other))
+        const max = Math.min(high(a), high(other))
+        const minExclusive =
+          (low(a) === min && a.minExclusive === true) ||
+          (low(other) === min && other.minExclusive === true)
+        const maxExclusive =
+          (high(a) === max && a.maxExclusive === true) ||
+          (high(other) === max && other.maxExclusive === true)
+        if (min < max || (min === max && !minExclusive && !maxExclusive))
           return {
             type: "number",
             ...(Number.isFinite(min) ? { min } : {}),
             ...(Number.isFinite(max) ? { max } : {}),
+            ...(Number.isFinite(min) && minExclusive
+              ? { minExclusive: true }
+              : {}),
+            ...(Number.isFinite(max) && maxExclusive
+              ? { maxExclusive: true }
+              : {}),
             ...flag,
           }
       }

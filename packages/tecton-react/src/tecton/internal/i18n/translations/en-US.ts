@@ -169,6 +169,11 @@ const enUS = {
     filterRange: "{from}–{to}",
     filterAtLeast: "≥ {value}",
     filterAtMost: "≤ {value}",
+    // More than / less than, and a range whose ends are not both included
+    // ("> 1,000 and ≤ 3,000"; {min} and {max} are the two ends in words).
+    filterMoreThan: "> {value}",
+    filterLessThan: "< {value}",
+    filterBounds: "{min} and {max}",
     filterFrom: "From {value}",
     filterUntil: "Until {value}",
     // A missing value: what screen readers read for the dash of a cell

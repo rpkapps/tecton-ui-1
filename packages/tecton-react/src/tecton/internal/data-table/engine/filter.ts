@@ -13,7 +13,8 @@
  * with a letter skips the number columns whose text cannot have one. A
  * column's filter, by its type:
  * - text: the display text contains the value, like search;
- * - number: `min` ≤ value ≤ `max` (either may be left out);
+ * - number: `min` ≤ value ≤ `max` (either may be left out), `min` < value
+ *   with `minExclusive` and value < `max` with `maxExclusive`;
  * - date: `from` ≤ date ≤ `to`, where a `to` at midnight takes in that day
  *   (midnight in the column's `format.timeZone`, which its days are shown
  *   in, or the local zone);
@@ -240,9 +241,15 @@ function valuePredicate<T>(
     case "number": {
       if (value.min === undefined && value.max === undefined) return null
       const { min = -Infinity, max = Infinity } = value
+      const above = value.minExclusive === true
+      const below = value.maxExclusive === true
       return (_, item) => {
         const number = toNumber(getValue(item))
-        return number !== undefined && number >= min && number <= max
+        return (
+          number !== undefined &&
+          (above ? number > min : number >= min) &&
+          (below ? number < max : number <= max)
+        )
       }
     }
     case "date": {
@@ -485,12 +492,13 @@ function countNumbers<T>(
   }
   const values = Float64Array.from(numbers).sort()
   const total = kept.length
-  // The numbers from `min` to `max`, both included.
-  const between = (min: number, max: number) =>
-    min > max
-      ? 0
-      : boundary(values, (value) => value <= max) -
-        boundary(values, (value) => value < min)
+  // The numbers from `min` to `max`, each included unless exclusive.
+  const between = (min: number, max: number, above: boolean, below: boolean) =>
+    Math.max(
+      0,
+      boundary(values, (value) => (below ? value < max : value <= max)) -
+        boundary(values, (value) => (above ? value <= min : value < min))
+    )
   return {
     total,
     values,
@@ -507,7 +515,12 @@ function countNumbers<T>(
       if (!bounded && !filter.empty) return total
       return (
         (bounded
-          ? between(filter.min ?? -Infinity, filter.max ?? Infinity)
+          ? between(
+              filter.min ?? -Infinity,
+              filter.max ?? Infinity,
+              filter.minExclusive === true,
+              filter.maxExclusive === true
+            )
           : 0) + (filter.empty ? empty : 0)
       )
     },

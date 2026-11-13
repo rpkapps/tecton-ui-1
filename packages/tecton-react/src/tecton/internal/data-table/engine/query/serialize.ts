@@ -11,7 +11,9 @@
  * - options: the options by label in lower case, when that names them, else
  *   by value, in the filter's order: `status:drilling,"shut in"`;
  * - yes / no: the boolean filter's label (`yes`), else `yes` / `no`;
- * - number: `td:3000`, `td:>=3000`, `td:<=3000`, `td:1000..3000`;
+ * - number: `td:3000`, `td:>=3000`, `td:<=3000`, `td:1000..3000`, and with
+ *   an exclusive bound `td:>3000`, `td:<3000`; a range with one is written
+ *   as its two ends, `td:>1000 td:<=3000` (read back as one filter);
  * - date: whole years, months or days as such (`spud:2015`,
  *   `spud:2015-06..2015-08`, `spud:2015-06-30`), else `from..to`, `>=from`,
  *   `<=to` by day (`spud:>=2015-07-01`); an end that is not a day's start
@@ -114,17 +116,23 @@ function filterValue(
       break
     case "number": {
       const n = (v: number) => formatNumber(v, language.numbers)
-      const { min, max } = value
+      const { min, max, minExclusive, maxExclusive } = value
+      const low =
+        min === undefined ? null : `${minExclusive ? ">" : ">="}${n(min)}`
+      const high =
+        max === undefined ? null : `${maxExclusive ? "<" : "<="}${n(max)}`
+      if (low && high && (minExclusive || maxExclusive)) {
+        // Two terms on the column, the second after its key again; "No
+        // value" in both, as two terms keep it only when both have it.
+        const none = value.empty ? ",none" : ""
+        return `${low}${none} ${column.key}:${high}${none}`
+      }
       text =
         min !== undefined && max !== undefined
           ? min === max
             ? n(min)
             : `${n(min)}..${n(max)}`
-          : min !== undefined
-            ? `>=${n(min)}`
-            : max !== undefined
-              ? `<=${n(max)}`
-              : null
+          : (low ?? high)
       break
     }
     case "date":
