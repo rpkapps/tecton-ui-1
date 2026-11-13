@@ -2160,13 +2160,17 @@ describe("DataTable around other tables and surfaces", () => {
     )
     expect(text).not.toHaveClass("end-2", "end-full")
     expect(text).toHaveClass("pointer-coarse:static")
+    // Shown for the header cell under the pointer only, not the whole row.
+    expect(text).toHaveClass("group-hover/head:opacity-100")
+    expect(text.className).not.toContain("tr:hover")
+    expect(text.closest("th")).toHaveClass("group/head")
     expect(label(text)).toHaveAttribute("data-align", "start")
     expect(label(text)).toHaveClass("relative")
     // The label is as wide as its text, at the cell's start, and leaves the
     // button its room while it shows.
     expect(label(text).parentElement).toHaveClass("justify-start")
     expect(label(text)).toHaveClass(
-      "pointer-fine:[tr:hover_&]:max-w-[calc(100%-0.75rem)]"
+      "pointer-fine:group-hover/head:max-w-[calc(100%-0.75rem)]"
     )
     // In a column aligned to the end, before the label's start, wherever
     // the label is: never at the cell's start edge.
@@ -2185,13 +2189,13 @@ describe("DataTable around other tables and surfaces", () => {
     expect(label(numbers)).toHaveAttribute("data-align", "end")
     expect(label(numbers).parentElement).toHaveClass("justify-end")
     expect(label(numbers)).toHaveClass(
-      "pointer-fine:[tr:hover_&]:max-w-[calc(100%-0.75rem)]"
+      "pointer-fine:group-hover/head:max-w-[calc(100%-0.75rem)]"
     )
     // Centred: after the label, with as much room on its other side.
     const centred = screen.getByRole("button", { name: "Code options" })
     expect(centred).toHaveClass("absolute", "start-full")
     expect(label(centred)).toHaveClass(
-      "pointer-fine:[tr:hover_&]:max-w-[calc(100%-1.5rem)]"
+      "pointer-fine:group-hover/head:max-w-[calc(100%-1.5rem)]"
     )
     // After a description's info button, never over it.
     const beside = screen.getByRole("button", { name: "Field options" })
