@@ -458,7 +458,7 @@ describe("DataTableFilter", () => {
     })
   })
 
-  it("hints a number column's lowest and highest numbers among the rows the search and the other filters keep", async () => {
+  it("counts a number column's rows among those the search and the other filters keep, with no placeholders", async () => {
     const user = userEvent.setup({ delay: null })
     render(
       <Wells
@@ -469,14 +469,11 @@ describe("DataTableFilter", () => {
     )
     // Producing: wells 1, 4 and 7, at 1,000, 2,191 and 3,382 m.
     await user.click(filterButton("Depth (m)"))
-    expect(screen.getByRole("textbox", { name: "Min" })).toHaveAttribute(
-      "placeholder",
-      "1,000"
-    )
-    expect(screen.getByRole("textbox", { name: "Max" })).toHaveAttribute(
-      "placeholder",
-      "3,382"
-    )
+    // An empty bound is just empty: no number in it to mistake for a value.
+    for (const name of ["Min", "Max"])
+      expect(screen.getByRole("textbox", { name })).not.toHaveAttribute(
+        "placeholder"
+      )
     expect(
       document.querySelector('[data-slot="data-table-filter-matches"]')
     ).toHaveTextContent("3 of 3 match")
@@ -496,10 +493,6 @@ describe("DataTableFilter", () => {
     const matches = () =>
       document.querySelector('[data-slot="data-table-filter-matches"]')
     expect(matches()).toHaveTextContent("8 of 8 match")
-    expect(screen.getByRole("textbox", { name: "Min" })).toHaveAttribute(
-      "placeholder",
-      "1,397"
-    )
     // 2,588, 2,985, 3,382 and 3,779.
     await user.type(screen.getByRole("textbox", { name: "Min" }), "2500")
     expect(matches()).toHaveTextContent("4 of 8 match")
@@ -515,7 +508,7 @@ describe("DataTableFilter", () => {
     expect(names()).toEqual(["Well 01", "Well 05"])
   })
 
-  it("shows a number column's unit beside each bound, and its numbers as the column shows them", async () => {
+  it("shows a number column's unit beside each bound, and takes its numbers as the column shows them", async () => {
     const user = userEvent.setup({ delay: null })
     const onViewChange = vi.fn()
     type Zone = { id: string; depth: number; porosity: number; cost: number }
@@ -564,14 +557,10 @@ describe("DataTableFilter", () => {
     // The unit describes each field, after the column's name.
     expect(min()).toHaveAccessibleDescription("Depth m")
     expect(max()).toHaveAccessibleDescription("Depth m")
-    expect(min()).toHaveAttribute("placeholder", "1,250")
-    expect(max()).toHaveAttribute("placeholder", "3,100")
     await user.keyboard("{Escape}")
     // A percent's field holds the number as the column shows it.
     await user.click(filterButton("Porosity"))
     expect(min()).toHaveAccessibleDescription("Porosity %")
-    expect(min()).toHaveAttribute("placeholder", "8")
-    expect(max()).toHaveAttribute("placeholder", "30")
     await user.type(min(), "21.5{Enter}")
     expect(onViewChange.mock.calls.at(-1)?.[0].filters).toEqual({
       porosity: { type: "number", min: 0.215 },
@@ -583,8 +572,6 @@ describe("DataTableFilter", () => {
     // A unit the column writes first stays first.
     await user.click(filterButton("Cost"))
     expect(min()).toHaveAccessibleDescription("Cost $")
-    expect(min()).toHaveAttribute("placeholder", "950.50")
-    expect(max()).toHaveAttribute("placeholder", "4,100.00")
     const parts = [
       ...min().closest('[data-slot="number-field-group"]')!.children,
     ].map((part) => part.getAttribute("data-slot"))
@@ -596,7 +583,7 @@ describe("DataTableFilter", () => {
     ])
   })
 
-  it("in server mode hints and counts nothing: the table holds only the rows loaded", async () => {
+  it("in server mode counts nothing: the table holds only the rows loaded", async () => {
     const user = userEvent.setup({ delay: null })
     render(
       <DataTable

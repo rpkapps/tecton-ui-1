@@ -16,17 +16,18 @@ import { useDataTableContext, useDataTableSelector } from "./context"
  * parts that belong under the table rather than in it) it is a plain row.
  * Empty (its pagination off), it takes no room.
  *
- * It is as tall as a body row of the table's `size`: a `TableCell`'s
- * padding (`py-3`, compact `py-1`) around a line of the table's text
- * (`text-sm`, compact `text-xs`), written with the same spacing and text
- * tokens (`1lh` is the band's own line, in the same text), and a row's
- * border. Controls taller than that (the compact `Select` is) make it
- * taller.
+ * It is at least as tall as a body row of the table's `size`: a
+ * `TableCell`'s padding (`py-3`, compact `py-1`) around a line of the
+ * table's text (`text-sm`, compact `text-xs`), written with the same spacing
+ * and text tokens (`1lh` is the band's own line, in the same text), and a
+ * row's border. Its controls keep a little room above and below them
+ * (`py-2`, compact `py-1`), so the band is a little taller than a row
+ * when they are as tall as one.
  */
 const BAND = {
   default:
-    "text-sm [[data-slot=data-table-content]+&]:min-h-[calc(var(--spacing)*6+1lh+1px)]",
-  sm: "text-xs [[data-slot=data-table-content]+&]:min-h-[calc(var(--spacing)*2+1lh+1px)]",
+    "text-sm [[data-slot=data-table-content]+&]:min-h-[calc(var(--spacing)*6+1lh+1px)] [[data-slot=data-table-content]+&]:py-2",
+  sm: "text-xs [[data-slot=data-table-content]+&]:min-h-[calc(var(--spacing)*2+1lh+1px)] [[data-slot=data-table-content]+&]:py-1",
 } as const
 
 type DataTableFooterProps = React.ComponentProps<"div">

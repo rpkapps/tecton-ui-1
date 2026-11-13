@@ -365,7 +365,9 @@ describe("DataTable pages", () => {
     expect(band()).toHaveAttribute("data-size", "default")
     expect(band()).toHaveClass(
       "text-sm",
-      "[[data-slot=data-table-content]+&]:min-h-[calc(var(--spacing)*6+1lh+1px)]"
+      "[[data-slot=data-table-content]+&]:min-h-[calc(var(--spacing)*6+1lh+1px)]",
+      // A little room above and below its controls.
+      "[[data-slot=data-table-content]+&]:py-2"
     )
     expect(button("Next page")).toHaveAttribute("data-size", "icon-sm")
     expect(
@@ -380,7 +382,8 @@ describe("DataTable pages", () => {
     expect(band()).toHaveAttribute("data-size", "sm")
     expect(band()).toHaveClass(
       "text-xs",
-      "[[data-slot=data-table-content]+&]:min-h-[calc(var(--spacing)*2+1lh+1px)]"
+      "[[data-slot=data-table-content]+&]:min-h-[calc(var(--spacing)*2+1lh+1px)]",
+      "[[data-slot=data-table-content]+&]:py-1"
     )
     for (const name of [
       "First page",
