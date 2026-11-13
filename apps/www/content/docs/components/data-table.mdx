@@ -429,11 +429,20 @@ In this example the server sends 500 readings, 50 at a time. Switch between load
 | `loadMore`           | Next batch                                                                     | Use it when                                                                                                         |
 | -------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
 | `"scroll"` (default) | Loads as the end of the rows comes near, with loading rows after the last row. | The table has a bounded height (`virtualized`) or is the last thing on the page, so the user only scrolls.          |
-| `"button"`           | Loads when the user presses Show more, after the last row.                     | Content follows the table and loading on scroll would keep pushing it away, or the user should decide when to load. |
+| `"button"`           | Loads when the user presses Show more, the table's last row.                   | Content follows the table and loading on scroll would keep pushing it away, or the user should decide when to load. |
 
-- Beside Show more, a count reads "Showing 50 of 500", out of `rowCount` in server mode. Without `rowCount` it reads "Showing 50 rows".
-- The button spins while the batch loads, and keeps focus. Once no more rows follow, focus moves to the first new row.
-- Screen readers hear "Loaded 50 more rows".
+With `"button"`:
+
+- Show more is a row as tall as the others, before any totals row. The whole row is the button.
+- It reads "Show more · 50 of 500", out of `rowCount` in server mode. Without `rowCount` it reads "Show more · 50 rows".
+- The text stays in the middle of the visible part of the table, also when it scrolls sideways.
+- While the batch loads, the row reads "Loading…" with a spinner and keeps focus.
+- A failed batch shows its error in the row, with Retry.
+- Once no more rows follow, the row goes and focus moves to the first new row.
+- Screen readers hear "Show more, 50 of 500 rows shown", then "Loaded 50 more rows".
+
+For both modes:
+
 - Load more is off with `pagination`.
 - In client mode, load more is also off while a search or filter is in effect. Use server mode to load what matches.
 

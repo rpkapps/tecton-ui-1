@@ -82,7 +82,26 @@ export default defineTranslations({
       other: "Zobrazeno {total} řádků",
     },
     showMore: "Zobrazit další",
-    shownOfTotal: { other: "Zobrazeno {shown} z {total}" },
+    shownOf: "{shown} z {total}",
+    shownRows: {
+      one: "{total} řádek",
+      few: "{total} řádky",
+      many: "{total} řádku",
+      other: "{total} řádků",
+    },
+    showMoreOfTotal: {
+      one: "Zobrazit další, zobrazeno {shown} z {total} řádku",
+      few: "Zobrazit další, zobrazeno {shown} z {total} řádků",
+      many: "Zobrazit další, zobrazeno {shown} z {total} řádku",
+      other: "Zobrazit další, zobrazeno {shown} z {total} řádků",
+    },
+    showMoreShown: {
+      one: "Zobrazit další, zobrazen {total} řádek",
+      few: "Zobrazit další, zobrazeny {total} řádky",
+      many: "Zobrazit další, zobrazeno {total} řádku",
+      other: "Zobrazit další, zobrazeno {total} řádků",
+    },
+    loadingMore: "Načítání…",
     moreRowsLoaded: {
       one: "Načten další {total} řádek",
       few: "Načteny další {total} řádky",

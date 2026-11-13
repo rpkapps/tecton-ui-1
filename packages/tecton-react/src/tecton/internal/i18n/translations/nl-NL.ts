@@ -79,7 +79,17 @@ export default defineTranslations({
       other: "{total} rijen worden weergegeven",
     },
     showMore: "Meer weergeven",
-    shownOfTotal: { other: "{shown} van {total} weergegeven" },
+    shownOf: "{shown} van {total}",
+    shownRows: { one: "{total} rij", other: "{total} rijen" },
+    showMoreOfTotal: {
+      one: "Meer weergeven, {shown} van {total} rij weergegeven",
+      other: "Meer weergeven, {shown} van {total} rijen weergegeven",
+    },
+    showMoreShown: {
+      one: "Meer weergeven, {total} rij weergegeven",
+      other: "Meer weergeven, {total} rijen weergegeven",
+    },
+    loadingMore: "Laden…",
     moreRowsLoaded: {
       one: "{total} extra rij geladen",
       other: "{total} extra rijen geladen",

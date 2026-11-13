@@ -80,10 +80,23 @@ export default defineTranslations({
       other: "מוצגות {total} שורות",
     },
     showMore: "הצג עוד",
-    shownOfTotal: {
-      one: "מוצגת {shown} מתוך {total}",
-      other: "מוצגות {shown} מתוך {total}",
+    shownOf: "{shown} מתוך {total}",
+    shownRows: {
+      one: "{total} שורה",
+      two: "{total} שורות",
+      other: "{total} שורות",
     },
+    showMoreOfTotal: {
+      one: "הצג עוד, מוצגות {shown} מתוך {total} שורה",
+      two: "הצג עוד, מוצגות {shown} מתוך {total} שורות",
+      other: "הצג עוד, מוצגות {shown} מתוך {total} שורות",
+    },
+    showMoreShown: {
+      one: "הצג עוד, מוצגת {total} שורה",
+      two: "הצג עוד, מוצגות {total} שורות",
+      other: "הצג עוד, מוצגות {total} שורות",
+    },
+    loadingMore: "טוען…",
     moreRowsLoaded: {
       one: "נטענה {total} שורה נוספת",
       two: "נטענו {total} שורות נוספות",

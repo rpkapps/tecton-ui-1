@@ -1,5 +1,5 @@
 import * as React from "react"
-import { act, render, screen, within } from "@testing-library/react"
+import { act, fireEvent, render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -291,13 +291,15 @@ describe("DataTable load more", () => {
 
 describe('DataTable load more with "Show more" (loadMore="button")', () => {
   const band = () =>
-    document.querySelector<HTMLElement>('[data-slot="data-table-show-more"]')
-  const showMore = () => screen.getByRole("button", { name: "Show more" })
+    document.querySelector<HTMLTableRowElement>(
+      '[data-slot="data-table-show-more"]'
+    )
+  const showMore = () => screen.getByRole("button", { name: /^Show more/ })
   // The table's live region (the spinner is a status too).
   const status = () =>
     document.querySelector('[data-slot="data-table-content"] > [role="status"]')
 
-  it("shows the band after the last row, with no loading rows and no observer", () => {
+  it("is the last body row: one button across every column, after the last row, with no loading rows and no observer", () => {
     render(<Wells hasMore loadMore="button" onLoadMore={() => {}} />)
     expect(loadingRows()).toHaveLength(0)
     expect(observers).toHaveLength(0)
@@ -311,14 +313,29 @@ describe('DataTable load more with "Show more" (loadMore="button")', () => {
     expect(
       row.parentElement?.previousElementSibling?.lastElementChild
     ).toHaveTextContent("Well 10")
-    expect(within(row).getByRole("button", { name: "Show more" })).toBe(
-      showMore()
-    )
-    // No total known: the rows shown.
-    expect(row).toHaveTextContent("Showing 10 rows")
+    // One cell across the six columns, filled by one button.
+    expect(row.cells).toHaveLength(1)
+    expect(row.cells[0]).toHaveAttribute("colspan", "6")
+    expect(within(row).getAllByRole("button")).toEqual([showMore()])
+    expect(showMore().tagName).toBe("BUTTON")
+    expect(showMore()).toHaveClass("w-full")
+    // Not one of the grid's rows: the grid's count leaves it out.
+    expect(row).not.toHaveAttribute("aria-rowindex")
+    expect(screen.getByRole("grid")).toHaveAttribute("aria-rowcount", "-1")
   })
 
-  it("counts the rows shown of the server's rowCount, formatted", () => {
+  it("is named with the rows shown when no total is known", () => {
+    render(<Wells hasMore loadMore="button" onLoadMore={() => {}} />)
+    expect(showMore()).toHaveAccessibleName("Show more, 10 rows shown")
+    // A down arrow, "Show more" and the count, muted.
+    expect(showMore()).toHaveTextContent(/^Show more· 10 rows$/)
+    expect(showMore().querySelector("svg")).toHaveClass("lucide-arrow-down")
+    expect(within(showMore()).getByText("· 10 rows")).toHaveClass(
+      "text-muted-foreground"
+    )
+  })
+
+  it("is named with the rows shown of the server's rowCount, formatted", () => {
     render(
       <Wells
         hasMore
@@ -328,10 +345,11 @@ describe('DataTable load more with "Show more" (loadMore="button")', () => {
         rowCount={1500}
       />
     )
-    expect(band()).toHaveTextContent("Showing 10 of 1,500")
+    expect(showMore()).toHaveAccessibleName("Show more, 10 of 1,500 rows shown")
+    expect(showMore()).toHaveTextContent(/^Show more· 10 of 1,500$/)
   })
 
-  it("calls onLoadMore once per press, and is disabled with a spinner while the rows load", async () => {
+  it("calls onLoadMore once per press; while the rows load it is busy and disabled, a spinner and Loading… in place of the arrow and Show more", async () => {
     const user = userEvent.setup()
     const onLoadMore = vi.fn()
     const { rerender } = render(
@@ -342,11 +360,16 @@ describe('DataTable load more with "Show more" (loadMore="button")', () => {
     rerender(
       <Wells hasMore loadMore="button" onLoadMore={onLoadMore} loading />
     )
+    expect(showMore()).toHaveAttribute("aria-busy", "true")
     expect(showMore()).toHaveAttribute("aria-disabled", "true")
     expect(
       showMore().querySelector('[data-slot="spinner"]')
     ).toBeInTheDocument()
-    // The band stays: no loading rows, no bar, the table busy.
+    expect(showMore().querySelector(".lucide-arrow-down")).toBeNull()
+    expect(showMore()).toHaveTextContent(/^Loading…· 10 rows$/)
+    // The same name: the same control, busy.
+    expect(showMore()).toHaveAccessibleName("Show more, 10 rows shown")
+    // The row stays: no loading rows, no bar, the table busy.
     expect(loadingRows()).toHaveLength(0)
     expect(
       document.querySelector('[data-slot="data-table-progress"]')
@@ -367,6 +390,7 @@ describe('DataTable load more with "Show more" (loadMore="button")', () => {
       <Wells hasMore loadMore="button" onLoadMore={onLoadMore} loading />
     )
     expect(showMore()).toHaveFocus()
+    expect(showMore()).toHaveAttribute("aria-busy", "true")
     expect(status()).toHaveTextContent("Loading")
     rerender(
       <Wells
@@ -377,7 +401,8 @@ describe('DataTable load more with "Show more" (loadMore="button")', () => {
       />
     )
     expect(showMore()).toHaveFocus()
-    expect(band()).toHaveTextContent("Showing 20 rows")
+    expect(showMore()).not.toHaveAttribute("aria-busy")
+    expect(showMore()).toHaveAccessibleName("Show more, 20 rows shown")
     expect(status()).toHaveTextContent("Loaded 10 more rows")
     // Enter on the focused button asks again.
     await user.keyboard("{Enter}")
@@ -404,13 +429,100 @@ describe('DataTable load more with "Show more" (loadMore="button")', () => {
     expect(status()).toHaveTextContent("Loaded 3 more rows")
   })
 
-  it("is not there without more rows", () => {
-    render(<Wells hasMore={false} loadMore="button" onLoadMore={() => {}} />)
+  it("is not there without more rows, and goes once hasMore is false", () => {
+    const { rerender } = render(
+      <Wells hasMore loadMore="button" onLoadMore={() => {}} />
+    )
+    expect(band()).toBeInTheDocument()
+    rerender(<Wells hasMore={false} loadMore="button" onLoadMore={() => {}} />)
     expect(band()).toBeNull()
-    expect(screen.queryByRole("button", { name: "Show more" })).toBeNull()
+    expect(screen.queryByRole("button", { name: /^Show more/ })).toBeNull()
+    expect(
+      document.querySelector('[data-slot="data-table-loading-more"]')
+    ).toBeNull()
   })
 
-  it("shows the error in its place, with Retry, and keeps focus there", async () => {
+  it("is as tall as the rows: their padding and text, compact with size sm", () => {
+    const { rerender } = render(
+      <Wells hasMore loadMore="button" onLoadMore={() => {}} />
+    )
+    expect(band()?.cells[0]).toHaveClass("p-0!")
+    expect(showMore()).toHaveClass("h-auto", "py-3", "text-sm")
+    rerender(
+      <Wells hasMore loadMore="button" onLoadMore={() => {}} size="sm" />
+    )
+    expect(showMore()).toHaveClass("h-auto", "py-1", "text-xs")
+    expect(showMore()).not.toHaveClass("py-3")
+    // The cells' side padding on the part in view.
+    expect(showMore().firstElementChild).toHaveClass("px-4")
+  })
+
+  it("keeps its content in the middle of the part of the table in view, as wide as the scroll area shows, stuck to its start", () => {
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockImplementation(
+      function (this: HTMLElement) {
+        return this.dataset.slot === "table-container" ? 320 : 0
+      }
+    )
+    render(<Wells hasMore loadMore="button" onLoadMore={() => {}} />)
+    const view = showMore().firstElementChild
+    expect(view).toHaveClass("sticky", "start-0", "justify-center")
+    expect(view).toHaveStyle({ width: "320px" })
+  })
+
+  it("is as tall as the shortest of the last rows, with their border, when they are taller than their padding", () => {
+    // Rows of badges: 29 px with the border, one of two lines; the last
+    // (no border) 28. The row of "Show more" adds its border (1 px) to
+    // its button.
+    vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(
+      function (this: Element) {
+        const height =
+          this instanceof HTMLTableRowElement &&
+          this.dataset.slot === "table-row"
+            ? !this.nextElementSibling
+              ? 28
+              : this.rowIndex === 3
+                ? 45
+                : 29
+            : this.matches('[data-slot="data-table-show-more"]')
+              ? 25
+              : this.matches('[data-slot="data-table-show-more"] button')
+                ? 24
+                : 0
+        return { height, width: 0, top: 0, left: 0 } as DOMRect
+      }
+    )
+    render(<Wells hasMore loadMore="button" onLoadMore={() => {}} size="sm" />)
+    expect(showMore()).toHaveStyle({ minHeight: "28px" })
+  })
+
+  it("continues the stripes of a striped table", () => {
+    const { rerender } = render(
+      <Wells hasMore loadMore="button" onLoadMore={() => {}} striped />
+    )
+    // Ten rows: it is the 11th, odd, unstriped.
+    expect(band()).not.toHaveClass("bg-surface-alt")
+    rerender(
+      <Wells
+        hasMore
+        loadMore="button"
+        onLoadMore={() => {}}
+        striped
+        items={WELLS.slice(0, 11)}
+      />
+    )
+    expect(band()).toHaveClass("bg-surface-alt")
+    rerender(
+      <Wells
+        hasMore
+        loadMore="button"
+        onLoadMore={() => {}}
+        items={WELLS.slice(0, 11)}
+      />
+    )
+    expect(band()).not.toHaveClass("bg-surface-alt")
+  })
+
+  it("shows the error in its place, a row with Retry, and keeps focus there", async () => {
     const user = userEvent.setup()
     const onRetry = vi.fn()
     const props = {
@@ -418,6 +530,7 @@ describe('DataTable load more with "Show more" (loadMore="button")', () => {
       loadMore: "button" as const,
       onLoadMore: () => {},
       onRetry,
+      size: "sm" as const,
     }
     const { rerender } = render(<Wells {...props} />)
     await user.click(showMore())
@@ -426,7 +539,15 @@ describe('DataTable load more with "Show more" (loadMore="button")', () => {
     expect(band()).toBeNull()
     const alert = screen.getByRole("alert")
     expect(alert).toHaveTextContent("The next wells did not load.")
+    // A row across every column, with the rows' compact padding.
+    const row = alert.closest("tr")!
+    expect(row).toHaveAttribute("data-slot", "data-table-more-error")
+    expect(row.cells).toHaveLength(1)
+    expect(row.cells[0]).toHaveAttribute("colspan", "6")
+    expect(alert.parentElement).toHaveClass("sticky", "px-4")
+    expect(alert.parentElement?.parentElement).toHaveClass("py-1", "text-xs")
     const retry = within(alert).getByRole("button", { name: "Retry" })
+    expect(retry).toHaveAttribute("data-variant", "ghost")
     expect(retry).toHaveFocus()
     await user.click(retry)
     expect(onRetry).toHaveBeenCalledTimes(1)
@@ -434,6 +555,25 @@ describe('DataTable load more with "Show more" (loadMore="button")', () => {
     rerender(<Wells {...props} loading />)
     expect(showMore()).toHaveFocus()
     expect(showMore()).toHaveAttribute("aria-disabled", "true")
+    expect(showMore()).toHaveAttribute("aria-busy", "true")
+  })
+
+  it("moves focus to Retry when the browser says focus left the button as it went", async () => {
+    const user = userEvent.setup()
+    const props = {
+      hasMore: true,
+      loadMore: "button" as const,
+      onLoadMore: () => {},
+      onRetry: () => {},
+    }
+    const { rerender } = render(<Wells {...props} />)
+    await user.click(showMore())
+    rerender(<Wells {...props} loading />)
+    // Chrome's `focusout` as it removes the focused button, still in the
+    // document, in the same task as the render that removes it.
+    fireEvent.focusOut(showMore(), { relatedTarget: null })
+    rerender(<Wells {...props} error="The next wells did not load." />)
+    expect(screen.getByRole("button", { name: "Retry" })).toHaveFocus()
   })
 
   it("follows the windowed rows of a virtualized table", () => {
@@ -455,7 +595,10 @@ describe('DataTable load more with "Show more" (loadMore="button")', () => {
       "data-slot",
       "table-body"
     )
-    expect(row).toHaveTextContent("Showing 23 rows")
+    // Not clipped by the virtualized table's cells: its content sticks
+    // in the scroll area.
+    expect(row.cells[0]).toHaveClass("overflow-visible!")
+    expect(showMore()).toHaveAccessibleName("Show more, 23 rows shown")
   })
 
   it("loads a virtualized table's first rows outside the body of its rows, which measures the rows when they come", () => {

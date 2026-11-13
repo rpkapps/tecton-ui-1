@@ -80,7 +80,17 @@ export default defineTranslations({
       other: "Näytetään {total} riviä",
     },
     showMore: "Näytä lisää",
-    shownOfTotal: { other: "Näytetään {shown} / {total}" },
+    shownOf: "{shown} / {total}",
+    shownRows: { one: "{total} rivi", other: "{total} riviä" },
+    showMoreOfTotal: {
+      one: "Näytä lisää, näytetään {shown} / {total} rivi",
+      other: "Näytä lisää, näytetään {shown} / {total} riviä",
+    },
+    showMoreShown: {
+      one: "Näytä lisää, näytetään {total} rivi",
+      other: "Näytä lisää, näytetään {total} riviä",
+    },
+    loadingMore: "Ladataan…",
     moreRowsLoaded: {
       one: "Ladattiin {total} rivi lisää",
       other: "Ladattiin {total} riviä lisää",

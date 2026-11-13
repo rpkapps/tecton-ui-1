@@ -75,7 +75,17 @@ export default defineTranslations({
     selectionActions: "Handlinger for de valgte rækker",
     rowsLoaded: { one: "Viser {total} række", other: "Viser {total} rækker" },
     showMore: "Vis flere",
-    shownOfTotal: { other: "Viser {shown} af {total}" },
+    shownOf: "{shown} af {total}",
+    shownRows: { one: "{total} række", other: "{total} rækker" },
+    showMoreOfTotal: {
+      one: "Vis flere, {shown} af {total} række vist",
+      other: "Vis flere, {shown} af {total} rækker vist",
+    },
+    showMoreShown: {
+      one: "Vis flere, {total} række vist",
+      other: "Vis flere, {total} rækker vist",
+    },
+    loadingMore: "Indlæser…",
     moreRowsLoaded: {
       one: "Indlæste {total} række mere",
       other: "Indlæste {total} rækker mere",

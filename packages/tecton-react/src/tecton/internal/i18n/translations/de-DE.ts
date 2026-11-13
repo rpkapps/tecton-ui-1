@@ -80,7 +80,17 @@ export default defineTranslations({
       other: "{total} Zeilen werden angezeigt",
     },
     showMore: "Mehr anzeigen",
-    shownOfTotal: { other: "{shown} von {total} angezeigt" },
+    shownOf: "{shown} von {total}",
+    shownRows: { one: "{total} Zeile", other: "{total} Zeilen" },
+    showMoreOfTotal: {
+      one: "Mehr anzeigen, {shown} von {total} Zeile angezeigt",
+      other: "Mehr anzeigen, {shown} von {total} Zeilen angezeigt",
+    },
+    showMoreShown: {
+      one: "Mehr anzeigen, {total} Zeile angezeigt",
+      other: "Mehr anzeigen, {total} Zeilen angezeigt",
+    },
+    loadingMore: "Wird geladen…",
     moreRowsLoaded: {
       one: "{total} weitere Zeile geladen",
       other: "{total} weitere Zeilen geladen",

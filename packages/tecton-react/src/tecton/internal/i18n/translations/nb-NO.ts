@@ -75,7 +75,17 @@ export default defineTranslations({
     selectionActions: "Handlinger for de valgte radene",
     rowsLoaded: { one: "Viser {total} rad", other: "Viser {total} rader" },
     showMore: "Vis flere",
-    shownOfTotal: { other: "Viser {shown} av {total}" },
+    shownOf: "{shown} av {total}",
+    shownRows: { one: "{total} rad", other: "{total} rader" },
+    showMoreOfTotal: {
+      one: "Vis flere, {shown} av {total} rad vist",
+      other: "Vis flere, {shown} av {total} rader vist",
+    },
+    showMoreShown: {
+      one: "Vis flere, {total} rad vist",
+      other: "Vis flere, {total} rader vist",
+    },
+    loadingMore: "Laster inn…",
     moreRowsLoaded: {
       one: "Lastet inn {total} rad til",
       other: "Lastet inn {total} rader til",

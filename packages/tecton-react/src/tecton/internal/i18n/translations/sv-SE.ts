@@ -75,7 +75,17 @@ export default defineTranslations({
     selectionActions: "Åtgärder för de markerade raderna",
     rowsLoaded: { one: "Visar {total} rad", other: "Visar {total} rader" },
     showMore: "Visa fler",
-    shownOfTotal: { other: "Visar {shown} av {total}" },
+    shownOf: "{shown} av {total}",
+    shownRows: { one: "{total} rad", other: "{total} rader" },
+    showMoreOfTotal: {
+      one: "Visa fler, {shown} av {total} rad visas",
+      other: "Visa fler, {shown} av {total} rader visas",
+    },
+    showMoreShown: {
+      one: "Visa fler, {total} rad visas",
+      other: "Visa fler, {total} rader visas",
+    },
+    loadingMore: "Läser in…",
     moreRowsLoaded: {
       one: "Läste in {total} rad till",
       other: "Läste in {total} rader till",

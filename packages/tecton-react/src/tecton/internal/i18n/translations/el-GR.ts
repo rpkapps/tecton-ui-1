@@ -79,10 +79,17 @@ export default defineTranslations({
       other: "Εμφανίζονται {total} γραμμές",
     },
     showMore: "Εμφάνιση περισσότερων",
-    shownOfTotal: {
-      one: "Εμφανίζεται {shown} από {total}",
-      other: "Εμφανίζονται {shown} από {total}",
+    shownOf: "{shown} από {total}",
+    shownRows: { one: "{total} γραμμή", other: "{total} γραμμές" },
+    showMoreOfTotal: {
+      one: "Εμφάνιση περισσότερων, εμφανίζονται {shown} από {total} γραμμή",
+      other: "Εμφάνιση περισσότερων, εμφανίζονται {shown} από {total} γραμμές",
     },
+    showMoreShown: {
+      one: "Εμφάνιση περισσότερων, εμφανίζεται {total} γραμμή",
+      other: "Εμφάνιση περισσότερων, εμφανίζονται {total} γραμμές",
+    },
+    loadingMore: "Φόρτωση…",
     moreRowsLoaded: {
       one: "Φορτώθηκε {total} ακόμη γραμμή",
       other: "Φορτώθηκαν {total} ακόμη γραμμές",

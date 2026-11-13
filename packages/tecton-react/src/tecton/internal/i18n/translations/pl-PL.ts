@@ -84,7 +84,26 @@ export default defineTranslations({
       other: "Wyświetlane jest {total} wiersza",
     },
     showMore: "Pokaż więcej",
-    shownOfTotal: { other: "Wyświetlono {shown} z {total}" },
+    shownOf: "{shown} z {total}",
+    shownRows: {
+      one: "{total} wiersz",
+      few: "{total} wiersze",
+      many: "{total} wierszy",
+      other: "{total} wiersza",
+    },
+    showMoreOfTotal: {
+      one: "Pokaż więcej, wyświetlono {shown} z {total} wiersza",
+      few: "Pokaż więcej, wyświetlono {shown} z {total} wierszy",
+      many: "Pokaż więcej, wyświetlono {shown} z {total} wierszy",
+      other: "Pokaż więcej, wyświetlono {shown} z {total} wiersza",
+    },
+    showMoreShown: {
+      one: "Pokaż więcej, wyświetlono {total} wiersz",
+      few: "Pokaż więcej, wyświetlono {total} wiersze",
+      many: "Pokaż więcej, wyświetlono {total} wierszy",
+      other: "Pokaż więcej, wyświetlono {total} wiersza",
+    },
+    loadingMore: "Ładowanie…",
     moreRowsLoaded: {
       one: "Wczytano jeszcze {total} wiersz",
       few: "Wczytano jeszcze {total} wiersze",

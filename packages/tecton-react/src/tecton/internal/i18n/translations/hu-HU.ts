@@ -78,7 +78,17 @@ export default defineTranslations({
     selectionActions: "Műveletek a kijelölt sorokkal",
     rowsLoaded: { one: "{total} sor látható", other: "{total} sor látható" },
     showMore: "Több megjelenítése",
-    shownOfTotal: { other: "{shown} / {total} látható" },
+    shownOf: "{shown} / {total}",
+    shownRows: { one: "{total} sor", other: "{total} sor" },
+    showMoreOfTotal: {
+      one: "Több megjelenítése, {shown} / {total} sor látható",
+      other: "Több megjelenítése, {shown} / {total} sor látható",
+    },
+    showMoreShown: {
+      one: "Több megjelenítése, {total} sor látható",
+      other: "Több megjelenítése, {total} sor látható",
+    },
+    loadingMore: "Betöltés…",
     moreRowsLoaded: {
       one: "További {total} sor betöltve",
       other: "További {total} sor betöltve",

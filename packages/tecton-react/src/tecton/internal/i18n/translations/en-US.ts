@@ -81,11 +81,26 @@ const enUS = {
     selectionActions: "Actions for the selected rows",
     // Read after a load: the plural form follows the number of rows ({total}).
     rowsLoaded: { one: "Showing {total} row", other: "Showing {total} rows" },
-    // `loadMore="button"`: the button after the last row, and beside it
-    // the rows shown of the rows the view matches (the plural form follows
-    // {shown}; {shown} and {total} are formatted).
+    // `loadMore="button"`: the text of the last row, a button.
     showMore: "Show more",
-    shownOfTotal: { other: "Showing {shown} of {total}" },
+    // After it, the rows shown of the rows the view matches ("· 350 of
+    // 500"; {shown} and {total} are formatted), or without a total the rows
+    // shown (the plural form follows them, {total} formatted).
+    shownOf: "{shown} of {total}",
+    shownRows: { one: "{total} row", other: "{total} rows" },
+    // The name of "Show more": the button, and the count after it (the
+    // plural form follows the rows of the view, or without a total the
+    // rows shown, {total} in each; numbers formatted).
+    showMoreOfTotal: {
+      one: "Show more, {shown} of {total} row shown",
+      other: "Show more, {shown} of {total} rows shown",
+    },
+    showMoreShown: {
+      one: "Show more, {total} row shown",
+      other: "Show more, {total} rows shown",
+    },
+    // In place of "Show more" while the rows load.
+    loadingMore: "Loading…",
     // Read once "Show more" has loaded rows: the plural form follows the
     // rows added ({total}, formatted).
     moreRowsLoaded: {

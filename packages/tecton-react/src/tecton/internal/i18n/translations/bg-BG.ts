@@ -79,10 +79,17 @@ export default defineTranslations({
       other: "Показани са {total} реда",
     },
     showMore: "Покажи още",
-    shownOfTotal: {
-      one: "Показан {shown} от {total}",
-      other: "Показани {shown} от {total}",
+    shownOf: "{shown} от {total}",
+    shownRows: { one: "{total} ред", other: "{total} реда" },
+    showMoreOfTotal: {
+      one: "Покажи още, показани {shown} от {total} ред",
+      other: "Покажи още, показани {shown} от {total} реда",
     },
+    showMoreShown: {
+      one: "Покажи още, показан е {total} ред",
+      other: "Покажи още, показани са {total} реда",
+    },
+    loadingMore: "Зареждане…",
     moreRowsLoaded: {
       one: "Зареден е още {total} ред",
       other: "Заредени са още {total} реда",

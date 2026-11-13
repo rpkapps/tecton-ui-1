@@ -81,7 +81,23 @@ export default defineTranslations({
       other: "Prikazano je {total} redaka",
     },
     showMore: "Prikaži više",
-    shownOfTotal: { other: "Prikazano {shown} od {total}" },
+    shownOf: "{shown} od {total}",
+    shownRows: {
+      one: "{total} redak",
+      few: "{total} retka",
+      other: "{total} redaka",
+    },
+    showMoreOfTotal: {
+      one: "Prikaži više, prikazano {shown} od {total} retka",
+      few: "Prikaži više, prikazano {shown} od {total} retka",
+      other: "Prikaži više, prikazano {shown} od {total} redaka",
+    },
+    showMoreShown: {
+      one: "Prikaži više, prikazan je {total} redak",
+      few: "Prikaži više, prikazana su {total} retka",
+      other: "Prikaži više, prikazano je {total} redaka",
+    },
+    loadingMore: "Učitavanje…",
     moreRowsLoaded: {
       one: "Učitan je još {total} redak",
       few: "Učitana su još {total} retka",

@@ -82,7 +82,26 @@ export default defineTranslations({
       other: "Zobrazuje sa {total} riadkov",
     },
     showMore: "Zobraziť viac",
-    shownOfTotal: { other: "Zobrazuje sa {shown} z {total}" },
+    shownOf: "{shown} z {total}",
+    shownRows: {
+      one: "{total} riadok",
+      few: "{total} riadky",
+      many: "{total} riadka",
+      other: "{total} riadkov",
+    },
+    showMoreOfTotal: {
+      one: "Zobraziť viac, zobrazuje sa {shown} z {total} riadku",
+      few: "Zobraziť viac, zobrazuje sa {shown} z {total} riadkov",
+      many: "Zobraziť viac, zobrazuje sa {shown} z {total} riadka",
+      other: "Zobraziť viac, zobrazuje sa {shown} z {total} riadkov",
+    },
+    showMoreShown: {
+      one: "Zobraziť viac, zobrazuje sa {total} riadok",
+      few: "Zobraziť viac, zobrazujú sa {total} riadky",
+      many: "Zobraziť viac, zobrazuje sa {total} riadka",
+      other: "Zobraziť viac, zobrazuje sa {total} riadkov",
+    },
+    loadingMore: "Načítava sa…",
     moreRowsLoaded: {
       one: "Načítal sa ďalší {total} riadok",
       few: "Načítali sa ďalšie {total} riadky",

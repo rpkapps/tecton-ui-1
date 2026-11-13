@@ -18,7 +18,8 @@ write entries and cut a release.
   (`DataTableColumnsMenu`), row selection with `DataTableActionBar` and `itemToDisabledReason`,
   row actions (`DataTableRowActions`), row reordering, grouping with subtotals
   (`DataTableGroupBy`), totals, trees and detail rows, virtualized rows, load more on scroll or
-  with a button, pages in a spreadsheet-style footer strip (`DataTableFooter`,
+  from a "Show more" row after the last row (as tall as a row, with the rows shown of the
+  total), pages in a spreadsheet-style footer strip (`DataTableFooter`,
   `DataTablePagination`, with a page field), `size="sm"` and `striped`, loading, error, empty and
   no-results states, server mode (`dataMode="server"`), CSV export, keyboard navigation as a grid
   and the whole view (sort, filters, columns, page) as one controlled or uncontrolled value.

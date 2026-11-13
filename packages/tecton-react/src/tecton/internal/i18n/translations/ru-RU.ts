@@ -83,7 +83,26 @@ export default defineTranslations({
       other: "Показано {total} строки",
     },
     showMore: "Показать ещё",
-    shownOfTotal: { other: "Показано {shown} из {total}" },
+    shownOf: "{shown} из {total}",
+    shownRows: {
+      one: "{total} строка",
+      few: "{total} строки",
+      many: "{total} строк",
+      other: "{total} строки",
+    },
+    showMoreOfTotal: {
+      one: "Показать ещё, показано {shown} из {total} строки",
+      few: "Показать ещё, показано {shown} из {total} строк",
+      many: "Показать ещё, показано {shown} из {total} строк",
+      other: "Показать ещё, показано {shown} из {total} строки",
+    },
+    showMoreShown: {
+      one: "Показать ещё, показана {total} строка",
+      few: "Показать ещё, показаны {total} строки",
+      many: "Показать ещё, показано {total} строк",
+      other: "Показать ещё, показано {total} строки",
+    },
+    loadingMore: "Загрузка…",
     moreRowsLoaded: {
       one: "Загружена ещё {total} строка",
       few: "Загружены ещё {total} строки",

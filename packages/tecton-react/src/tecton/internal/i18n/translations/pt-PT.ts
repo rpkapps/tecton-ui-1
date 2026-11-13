@@ -79,7 +79,19 @@ export default defineTranslations({
       other: "A mostrar {total} linhas",
     },
     showMore: "Mostrar mais",
-    shownOfTotal: { other: "A mostrar {shown} de {total}" },
+    shownOf: "{shown} de {total}",
+    shownRows: { one: "{total} linha", other: "{total} linhas" },
+    showMoreOfTotal: {
+      one: "Mostrar mais, {shown} de {total} linha apresentada",
+      many: "Mostrar mais, {shown} de {total} de linhas apresentadas",
+      other: "Mostrar mais, {shown} de {total} linhas apresentadas",
+    },
+    showMoreShown: {
+      one: "Mostrar mais, {total} linha apresentada",
+      many: "Mostrar mais, {total} de linhas apresentadas",
+      other: "Mostrar mais, {total} linhas apresentadas",
+    },
+    loadingMore: "A carregar…",
     moreRowsLoaded: {
       one: "Foi carregada mais {total} linha",
       other: "Foram carregadas mais {total} linhas",

@@ -84,7 +84,26 @@ export default defineTranslations({
       other: "Prikazanih je {total} vrstic",
     },
     showMore: "Prikaži več",
-    shownOfTotal: { other: "Prikazano {shown} od {total}" },
+    shownOf: "{shown} od {total}",
+    shownRows: {
+      one: "{total} vrstica",
+      two: "{total} vrstici",
+      few: "{total} vrstice",
+      other: "{total} vrstic",
+    },
+    showMoreOfTotal: {
+      one: "Prikaži več, prikazano {shown} od {total} vrstice",
+      two: "Prikaži več, prikazano {shown} od {total} vrstic",
+      few: "Prikaži več, prikazano {shown} od {total} vrstic",
+      other: "Prikaži več, prikazano {shown} od {total} vrstic",
+    },
+    showMoreShown: {
+      one: "Prikaži več, prikazana je {total} vrstica",
+      two: "Prikaži več, prikazani sta {total} vrstici",
+      few: "Prikaži več, prikazane so {total} vrstice",
+      other: "Prikaži več, prikazanih je {total} vrstic",
+    },
+    loadingMore: "Nalaganje…",
     moreRowsLoaded: {
       one: "Naložena je še {total} vrstica",
       two: "Naloženi sta še {total} vrstici",

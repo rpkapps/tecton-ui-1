@@ -27,9 +27,9 @@
  * when they come within two views of being seen (the table's scroll area
  * in a virtualized table, the page's otherwise), once per number of items.
  * While more rows load, the table is busy and the loading rows show, not
- * the bar under the header. With `loadMore="button"`, a "Show more" band
- * takes the loading rows' place (`DataTableShowMore`): no observer, its
- * button calls `onLoadMore` and spins while the rows load; focus stays on
+ * the bar under the header. With `loadMore="button"`, a "Show more" row
+ * takes the loading rows' place (`DataTableShowMore`): no observer, it
+ * calls `onLoadMore` and spins while the rows load; focus stays on
  * it, or goes to the first new row once there are no more, and the status
  * region says how many rows came. The status region says how many rows
  * match once the search or filters change.
@@ -388,7 +388,13 @@ function useShowMore({
     }
     const leave = (event: FocusEvent) => {
       if (inSlot(event.relatedTarget)) return
-      if ((event.target as Node).isConnected) focused.current = null
+      // Chrome sends `focusout` as it removes a focused element, while the
+      // element is still in the document: told apart once the render that
+      // removes it is done, after the layout effect below.
+      const left = event.target as Node
+      queueMicrotask(() => {
+        if (left.isConnected && focused.current === left) focused.current = null
+      })
     }
     element.addEventListener("focusin", enter)
     element.addEventListener("focusout", leave)
@@ -1152,6 +1158,19 @@ function DataTableContentImpl({
     options.hasMore && !failed && rows.length > 0 && (server || !searching)
   // "Show more" in their place, without the observer.
   const button = options.loadMore === "button"
+  // The row after the rows ("Show more" or the error) continues their
+  // stripes: striped when even (its index odd), counting every row but the
+  // detail rows, which take their row's fill.
+  const after = (more && button) || inlineError
+  const nextStriped = React.useMemo(
+    () =>
+      options.striped &&
+      after &&
+      rows.reduce((count, row) => count + (row.kind === "detail" ? 0 : 1), 0) %
+        2 ===
+        1,
+    [options.striped, after, rows]
+  )
   const refreshing = loading && !failed && rows.length > 0 && !more
   const setFrame = React.useCallback(
     (element: HTMLDivElement | null) => {
@@ -1365,6 +1384,8 @@ function DataTableContentImpl({
                   <tbody data-slot="data-table-loading-more">
                     <DataTableShowMore
                       columns={shared.columnCount}
+                      size={options.size}
+                      striped={nextStriped}
                       shown={itemCount}
                       total={options.rowCountKnown ? model.rowCount : undefined}
                       loading={loading}
@@ -1384,6 +1405,8 @@ function DataTableContentImpl({
                 <tbody data-slot="data-table-loading-more">
                   <DataTableMoreError
                     columns={shared.columnCount}
+                    size={options.size}
+                    striped={nextStriped}
                     description={error === true ? undefined : error}
                     onRetry={options.retryable ? actions.retry : undefined}
                   />

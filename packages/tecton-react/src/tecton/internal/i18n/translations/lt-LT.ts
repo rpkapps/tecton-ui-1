@@ -82,7 +82,26 @@ export default defineTranslations({
       other: "Rodoma {total} eilučių",
     },
     showMore: "Rodyti daugiau",
-    shownOfTotal: { other: "Rodoma {shown} iš {total}" },
+    shownOf: "{shown} iš {total}",
+    shownRows: {
+      one: "{total} eilutė",
+      few: "{total} eilutės",
+      many: "{total} eilutės",
+      other: "{total} eilučių",
+    },
+    showMoreOfTotal: {
+      one: "Rodyti daugiau, rodoma {shown} iš {total} eilutės",
+      few: "Rodyti daugiau, rodoma {shown} iš {total} eilučių",
+      many: "Rodyti daugiau, rodoma {shown} iš {total} eilutės",
+      other: "Rodyti daugiau, rodoma {shown} iš {total} eilučių",
+    },
+    showMoreShown: {
+      one: "Rodyti daugiau, rodoma {total} eilutė",
+      few: "Rodyti daugiau, rodomos {total} eilutės",
+      many: "Rodyti daugiau, rodoma {total} eilutės",
+      other: "Rodyti daugiau, rodoma {total} eilučių",
+    },
+    loadingMore: "Įkeliama…",
     moreRowsLoaded: {
       one: "Įkelta dar {total} eilutė",
       few: "Įkeltos dar {total} eilutės",

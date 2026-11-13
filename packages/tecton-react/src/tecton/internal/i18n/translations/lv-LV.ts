@@ -81,7 +81,23 @@ export default defineTranslations({
       other: "Rāda {total} rindas",
     },
     showMore: "Rādīt vairāk",
-    shownOfTotal: { other: "Rāda {shown} no {total}" },
+    shownOf: "{shown} no {total}",
+    shownRows: {
+      zero: "{total} rindu",
+      one: "{total} rinda",
+      other: "{total} rindas",
+    },
+    showMoreOfTotal: {
+      zero: "Rādīt vairāk, rāda {shown} no {total} rindām",
+      one: "Rādīt vairāk, rāda {shown} no {total} rindas",
+      other: "Rādīt vairāk, rāda {shown} no {total} rindām",
+    },
+    showMoreShown: {
+      zero: "Rādīt vairāk, rāda {total} rindu",
+      one: "Rādīt vairāk, rāda {total} rindu",
+      other: "Rādīt vairāk, rāda {total} rindas",
+    },
+    loadingMore: "Notiek ielāde…",
     moreRowsLoaded: {
       zero: "Ielādētas vēl {total} rindas",
       one: "Ielādēta vēl {total} rinda",

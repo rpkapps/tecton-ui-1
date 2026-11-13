@@ -80,7 +80,19 @@ export default defineTranslations({
       other: "{total} righe visualizzate",
     },
     showMore: "Mostra altro",
-    shownOfTotal: { other: "Visualizzazione di {shown} su {total}" },
+    shownOf: "{shown} di {total}",
+    shownRows: { one: "{total} riga", other: "{total} righe" },
+    showMoreOfTotal: {
+      one: "Mostra altro, {shown} di {total} riga visualizzata",
+      many: "Mostra altro, {shown} di {total} di righe visualizzate",
+      other: "Mostra altro, {shown} di {total} righe visualizzate",
+    },
+    showMoreShown: {
+      one: "Mostra altro, {total} riga visualizzata",
+      many: "Mostra altro, {total} di righe visualizzate",
+      other: "Mostra altro, {total} righe visualizzate",
+    },
+    loadingMore: "Caricamento in corso…",
     moreRowsLoaded: {
       one: "Caricata {total} altra riga",
       other: "Caricate altre {total} righe",

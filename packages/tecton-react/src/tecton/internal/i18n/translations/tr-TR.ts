@@ -78,7 +78,17 @@ export default defineTranslations({
       other: "{total} satır gösteriliyor",
     },
     showMore: "Daha fazla göster",
-    shownOfTotal: { other: "{shown} / {total} gösteriliyor" },
+    shownOf: "{shown} / {total}",
+    shownRows: { one: "{total} satır", other: "{total} satır" },
+    showMoreOfTotal: {
+      one: "Daha fazla göster, {shown} / {total} satır gösteriliyor",
+      other: "Daha fazla göster, {shown} / {total} satır gösteriliyor",
+    },
+    showMoreShown: {
+      one: "Daha fazla göster, {total} satır gösteriliyor",
+      other: "Daha fazla göster, {total} satır gösteriliyor",
+    },
+    loadingMore: "Yükleniyor…",
     moreRowsLoaded: {
       one: "{total} satır daha yüklendi",
       other: "{total} satır daha yüklendi",

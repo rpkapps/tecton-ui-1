@@ -78,7 +78,17 @@ export default defineTranslations({
       other: "Kuvatakse {total} rida",
     },
     showMore: "Kuva rohkem",
-    shownOfTotal: { other: "Kuvatakse {shown} / {total}" },
+    shownOf: "{shown} / {total}",
+    shownRows: { one: "{total} rida", other: "{total} rida" },
+    showMoreOfTotal: {
+      one: "Kuva rohkem, kuvatakse {shown} / {total} rida",
+      other: "Kuva rohkem, kuvatakse {shown} / {total} rida",
+    },
+    showMoreShown: {
+      one: "Kuva rohkem, kuvatakse {total} rida",
+      other: "Kuva rohkem, kuvatakse {total} rida",
+    },
+    loadingMore: "Laadimine…",
     moreRowsLoaded: {
       one: "Laaditi veel {total} rida",
       other: "Laaditi veel {total} rida",

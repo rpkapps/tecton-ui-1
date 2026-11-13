@@ -82,7 +82,23 @@ export default defineTranslations({
       other: "Se afișează {total} de rânduri",
     },
     showMore: "Afișează mai multe",
-    shownOfTotal: { other: "Se afișează {shown} din {total}" },
+    shownOf: "{shown} din {total}",
+    shownRows: {
+      one: "{total} rând",
+      few: "{total} rânduri",
+      other: "{total} de rânduri",
+    },
+    showMoreOfTotal: {
+      one: "Afișează mai multe, {shown} din {total} rând afișat",
+      few: "Afișează mai multe, {shown} din {total} rânduri afișate",
+      other: "Afișează mai multe, {shown} din {total} de rânduri afișate",
+    },
+    showMoreShown: {
+      one: "Afișează mai multe, {total} rând afișat",
+      few: "Afișează mai multe, {total} rânduri afișate",
+      other: "Afișează mai multe, {total} de rânduri afișate",
+    },
+    loadingMore: "Se încarcă…",
     moreRowsLoaded: {
       one: "S-a încărcat încă {total} rând",
       few: "S-au încărcat încă {total} rânduri",

@@ -348,7 +348,7 @@ describe("DataTable highlightChanges: which rows are added", () => {
     const onLoadMore = vi.fn()
     const more = { hasMore: true, loadMore: "button" as const, onLoadMore }
     const { rerender } = render(<Live {...more} virtualized={false} />)
-    fireEvent.click(screen.getByRole("button", { name: "Show more" }))
+    fireEvent.click(screen.getByRole("button", { name: /^Show more/ }))
     expect(onLoadMore).toHaveBeenCalledTimes(1)
     const next = [...READINGS, reading(5), reading(195)]
     rerender(<Live {...more} items={next} virtualized={false} />)
