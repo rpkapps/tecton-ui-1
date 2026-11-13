@@ -6,6 +6,8 @@
  */
 import { act, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import { hydrateRoot } from "react-dom/client"
+import { renderToString } from "react-dom/server"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
@@ -101,5 +103,40 @@ describe("DataTableSearch syntax=query on demand", () => {
         search: "well",
       })
     )
+  })
+
+  it("hands the query field a focus the plain field had before it hydrated", async () => {
+    const tree = (
+      <DataTable
+        items={WELLS}
+        columns={columns}
+        filterable
+        defaultView={{ search: "gull" }}
+      >
+        <DataTableSearch syntax="query" />
+        <DataTableContent aria-label="Wells" />
+      </DataTable>
+    )
+    const container = document.createElement("div")
+    container.innerHTML = renderToString(tree)
+    document.body.append(container)
+    // Pressed before the page's script ran: focused, the caret placed, and
+    // no event handler of the field has run.
+    const plain = container.querySelector<HTMLInputElement>(
+      '[data-slot="data-table-search"] input'
+    )!
+    plain.focus()
+    plain.setSelectionRange(2, 2)
+    const recoverable = vi.fn()
+    const root = await act(async () =>
+      hydrateRoot(container, tree, { onRecoverableError: recoverable })
+    )
+    await act(async () => chunk.open())
+    const field = await screen.findByRole("combobox", { name: "Search" })
+    expect(field).toHaveFocus()
+    expect((field as HTMLInputElement).selectionStart).toBe(2)
+    expect(recoverable).not.toHaveBeenCalled()
+    act(() => root.unmount())
+    container.remove()
   })
 })

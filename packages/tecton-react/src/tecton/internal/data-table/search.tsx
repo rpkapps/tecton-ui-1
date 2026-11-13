@@ -181,6 +181,21 @@ function QuerySearchField({
     help: false,
   })
   const [typed, setTyped] = React.useState<string | null>(null)
+  const root = React.useRef<HTMLDivElement>(null)
+  // Focused as it hydrates: pressed before the page's script ran, so no
+  // focus event reached it. The handoff takes it as focused, as on focus.
+  React.useEffect(() => {
+    const input = root.current?.ownerDocument.activeElement
+    if (!(input instanceof HTMLInputElement) || !root.current?.contains(input))
+      return
+    handoff.current = {
+      ...handoff.current,
+      selectionStart: input.selectionStart,
+      selectionEnd: input.selectionEnd,
+      focused: true,
+    }
+    load()
+  }, [load])
   if (!filterable) return null
 
   const label = ariaLabel ?? t("search")
@@ -208,6 +223,7 @@ function QuerySearchField({
   return (
     <DataTableToolbarSearch label={label} wide>
       <div
+        ref={root}
         data-slot="data-table-search"
         data-syntax="query"
         className={cn("w-full sm:w-[28rem]", className)}

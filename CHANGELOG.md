@@ -30,7 +30,9 @@ write entries and cut a release.
   date's presets, years, months and calendar, explains a term it cannot apply (`OR`, `NOT`, `-`, an
   unknown column or value) instead of applying it otherwise, lists the table's columns with
   examples in its "?" help, and works in server mode, RTL and the 34 locales. Its code loads on
-  demand: a table with the plain search (`syntax="text"`, the default) never loads it.
+  demand: a table with the plain search (`syntax="text"`, the default) never loads it. What was
+  typed, the focus and the caret carry over when it arrives, also for a field focused before a
+  server-rendered page hydrated.
 - `DataTable`'s number filter value takes `minExclusive?: true` and `maxExclusive?: true`: the
   bound's own number does not match (more than `min`, less than `max`). Its filter button and chip
   read "> 3,000" or "> 1,000 and ≤ 3,000", and editing that bound in the filter includes it again.
