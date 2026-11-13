@@ -121,8 +121,10 @@ describe("DataTable", () => {
     expect(status).toHaveAttribute("data-slot", "badge")
     expect(status).toHaveAttribute("data-appearance", "outline")
     expect(status).toHaveAttribute("data-variant", "success")
-    // Dates in the column's format.
-    expect(cell("Mar 4, 2021")).toBeInTheDocument()
+    // Dates in the column's format, in tabular digits too.
+    expect(cell("Mar 4, 2021")).toHaveClass("tabular-nums")
+    // Text keeps the font's own digits.
+    expect(header).not.toHaveClass("tabular-nums")
     // Booleans: a check, and Yes / No for screen readers.
     const yes = screen.getByText("Yes")
     expect(yes).toHaveClass("sr-only")

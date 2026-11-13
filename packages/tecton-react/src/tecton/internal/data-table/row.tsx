@@ -68,6 +68,7 @@ import {
   type DetailStore,
   type GroupCell,
   type RowShared,
+  numericClassName,
 } from "./cell"
 import { useDataTableContext, useDataTableSelector } from "./context"
 import {
@@ -440,7 +441,7 @@ function GroupRowComponent<T>({
               id={sum}
               className={cn(
                 "ms-auto shrink-0 ps-4 font-normal",
-                column.type === "number" && "tabular-nums"
+                numericClassName(column)
               )}
             >
               {drawn}
@@ -465,7 +466,7 @@ function GroupRowComponent<T>({
         className={cn(
           ALIGN[column.align],
           shownClassName(groupCells.tiers, cell.shown),
-          column.type === "number" && "tabular-nums",
+          numericClassName(column),
           pinned(cell.column)
         )}
         style={pin && pinStyle(pin)}

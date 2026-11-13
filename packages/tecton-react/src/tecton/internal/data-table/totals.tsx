@@ -29,6 +29,7 @@ import {
   pinEdgeClassName,
   pinStyle,
   type RowShared,
+  numericClassName,
 } from "./cell"
 import type { DataTableRowModel, EngineColumn } from "./engine/index"
 
@@ -84,7 +85,7 @@ function DataTableTotals<T>({
           const pin = shared.pins[index]
           const className = cn(
             columnClassName(column),
-            column.type === "number" && "tabular-nums",
+            numericClassName(column),
             TOTALS_CELL,
             pin && pinnedCellClassName,
             pinEdgeClassName(pin)

@@ -81,7 +81,7 @@ A column's `type` sets how its values are shown, aligned and sorted; `cell` draw
 | `"boolean"` | center | a check for `true` | `false` first |
 | `"options"` | start | a [Badge](/docs/components/badge) per option | in `options` order |
 
-Empty values sort last and show a muted dash ([Empty values](#empty-values)). Return raw numbers and `Date`s from `accessor`, not formatted text.
+Numbers and dates use tabular figures, every digit one width, so a column's values line up and a changing value keeps its width. Empty values sort last and show a muted dash ([Empty values](#empty-values)). Return raw numbers and `Date`s from `accessor`, not formatted text.
 
 ### Sorting by several columns
 

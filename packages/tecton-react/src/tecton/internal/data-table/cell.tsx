@@ -406,6 +406,15 @@ function columnClassName<T>(column: EngineColumn<T>) {
   return cn(ALIGN[column.align], hideBelow && HIDE_BELOW[hideBelow])
 }
 
+/**
+ * Numbers and dates draw their digits at one width (tabular figures), so
+ * a column's values line up digit for digit and a changing value keeps its
+ * width.
+ */
+function numericClassName<T>(column: EngineColumn<T>) {
+  return (column.type === "number" || column.type === "date") && "tabular-nums"
+}
+
 function bodyClassName<T>(
   column: EngineColumn<T>,
   pin: CellPin | undefined,
@@ -413,7 +422,7 @@ function bodyClassName<T>(
 ) {
   return cn(
     columnClassName(column),
-    column.type === "number" && "tabular-nums",
+    numericClassName(column),
     shared.fixed && "overflow-hidden text-ellipsis",
     shared.pinned && cellBorderClassName,
     shared.wrap && column.definition.wrap && "whitespace-normal",
@@ -625,6 +634,7 @@ export {
   groupCellsOf,
   groupLabelWidth,
   INDENT,
+  numericClassName,
   pinnedCellClassName,
   pinnedHeadClassName,
   pinnedRowClassName,
