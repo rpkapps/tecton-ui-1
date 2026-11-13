@@ -23,6 +23,14 @@ write entries and cut a release.
   no-results states, server mode (`dataMode="server"`), CSV export, keyboard navigation as a grid
   and the whole view (sort, filters, columns, page) as one controlled or uncontrolled value.
   `useDataTable()` reads the table from custom parts. Its text is translated into the 34 locales.
+- `DataTableSearch syntax="query"`: a power search. Typed terms (`status:drilling td:>3000
+  spud:2015`) set the same column filters as the filter buttons and free words the search, and a
+  filter button, chip or controlled view writes the query again. The field draws the query in
+  colours, suggests columns, values with their row counts, comparisons with the data's range and a
+  date's presets, years, months and calendar, explains a term it cannot apply (`OR`, `NOT`, `-`, an
+  unknown column or value) instead of applying it otherwise, lists the table's columns with
+  examples in its "?" help, and works in server mode, RTL and the 34 locales. Its code loads on
+  demand: a table with the plain search (`syntax="text"`, the default) never loads it.
 - `DataTable`'s number filter value takes `minExclusive?: true` and `maxExclusive?: true`: the
   bound's own number does not match (more than `min`, less than `max`). Its filter button and chip
   read "> 3,000" or "> 1,000 and ≤ 3,000", and editing that bound in the filter includes it again.
