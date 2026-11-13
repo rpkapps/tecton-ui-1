@@ -25,7 +25,7 @@ import { DataTable, DataTableContent, DataTableToolbar, DataTableSearch, DataTab
 - Turn features on at the root (`selectionMode`, `pagination`, `filterable`, `groupable`, the `…Columns` props), then place their parts. For a table people filter all day, use the power search `<DataTableSearch syntax="query" />`, never a query parser of your own. Its suggestions and "?" help come with it: add no syntax legend or suggestion list.
 - Name the table with `aria-label` on `DataTableContent`. Open rows with `itemToHref` or `onActivate`, explain disabled rows with `itemToDisabledReason`, and put actions in `DataTableRowActions` and `DataTableActionBar`.
 - Set `size="sm"` and `striped` for dense data. Show states with `loading`, `error` with `onRetry`, and `empty` / `noResults` on `DataTableContent`.
-- In server mode, pass the page's `items`, `rowCount` and `loading`, and load from `onViewChange`, `onPageChange` and `onPageSizeChange`. For live data, set `highlightChanges` and never tint, animate or scroll rows yourself.
+- In server mode, pass the page's `items`, `rowCount` and `loading`, and load from `onViewChange`, `onPageChange` and `onPageSizeChange`. Every filter in `view.filters` is a list a row matches any item of (`values` for text, options and yes / no, `ranges` for numbers and dates), plus `empty` for "No value": send the whole list, not its first item. For live data, set `highlightChanges` and never tint, animate or scroll rows yourself.
 
 ## Don't
 

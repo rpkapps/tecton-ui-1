@@ -22,9 +22,15 @@ write entries and cut a release.
   `DataTablePagination`, with a page field), `size="sm"` and `striped`, loading, error, empty and
   no-results states, server mode (`dataMode="server"`), CSV export, keyboard navigation as a grid
   and the whole view (sort, filters, columns, page) as one controlled or uncontrolled value.
+  Every filter value in the view is a list a row matches any item of, with `empty: true` for "No
+  value": `values` for text (several texts in its popover, as removable chips), options and yes /
+  no (checkboxes), and `ranges` for numbers (`{ min?, max?, minExclusive?, maxExclusive? }`) and
+  dates (`{ from?, to? }`), whose popover edits the first range and says how many more there are.
   `useDataTable()` reads the table from custom parts. Its text is translated into the 34 locales.
 - `DataTableSearch syntax="query"`: a power search. Typed terms (`status:drilling td:>3000
-  spud:2015`) set the same column filters as the filter buttons and free words the search, and a
+spud:2015`) set the same column filters as the filter buttons and free words the search: a comma
+  means "any of" for every column type (`well:a-12,b-3`, `td:<1000,>3000`, `spud:2015,last30d`;
+  a number or date keeps its own comma, `1,234.5`, `jun 30, 2015`), and a
   filter button, chip or controlled view writes the query again. The field draws the query in
   colours, suggests columns, values with their row counts, comparisons with the data's range and a
   date's presets, years, months and calendar in a list that stays open while the field has focus
@@ -35,7 +41,7 @@ write entries and cut a release.
   code loads on demand: a table with the plain search (`syntax="text"`, the default) never loads
   it. What was typed, the focus and the caret carry over when it arrives, also for a field focused
   before a server-rendered page hydrated.
-- `DataTable`'s number filter value takes `minExclusive?: true` and `maxExclusive?: true`: the
+- `DataTable`'s number filter ranges take `minExclusive?: true` and `maxExclusive?: true`: the
   bound's own number does not match (more than `min`, less than `max`). Its filter button and chip
   read "> 3,000" or "> 1,000 and ≤ 3,000", and editing that bound in the filter includes it again.
   Server-mode applications that read the filter value should apply both flags.

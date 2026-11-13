@@ -193,18 +193,25 @@ Pinned cells are opaque, filled with `var(--surface)`. On a custom surface, set 
 
 <ComponentPreview name="data-table-filters" align="start" />
 
-| `type`    | Filter                                              | Value in the view                                              |
-| --------- | --------------------------------------------------- | -------------------------------------------------------------- |
-| `text`    | contains the text                                   | `{ type: "text", value }`                                      |
-| `number`  | Min and Max side by side, with the column's unit    | `{ type: "number", min?, max?, minExclusive?, maxExclusive? }` |
-| `date`    | a [date range picker](/docs/components/date-picker) | `{ type: "date", from?, to? }`                                 |
-| `boolean` | Yes or No, radio buttons with counts                | `{ type: "boolean", value? }`                                  |
-| `options` | a checkbox per option, with counts                  | `{ type: "options", values }`                                  |
+| `type`    | Filter                                              | Value in the view                                                            |
+| --------- | --------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `text`    | contains any of the texts, added as chips           | `{ type: "text", values }`                                                   |
+| `number`  | Min and Max side by side, with the column's unit    | `{ type: "number", ranges: [{ min?, max?, minExclusive?, maxExclusive? }] }` |
+| `date`    | a [date range picker](/docs/components/date-picker) | `{ type: "date", ranges: [{ from?, to? }] }`                                 |
+| `boolean` | Yes and No, checkboxes with counts                  | `{ type: "boolean", values }`                                                |
+| `options` | a checkbox per option, with counts                  | `{ type: "options", values }`                                                |
 
+- Every filter value is a list. A row matches when it matches any item: a text it contains, a value, or a range it is in.
 - Search matches the shown columns' display text, ignoring case and accents.
 - Each filter offers "No value" (`empty: true`) when the column has empty values ([Empty values](#empty-values)).
 - A column's own `filter(item, value)` replaces its type's filter.
-- A yes / no filter is laid out like an options filter, with radio buttons. With neither chosen it keeps every row, and Clear goes back to that.
+- A yes / no filter is laid out like an options filter. With neither chosen it keeps every row, and Clear goes back to that.
+
+Text filters:
+
+- Type a text and press <Kbd>Enter</Kbd> or a comma to add it as a chip. Each chip has a remove button.
+- <Kbd>Backspace</Kbd> in the empty field removes the last chip.
+- What you type applies as you type, beside the chips. Under the field, the filter shows how many rows match.
 
 Number filters:
 
@@ -215,6 +222,11 @@ Number filters:
 - Both bounds are included. `minExclusive: true` or `maxExclusive: true` leaves out the bound itself, as `>` and `<` do in a [power search](#power-search).
 - An exclusive bound reads "> 3,000 m" or "> 1,000 and ≤ 3,000" on the button and chip. Editing that bound in the filter includes it again.
 - In server mode, apply exclusive bounds yourself: `minExclusive` means `value > min`, otherwise `value >= min`.
+
+Number and date filters with several ranges:
+
+- A [power search](#power-search) can set several ranges (`td:<1000,>3000`). The button and chip show them all: "< 1,000, > 3,000".
+- The popover edits the first range. A muted line under it says how many more there are. Editing keeps them, and Clear removes the whole filter.
 
 ## Power search
 
@@ -229,16 +241,21 @@ Number filters:
 | `gullfaks`, `"aker bp"`                                                                          | the search: text in any shown column                                                      |
 | `status:drilling,producing`                                                                      | an options column: any of the values, by value or label                                   |
 | `subsea:yes`                                                                                     | yes / no                                                                                  |
-| `well:a-12`                                                                                      | a text column contains the text                                                           |
+| `well:a-12`, `well:a-12,b-3`                                                                     | a text column contains any of the texts                                                   |
 | `td:3000`, `td:>=3000`, `td:>3000`, `td:<3000`, `td:1000..3000`                                  | a number column; `..` includes both ends, `>` and `<` are `minExclusive` / `maxExclusive` |
+| `td:<1000,>3000`                                                                                 | a number in any of the ranges                                                             |
 | `spud:2015`, `spud:2015-06`, `spud:jun 2015`, `spud:2015-06-30`, `spud:<2015`, `spud:2015..2016` | a date column, by whole days in the column's time zone                                    |
 | `spud:last30d`, `spud:thismonth`, `spud:today`                                                   | a relative date (`last<N>d`, `w`, `m`, `y`; kept as such in the field)                    |
+| `spud:2015,last30d`                                                                              | a date in any of the ranges                                                               |
 | `td:none`, `td:>=3000,none`                                                                      | "No value", alone or beside the rest                                                      |
 
+- A comma always means "any of". Each column type says what one item is: a text, a value, or a number or date range.
+- A comma in quotes belongs to the text: `well:"a,b"`.
+- A number or date keeps its own comma: `td:1,234.5`, `spud:jun 30, 2015`. In a locale that writes decimals with a comma, quote a number that follows another: `td:3,"5"`.
 - A column's key is its header or its id. Case, accents, spaces and punctuation don't matter, so `spuddate` and `spud_date` both match "Spud date".
 - Numbers and dates are read in the provider's locale. Quotes keep spaces together.
 - Terms side by side all apply.
-- Filters the query cannot write stay in the view: a column's own `filter`, or a column with no key.
+- Filters the query cannot write stay in the view: a column's own `filter`, a column with no key, or a number range with both ends and one of them exclusive beside other ranges.
 - A filter button, a chip or a controlled `view` rewrites the query from the view, keeping the free words.
 
 ### Problems
@@ -254,7 +271,7 @@ A term with a problem is not applied. Examples are an unknown column or value, o
 The suggestion list opens when the field gets focus and stays open the whole time it has focus. Typing, picking, moving the caret and pressing the field's buttons never close it.
 
 - It closes when focus leaves the field. <Kbd>Escape</Kbd> closes it until you type, click in the field or press <Kbd>↓</Kbd>.
-- A pick that completes a term keeps it open with the next term's columns.
+- A pick that completes a term keeps it open with the next term's columns. A comma typed right after it adds another value to the term instead.
 - With nothing to suggest, it shows one muted line about the term at the caret: "Searching all columns for “pump”", the filter in its chip's words ("TD: ≥ 1,500 m"), or "No suggestions". Screen readers hear it politely.
 - The clear button (✕) empties the field and keeps focus in it, with the list open.
 - The "?" button lists the table's own columns, with examples, in the list's place. A press anywhere in an example's row adds it to the query and returns to the field.
@@ -262,7 +279,8 @@ The suggestion list opens when the field gets focus and stays open the whole tim
 The suggestions follow the caret:
 
 - columns, with their type
-- an options column's values, with their row counts
+- an options column's values, and a text column's, with their row counts
+- after a comma, the next item of the same column, without the values already listed
 - "No value"
 - a number column's comparisons, with the data's range
 - a date column's presets with the days they cover, the data's years and months, and the date filter's calendar, which writes the days it picks
@@ -320,14 +338,15 @@ While any row has no value in a column, that column's filter offers "No value":
 | Yes / no     | a checkbox after Yes and No, set apart, with its count | "Subsea: Yes or no value"         |
 
 - It keeps the rows without a value, as well as those the rest of the filter keeps. When the rest is unset, it keeps only the rows without a value.
-- In the view it is `empty: true` on the filter's value. A value without it matches as before, so saved views keep working.
+- In the view it is `empty: true` on the filter's value, beside its list. A value without it matches as before, so saved views keep working.
 - In server mode the table sees only the loaded rows, so "No value" is always offered. It reaches `onViewChange` for the server to apply (`OR depth IS NULL`).
 
 ```ts
-{ type: "number", min: 1000, max: 2000, empty: true } // 1,000 to 2,000, or no value
+{ type: "number", ranges: [{ min: 1000, max: 2000 }], empty: true } // 1,000 to 2,000, or no value
 { type: "options", values: [], empty: true } // no value only
-{ type: "boolean", value: true, empty: true } // yes, or no value
-{ type: "boolean", empty: true } // no value only
+{ type: "text", values: [], empty: true } // no value only
+{ type: "boolean", values: [true], empty: true } // yes, or no value
+{ type: "boolean", values: [], empty: true } // no value only
 ```
 
 ## Selection
@@ -571,6 +590,32 @@ In this example, <Kbd>Shift</Kbd> + click a second header. `view.sorting` holds 
 | Totals, export             | every matching row       | the loaded rows                                  |
 | "Select all N"             | every matching row       | all matching: `eventDetails.allMatching.except`  |
 
+Each filter in `view.filters` is a list. Match a row when it matches any item, and send the whole list, not its first item:
+
+- `values` for text (contains), options and yes / no (equals);
+- `ranges` for numbers and dates, each with its own bounds;
+- `empty: true` also keeps the rows with no value.
+
+```ts
+function depthWhere(filter: DataTableFilterValue) {
+  if (filter.type !== "number") return null
+  const ranges = filter.ranges.map((range) =>
+    [
+      range.min === undefined
+        ? null
+        : `depth ${range.minExclusive ? ">" : ">="} ${range.min}`,
+      range.max === undefined
+        ? null
+        : `depth ${range.maxExclusive ? "<" : "<="} ${range.max}`,
+    ]
+      .filter(Boolean)
+      .join(" AND ")
+  )
+  if (filter.empty) ranges.push("depth IS NULL")
+  return ranges.map((range) => `(${range})`).join(" OR ")
+}
+```
+
 ## The view
 
 The sorting, search, filters, grouping and column layout are one JSON object. Start from `defaultView`, or control it with `view` / `onViewChange`.
@@ -686,7 +731,7 @@ Set `size="sm"` and `striped` for dense data. Show states with `loading`, `error
 
 <Do>
 
-In server mode, pass the page's `items`, `rowCount` and `loading`, and load from `onViewChange`, `onPageChange` and `onPageSizeChange`. For live data, set `highlightChanges` and never tint, animate or scroll rows yourself.
+In server mode, pass the page's `items`, `rowCount` and `loading`, and load from `onViewChange`, `onPageChange` and `onPageSizeChange`. Every filter in `view.filters` is a list a row matches any item of (`values` for text, options and yes / no, `ranges` for numbers and dates), plus `empty` for "No value": send the whole list, not its first item. For live data, set `highlightChanges` and never tint, animate or scroll rows yourself.
 
 </Do>
 
@@ -1034,24 +1079,32 @@ type DataTableView = {
 }
 
 // `view` and `defaultView` take a DataTablePartialView: every part optional.
-// `empty: true` is "No value": the rows without a value match too, or alone
-// when the rest is unset (`value: ""`, no range, no `value`, `values: []`).
+// Every filter is a list: a row matches when it matches any item. `empty: true`
+// is "No value": the rows without a value match too, or alone when the list
+// is empty.
 type DataTableFilterValue =
-  | { type: "text"; value: string; empty?: boolean }
-  // A bound is included, but with `minExclusive` / `maxExclusive: true`
-  // (`value > min`, `value < max`).
+  | { type: "text"; values: ReadonlyArray<string>; empty?: boolean }
   | {
       type: "number"
-      min?: number
-      max?: number
-      minExclusive?: true
-      maxExclusive?: true
+      ranges: ReadonlyArray<DataTableNumberRange>
       empty?: boolean
     }
-  | { type: "date"; from?: Date; to?: Date; empty?: boolean }
-  | { type: "boolean"; value?: boolean; empty?: boolean }
+  | { type: "date"; ranges: ReadonlyArray<DataTableDateRange>; empty?: boolean }
+  | { type: "boolean"; values: ReadonlyArray<boolean>; empty?: boolean }
   | { type: "options"; values: ReadonlyArray<string>; empty?: boolean }
   | { type: "custom"; value: unknown }
+
+// Both ends are included, but with `minExclusive` / `maxExclusive: true`
+// (`value > min`, `value < max`).
+type DataTableNumberRange = {
+  min?: number
+  max?: number
+  minExclusive?: true
+  maxExclusive?: true
+}
+
+// Both ends are included; a `to` at midnight includes that whole day.
+type DataTableDateRange = { from?: Date; to?: Date }
 ```
 
 ### useDataTable
