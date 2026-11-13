@@ -45,6 +45,8 @@ As the container narrows, the row gives up space in stages and takes it back in 
 3. Items move into the More menu, lowest `priority` first, ties from the end of the row.
 4. When the fixed items alone do not fit, the row wraps (`lastResort="wrap"`) or scrolls.
 
+Rendered on the server, the row cannot know how wide it will be. Until it has measured itself in the browser (`data-measured` on the row), it keeps to one line and what may still move keeps its place unseen: the items that can go into the menu, the dividers, and whatever follows the first such item. The fixed and `elastic` items before them show from the first paint; the rest appear with the More button, in one frame, once the row has measured, and a row that fits never shows one. A row mounted in the browser measures before its first paint.
+
 ## Priority
 
 `priority` decides who leaves first, never where an item sits; the menu keeps source order. `labels="always"` skips the icon-only stage.

@@ -81,6 +81,13 @@ write entries and cut a release.
   outside) is measured again, so the same width always gives the same layout.
 - `Chip`: after its remove button is pressed, focus goes to the chip now in its place, as after
   Delete, instead of to the page.
+- `Overflow` and `Toolbar` (and so `DataTableToolbar`) rendered on the server no longer show every
+  item, without the More button, until the page hydrates. Until the row has measured itself in the
+  browser (`data-measured`), it keeps to one line and what may still move keeps its place unseen:
+  the items that can go into the menu, the dividers and whatever follows them. The fixed and
+  elastic items before them (a table's search) show. Once measured, the items that fit and the
+  More button appear in the same frame, and a row that fits never shows a More button. A row
+  mounted in the browser measures before its first paint, as before.
 
 ## [0.3.0] - 2026-11-02
 
