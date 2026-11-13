@@ -52,6 +52,8 @@ write entries and cut a release.
 - `ActionBar`: its text ("2 of 9 wells selected", Clear, the clear button's and the toolbar's names)
   is translated and its numbers are formatted in the provider locale; an inline bar takes its place
   at once, and only the floating bar fades in.
+- `Field`: a field's label, control and description sit `gap-2` apart instead of `gap-3`, so a
+  form is a little tighter.
 - `NumberField`: the minus and plus buttons are named in the provider locale ("Increase" and
   "Decrease" in English). `Overflow`'s default "More actions" is translated too.
 - `TableColumnResizer`: the line is in the drop line's colour with no tint behind it on hover, the

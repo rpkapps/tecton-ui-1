@@ -683,7 +683,7 @@
   }
 
   .cn-field {
-    @apply data-[invalid=true]:text-destructive gap-3;
+    @apply data-[invalid=true]:text-destructive gap-2;
   }
 
   .cn-field-content {
