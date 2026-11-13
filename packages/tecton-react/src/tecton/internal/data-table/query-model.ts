@@ -130,10 +130,7 @@ function problemMessage(
         return list === undefined
           ? t("unsupportedOrNoList")
           : t("unsupportedOr", { example: list })
-      if (params.operator === "NOT")
-        return keep === undefined
-          ? t("unsupportedNotNoFilter")
-          : t("unsupportedNot", { example: keep })
+      // A leading minus or NOT: the term is left out alike.
       return keep === undefined
         ? t("unsupportedMinusNoFilter")
         : t("unsupportedMinus", { example: keep })

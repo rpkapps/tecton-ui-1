@@ -114,10 +114,6 @@ export default defineTranslations({
       "Išskyrimas nepalaikomas, todėl šios sąlygos nepaisoma. Norėdami ieškoti būtent šio teksto, įrašykite jį į kabutes. Norėdami susiaurinti eilutes, verčiau filtruokite reikšmes, kurias norite palikti: {example}",
     unsupportedMinusNoFilter:
       "Išskyrimas nepalaikomas, todėl šios sąlygos nepaisoma. Norėdami ieškoti būtent šio teksto, įrašykite jį į kabutes.",
-    unsupportedNot:
-      "Išskyrimas nepalaikomas, todėl NOT nepaisoma, o šalia esančios sąlygos tebetaikomos. Norėdami susiaurinti eilutes, verčiau filtruokite reikšmes, kurias norite palikti: {example}",
-    unsupportedNotNoFilter:
-      "Išskyrimas nepalaikomas, todėl NOT nepaisoma, o šalia esančios sąlygos tebetaikomos.",
     exclusiveComparison: "Su data ir laiku naudokite >= arba <=.",
     notComparable: "{column} neturi tvarkos: verčiau pasirinkite reikšmes.",
     multipleBoolean: "{column} yra taip arba ne, ne abu.",

@@ -104,10 +104,6 @@ export default defineTranslations({
       "Uitsluiten wordt niet ondersteund, dus deze term wordt genegeerd. Zet de tekst tussen aanhalingstekens om naar precies die tekst te zoeken. Filter in plaats daarvan op de waarden die u wilt houden om de rijen te beperken: {example}",
     unsupportedMinusNoFilter:
       "Uitsluiten wordt niet ondersteund, dus deze term wordt genegeerd. Zet de tekst tussen aanhalingstekens om naar precies die tekst te zoeken.",
-    unsupportedNot:
-      "Uitsluiten wordt niet ondersteund, dus NOT wordt genegeerd en de termen ernaast gelden nog steeds. Filter in plaats daarvan op de waarden die u wilt houden om de rijen te beperken: {example}",
-    unsupportedNotNoFilter:
-      "Uitsluiten wordt niet ondersteund, dus NOT wordt genegeerd en de termen ernaast gelden nog steeds.",
     exclusiveComparison: "Gebruik >= of <= met een datum en tijd.",
     notComparable:
       "{column} heeft geen volgorde: kies in plaats daarvan de waarden.",

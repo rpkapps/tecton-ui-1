@@ -105,10 +105,6 @@ export default defineTranslations({
       "A exclusão não é suportada, por isso este termo é ignorado. Para pesquisar o próprio texto, coloque-o entre aspas. Para restringir as linhas, filtre os valores a manter: {example}",
     unsupportedMinusNoFilter:
       "A exclusão não é suportada, por isso este termo é ignorado. Para pesquisar o próprio texto, coloque-o entre aspas.",
-    unsupportedNot:
-      "A exclusão não é suportada, por isso NOT é ignorado e os termos à volta continuam a aplicar-se. Para restringir as linhas, filtre os valores a manter: {example}",
-    unsupportedNotNoFilter:
-      "A exclusão não é suportada, por isso NOT é ignorado e os termos à volta continuam a aplicar-se.",
     exclusiveComparison: "Use >= ou <= com uma data e hora.",
     notComparable: "{column} não tem ordem: escolha os seus valores.",
     multipleBoolean: "{column} é sim ou não, não ambos.",

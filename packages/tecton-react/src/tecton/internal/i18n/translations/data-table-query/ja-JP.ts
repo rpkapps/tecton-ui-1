@@ -90,10 +90,6 @@ export default defineTranslations({
       "除外は使えないため、この条件は無視されます。このテキストそのものを検索するには引用符で囲んでください。行を絞り込むには、代わりに残す値を指定してください。例: {example}",
     unsupportedMinusNoFilter:
       "除外は使えないため、この条件は無視されます。このテキストそのものを検索するには引用符で囲んでください。",
-    unsupportedNot:
-      "除外は使えないため、NOT は無視され、前後の条件はそのまま適用されます。行を絞り込むには、代わりに残す値を指定してください。例: {example}",
-    unsupportedNotNoFilter:
-      "除外は使えないため、NOT は無視され、前後の条件はそのまま適用されます。",
     exclusiveComparison: "日時には >= または <= を使ってください。",
     notComparable:
       "{column} には順序がありません。代わりに値を選んでください。",

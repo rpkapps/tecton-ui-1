@@ -102,10 +102,6 @@ export default defineTranslations({
       "Udelukkelse understøttes ikke, så denne term ignoreres. Sæt teksten i anførselstegn for at søge efter selve teksten. Filtrer i stedet efter de værdier, der skal blive, for at indsnævre rækkerne: {example}",
     unsupportedMinusNoFilter:
       "Udelukkelse understøttes ikke, så denne term ignoreres. Sæt teksten i anførselstegn for at søge efter selve teksten.",
-    unsupportedNot:
-      "Udelukkelse understøttes ikke, så NOT ignoreres, og termerne omkring det gælder stadig. Filtrer i stedet efter de værdier, der skal blive, for at indsnævre rækkerne: {example}",
-    unsupportedNotNoFilter:
-      "Udelukkelse understøttes ikke, så NOT ignoreres, og termerne omkring det gælder stadig.",
     exclusiveComparison: "Brug >= eller <= med dato og klokkeslæt.",
     notComparable: "{column} har ingen rækkefølge: vælg i stedet dens værdier.",
     multipleBoolean: "{column} er ja eller nej, ikke begge.",

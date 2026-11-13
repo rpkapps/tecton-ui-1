@@ -113,10 +113,6 @@ export default defineTranslations({
       "Vylučování není podporováno, proto se tato podmínka nepoužije. Chcete-li hledat přímo tento text, dejte ho do uvozovek. Chcete-li zúžit řádky, filtrujte raději hodnoty, které chcete ponechat: {example}",
     unsupportedMinusNoFilter:
       "Vylučování není podporováno, proto se tato podmínka nepoužije. Chcete-li hledat přímo tento text, dejte ho do uvozovek.",
-    unsupportedNot:
-      "Vylučování není podporováno, proto se NOT nepoužije a podmínky kolem něj platí dál. Chcete-li zúžit řádky, filtrujte raději hodnoty, které chcete ponechat: {example}",
-    unsupportedNotNoFilter:
-      "Vylučování není podporováno, proto se NOT nepoužije a podmínky kolem něj platí dál.",
     exclusiveComparison: "U data s časem použijte >= nebo <=.",
     notComparable: "Sloupec {column} nemá pořadí: vyberte raději jeho hodnoty.",
     multipleBoolean: "{column} je ano nebo ne, ne obojí.",

@@ -204,13 +204,11 @@ describe("DataTableSearch syntax=query: the query and the view", () => {
         'Excluding isn\'t supported, so this term is ignored. To search for the text itself, put it in quotes. To narrow the rows, filter for the values to keep instead: status:producing,"shut in"'
       )
     )
-    // NOT is left out, and says that the term after it still applies.
-    expect(description()).toHaveTextContent(
-      'Excluding isn\'t supported, so NOT is ignored and the terms beside it still apply. To narrow the rows, filter for the values to keep instead: status:producing,"shut in"'
-    )
+    // NOT takes the term after it out with it, as a minus does: never the
+    // opposite of what was meant.
+    expect(description()).toHaveTextContent("3 problems")
     expect(lastView(onViewChange).filters).toEqual({
       status: { type: "options", values: ["drilling"] },
-      field: { type: "text", value: "troll" },
     })
   })
 

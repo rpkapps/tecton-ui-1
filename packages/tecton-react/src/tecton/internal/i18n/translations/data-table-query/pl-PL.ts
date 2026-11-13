@@ -115,10 +115,6 @@ export default defineTranslations({
       "Wykluczanie nie jest obsługiwane, więc ten warunek jest pomijany. Aby wyszukać dokładnie ten tekst, ujmij go w cudzysłów. Aby zawęzić wiersze, odfiltruj zamiast tego wartości do zachowania: {example}",
     unsupportedMinusNoFilter:
       "Wykluczanie nie jest obsługiwane, więc ten warunek jest pomijany. Aby wyszukać dokładnie ten tekst, ujmij go w cudzysłów.",
-    unsupportedNot:
-      "Wykluczanie nie jest obsługiwane, więc NOT jest pomijane, a warunki obok niego nadal obowiązują. Aby zawęzić wiersze, odfiltruj zamiast tego wartości do zachowania: {example}",
-    unsupportedNotNoFilter:
-      "Wykluczanie nie jest obsługiwane, więc NOT jest pomijane, a warunki obok niego nadal obowiązują.",
     exclusiveComparison: "Dla daty z godziną użyj >= lub <=.",
     notComparable: "Kolumna {column} nie ma kolejności: wybierz jej wartości.",
     multipleBoolean: "{column} to tak lub nie, nie oba naraz.",

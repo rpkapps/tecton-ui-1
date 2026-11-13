@@ -114,18 +114,14 @@ const enUS = {
       "OR isn't supported. Rows must match every term. To match one of several values of a column, list them with commas: {example}",
     unsupportedOrNoList:
       "OR isn't supported. Rows must match every term, so search for one thing at a time.",
-    // A leading minus (`-plugged`); {example} is a term of the table's own
+    // A leading minus (`-plugged`) or NOT and the term after it, left out
+    // alike; {example} is a term of the table's own
     // that keeps rows (the options term, else another column's);
     // `NoFilter` when no column can be filtered.
     unsupportedMinus:
       "Excluding isn't supported, so this term is ignored. To search for the text itself, put it in quotes. To narrow the rows, filter for the values to keep instead: {example}",
     unsupportedMinusNoFilter:
       "Excluding isn't supported, so this term is ignored. To search for the text itself, put it in quotes.",
-    // NOT, which leaves the terms beside it applied.
-    unsupportedNot:
-      "Excluding isn't supported, so NOT is ignored and the terms beside it still apply. To narrow the rows, filter for the values to keep instead: {example}",
-    unsupportedNotNoFilter:
-      "Excluding isn't supported, so NOT is ignored and the terms beside it still apply.",
     exclusiveComparison: "Use >= or <= with a date and time.",
     notComparable: "{column} has no order: choose its values instead.",
     multipleBoolean: "{column} is yes or no, not both.",

@@ -105,10 +105,6 @@ export default defineTranslations({
       "L’exclusion n’est pas prise en charge : ce terme est ignoré. Pour rechercher ce texte tel quel, mettez-le entre guillemets. Pour restreindre les lignes, filtrez plutôt les valeurs à garder : {example}",
     unsupportedMinusNoFilter:
       "L’exclusion n’est pas prise en charge : ce terme est ignoré. Pour rechercher ce texte tel quel, mettez-le entre guillemets.",
-    unsupportedNot:
-      "L’exclusion n’est pas prise en charge : NOT est ignoré et les termes autour continuent de s’appliquer. Pour restreindre les lignes, filtrez plutôt les valeurs à garder : {example}",
-    unsupportedNotNoFilter:
-      "L’exclusion n’est pas prise en charge : NOT est ignoré et les termes autour continuent de s’appliquer.",
     exclusiveComparison: "Utilisez >= ou <= avec une date et une heure.",
     notComparable: "{column} n’a pas d’ordre : choisissez plutôt ses valeurs.",
     multipleBoolean: "{column} est oui ou non, pas les deux.",

@@ -108,10 +108,6 @@ export default defineTranslations({
       "Izslēgšana netiek atbalstīta, tāpēc šis nosacījums tiek ignorēts. Lai meklētu tieši šo tekstu, ielieciet to pēdiņās. Lai sašaurinātu rindas, tā vietā filtrējiet vērtības, kuras paturēt: {example}",
     unsupportedMinusNoFilter:
       "Izslēgšana netiek atbalstīta, tāpēc šis nosacījums tiek ignorēts. Lai meklētu tieši šo tekstu, ielieciet to pēdiņās.",
-    unsupportedNot:
-      "Izslēgšana netiek atbalstīta, tāpēc NOT tiek ignorēts, bet blakus esošie nosacījumi joprojām tiek piemēroti. Lai sašaurinātu rindas, tā vietā filtrējiet vērtības, kuras paturēt: {example}",
-    unsupportedNotNoFilter:
-      "Izslēgšana netiek atbalstīta, tāpēc NOT tiek ignorēts, bet blakus esošie nosacījumi joprojām tiek piemēroti.",
     exclusiveComparison: "Datumam ar laiku izmantojiet >= vai <=.",
     notComparable: "{column} nav secības: tā vietā izvēlieties vērtības.",
     multipleBoolean: "{column} ir jā vai nē, ne abi.",

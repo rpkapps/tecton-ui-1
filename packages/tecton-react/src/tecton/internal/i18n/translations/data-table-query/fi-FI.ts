@@ -105,10 +105,6 @@ export default defineTranslations({
       "Poissulkeminen ei ole tuettu, joten tämä ehto ohitetaan. Jos haluat hakea juuri tätä tekstiä, laita se lainausmerkkeihin. Jos haluat rajata rivejä, suodata sen sijaan säilytettävät arvot: {example}",
     unsupportedMinusNoFilter:
       "Poissulkeminen ei ole tuettu, joten tämä ehto ohitetaan. Jos haluat hakea juuri tätä tekstiä, laita se lainausmerkkeihin.",
-    unsupportedNot:
-      "Poissulkeminen ei ole tuettu, joten NOT ohitetaan ja sen vieressä olevat ehdot pätevät edelleen. Jos haluat rajata rivejä, suodata sen sijaan säilytettävät arvot: {example}",
-    unsupportedNotNoFilter:
-      "Poissulkeminen ei ole tuettu, joten NOT ohitetaan ja sen vieressä olevat ehdot pätevät edelleen.",
     exclusiveComparison:
       "Käytä päivämäärän ja kellonajan kanssa merkkejä >= tai <=.",
     notComparable:

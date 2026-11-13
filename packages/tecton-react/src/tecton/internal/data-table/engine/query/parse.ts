@@ -36,7 +36,9 @@
  * can say that (`td:>=1000 td:<=3000` is `1000..3000`); otherwise the second
  * term is a problem (`duplicateColumn`). `OR`, `NOT` and a leading `-` are
  * problems too: filters cannot say "either" or "not", and a term with a
- * problem is not applied rather than applied otherwise. Quote a word to
+ * problem is not applied rather than applied otherwise. `NOT` takes the
+ * term after it with it, as `-` does its own (`NOT drilling` searches for
+ * nothing, never for "drilling"). Quote a word to
  * search for it as it is (`"-5"`, `"OR"`, `"10:30"`, `"http://..."`).
  * `AND` is accepted and changes nothing.
  */
@@ -625,10 +627,24 @@ function parseQuery(
       todays.set(timeZone, (day = todayIn(moment, timeZone)))
     return day
   }
+  // Where a `NOT` waiting for the term it takes out starts.
+  let not: number | undefined
+  const notAlone = () => {
+    if (not === undefined) return
+    diagnostics.push({
+      code: "unsupportedOperator",
+      start: not,
+      end: not + "NOT".length,
+      params: { operator: "NOT" },
+    })
+    not = undefined
+  }
   for (let index = 0; index < chunks.length; index++) {
     const chunk = chunks[index]
     const raw = text.slice(chunk.start, chunk.end)
     if (raw === "AND" || raw === "OR" || raw === "NOT") {
+      // A keyword after `NOT` leaves it with no term to take out.
+      notAlone()
       spans.push({ start: chunk.start, end: chunk.end, kind: "keyword" })
       terms.push({
         kind: "keyword",
@@ -637,7 +653,8 @@ function parseQuery(
         end: chunk.end,
         applied: raw === "AND",
       })
-      if (raw !== "AND")
+      if (raw === "NOT") not = chunk.start
+      else if (raw === "OR")
         diagnostics.push({
           code: "unsupportedOperator",
           start: chunk.start,
@@ -646,9 +663,12 @@ function parseQuery(
         })
       continue
     }
-    const negated = raw.startsWith("-")
-    const start = negated ? chunk.start + 1 : chunk.start
-    if (negated) spans.push({ start: chunk.start, end: start, kind: "keyword" })
+    const minus = raw.startsWith("-")
+    const negatedBy = not
+    not = undefined
+    const negated = minus || negatedBy !== undefined
+    const start = minus ? chunk.start + 1 : chunk.start
+    if (minus) spans.push({ start: chunk.start, end: start, kind: "keyword" })
     const colon = indexOutsideQuotes(text, ":", start, chunk.end)
     let term: QueryTerm
     let own: Array<QueryDiagnostic>
@@ -734,19 +754,21 @@ function parseQuery(
       own = []
     }
     if (negated) {
-      // Not applied, whatever else is the matter with it.
+      // Not applied, whatever else is the matter with it; `NOT` and its
+      // term are one problem.
       own = [
         {
           code: "unsupportedOperator",
-          start: chunk.start,
+          start: negatedBy ?? chunk.start,
           end: term.end,
-          params: { operator: "-" },
+          params: { operator: negatedBy === undefined ? "-" : "NOT" },
         },
       ]
     }
     diagnostics.push(...own)
     terms.push(term)
   }
+  notAlone()
   return {
     text,
     terms,

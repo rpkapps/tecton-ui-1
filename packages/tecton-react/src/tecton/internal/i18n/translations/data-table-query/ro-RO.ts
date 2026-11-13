@@ -110,10 +110,6 @@ export default defineTranslations({
       "Excluderea nu este acceptată, așa că această condiție este ignorată. Pentru a căuta chiar acest text, puneți-l între ghilimele. Pentru a restrânge rândurile, filtrați în schimb valorile de păstrat: {example}",
     unsupportedMinusNoFilter:
       "Excluderea nu este acceptată, așa că această condiție este ignorată. Pentru a căuta chiar acest text, puneți-l între ghilimele.",
-    unsupportedNot:
-      "Excluderea nu este acceptată, așa că NOT este ignorat, iar condițiile din jurul lui se aplică în continuare. Pentru a restrânge rândurile, filtrați în schimb valorile de păstrat: {example}",
-    unsupportedNotNoFilter:
-      "Excluderea nu este acceptată, așa că NOT este ignorat, iar condițiile din jurul lui se aplică în continuare.",
     exclusiveComparison: "Cu dată și oră folosiți >= sau <=.",
     notComparable: "{column} nu are o ordine: alegeți în schimb valorile.",
     multipleBoolean: "{column} este da sau nu, nu ambele.",

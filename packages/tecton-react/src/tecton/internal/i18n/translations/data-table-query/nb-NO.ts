@@ -95,10 +95,6 @@ export default defineTranslations({
       "Utelukking støttes ikke, så denne termen ignoreres. Sett teksten i anførselstegn for å søke etter selve teksten. Filtrer heller etter verdiene som skal være med, for å snevre inn radene: {example}",
     unsupportedMinusNoFilter:
       "Utelukking støttes ikke, så denne termen ignoreres. Sett teksten i anførselstegn for å søke etter selve teksten.",
-    unsupportedNot:
-      "Utelukking støttes ikke, så NOT ignoreres, og termene rundt gjelder fortsatt. Filtrer heller etter verdiene som skal være med, for å snevre inn radene: {example}",
-    unsupportedNotNoFilter:
-      "Utelukking støttes ikke, så NOT ignoreres, og termene rundt gjelder fortsatt.",
     exclusiveComparison: "Bruk >= eller <= med dato og klokkeslett.",
     notComparable: "{column} har ingen rekkefølge: velg verdiene i stedet.",
     multipleBoolean: "{column} er ja eller nei, ikke begge.",

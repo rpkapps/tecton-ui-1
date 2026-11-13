@@ -110,10 +110,6 @@ export default defineTranslations({
       "Isključivanje nije podržano, pa se ovaj uvjet zanemaruje. Da biste pretražili upravo ovaj tekst, stavite ga u navodnike. Da biste suzili retke, umjesto toga filtrirajte vrijednosti koje želite zadržati: {example}",
     unsupportedMinusNoFilter:
       "Isključivanje nije podržano, pa se ovaj uvjet zanemaruje. Da biste pretražili upravo ovaj tekst, stavite ga u navodnike.",
-    unsupportedNot:
-      "Isključivanje nije podržano, pa se NOT zanemaruje, a uvjeti oko njega i dalje vrijede. Da biste suzili retke, umjesto toga filtrirajte vrijednosti koje želite zadržati: {example}",
-    unsupportedNotNoFilter:
-      "Isključivanje nije podržano, pa se NOT zanemaruje, a uvjeti oko njega i dalje vrijede.",
     exclusiveComparison: "Uz datum i vrijeme koristite >= ili <=.",
     notComparable:
       "{column} nema redoslijed: umjesto toga odaberite vrijednosti.",

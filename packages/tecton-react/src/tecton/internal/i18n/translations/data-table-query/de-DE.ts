@@ -105,10 +105,6 @@ export default defineTranslations({
       "Ausschließen wird nicht unterstützt, deshalb wird dieser Begriff ignoriert. Um nach genau diesem Text zu suchen, ihn in Anführungszeichen setzen. Um die Zeilen einzugrenzen, stattdessen nach den Werten filtern, die bleiben sollen: {example}",
     unsupportedMinusNoFilter:
       "Ausschließen wird nicht unterstützt, deshalb wird dieser Begriff ignoriert. Um nach genau diesem Text zu suchen, ihn in Anführungszeichen setzen.",
-    unsupportedNot:
-      "Ausschließen wird nicht unterstützt, deshalb wird NOT ignoriert, und die Begriffe daneben gelten weiter. Um die Zeilen einzugrenzen, stattdessen nach den Werten filtern, die bleiben sollen: {example}",
-    unsupportedNotNoFilter:
-      "Ausschließen wird nicht unterstützt, deshalb wird NOT ignoriert, und die Begriffe daneben gelten weiter.",
     exclusiveComparison: "Mit Datum und Uhrzeit >= oder <= verwenden.",
     notComparable:
       "{column} hat keine Reihenfolge: stattdessen Werte auswählen.",

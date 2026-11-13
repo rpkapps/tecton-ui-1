@@ -86,10 +86,6 @@ export default defineTranslations({
       "不支援排除，因此會忽略此條件。要搜尋這段文字本身，請加上引號。要縮小結果範圍，請改為篩選要保留的值：{example}",
     unsupportedMinusNoFilter:
       "不支援排除，因此會忽略此條件。要搜尋這段文字本身，請加上引號。",
-    unsupportedNot:
-      "不支援排除，因此會忽略 NOT，其兩側的條件仍會生效。要縮小結果範圍，請改為篩選要保留的值：{example}",
-    unsupportedNotNoFilter:
-      "不支援排除，因此會忽略 NOT，其兩側的條件仍會生效。",
     exclusiveComparison: "日期和時間請使用 >= 或 <=。",
     notComparable: "{column} 沒有順序：請改為選擇它的值。",
     multipleBoolean: "{column} 只能是是或否，不能同時為兩者。",

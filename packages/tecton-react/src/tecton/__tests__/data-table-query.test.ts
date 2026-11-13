@@ -718,7 +718,12 @@ describe("parseQuery: problems", () => {
       "2016..2015",
     ],
     ["drilling OR producing", "unsupportedOperator", { operator: "OR" }, "OR"],
-    ["NOT drilling", "unsupportedOperator", { operator: "NOT" }, "NOT"],
+    [
+      "NOT drilling",
+      "unsupportedOperator",
+      { operator: "NOT" },
+      "NOT drilling",
+    ],
     [
       "-status:drilling",
       "unsupportedOperator",
@@ -766,6 +771,35 @@ describe("parseQuery: problems", () => {
   it("does not search for a negated word", () => {
     expect(parse("-gullfaks").search).toBe("")
     expect(parse(`"-gullfaks"`).search).toBe("-gullfaks")
+  })
+
+  it("takes the term after NOT out with it, never applying the opposite of what was meant", () => {
+    // Searching for "drilling" would keep exactly the rows NOT meant to drop.
+    const word = parse("NOT drilling")
+    expect(word.search).toBe("")
+    const filter = parse("status:producing NOT status:drilling gullfaks")
+    expect(filter.filters).toEqual({
+      status: { type: "options", values: ["producing"] },
+    })
+    expect(filter.search).toBe("gullfaks")
+    const [diagnostic] = filter.diagnostics
+    expect(diagnostic.params).toMatchObject({ operator: "NOT" })
+    expect(filter.text.slice(diagnostic.start, diagnostic.end)).toBe(
+      "NOT status:drilling"
+    )
+    // With nothing after it, or another keyword, NOT alone is the problem.
+    for (const text of [
+      "gullfaks NOT",
+      "NOT OR gullfaks",
+      "NOT AND gullfaks",
+    ]) {
+      const parsed = parse(text)
+      expect(parsed.search).toBe("gullfaks")
+      const not = parsed.diagnostics.find(
+        (each) => each.params.operator === "NOT"
+      )!
+      expect(text.slice(not.start, not.end)).toBe("NOT")
+    }
   })
 })
 
@@ -1498,8 +1532,6 @@ describe("problemMessage: OR, NOT and a leading minus in words", () => {
   const OR = "OR isn't supported. Rows must match every term."
   const MINUS =
     "Excluding isn't supported, so this term is ignored. To search for the text itself, put it in quotes."
-  const NOT =
-    "Excluding isn't supported, so NOT is ignored and the terms beside it still apply."
   const KEEP = "To narrow the rows, filter for the values to keep instead:"
 
   it("shows how to write either value with the table's first options column", () => {
@@ -1510,7 +1542,7 @@ describe("problemMessage: OR, NOT and a leading minus in words", () => {
       `${MINUS} ${KEEP} status:drilling,producing`
     )
     expect(message("NOT gullfaks")).toBe(
-      `${NOT} ${KEEP} status:drilling,producing`
+      `${MINUS} ${KEEP} status:drilling,producing`
     )
   })
 
@@ -1538,7 +1570,7 @@ describe("problemMessage: OR, NOT and a leading minus in words", () => {
         { id: "subsea", header: "Subsea", type: "boolean" },
       ])
     )
-    expect(message("NOT a", flags)).toBe(`${NOT} ${KEEP} subsea:yes`)
+    expect(message("NOT a", flags)).toBe(`${MINUS} ${KEEP} subsea:yes`)
   })
 
   it("says only what happened when no column can be filtered", () => {
@@ -1549,6 +1581,6 @@ describe("problemMessage: OR, NOT and a leading minus in words", () => {
       `${OR.slice(0, -1)}, so search for one thing at a time.`
     )
     expect(message("-a", none)).toBe(MINUS)
-    expect(message("NOT a", none)).toBe(NOT)
+    expect(message("NOT a", none)).toBe(MINUS)
   })
 })

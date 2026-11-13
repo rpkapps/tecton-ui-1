@@ -102,10 +102,6 @@ export default defineTranslations({
       "Välistamine ei ole toetatud, seega seda tingimust ei arvestata. Teksti enda otsimiseks pange see jutumärkidesse. Ridade kitsendamiseks filtreerige selle asemel alles jäävad väärtused: {example}",
     unsupportedMinusNoFilter:
       "Välistamine ei ole toetatud, seega seda tingimust ei arvestata. Teksti enda otsimiseks pange see jutumärkidesse.",
-    unsupportedNot:
-      "Välistamine ei ole toetatud, seega NOT-i ei arvestata ja selle kõrval olevad tingimused kehtivad edasi. Ridade kitsendamiseks filtreerige selle asemel alles jäävad väärtused: {example}",
-    unsupportedNotNoFilter:
-      "Välistamine ei ole toetatud, seega NOT-i ei arvestata ja selle kõrval olevad tingimused kehtivad edasi.",
     exclusiveComparison: "Kuupäeva ja kellaajaga kasutage >= või <=.",
     notComparable:
       "Veerul {column} pole järjestust: valige selle asemel väärtused.",

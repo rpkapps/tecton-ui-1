@@ -105,10 +105,6 @@ export default defineTranslations({
       "No se admite excluir, así que este término se ignora. Para buscar el texto tal cual, ponlo entre comillas. Para acotar las filas, filtra en su lugar los valores que quieras conservar: {example}",
     unsupportedMinusNoFilter:
       "No se admite excluir, así que este término se ignora. Para buscar el texto tal cual, ponlo entre comillas.",
-    unsupportedNot:
-      "No se admite excluir, así que NOT se ignora y los términos de su alrededor se siguen aplicando. Para acotar las filas, filtra en su lugar los valores que quieras conservar: {example}",
-    unsupportedNotNoFilter:
-      "No se admite excluir, así que NOT se ignora y los términos de su alrededor se siguen aplicando.",
     exclusiveComparison: "Usa >= o <= con una fecha y hora.",
     notComparable: "{column} no tiene orden: elige sus valores en su lugar.",
     multipleBoolean: "{column} es sí o no, no ambos.",

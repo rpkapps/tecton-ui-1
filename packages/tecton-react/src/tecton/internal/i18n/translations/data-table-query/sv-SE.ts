@@ -104,10 +104,6 @@ export default defineTranslations({
       "Att utesluta stöds inte, så den här termen ignoreras. Sätt texten inom citattecken för att söka efter just den texten. Filtrera i stället på de värden som ska vara kvar för att begränsa raderna: {example}",
     unsupportedMinusNoFilter:
       "Att utesluta stöds inte, så den här termen ignoreras. Sätt texten inom citattecken för att söka efter just den texten.",
-    unsupportedNot:
-      "Att utesluta stöds inte, så NOT ignoreras och termerna runt det gäller fortfarande. Filtrera i stället på de värden som ska vara kvar för att begränsa raderna: {example}",
-    unsupportedNotNoFilter:
-      "Att utesluta stöds inte, så NOT ignoreras och termerna runt det gäller fortfarande.",
     exclusiveComparison: "Använd >= eller <= med datum och tid.",
     notComparable: "{column} har ingen ordning: välj dess värden i stället.",
     multipleBoolean: "{column} är ja eller nej, inte båda.",

@@ -113,10 +113,6 @@ export default defineTranslations({
       "Izključevanje ni podprto, zato se ta pogoj ne upošteva. Če želite iskati prav to besedilo, ga postavite v narekovaje. Če želite zožiti vrstice, raje filtrirajte vrednosti, ki jih želite obdržati: {example}",
     unsupportedMinusNoFilter:
       "Izključevanje ni podprto, zato se ta pogoj ne upošteva. Če želite iskati prav to besedilo, ga postavite v narekovaje.",
-    unsupportedNot:
-      "Izključevanje ni podprto, zato se NOT ne upošteva, pogoji ob njem pa še vedno veljajo. Če želite zožiti vrstice, raje filtrirajte vrednosti, ki jih želite obdržati: {example}",
-    unsupportedNotNoFilter:
-      "Izključevanje ni podprto, zato se NOT ne upošteva, pogoji ob njem pa še vedno veljajo.",
     exclusiveComparison: "Pri datumu s časom uporabite >= ali <=.",
     notComparable:
       "{column} nima vrstnega reda: raje izberite njegove vrednosti.",

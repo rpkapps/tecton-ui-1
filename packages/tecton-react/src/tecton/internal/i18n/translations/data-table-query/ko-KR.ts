@@ -90,10 +90,6 @@ export default defineTranslations({
       "제외는 지원되지 않으므로 이 조건은 무시됩니다. 텍스트 자체를 검색하려면 따옴표로 묶으세요. 행을 좁히려면 대신 남길 값으로 필터링하세요: {example}",
     unsupportedMinusNoFilter:
       "제외는 지원되지 않으므로 이 조건은 무시됩니다. 텍스트 자체를 검색하려면 따옴표로 묶으세요.",
-    unsupportedNot:
-      "제외는 지원되지 않으므로 NOT은 무시되고 주변 조건은 계속 적용됩니다. 행을 좁히려면 대신 남길 값으로 필터링하세요: {example}",
-    unsupportedNotNoFilter:
-      "제외는 지원되지 않으므로 NOT은 무시되고 주변 조건은 계속 적용됩니다.",
     exclusiveComparison: "날짜와 시간에는 >= 또는 <=를 사용하세요.",
     notComparable: "{column}에는 순서가 없습니다. 대신 값을 선택하세요.",
     multipleBoolean: "{column}은(는) 예 또는 아니요 중 하나입니다.",

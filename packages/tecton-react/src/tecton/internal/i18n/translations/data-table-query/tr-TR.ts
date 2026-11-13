@@ -93,10 +93,6 @@ export default defineTranslations({
       "Hariç tutma desteklenmez, bu yüzden bu koşul yok sayılır. Metnin kendisini aramak için tırnak içine alın. Satırları daraltmak için bunun yerine kalacak değerlere göre filtreleyin: {example}",
     unsupportedMinusNoFilter:
       "Hariç tutma desteklenmez, bu yüzden bu koşul yok sayılır. Metnin kendisini aramak için tırnak içine alın.",
-    unsupportedNot:
-      "Hariç tutma desteklenmez, bu yüzden NOT yok sayılır ve çevresindeki koşullar uygulanmaya devam eder. Satırları daraltmak için bunun yerine kalacak değerlere göre filtreleyin: {example}",
-    unsupportedNotNoFilter:
-      "Hariç tutma desteklenmez, bu yüzden NOT yok sayılır ve çevresindeki koşullar uygulanmaya devam eder.",
     exclusiveComparison: "Tarih ve saatle >= veya <= kullanın.",
     notComparable:
       "{column} için sıralama yok: bunun yerine değerlerini seçin.",
