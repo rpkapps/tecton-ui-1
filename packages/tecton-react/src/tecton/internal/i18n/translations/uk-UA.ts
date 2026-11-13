@@ -299,6 +299,8 @@ export default defineTranslations({
     keySelect: "Вибрати",
     keyComplete: "Доповнити",
     keyClose: "Закрити",
+    statusSearching: "Пошук «{text}» в усіх стовпцях",
+    noSuggestions: "Немає пропозицій",
     summaryFilters: "Фільтри: {filters}.",
     summaryNoFilters: "Фільтрів немає.",
     summarySearch: "Пошук: {search}.",

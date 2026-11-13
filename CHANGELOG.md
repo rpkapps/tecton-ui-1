@@ -27,7 +27,8 @@ write entries and cut a release.
   spud:2015`) set the same column filters as the filter buttons and free words the search, and a
   filter button, chip or controlled view writes the query again. The field draws the query in
   colours, suggests columns, values with their row counts, comparisons with the data's range and a
-  date's presets, years, months and calendar, explains a term it cannot apply (`OR`, `NOT`, `-`, an
+  date's presets, years, months and calendar in a list that stays open while the field has focus
+  (with nothing to suggest, a line says what the term at the caret does), explains a term it cannot apply (`OR`, `NOT`, `-`, an
   unknown column or value) instead of applying it otherwise, with what to type instead in the
   table's own terms (`status:drilling,producing` for one of several values), lists the table's
   columns with examples in its "?" help, and works in server mode, RTL and the 34 locales. Its

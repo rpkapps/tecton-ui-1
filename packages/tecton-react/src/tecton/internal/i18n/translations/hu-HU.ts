@@ -239,6 +239,8 @@ export default defineTranslations({
     keySelect: "Kijelölés",
     keyComplete: "Kiegészítés",
     keyClose: "Bezárás",
+    statusSearching: "„{text}” keresése minden oszlopban",
+    noSuggestions: "Nincs javaslat",
     summaryFilters: "Szűrők: {filters}.",
     summaryNoFilters: "Nincsenek szűrők.",
     summarySearch: "Keresés: {search}.",

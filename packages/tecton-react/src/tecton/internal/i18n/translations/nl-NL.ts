@@ -261,6 +261,8 @@ export default defineTranslations({
     keySelect: "Selecteren",
     keyComplete: "Aanvullen",
     keyClose: "Sluiten",
+    statusSearching: "Alle kolommen doorzoeken op ‘{text}’",
+    noSuggestions: "Geen suggesties",
     summaryFilters: "Filters: {filters}.",
     summaryNoFilters: "Geen filters.",
     summarySearch: "Zoeken: {search}.",

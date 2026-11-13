@@ -242,6 +242,8 @@ export default defineTranslations({
     keySelect: "Seç",
     keyComplete: "Tamamla",
     keyClose: "Kapat",
+    statusSearching: "Tüm sütunlarda “{text}” aranıyor",
+    noSuggestions: "Öneri yok",
     summaryFilters: "Filtreler: {filters}.",
     summaryNoFilters: "Filtre yok.",
     summarySearch: "Arama: {search}.",

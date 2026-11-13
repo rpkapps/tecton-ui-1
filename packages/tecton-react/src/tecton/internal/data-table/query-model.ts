@@ -2,7 +2,7 @@
  * What `DataTableSearch syntax="query"` says about a query, in words: a
  * problem's message from its code and parameters, the field's summary for
  * screen readers, what a date term was understood as, the suggestions in
- * groups, and the help's examples, made from the table's own columns.
+ * groups, the list's line when it has none, and the help's examples, made from the table's own columns.
  * Loaded with the query field (`lazy.ts`, the `query` feature).
  */
 import type { Translator } from "../i18n/translations"
@@ -16,6 +16,7 @@ import type {
   QueryLanguage,
   QuerySuggestion,
   QuerySuggestions,
+  QueryTerm,
 } from "./engine/query/index"
 import { formatDay, toDay } from "./engine/query/dates"
 import { itemsOf, valueToken } from "./engine/query/syntax"
@@ -206,6 +207,21 @@ function termAt(parsed: ParsedQuery, caret: number) {
 }
 
 /**
+ * What a filter term alone filters, in its chip's words ("Status:
+ * Drilling"); `null` for one that filters nothing yet.
+ */
+function termWords(
+  term: QueryFilterTerm,
+  model: ColumnModel<unknown>,
+  formatter: Formatter<unknown>,
+  td: TableT
+) {
+  if (!term.column || !term.value) return null
+  const column = model.byId.get(term.column)
+  return column ? filterWords(column, term.value, formatter, td) : null
+}
+
+/**
  * What a date term alone was understood as, in its chip's words ("Spud
  * date: Jun 1, 2015–Jun 30, 2015"); `null` for another term, or one that
  * filters nothing yet.
@@ -219,8 +235,30 @@ function understood(
 ) {
   if (!term.column || !term.value) return null
   if (language.byId.get(term.column)?.type !== "date") return null
-  const column = model.byId.get(term.column)
-  return column ? filterWords(column, term.value, formatter, td) : null
+  return termWords(term, model, formatter, td)
+}
+
+/**
+ * The list's line when it has no suggestion to offer, about the term at
+ * the caret: the text searched for ("Searching all columns for “pump”"),
+ * what a filter term applies in its chip's words, or that there is nothing
+ * to suggest (for a term with a problem, whose message is atop the list).
+ */
+function statusOf(
+  term: QueryTerm | undefined,
+  problem: boolean,
+  model: ColumnModel<unknown>,
+  formatter: Formatter<unknown>,
+  t: QueryT,
+  td: TableT
+) {
+  if (!problem && term?.kind === "text" && term.text)
+    return t("statusSearching", { text: term.text })
+  if (!problem && term?.kind === "filter") {
+    const words = termWords(term, model, formatter, td)
+    if (words) return words
+  }
+  return t("noSuggestions")
 }
 
 /** A row of the suggestions: an offer of the engine, or the calendar's. */
@@ -553,6 +591,7 @@ export {
   helpExamples,
   headerOf,
   problemMessage,
+  statusOf,
   summaryOf,
   termAt,
   typeLabel,

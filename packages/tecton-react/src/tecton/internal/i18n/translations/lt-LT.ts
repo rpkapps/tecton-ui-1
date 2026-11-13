@@ -294,6 +294,8 @@ export default defineTranslations({
     keySelect: "Pasirinkti",
     keyComplete: "Užbaigti",
     keyClose: "Uždaryti",
+    statusSearching: "Ieškoma „{text}“ visuose stulpeliuose",
+    noSuggestions: "Pasiūlymų nėra",
     summaryFilters: "Filtrai: {filters}.",
     summaryNoFilters: "Filtrų nėra.",
     summarySearch: "Paieška: {search}.",

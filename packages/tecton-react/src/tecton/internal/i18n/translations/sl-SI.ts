@@ -301,6 +301,8 @@ export default defineTranslations({
     keySelect: "Izberi",
     keyComplete: "Dopolni",
     keyClose: "Zapri",
+    statusSearching: "Iskanje »{text}« v vseh stolpcih",
+    noSuggestions: "Ni predlogov",
     summaryFilters: "Filtri: {filters}.",
     summaryNoFilters: "Ni filtrov.",
     summarySearch: "Iskanje: {search}.",

@@ -296,6 +296,8 @@ export default defineTranslations({
     keySelect: "Vybrat",
     keyComplete: "Doplnit",
     keyClose: "Zavřít",
+    statusSearching: "Hledá se „{text}“ ve všech sloupcích",
+    noSuggestions: "Žádné návrhy",
     summaryFilters: "Filtry: {filters}.",
     summaryNoFilters: "Žádné filtry.",
     summarySearch: "Hledání: {search}.",

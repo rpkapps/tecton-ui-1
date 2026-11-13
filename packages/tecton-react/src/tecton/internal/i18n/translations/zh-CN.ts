@@ -219,6 +219,8 @@ export default defineTranslations({
     keySelect: "选择",
     keyComplete: "补全",
     keyClose: "关闭",
+    statusSearching: "正在所有列中搜索“{text}”",
+    noSuggestions: "没有建议",
     summaryFilters: "筛选条件：{filters}。",
     summaryNoFilters: "没有筛选条件。",
     summarySearch: "搜索：{search}。",

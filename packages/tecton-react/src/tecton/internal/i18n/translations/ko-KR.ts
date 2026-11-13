@@ -222,6 +222,8 @@ export default defineTranslations({
     keySelect: "선택",
     keyComplete: "완성",
     keyClose: "닫기",
+    statusSearching: "모든 열에서 “{text}”을(를) 검색하는 중",
+    noSuggestions: "제안 없음",
     summaryFilters: "필터: {filters}.",
     summaryNoFilters: "필터 없음.",
     summarySearch: "검색: {search}.",

@@ -281,6 +281,8 @@ export default defineTranslations({
     keySelect: "Atlasīt",
     keyComplete: "Pabeigt",
     keyClose: "Aizvērt",
+    statusSearching: "Visās kolonnās tiek meklēts “{text}”",
+    noSuggestions: "Nav ieteikumu",
     summaryFilters: "Filtri: {filters}.",
     summaryNoFilters: "Nav filtru.",
     summarySearch: "Meklēšana: {search}.",

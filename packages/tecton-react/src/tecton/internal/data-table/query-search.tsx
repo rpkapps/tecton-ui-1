@@ -20,8 +20,15 @@
  *   values with their rows, "No value", comparisons with the data's range,
  *   a date's presets with their days, years and months, and the date
  *   filter's calendar, which writes the days as text. ↑ ↓ move, Enter picks,
- *   Tab completes, Escape closes. The list is as wide as the field on every
+ *   Tab completes what is typed. The list is as wide as the field on every
  *   frame (its width copied from a ResizeObserver on the field).
+ * - The list is open the whole time the field has focus, whatever is typed,
+ *   picked or pressed in the field (its buttons, its underlined problems);
+ *   with no suggestion to offer, it shows one line about the term at the
+ *   caret (`statusOf`), announced politely. It closes, with no animation
+ *   while focus stays, when focus leaves the field and its popups, when
+ *   Escape dismisses it (until the user types, clicks in the field or
+ *   presses ↓), and while the help takes its place.
  * - The field never changes size as it is focused or pressed: its buttons
  *   stay under the pointer.
  * - The help ("?") lists the table's filterable columns with examples.
@@ -39,6 +46,7 @@ import {
   Combobox,
   ComboboxCollection,
   ComboboxContent,
+  ComboboxEmpty,
   ComboboxGroup,
   ComboboxInput,
   ComboboxItem,
@@ -91,6 +99,7 @@ import {
   groupSuggestions,
   helpExamples,
   problemMessage,
+  statusOf,
   summaryOf,
   termAt,
   typeLabel,
@@ -103,6 +112,8 @@ import { MirrorText, type QueryProblem } from "./query-text"
 
 /** How long typing pauses before the problem being typed shows. */
 const TYPING_PAUSE = 650
+
+const NO_GROUPS: Array<SuggestionGroup> = []
 
 /** What the plain field held when the query layer took its place. */
 type QueryHandoff = {
@@ -233,12 +244,16 @@ function QuerySearch({
     end: number
   } | null>(null)
   const highlighted = React.useRef<SuggestionRow | undefined>(undefined)
-  // A press that is focusing the field, until its click (`onPointerDown`).
-  const pressed = React.useRef(false)
+  // The highlighted row is one the user moved to (with ↑ ↓ or the pointer).
+  const navigated = React.useRef(false)
+  // An example of the help was chosen: focus goes back to the field.
+  const exampleChosen = React.useRef(false)
   const [group, setGroup] = React.useState<HTMLElement | null>(null)
   const [popup, setPopup] = React.useState<HTMLElement | null>(null)
   const [caret, setCaret] = React.useState(draft.length)
   const [focused, setFocused] = React.useState(false)
+  // The list is open while the field has focus; `false` once Escape
+  // dismissed it, until the user types, clicks in the field or presses ↓.
   const [open, setOpen] = React.useState(false)
   const [settled, setSettled] = React.useState(true)
   const [helpOpen, setHelpOpen] = React.useState(handoff.help)
@@ -347,6 +362,26 @@ function QuerySearch({
     return () => observer.disconnect()
   }, [group, popup])
 
+  // A press anywhere in the field around the input (its icon, its padding,
+  // its clear and help buttons) leaves focus in the input it already has:
+  // the field is never blurred and focused again, nor its list closed and
+  // opened again, by a press on its own parts.
+  React.useEffect(() => {
+    if (!group) return
+    const keep = (event: MouseEvent) => {
+      const input = inputRef.current
+      if (
+        event.button === 0 &&
+        input &&
+        event.target !== input &&
+        document.activeElement === input
+      )
+        event.preventDefault()
+    }
+    group.addEventListener("mousedown", keep)
+    return () => group.removeEventListener("mousedown", keep)
+  }, [group])
+
   const placeCaret = (at: number) => {
     pendingCaret.current = at
     setCaret(at)
@@ -449,17 +484,24 @@ function QuerySearch({
     if (calendarMode !== null) loadDates()
   }, [calendarMode, loadDates])
 
-  const popupWanted = open && focused
+  // Open while the field has focus, unless Escape dismissed it; the help,
+  // drawn where the list is, takes its place while it is open.
+  const popupOpen = open && focused && !helpOpen
   const suggestions = React.useMemo(() => {
-    if (!popupWanted) return null
+    if (!popupOpen) return null
     const options = {
       source: server ? undefined : sourceOf(rowModel.searchParts()),
     }
     const here = suggestQuery(language, parsed, caret, options)
     // Right after a term that is complete (`td:>3000|`), there is nothing
     // to offer for it: offer the next term instead, as after a space, so a
-    // field clicked at its end never shows an empty list (or none at all).
+    // field clicked at its end never shows an empty list. Not after free
+    // text, still being typed, or a term that filters nothing (an unknown
+    // column or value): their line says what they search for, or that
+    // there is nothing to suggest.
     const atTermEnd =
+      term?.kind === "filter" &&
+      term.value !== undefined &&
       caret > 0 &&
       !/\s/.test(draft[caret - 1]) &&
       (caret === draft.length || /\s/.test(draft[caret]))
@@ -483,7 +525,7 @@ function QuerySearch({
         caret: item.caret + 1,
       })),
     }
-  }, [popupWanted, language, parsed, caret, server, rowModel, draft])
+  }, [popupOpen, language, parsed, caret, server, rowModel, draft, term])
   const groups = React.useMemo(
     () =>
       suggestions
@@ -503,13 +545,45 @@ function QuerySearch({
     !termProblem && filterTerm
       ? understood(filterTerm, language, model, formatter, td)
       : null
-  const popupOpen = popupWanted && (rowCount > 0 || termProblem !== undefined)
+  // In place of the suggestions when there are none, so the list never
+  // shrinks to nothing: what the term at the caret does (a date term's
+  // line above it says so already).
+  const status =
+    popupOpen && rowCount === 0
+      ? hint
+        ? t("noSuggestions")
+        : statusOf(term, termProblem !== undefined, model, formatter, t, td)
+      : null
   const typed = suggestions
     ? draft.slice(suggestions.start, Math.max(suggestions.start, caret)).trim()
     : ""
   const autoHighlight =
     typed !== "" &&
     (suggestions?.context === "column" || suggestions?.context === "value")
+  // Something to complete at the caret: typed text, or a filter term's
+  // missing value (`status:`). Otherwise (after a space, after a complete
+  // term) Enter applies the query and Tab moves on, unless the user moved
+  // to a row.
+  const completing =
+    typed !== "" ||
+    (filterTerm?.incomplete === true && caret > filterTerm.key.end)
+
+  // The list keeps its highlighted index as its rows change, so a row
+  // highlighted as the user typed would stay highlighted in the next list
+  // (the next term's, once a pick completes a term), and Enter would pick
+  // it. With nothing to complete and no row moved to, the highlight goes:
+  // one render with no rows (in the same frame, never painted) drops it.
+  const [unhighlight, setUnhighlight] = React.useState(false)
+  React.useLayoutEffect(() => {
+    if (unhighlight) setUnhighlight(false)
+    else if (
+      popupOpen &&
+      !completing &&
+      !navigated.current &&
+      highlighted.current !== undefined
+    )
+      setUnhighlight(true)
+  })
 
   const replace = (from: number, to: number, text: string, at: number) => {
     const next = draft.slice(0, from) + text + draft.slice(to)
@@ -517,6 +591,7 @@ function QuerySearch({
     placeCaret(from + at)
     setSettled(true)
     highlighted.current = undefined
+    navigated.current = false
   }
 
   const focusCalendar = () => {
@@ -542,8 +617,8 @@ function QuerySearch({
       suggestion.text,
       suggestion.caret
     )
-    // An offer that completes its term ends with a space: the list closes.
-    setOpen(!suggestion.text.endsWith(" "))
+    // The list stays: after an offer that completes its term (it ends with
+    // a space), it offers the next term.
   }
 
   /** Days picked on the calendar, written as the query writes them. */
@@ -560,7 +635,6 @@ function QuerySearch({
       text + space,
       text.length + (atEnd ? 1 : 0)
     )
-    setOpen(false)
     requestAnimationFrame(() => inputRef.current?.focus())
   }
 
@@ -570,7 +644,7 @@ function QuerySearch({
     change(next)
     placeCaret(next.length)
     setSettled(true)
-    setOpen(false)
+    setOpen(true)
   }
 
   const clear = () => {
@@ -627,8 +701,8 @@ function QuerySearch({
         {summary}
       </span>
       <Combobox<SuggestionRow>
-        items={groups}
-        filteredItems={groups}
+        items={unhighlight ? NO_GROUPS : groups}
+        filteredItems={unhighlight ? NO_GROUPS : groups}
         filter={null}
         value={null}
         onValueChange={(row) => {
@@ -639,6 +713,7 @@ function QuerySearch({
           if (details.reason !== "input-change") return
           change(value)
           markTyping()
+          navigated.current = false
           setOpen(true)
           readCaret()
           requestAnimationFrame(readCaret)
@@ -646,6 +721,13 @@ function QuerySearch({
         open={popupOpen}
         onOpenChange={(next, details) => {
           if (!next && details.reason === "item-press") return
+          // A press on the field's own parts around the input (its clear
+          // and help buttons, an underlined problem, its icon): the list
+          // knows only the input as its own, but these are the field's too.
+          if (!next && details.reason === "outside-press") {
+            const target = details.event.target
+            if (target instanceof Node && group?.contains(target)) return
+          }
           if (!next && details.reason === "focus-out") {
             const target = (details.event as FocusEvent | undefined)
               ?.relatedTarget as Element | null
@@ -654,8 +736,10 @@ function QuerySearch({
           setOpen(next)
         }}
         autoHighlight={autoHighlight}
-        onItemHighlighted={(row) => {
+        onItemHighlighted={(row, details) => {
           highlighted.current = row
+          if (row === undefined) navigated.current = false
+          else if (details.reason !== "none") navigated.current = true
         }}
         itemToStringLabel={(row) => row.label}
       >
@@ -716,27 +800,19 @@ function QuerySearch({
               </div>
             </div>
           )}
-          onPointerDown={(event: React.PointerEvent<HTMLInputElement>) => {
-            // Focus from a press comes before the press places the caret:
-            // the list opens on the click, for where the caret ends up, so it
-            // never opens for one place and closes for another.
-            if (
-              event.button === 0 &&
-              document.activeElement !== event.currentTarget
-            )
-              pressed.current = true
-          }}
           onFocus={() => {
             setFocused(true)
-            if (!pressed.current) setOpen(true)
+            setOpen(true)
+            // A press places the caret after focusing the field: read
+            // again then (and on `selectionchange`).
             readCaret()
+            requestAnimationFrame(readCaret)
           }}
           onBlur={(event: React.FocusEvent<HTMLInputElement>) => {
             if (inPopup(event.relatedTarget)) return
             leave()
           }}
           onClick={() => {
-            pressed.current = false
             readCaret()
             setOpen(true)
           }}
@@ -750,7 +826,16 @@ function QuerySearch({
             const rows = groups.flatMap((g) => g.items)
             const first = rows.find((row) => row.kind !== "calendar")
             const current = highlighted.current
-            if (event.key === "Tab" && !event.shiftKey && popupOpen) {
+            // Tab completes what is typed (a column's key, a value) or the
+            // row moved to; with nothing to complete, it moves focus on:
+            // the list, open the whole time, never keeps Tab in the field.
+            if (
+              event.key === "Tab" &&
+              !event.shiftKey &&
+              popupOpen &&
+              (completing ||
+                (navigated.current && current?.kind !== "calendar"))
+            ) {
               const target =
                 current?.kind === "calendar" ? first : (current ?? first)
               if (!target) return
@@ -760,9 +845,10 @@ function QuerySearch({
             } else if (event.key === "Enter") {
               event.preventDefault()
               event.preventBaseUIHandler?.()
+              // A row moved to is picked; otherwise the query applies now,
+              // and the list stays.
               if (popupOpen && current) apply(current)
               else {
-                setOpen(false)
                 setSettled(true)
                 flush()
               }
@@ -810,12 +896,18 @@ function QuerySearch({
                 c.key ? [`${c.key}:`] : []
               )}
               onExample={(query) => {
+                exampleChosen.current = true
                 insertExample(query)
                 setHelpOpen(false)
               }}
               // Back to the text when the help was opened from the field in
-              // use; to the "?" button otherwise.
-              finalFocus={() => (focused ? inputRef.current : true)}
+              // use or an example was chosen (its caret after the example);
+              // to the "?" button otherwise.
+              finalFocus={() => {
+                const back = focused || exampleChosen.current
+                exampleChosen.current = false
+                return back ? inputRef.current : true
+              }}
               popupRef={helpPopup}
               t={t}
               title={td("searchSyntax")}
@@ -828,8 +920,12 @@ function QuerySearch({
           sideOffset={6}
           data-slot="data-table-query-suggestions"
           // `transition-none`: the list's width follows the field's on
-          // every frame, never eased behind it.
-          className="@container/popup flex w-(--field-width,var(--anchor-width)) min-w-[min(22rem,var(--available-width))] flex-col transition-none"
+          // every frame, never eased behind it. It closes with no animation
+          // while focus stays (Escape, the help taking its place).
+          className={cn(
+            "@container/popup flex w-(--field-width,var(--anchor-width)) min-w-[min(22rem,var(--available-width))] flex-col transition-none",
+            focused && "data-closed:animate-none"
+          )}
         >
           {termProblem && (
             <div
@@ -903,6 +999,16 @@ function QuerySearch({
                 </ComboboxGroup>
               )}
             </ComboboxList>
+            {/* Outside the listbox, never an option: a polite live region,
+                kept mounted, whose line shows while the list is empty. */}
+            <ComboboxEmpty className="flex justify-start p-0 text-start">
+              <span
+                data-slot="data-table-query-status"
+                className="block min-w-0 truncate px-3 py-2.5 text-sm text-muted-foreground"
+              >
+                {status}
+              </span>
+            </ComboboxEmpty>
             {calendarMode && filterTerm && (
               <div
                 className={cn(

@@ -264,6 +264,8 @@ export default defineTranslations({
     keySelect: "Επιλογή",
     keyComplete: "Συμπλήρωση",
     keyClose: "Κλείσιμο",
+    statusSearching: "Αναζήτηση για «{text}» σε όλες τις στήλες",
+    noSuggestions: "Δεν υπάρχουν προτάσεις",
     summaryFilters: "Φίλτρα: {filters}.",
     summaryNoFilters: "Χωρίς φίλτρα.",
     summarySearch: "Αναζήτηση: {search}.",

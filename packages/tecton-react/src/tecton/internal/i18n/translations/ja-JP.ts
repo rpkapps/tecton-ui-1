@@ -222,6 +222,8 @@ export default defineTranslations({
     keySelect: "選択",
     keyComplete: "補完",
     keyClose: "閉じる",
+    statusSearching: "すべての列で「{text}」を検索しています",
+    noSuggestions: "候補はありません",
     summaryFilters: "フィルター: {filters}。",
     summaryNoFilters: "フィルターなし。",
     summarySearch: "検索: {search}。",

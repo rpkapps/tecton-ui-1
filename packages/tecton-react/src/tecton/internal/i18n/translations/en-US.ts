@@ -328,6 +328,11 @@ const enUS = {
     keySelect: "Select",
     keyComplete: "Complete",
     keyClose: "Close",
+    // The list's line in place of the suggestions when it has none: the
+    // free text at the caret is searched for ({text}, as typed, without
+    // its quotes), or there is nothing to suggest.
+    statusSearching: "Searching all columns for “{text}”",
+    noSuggestions: "No suggestions",
     // What the field holds, read with it by screen readers: its filters
     // ({filters}: a list of "Column: value"), its search, its problems
     // (the plural form follows {count}; {problems} are the messages).

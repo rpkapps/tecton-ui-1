@@ -318,6 +318,8 @@ export default defineTranslations({
     keySelect: "تحديد",
     keyComplete: "إكمال",
     keyClose: "إغلاق",
+    statusSearching: 'البحث في كل الأعمدة عن "{text}"',
+    noSuggestions: "لا توجد اقتراحات",
     summaryFilters: "عوامل التصفية: {filters}.",
     summaryNoFilters: "لا توجد عوامل تصفية.",
     summarySearch: "البحث: {search}.",

@@ -221,6 +221,8 @@ export default defineTranslations({
     keySelect: "選擇",
     keyComplete: "補全",
     keyClose: "關閉",
+    statusSearching: "正在所有欄中搜尋「{text}」",
+    noSuggestions: "沒有建議",
     summaryFilters: "篩選條件：{filters}。",
     summaryNoFilters: "沒有篩選條件。",
     summarySearch: "搜尋：{search}。",

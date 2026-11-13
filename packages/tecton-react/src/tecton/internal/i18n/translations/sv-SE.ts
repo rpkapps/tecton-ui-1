@@ -250,6 +250,8 @@ export default defineTranslations({
     keySelect: "Välj",
     keyComplete: "Komplettera",
     keyClose: "Stäng",
+    statusSearching: "Söker efter ”{text}” i alla kolumner",
+    noSuggestions: "Inga förslag",
     summaryFilters: "Filter: {filters}.",
     summaryNoFilters: "Inga filter.",
     summarySearch: "Sökning: {search}.",

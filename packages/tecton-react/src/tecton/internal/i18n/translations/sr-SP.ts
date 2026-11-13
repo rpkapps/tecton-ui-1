@@ -283,6 +283,8 @@ export default defineTranslations({
     keySelect: "Izaberi",
     keyComplete: "Dovrši",
     keyClose: "Zatvori",
+    statusSearching: "Traži se „{text}” u svim kolonama",
+    noSuggestions: "Nema predloga",
     summaryFilters: "Filteri: {filters}.",
     summaryNoFilters: "Nema filtera.",
     summarySearch: "Pretraga: {search}.",

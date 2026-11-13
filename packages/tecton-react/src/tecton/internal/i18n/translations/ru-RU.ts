@@ -298,6 +298,8 @@ export default defineTranslations({
     keySelect: "Выбрать",
     keyComplete: "Дополнить",
     keyClose: "Закрыть",
+    statusSearching: "Поиск «{text}» во всех столбцах",
+    noSuggestions: "Нет предложений",
     summaryFilters: "Фильтры: {filters}.",
     summaryNoFilters: "Фильтров нет.",
     summarySearch: "Поиск: {search}.",

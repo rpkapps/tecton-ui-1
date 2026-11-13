@@ -264,6 +264,8 @@ export default defineTranslations({
     keySelect: "Избор",
     keyComplete: "Допълване",
     keyClose: "Затваряне",
+    statusSearching: "Търсене на „{text}“ във всички колони",
+    noSuggestions: "Няма предложения",
     summaryFilters: "Филтри: {filters}.",
     summaryNoFilters: "Няма филтри.",
     summarySearch: "Търсене: {search}.",

@@ -284,6 +284,8 @@ export default defineTranslations({
     keySelect: "Selectare",
     keyComplete: "Completare",
     keyClose: "Închidere",
+    statusSearching: "Se caută „{text}” în toate coloanele",
+    noSuggestions: "Nicio sugestie",
     summaryFilters: "Filtre: {filters}.",
     summaryNoFilters: "Fără filtre.",
     summarySearch: "Căutare: {search}.",

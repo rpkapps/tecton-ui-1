@@ -4,7 +4,8 @@
  * The query field's help: its "?" button, in the field, and the popover it
  * opens, with an example for each of the table's filterable columns (made
  * from its key, its type and its data), free text and "No value", in the
- * syntax colours. Choosing an example adds it to the query.
+ * syntax colours. Choosing an example (a press anywhere in its row, or its
+ * button from the keyboard) adds it to the query.
  */
 import * as React from "react"
 import { CircleHelpIcon } from "lucide-react"
@@ -107,18 +108,36 @@ function QueryHelp({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {examples.map((example) => (
-                <TableRow key={example.parsed.text}>
+              {examples.map((example, index) => (
+                // The whole row is the example's button: its press area
+                // stretched over the row (the row is its containing block),
+                // its focus ring around the row, what it finds its
+                // description. One button per row, nothing nested in it;
+                // a press the stretch misses (a layout without it) is the
+                // row's own and does the same.
+                <TableRow
+                  key={example.parsed.text}
+                  data-slot="data-table-query-help-row"
+                  className="relative cursor-pointer"
+                  onClick={(event) => {
+                    if (!(event.target as Element).closest("button"))
+                      onExample(example.parsed.text)
+                  }}
+                >
                   <TableCell className="py-0.5 ps-0">
                     <button
                       type="button"
-                      className="rounded-sm px-2 py-1 text-start font-mono text-xs outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
+                      aria-describedby={`${id}-finds-${index}`}
+                      className="cursor-pointer rounded-sm px-2 py-1 text-start font-mono text-xs outline-none after:absolute after:inset-0 after:rounded-sm focus-visible:after:ring-2 focus-visible:after:ring-ring focus-visible:after:ring-inset"
                       onClick={() => onExample(example.parsed.text)}
                     >
                       <QueryText parsed={example.parsed} />
                     </button>
                   </TableCell>
-                  <TableCell className="whitespace-normal text-muted-foreground">
+                  <TableCell
+                    id={`${id}-finds-${index}`}
+                    className="whitespace-normal text-muted-foreground"
+                  >
                     {example.finds}
                   </TableCell>
                 </TableRow>

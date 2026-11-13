@@ -283,6 +283,8 @@ export default defineTranslations({
     keySelect: "בחירה",
     keyComplete: "השלמה",
     keyClose: "סגירה",
+    statusSearching: 'מחפש את "{text}" בכל העמודות',
+    noSuggestions: "אין הצעות",
     summaryFilters: "מסננים: {filters}.",
     summaryNoFilters: "אין מסננים.",
     summarySearch: "חיפוש: {search}.",

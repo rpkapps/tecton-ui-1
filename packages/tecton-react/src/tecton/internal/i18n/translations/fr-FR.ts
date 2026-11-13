@@ -268,6 +268,8 @@ export default defineTranslations({
     keySelect: "Choisir",
     keyComplete: "Compléter",
     keyClose: "Fermer",
+    statusSearching: "Recherche de « {text} » dans toutes les colonnes",
+    noSuggestions: "Aucune suggestion",
     summaryFilters: "Filtres : {filters}.",
     summaryNoFilters: "Aucun filtre.",
     summarySearch: "Recherche : {search}.",

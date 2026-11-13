@@ -252,6 +252,8 @@ export default defineTranslations({
     keySelect: "Vali",
     keyComplete: "Täienda",
     keyClose: "Sulge",
+    statusSearching: "Otsitakse „{text}” kõigist veergudest",
+    noSuggestions: "Soovitusi pole",
     summaryFilters: "Filtrid: {filters}.",
     summaryNoFilters: "Filtreid pole.",
     summarySearch: "Otsing: {search}.",

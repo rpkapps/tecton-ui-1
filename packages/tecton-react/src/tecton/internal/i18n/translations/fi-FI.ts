@@ -255,6 +255,8 @@ export default defineTranslations({
     keySelect: "Valitse",
     keyComplete: "Täydennä",
     keyClose: "Sulje",
+    statusSearching: "Haetaan ”{text}” kaikista sarakkeista",
+    noSuggestions: "Ei ehdotuksia",
     summaryFilters: "Suodattimet: {filters}.",
     summaryNoFilters: "Ei suodattimia.",
     summarySearch: "Haku: {search}.",

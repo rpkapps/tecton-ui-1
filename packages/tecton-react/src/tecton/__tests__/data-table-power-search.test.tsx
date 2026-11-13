@@ -269,8 +269,12 @@ describe("DataTableSearch syntax=query: suggestions", () => {
       type: "options",
       values: ["shut-in"],
     })
-    // The term is complete: the list closes. ↓ opens it, Escape closes it,
-    // and Escape again clears the field.
+    // The term is complete: the list stays, with the next term's columns.
+    // Escape closes it, ↓ opens it again, Escape closes it, and Escape
+    // again clears the field.
+    expect(field()).toHaveAttribute("aria-expanded", "true")
+    expect(options()[0]).toBe("well:WellText")
+    await user.keyboard("{Escape}")
     expect(field()).toHaveAttribute("aria-expanded", "false")
     await user.keyboard("{ArrowDown}")
     expect(field()).toHaveAttribute("aria-expanded", "true")
@@ -305,7 +309,7 @@ describe("DataTableSearch syntax=query: suggestions", () => {
     ])
   })
 
-  it("opens on a press's click, for where the press leaves the caret, and offers the next term after a complete one", async () => {
+  it("opens as a press focuses the field, follows the caret the press places, and offers the next term after a complete one", async () => {
     const user = userEvent.setup({ delay: null })
     const onViewChange = vi.fn()
     render(
@@ -320,12 +324,14 @@ describe("DataTableSearch syntax=query: suggestions", () => {
     )
     const text = "depthm:>3000"
     await waitFor(() => expect(field()).toHaveValue(text))
-    // A press focuses the field before it places the caret: no list yet, so
-    // none opens for the caret's old place and closes for its new one.
+    // A press focuses the field before it places the caret: the list opens
+    // at once (it is open the whole time the field has focus) and follows
+    // the caret once the press places it.
     fireEvent.pointerDown(field(), { button: 0 })
+    ;(field() as HTMLInputElement).setSelectionRange(0, 0)
     act(() => field().focus())
     expect(field()).toHaveFocus()
-    expect(screen.queryByRole("listbox")).toBeNull()
+    expect(field()).toHaveAttribute("aria-expanded", "true")
     // The click, the caret at the end, after a complete term: the next
     // term's columns, as after a space.
     ;(field() as HTMLInputElement).setSelectionRange(text.length, text.length)
@@ -414,6 +420,184 @@ describe("DataTableSearch syntax=query: suggestions", () => {
   })
 })
 
+/**
+ * Every value `aria-expanded` has had on the field since the call, read
+ * from the attribute's mutation records (each keeps the value it replaced),
+ * then the current one.
+ */
+function watchExpanded() {
+  const input = field()
+  const seen: Array<string | null> = [input.getAttribute("aria-expanded")]
+  const read = (records: Array<MutationRecord>) => {
+    for (const record of records) seen.push(record.oldValue)
+  }
+  const observer = new MutationObserver(read)
+  observer.observe(input, {
+    attributes: true,
+    attributeFilter: ["aria-expanded"],
+    attributeOldValue: true,
+  })
+  onTestFinished(() => observer.disconnect())
+  return () => {
+    read(observer.takeRecords())
+    return [...seen, input.getAttribute("aria-expanded")]
+  }
+}
+
+/**
+ * A press, its pointer down and up apart, rendered in between as a browser
+ * paints them (a click's events would otherwise all come in one batch).
+ */
+async function press(
+  user: ReturnType<typeof userEvent.setup>,
+  target: Element
+) {
+  await user.pointer({ keys: "[MouseLeft>]", target })
+  await act(async () => {})
+  await user.pointer({ keys: "[/MouseLeft]", target })
+}
+
+describe("DataTableSearch syntax=query: the list is open while the field has focus", () => {
+  it("stays open through a press on the clear button, the field's icon or an underlined problem", async () => {
+    const user = userEvent.setup({ delay: null })
+    render(<Wells />)
+    await user.click(field())
+    await user.type(field(), "status:dri")
+    expect(field()).toHaveAttribute("aria-expanded", "true")
+    let expanded = watchExpanded()
+    await press(user, button("data-table-query-clear"))
+    expect(field()).toHaveValue("")
+    expect(field()).toHaveFocus()
+    // Never closed in between: the empty query's columns, at once.
+    expect(expanded()).not.toContain("false")
+    expect(options()[0]).toBe("well:WellText")
+    // The search icon beside the input.
+    expanded = watchExpanded()
+    await press(
+      user,
+      group().querySelector<HTMLElement>('[data-slot="input-group-addon"]')!
+    )
+    expect(field()).toHaveFocus()
+    expect(expanded()).not.toContain("false")
+    // An underlined problem, once typing pauses.
+    await user.type(field(), "status:qq")
+    const problem = await waitFor(
+      () => {
+        const element = document.querySelector<HTMLElement>(
+          '[data-slot="data-table-query-problem"]'
+        )
+        expect(element).not.toBeNull()
+        return element!
+      },
+      { timeout: 2000 }
+    )
+    expanded = watchExpanded()
+    await press(user, problem)
+    expect(field()).toHaveFocus()
+    expect(expanded()).not.toContain("false")
+    expect(expanded().at(-1)).toBe("true")
+  })
+
+  it("stays open after a pick that completes a term and after Enter, and says what a term does when it has nothing to suggest", async () => {
+    const user = userEvent.setup({ delay: null })
+    const onViewChange = vi.fn()
+    render(<Wells onViewChange={onViewChange} />)
+    await user.click(field())
+    const expanded = watchExpanded()
+    await user.type(field(), "status:dri")
+    await user.keyboard("{Enter}")
+    expect(field()).toHaveValue("status:drilling ")
+    // The next term's columns; nothing picked by a second Enter, which
+    // applies the query.
+    expect(options()[0]).toBe("well:WellText")
+    await user.keyboard("{Enter}")
+    expect(field()).toHaveValue("status:drilling ")
+    expect(lastView(onViewChange).filters).toEqual({
+      status: { type: "options", values: ["drilling"] },
+    })
+    // Free text that no value matches: one line instead of the rows, in a
+    // polite status outside the listbox, never an option.
+    await user.type(field(), "zzzz")
+    expect(options()).toEqual([])
+    const status = document.querySelector(
+      '[data-slot="data-table-query-status"]'
+    )!
+    expect(status).toHaveTextContent("Searching all columns for “zzzz”")
+    const region = status.closest('[role="status"]')!
+    expect(region).toHaveAttribute("aria-live", "polite")
+    expect(region.closest('[role="listbox"]')).toBeNull()
+    // A complete filter term with nothing to offer at the caret: what it
+    // filters, as its chip says.
+    await user.clear(field())
+    await user.type(field(), "depthm:>=1500")
+    ;(field() as HTMLInputElement).setSelectionRange(11, 11)
+    fireEvent.click(field())
+    expect(options()).toEqual([])
+    expect(
+      document.querySelector('[data-slot="data-table-query-status"]')
+    ).toHaveTextContent(/^Depth \(m\): ≥ 1,500$/)
+    // Nothing to suggest: "No suggestions".
+    await user.clear(field())
+    await user.type(field(), "status:qq")
+    expect(
+      document.querySelector('[data-slot="data-table-query-status"]')
+    ).toHaveTextContent(/^No suggestions$/)
+    expect(expanded()).not.toContain("false")
+  })
+
+  it("closes on Escape until the user types, clicks in the field or presses ↓; Escape again clears", async () => {
+    const user = userEvent.setup({ delay: null })
+    render(<Wells />)
+    await user.click(field())
+    await user.type(field(), "active:yes ")
+    expect(field()).toHaveAttribute("aria-expanded", "true")
+    await user.keyboard("{Escape}")
+    expect(field()).toHaveAttribute("aria-expanded", "false")
+    await user.type(field(), "gull")
+    expect(field()).toHaveAttribute("aria-expanded", "true")
+    await user.keyboard("{Escape}")
+    expect(field()).toHaveAttribute("aria-expanded", "false")
+    await user.click(field())
+    expect(field()).toHaveAttribute("aria-expanded", "true")
+    await user.keyboard("{Escape}")
+    await user.keyboard("{ArrowDown}")
+    expect(field()).toHaveAttribute("aria-expanded", "true")
+    await user.keyboard("{Escape}{Escape}")
+    expect(field()).toHaveValue("")
+    expect(field()).toHaveAttribute("aria-expanded", "false")
+    expect(field()).toHaveFocus()
+  })
+
+  it("closes when focus leaves the field; Tab completes what is typed, else moves on", async () => {
+    const user = userEvent.setup({ delay: null })
+    render(
+      <>
+        <Wells />
+        <button type="button" id="after">
+          After
+        </button>
+      </>
+    )
+    await user.click(field())
+    await user.type(field(), "sta")
+    await user.keyboard("{Tab}")
+    expect(field()).toHaveValue("status:")
+    expect(field()).toHaveFocus()
+    expect(field()).toHaveAttribute("aria-expanded", "true")
+    // Nothing typed after a complete term: Tab leaves, and the list closes.
+    await user.type(field(), "drilling ")
+    await user.keyboard("{Tab}")
+    expect(field()).not.toHaveFocus()
+    expect(field()).toHaveAttribute("aria-expanded", "false")
+    // A press elsewhere.
+    await user.click(field())
+    expect(field()).toHaveAttribute("aria-expanded", "true")
+    // (Hidden from screen readers while the list is open, as all around it.)
+    await user.click(document.getElementById("after")!)
+    expect(field()).toHaveAttribute("aria-expanded", "false")
+  })
+})
+
 describe("DataTableSearch syntax=query: the help", () => {
   it("lists the table's columns with examples; one chosen joins the query", async () => {
     const user = userEvent.setup({ delay: null })
@@ -432,6 +616,29 @@ describe("DataTableSearch syntax=query: the help", () => {
     expect(lastView(onViewChange).filters).toEqual({
       active: { type: "boolean", value: true },
     })
+  })
+
+  it("adds an example on a press anywhere in its row; focus goes back to the field, its caret at the end and its list open", async () => {
+    const user = userEvent.setup({ delay: null })
+    render(<Wells />)
+    await user.click(field())
+    await user.type(field(), "gull")
+    await user.click(button("data-table-query-help"))
+    const help = await screen.findByRole("dialog", { name: "Search syntax" })
+    // One button per row, described by what it finds.
+    const example = within(help).getByRole("button", { name: "active:yes" })
+    expect(example).toHaveAccessibleDescription("Active is yes or no")
+    const row = example.closest("tr")!
+    expect(row).toHaveAttribute("data-slot", "data-table-query-help-row")
+    expect(row.className).toContain("cursor-pointer")
+    expect(within(row).getAllByRole("button")).toHaveLength(1)
+    // A press on the description, not the button.
+    await user.click(within(row).getByText("Active is yes or no"))
+    expect(field()).toHaveValue("gull active:yes ")
+    await waitFor(() => expect(field()).toHaveFocus())
+    const input = field() as HTMLInputElement
+    expect(input.selectionStart).toBe(input.value.length)
+    expect(field()).toHaveAttribute("aria-expanded", "true")
   })
 })
 
