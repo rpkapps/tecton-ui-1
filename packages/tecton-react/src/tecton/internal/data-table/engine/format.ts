@@ -352,8 +352,6 @@ type NumberUnit = {
   side: "start" | "end"
   /** The factor the column shows its numbers at: 100 for a percent. */
   scale: number
-  /** A number as the column shows it, without the unit. */
-  format: (value: number) => string
 }
 
 function numberUnit(
@@ -361,23 +359,6 @@ function numberUnit(
   options: Intl.NumberFormatOptions | undefined
 ): NumberUnit {
   const format = getNumberFormat(resolveLocale(locale), options)
-  // The parts left of a formatted number once its unit and the spaces
-  // that set the unit apart are gone.
-  const bare = (parts: Array<Intl.NumberFormatPart>) =>
-    parts
-      .filter(
-        (part, i) =>
-          !UNIT_PARTS.has(part.type) &&
-          !(
-            part.type === "literal" &&
-            part.value.trim() === "" &&
-            (UNIT_PARTS.has(parts[i - 1]?.type ?? "") ||
-              UNIT_PARTS.has(parts[i + 1]?.type ?? ""))
-          )
-      )
-      .map((part) => part.value)
-      .join("")
-      .trim()
   // A plural form that reads for most numbers ("5 meters").
   const five = format.formatToParts(5)
   const unit = five
@@ -390,7 +371,6 @@ function numberUnit(
     unit: unit || undefined,
     side: first !== -1 && first < integer ? "start" : "end",
     scale: options?.style === "percent" ? 100 : 1,
-    format: (value) => bare(format.formatToParts(value)),
   }
 }
 

@@ -7,8 +7,8 @@
  *
  * - text: a field; the rows whose display text contains it (like search);
  * - number: a minimum and a maximum side by side, either left empty, with
- *   the column's unit, its lowest and highest numbers as placeholders and
- *   how many rows the bounds keep as they are typed (`NumberFilter`);
+ *   the column's unit and how many rows the bounds keep as they are typed
+ *   (`NumberFilter`);
  * - date: a range of days picked on `DateRangePicker`'s calendar, in a
  *   popover like the picker's (its code and locale load on demand too,
  *   `date-calendar.tsx`; the popover keeps its size meanwhile);
@@ -187,11 +187,11 @@ function toFilter({ min, max, empty }: Bounds): DataTableFilterValue | null {
 /**
  * A number filter: Min and Max side by side, each a `NumberField` with its
  * minus and plus, and the column's unit on the side the column writes it
- * (`numberUnit`: its `unit`, percent sign or currency) and, as its placeholder, the column's lowest or highest number among the
- * rows the search and the other filters keep, as the column shows it.
- * Under them, "No value" (as every filter has it) and how many of those
- * rows the bounds keep, counted as they are typed (`numbers`; not in
- * server mode, where the table holds only the rows loaded).
+ * (`numberUnit`: its `unit`, percent sign or currency). Under them, "No
+ * value" (as every filter has it) and how many rows the bounds keep, of
+ * those the search and the other filters keep, counted as they are typed
+ * (`numbers`; not in server mode, where the table holds only the rows
+ * loaded).
  */
 function NumberFilter({
   column,
@@ -228,10 +228,6 @@ function NumberFilter({
     number === null || unit.scale === 1
       ? number
       : Number((number * by).toPrecision(15))
-  const { values } = numbers ?? {}
-  const ends = values?.length
-    ? { min: values[0], max: values[values.length - 1] }
-    : undefined
   // Only the number reaches the draft: the field keeps what was typed
   // ("3000.0" is the 3000 the view holds) until it loses focus.
   const field = (bound: "min" | "max") => (
@@ -254,12 +250,6 @@ function NumberFilter({
           <NumberFieldInput
             aria-describedby={`${id}-column`}
             className={cn(unit.unit && unit.side === "start" && "ps-1")}
-            // The column's lowest and highest numbers, as it shows them.
-            placeholder={
-              ends && Number.isFinite(ends[bound])
-                ? unit.format(ends[bound])
-                : undefined
-            }
             onKeyDown={(event) => {
               if (event.key === "Enter") flush()
             }}
