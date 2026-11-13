@@ -1,7 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { FilesIcon, LayersIcon, PauseIcon, PlayIcon } from "lucide-react"
+import {
+  FilesIcon,
+  LayersIcon,
+  PauseIcon,
+  PlayIcon,
+  Rows3Icon,
+} from "lucide-react"
 
 import { Button } from "@tecton/react/button"
 import {
@@ -123,8 +129,10 @@ export default function DataTableLive() {
   // Paused until the reader starts it.
   const [running, setRunning] = React.useState(false)
   const full = alarms.length >= MOST
-  // The cases to try: a page at a time, rows grouped by severity.
+  // The cases to try: a page at a time, rows grouped by severity, with or
+  // without stripes under the highlight.
   const [paged, setPaged] = React.useState(false)
+  const [striped, setStriped] = React.useState(true)
   const [view, setView] = React.useState<DataTablePartialView>({
     sorting: SORTING,
     columns: { pinned: { start: ["well"] } },
@@ -148,7 +156,7 @@ export default function DataTableLive() {
       columns={columns}
       highlightChanges
       selectionMode="multiple"
-      striped
+      striped={striped}
       size="sm"
       groupable
       view={view}
@@ -222,6 +230,29 @@ export default function DataTableLive() {
           >
             <LayersIcon data-icon="inline-start" aria-hidden />
             <OverflowLabel>Group by severity</OverflowLabel>
+          </Toggle>
+        </OverflowItem>
+        <OverflowItem
+          value="stripes"
+          label="Stripes"
+          overflow={
+            <DropdownMenuCheckboxItem
+              checked={striped}
+              onCheckedChange={setStriped}
+            >
+              <Rows3Icon />
+              Stripes
+            </DropdownMenuCheckboxItem>
+          }
+        >
+          <Toggle
+            variant="outline"
+            size="sm"
+            pressed={striped}
+            onPressedChange={setStriped}
+          >
+            <Rows3Icon data-icon="inline-start" aria-hidden />
+            <OverflowLabel>Stripes</OverflowLabel>
           </Toggle>
         </OverflowItem>
         <OverflowSpacer />
