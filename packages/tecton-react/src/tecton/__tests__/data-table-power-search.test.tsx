@@ -630,7 +630,9 @@ describe("DataTableSearch syntax=query: the help", () => {
     expect(example).toHaveAccessibleDescription("Active is yes or no")
     const row = example.closest("tr")!
     expect(row).toHaveAttribute("data-slot", "data-table-query-help-row")
-    expect(row.className).toContain("cursor-pointer")
+    // The default cursor, as on every other button.
+    expect(row.className).not.toContain("cursor-pointer")
+    expect(example.className).not.toContain("cursor-pointer")
     expect(within(row).getAllByRole("button")).toHaveLength(1)
     // A press on the description, not the button.
     await user.click(within(row).getByText("Active is yes or no"))

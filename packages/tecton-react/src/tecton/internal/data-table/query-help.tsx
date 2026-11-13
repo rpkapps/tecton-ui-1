@@ -118,7 +118,7 @@ function QueryHelp({
                 <TableRow
                   key={example.parsed.text}
                   data-slot="data-table-query-help-row"
-                  className="relative cursor-pointer"
+                  className="relative"
                   onClick={(event) => {
                     if (!(event.target as Element).closest("button"))
                       onExample(example.parsed.text)
@@ -128,7 +128,7 @@ function QueryHelp({
                     <button
                       type="button"
                       aria-describedby={`${id}-finds-${index}`}
-                      className="cursor-pointer rounded-sm px-2 py-1 text-start font-mono text-xs outline-none after:absolute after:inset-0 after:rounded-sm focus-visible:after:ring-2 focus-visible:after:ring-ring focus-visible:after:ring-inset"
+                      className="rounded-sm px-2 py-1 text-start font-mono text-xs outline-none after:absolute after:inset-0 after:rounded-sm focus-visible:after:ring-2 focus-visible:after:ring-ring focus-visible:after:ring-inset"
                       onClick={() => onExample(example.parsed.text)}
                     >
                       <QueryText parsed={example.parsed} />
