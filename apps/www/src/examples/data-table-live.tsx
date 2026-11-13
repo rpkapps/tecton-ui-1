@@ -104,7 +104,8 @@ export default function DataTableLive() {
   const [alarms, setAlarms] = React.useState(() =>
     Array.from({ length: FIRST }, (_, i) => alarmAt(i, random))
   )
-  const [running, setRunning] = React.useState(true)
+  // Paused until the reader starts it.
+  const [running, setRunning] = React.useState(false)
   const full = alarms.length >= MOST
 
   // A new alarm every two seconds while the feed runs.
@@ -144,7 +145,11 @@ export default function DataTableLive() {
           ) : (
             <PlayIcon data-icon="inline-start" aria-hidden />
           )}
-          {running && !full ? "Pause feed" : "Resume feed"}
+          {running && !full
+            ? "Pause feed"
+            : alarms.length > FIRST
+              ? "Resume feed"
+              : "Start feed"}
         </Button>
         <span className="text-sm text-muted-foreground tabular-nums">
           {alarms.length} alarms
