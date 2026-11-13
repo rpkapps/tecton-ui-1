@@ -98,9 +98,17 @@ export default defineTranslations({
     backwardsRange:
       "Este intervalo empieza después de terminar: {from} es posterior a {to}.",
     unsupportedOr:
-      "OR no se admite: se aplican todos los términos. Para encontrar cualquiera de varios valores, sepáralos con comas.",
+      "OR no se admite. Las filas deben cumplir todos los términos. Para encontrar uno de varios valores de una columna, escríbelos separados por comas: {example}",
+    unsupportedOrNoList:
+      "OR no se admite. Las filas deben cumplir todos los términos, así que busca una cosa cada vez.",
+    unsupportedMinus:
+      "No se admite excluir, así que este término se ignora. Para buscar el texto tal cual, ponlo entre comillas. Para acotar las filas, filtra en su lugar los valores que quieras conservar: {example}",
+    unsupportedMinusNoFilter:
+      "No se admite excluir, así que este término se ignora. Para buscar el texto tal cual, ponlo entre comillas.",
     unsupportedNot:
-      "No se admite excluir: filtra en su lugar los valores que quieras conservar. Para buscar este texto, ponlo entre comillas.",
+      "No se admite excluir, así que NOT se ignora y los términos de su alrededor se siguen aplicando. Para acotar las filas, filtra en su lugar los valores que quieras conservar: {example}",
+    unsupportedNotNoFilter:
+      "No se admite excluir, así que NOT se ignora y los términos de su alrededor se siguen aplicando.",
     exclusiveComparison: "Usa >= o <= con una fecha y hora.",
     notComparable: "{column} no tiene orden: elige sus valores en su lugar.",
     multipleBoolean: "{column} es sí o no, no ambos.",

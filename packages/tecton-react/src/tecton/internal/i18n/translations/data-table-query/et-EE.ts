@@ -95,9 +95,17 @@ export default defineTranslations({
     ambiguousMonth: "„{value}” võib olla mitu kuud: kirjutage nimest rohkem.",
     backwardsRange: "See vahemik algab pärast lõppu: {from} on pärast {to}.",
     unsupportedOr:
-      "OR ei ole toetatud: kehtivad kõik tingimused. Mitmest väärtusest ükskõik millise leidmiseks eraldage need komadega.",
+      "OR ei ole toetatud. Read peavad vastama kõigile tingimustele. Veeru mitmest väärtusest ühe leidmiseks kirjutage need komadega eraldatult: {example}",
+    unsupportedOrNoList:
+      "OR ei ole toetatud. Read peavad vastama kõigile tingimustele, seega otsige üht asja korraga.",
+    unsupportedMinus:
+      "Välistamine ei ole toetatud, seega seda tingimust ei arvestata. Teksti enda otsimiseks pange see jutumärkidesse. Ridade kitsendamiseks filtreerige selle asemel alles jäävad väärtused: {example}",
+    unsupportedMinusNoFilter:
+      "Välistamine ei ole toetatud, seega seda tingimust ei arvestata. Teksti enda otsimiseks pange see jutumärkidesse.",
     unsupportedNot:
-      "Välistamine ei ole toetatud: filtreerige selle asemel alles jäävad väärtused. Selle teksti otsimiseks pange see jutumärkidesse.",
+      "Välistamine ei ole toetatud, seega NOT-i ei arvestata ja selle kõrval olevad tingimused kehtivad edasi. Ridade kitsendamiseks filtreerige selle asemel alles jäävad väärtused: {example}",
+    unsupportedNotNoFilter:
+      "Välistamine ei ole toetatud, seega NOT-i ei arvestata ja selle kõrval olevad tingimused kehtivad edasi.",
     exclusiveComparison: "Kuupäeva ja kellaajaga kasutage >= või <=.",
     notComparable:
       "Veerul {column} pole järjestust: valige selle asemel väärtused.",

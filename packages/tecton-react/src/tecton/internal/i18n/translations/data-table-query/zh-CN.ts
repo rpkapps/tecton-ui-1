@@ -78,9 +78,17 @@ export default defineTranslations({
     ambiguousMonth: "“{value}”可能对应多个月份：请多输入一些名称。",
     backwardsRange: "此范围在结束之后才开始：{from} 晚于 {to}。",
     unsupportedOr:
-      "不支持 OR：所有条件都会生效。要匹配多个值中的任意一个，请用逗号分隔。",
+      "不支持 OR。每一行都必须符合所有条件。要匹配某一列多个值中的任意一个，请用逗号分隔列出这些值：{example}",
+    unsupportedOrNoList:
+      "不支持 OR。每一行都必须符合所有条件，请一次只搜索一项。",
+    unsupportedMinus:
+      "不支持排除，因此会忽略此条件。要搜索这段文本本身，请加上引号。要缩小结果范围，请改为筛选要保留的值：{example}",
+    unsupportedMinusNoFilter:
+      "不支持排除，因此会忽略此条件。要搜索这段文本本身，请加上引号。",
     unsupportedNot:
-      "不支持排除：请改为筛选要保留的值。要搜索此文本，请加上引号。",
+      "不支持排除，因此会忽略 NOT，其两侧的条件仍会生效。要缩小结果范围，请改为筛选要保留的值：{example}",
+    unsupportedNotNoFilter:
+      "不支持排除，因此会忽略 NOT，其两侧的条件仍会生效。",
     exclusiveComparison: "日期和时间请使用 >= 或 <=。",
     notComparable: "{column} 没有顺序：请改为选择它的值。",
     multipleBoolean: "{column} 只能是是或否，不能同时为两者。",

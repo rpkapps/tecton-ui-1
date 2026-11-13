@@ -107,9 +107,17 @@ export default defineTranslations({
       "„{value}“ gali būti daugiau nei vienas mėnuo: parašykite daugiau pavadinimo.",
     backwardsRange: "Šis intervalas prasideda po pabaigos: {from} yra po {to}.",
     unsupportedOr:
-      "OR nepalaikomas: taikomos visos sąlygos. Norėdami rasti bet kurią iš kelių reikšmių, atskirkite jas kableliais.",
+      "OR nepalaikomas. Eilutės turi atitikti kiekvieną sąlygą. Norėdami rasti vieną iš kelių stulpelio reikšmių, išvardykite jas atskirtas kableliais: {example}",
+    unsupportedOrNoList:
+      "OR nepalaikomas. Eilutės turi atitikti kiekvieną sąlygą, todėl ieškokite po vieną dalyką.",
+    unsupportedMinus:
+      "Išskyrimas nepalaikomas, todėl šios sąlygos nepaisoma. Norėdami ieškoti būtent šio teksto, įrašykite jį į kabutes. Norėdami susiaurinti eilutes, verčiau filtruokite reikšmes, kurias norite palikti: {example}",
+    unsupportedMinusNoFilter:
+      "Išskyrimas nepalaikomas, todėl šios sąlygos nepaisoma. Norėdami ieškoti būtent šio teksto, įrašykite jį į kabutes.",
     unsupportedNot:
-      "Išskyrimas nepalaikomas: verčiau filtruokite reikšmes, kurias norite palikti. Norėdami ieškoti šio teksto, įrašykite jį į kabutes.",
+      "Išskyrimas nepalaikomas, todėl NOT nepaisoma, o šalia esančios sąlygos tebetaikomos. Norėdami susiaurinti eilutes, verčiau filtruokite reikšmes, kurias norite palikti: {example}",
+    unsupportedNotNoFilter:
+      "Išskyrimas nepalaikomas, todėl NOT nepaisoma, o šalia esančios sąlygos tebetaikomos.",
     exclusiveComparison: "Su data ir laiku naudokite >= arba <=.",
     notComparable: "{column} neturi tvarkos: verčiau pasirinkite reikšmes.",
     multipleBoolean: "{column} yra taip arba ne, ne abu.",

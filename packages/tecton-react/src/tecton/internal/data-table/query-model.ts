@@ -25,6 +25,13 @@ import { filterText } from "./filter-text"
 type QueryT = Translator<"dataTableQuery">
 type TableT = Translator<"dataTable">
 
+/** Values of a column's data to write examples with: its numbers and years, its most frequent text. */
+type ColumnSample = (column: QueryColumn) => {
+  text?: string
+  number?: number
+  year?: number
+}
+
 /** The name of column `id` (a filterable one, or any column of `model`). */
 function headerOf(
   language: QueryLanguage,
@@ -35,12 +42,44 @@ function headerOf(
   return language.byId.get(id)?.header ?? model.byId.get(id)?.header ?? id
 }
 
+/** The column types a "values to keep" example is written with, best first. */
+const KEEP_ORDER = ["options", "boolean", "number", "date", "text"] as const
+
+/**
+ * Terms of the table's own for the messages of `OR`, `NOT` and `-`, as the
+ * user would type them: `list` one of several values of a column (the first
+ * options column with two values: `status:drilling,producing`), `keep` the
+ * rows to keep (that term, else the example of the first column of the
+ * first type in `KEEP_ORDER`). Each is `undefined` when no column gives
+ * one. Only the chosen column is sampled.
+ */
+function operatorExamples(
+  language: QueryLanguage,
+  sample: ColumnSample
+): { list?: string; keep?: string } {
+  const keyed = language.columns.filter((column) => column.key !== null)
+  const listed = keyed.find(
+    (column) => column.type === "options" && column.column.options.length > 1
+  )
+  const list = listed && columnExample(listed, language, {})
+  if (list !== undefined) return { list, keep: list }
+  for (const type of KEEP_ORDER) {
+    for (const column of keyed) {
+      if (column.type !== type) continue
+      const keep = columnExample(column, language, sample(column))
+      if (keep !== undefined) return { keep }
+    }
+  }
+  return {}
+}
+
 /** A problem in words, from its code and parameters. */
 function problemMessage(
   diagnostic: QueryDiagnostic,
   language: QueryLanguage,
   model: ColumnModel<unknown>,
-  t: QueryT
+  t: QueryT,
+  sample: ColumnSample = () => ({})
 ): string {
   const { params } = diagnostic
   const column = headerOf(language, model, params.column)
@@ -84,8 +123,21 @@ function problemMessage(
         from: params.from ?? "",
         to: params.to ?? "",
       })
-    case "unsupportedOperator":
-      return params.operator === "OR" ? t("unsupportedOr") : t("unsupportedNot")
+    case "unsupportedOperator": {
+      // What happened, and what to type instead, with the table's own terms.
+      const { list, keep } = operatorExamples(language, sample)
+      if (params.operator === "OR")
+        return list === undefined
+          ? t("unsupportedOrNoList")
+          : t("unsupportedOr", { example: list })
+      if (params.operator === "NOT")
+        return keep === undefined
+          ? t("unsupportedNotNoFilter")
+          : t("unsupportedNot", { example: keep })
+      return keep === undefined
+        ? t("unsupportedMinusNoFilter")
+        : t("unsupportedMinus", { example: keep })
+    }
     case "exclusiveComparison":
       return t("exclusiveComparison")
     case "notComparable":
@@ -416,70 +468,70 @@ const dayText = (date: Date) =>
 type HelpExample = { readonly query: string; readonly finds: string }
 
 /**
+ * A column's example term, written with its key and a value it has: two of
+ * its options (`status:drilling,producing`), yes, the data's most frequent
+ * text, a number in the middle of its range, its latest year (`data`, else
+ * a value of the column's name, `>=100` and this year).
+ */
+function columnExample(
+  column: QueryColumn,
+  language: QueryLanguage,
+  data: ReturnType<ColumnSample>
+): string | undefined {
+  if (column.key === null) return undefined
+  const key = `${column.key}:`
+  switch (column.type) {
+    case "options": {
+      const tokens = column.column.options
+        .slice(0, 2)
+        .map((option) => language.valueToken(column, option.value))
+      return tokens.length ? key + tokens.join(",") : undefined
+    }
+    case "boolean":
+      return key + language.valueToken(column, true)
+    case "text":
+      return key + valueToken(textSample(column, data))
+    case "number":
+      return `${key}>=${data.number ?? 100}`
+    case "date":
+      return `${key}${data.year ?? new Date().getFullYear()}`
+  }
+}
+
+/** The text a text column's example searches for. */
+function textSample(column: QueryColumn, data: ReturnType<ColumnSample>) {
+  return data.text ?? column.header.split(/\s+/)[0].toLowerCase()
+}
+
+const FINDS_KEYS = {
+  options: "findsOptions",
+  boolean: "findsBoolean",
+  text: "findsText",
+  number: "findsNumber",
+  date: "findsDate",
+} as const
+
+/**
  * The help's examples, from the table's filterable columns (`language`): one
- * per column, written with its key and a value it has (an option, the data's
- * numbers and years when `sample` gives them), then free text and "No value".
+ * per column (`columnExample`), then free text and "No value".
  */
 function helpExamples(
   language: QueryLanguage,
-  sample: (column: QueryColumn) => {
-    text?: string
-    number?: number
-    year?: number
-  },
+  sample: ColumnSample,
   t: QueryT
 ): Array<HelpExample> {
   const examples: Array<HelpExample> = []
   let words: string | undefined
   for (const column of language.columns) {
     if (column.key === null) continue
-    const key = `${column.key}:`
-    const name = { column: column.header }
     const data = sample(column)
-    switch (column.type) {
-      case "options": {
-        const tokens = column.column.options
-          .slice(0, 2)
-          .map((option) => language.valueToken(column, option.value))
-        if (tokens.length)
-          examples.push({
-            query: key + tokens.join(","),
-            finds: t("findsOptions", name),
-          })
-        break
-      }
-      case "boolean":
-        examples.push({
-          query: key + language.valueToken(column, true),
-          finds: t("findsBoolean", name),
-        })
-        break
-      case "text": {
-        const text = data.text ?? column.header.split(/\s+/)[0].toLowerCase()
-        words ??= text
-        examples.push({
-          query: key + valueToken(text),
-          finds: t("findsText", name),
-        })
-        break
-      }
-      case "number": {
-        const n = data.number ?? 100
-        examples.push({
-          query: `${key}>=${n}`,
-          finds: t("findsNumber", name),
-        })
-        break
-      }
-      case "date": {
-        const year = data.year ?? new Date().getFullYear()
-        examples.push({
-          query: `${key}${year}`,
-          finds: t("findsDate", name),
-        })
-        break
-      }
-    }
+    const query = columnExample(column, language, data)
+    if (query === undefined) continue
+    if (column.type === "text") words ??= textSample(column, data)
+    examples.push({
+      query,
+      finds: t(FINDS_KEYS[column.type], { column: column.header }),
+    })
   }
   if (words !== undefined) {
     const plain = words.split(/\s+/)[0]
@@ -508,4 +560,4 @@ export {
   understood,
   valueItemAt,
 }
-export type { HelpExample, SuggestionGroup, SuggestionRow }
+export type { ColumnSample, HelpExample, SuggestionGroup, SuggestionRow }

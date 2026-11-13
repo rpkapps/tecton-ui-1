@@ -106,10 +106,26 @@ const enUS = {
     ambiguousMonth:
       "“{value}” could be more than one month: write more of its name.",
     backwardsRange: "This range starts after it ends: {from} is after {to}.",
+    // The operators the query does not apply, each with what to do instead.
+    // {example} is a term of the table's own, written as the user would
+    // type it: one of its options columns with two of its values
+    // (`status:drilling,producing`); `NoList` when it has none.
     unsupportedOr:
-      "OR is not supported: every term applies. To match any of several values, separate them with commas.",
+      "OR isn't supported. Rows must match every term. To match one of several values of a column, list them with commas: {example}",
+    unsupportedOrNoList:
+      "OR isn't supported. Rows must match every term, so search for one thing at a time.",
+    // A leading minus (`-plugged`); {example} is a term of the table's own
+    // that keeps rows (the options term, else another column's);
+    // `NoFilter` when no column can be filtered.
+    unsupportedMinus:
+      "Excluding isn't supported, so this term is ignored. To search for the text itself, put it in quotes. To narrow the rows, filter for the values to keep instead: {example}",
+    unsupportedMinusNoFilter:
+      "Excluding isn't supported, so this term is ignored. To search for the text itself, put it in quotes.",
+    // NOT, which leaves the terms beside it applied.
     unsupportedNot:
-      "Excluding is not supported: filter for the values to keep instead. To search for this text, put it in quotes.",
+      "Excluding isn't supported, so NOT is ignored and the terms beside it still apply. To narrow the rows, filter for the values to keep instead: {example}",
+    unsupportedNotNoFilter:
+      "Excluding isn't supported, so NOT is ignored and the terms beside it still apply.",
     exclusiveComparison: "Use >= or <= with a date and time.",
     notComparable: "{column} has no order: choose its values instead.",
     multipleBoolean: "{column} is yes or no, not both.",

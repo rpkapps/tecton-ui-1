@@ -103,9 +103,17 @@ export default defineTranslations({
     backwardsRange:
       "Ovaj opseg počinje posle svog kraja: {from} je posle {to}.",
     unsupportedOr:
-      "OR nije podržan: važe svi uslovi. Da biste pronašli bilo koju od više vrednosti, odvojite ih zarezima.",
+      "OR nije podržan. Redovi moraju da ispune svaki uslov. Da biste pronašli jednu od više vrednosti kolone, navedite ih odvojene zarezima: {example}",
+    unsupportedOrNoList:
+      "OR nije podržan. Redovi moraju da ispune svaki uslov, pa tražite jednu po jednu stvar.",
+    unsupportedMinus:
+      "Isključivanje nije podržano, pa se ovaj uslov zanemaruje. Da biste pretražili baš ovaj tekst, stavite ga u navodnike. Da biste suzili redove, umesto toga filtrirajte vrednosti koje želite da zadržite: {example}",
+    unsupportedMinusNoFilter:
+      "Isključivanje nije podržano, pa se ovaj uslov zanemaruje. Da biste pretražili baš ovaj tekst, stavite ga u navodnike.",
     unsupportedNot:
-      "Isključivanje nije podržano: umesto toga filtrirajte vrednosti koje želite da zadržite. Da biste pretražili ovaj tekst, stavite ga u navodnike.",
+      "Isključivanje nije podržano, pa se NOT zanemaruje, a uslovi oko njega i dalje važe. Da biste suzili redove, umesto toga filtrirajte vrednosti koje želite da zadržite: {example}",
+    unsupportedNotNoFilter:
+      "Isključivanje nije podržano, pa se NOT zanemaruje, a uslovi oko njega i dalje važe.",
     exclusiveComparison: "Uz datum i vreme koristite >= ili <=.",
     notComparable: "{column} nema redosled: umesto toga izaberite vrednosti.",
     multipleBoolean: "{column} je da ili ne, ne oboje.",

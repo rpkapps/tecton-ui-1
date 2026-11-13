@@ -98,9 +98,17 @@ export default defineTranslations({
     backwardsRange:
       "Dieser Bereich beginnt nach seinem Ende: {from} liegt nach {to}.",
     unsupportedOr:
-      "OR wird nicht unterstützt: Jeder Begriff gilt. Um einen von mehreren Werten zu finden, die Werte durch Kommas trennen.",
+      "OR wird nicht unterstützt. Zeilen müssen jeden Begriff erfüllen. Um einen von mehreren Werten einer Spalte zu finden, die Werte durch Kommas getrennt aufzählen: {example}",
+    unsupportedOrNoList:
+      "OR wird nicht unterstützt. Zeilen müssen jeden Begriff erfüllen, deshalb nach einer Sache nach der anderen suchen.",
+    unsupportedMinus:
+      "Ausschließen wird nicht unterstützt, deshalb wird dieser Begriff ignoriert. Um nach genau diesem Text zu suchen, ihn in Anführungszeichen setzen. Um die Zeilen einzugrenzen, stattdessen nach den Werten filtern, die bleiben sollen: {example}",
+    unsupportedMinusNoFilter:
+      "Ausschließen wird nicht unterstützt, deshalb wird dieser Begriff ignoriert. Um nach genau diesem Text zu suchen, ihn in Anführungszeichen setzen.",
     unsupportedNot:
-      "Ausschließen wird nicht unterstützt: stattdessen nach den Werten filtern, die bleiben sollen. Um nach diesem Text zu suchen, ihn in Anführungszeichen setzen.",
+      "Ausschließen wird nicht unterstützt, deshalb wird NOT ignoriert, und die Begriffe daneben gelten weiter. Um die Zeilen einzugrenzen, stattdessen nach den Werten filtern, die bleiben sollen: {example}",
+    unsupportedNotNoFilter:
+      "Ausschließen wird nicht unterstützt, deshalb wird NOT ignoriert, und die Begriffe daneben gelten weiter.",
     exclusiveComparison: "Mit Datum und Uhrzeit >= oder <= verwenden.",
     notComparable:
       "{column} hat keine Reihenfolge: stattdessen Werte auswählen.",

@@ -356,6 +356,37 @@ function QuerySearch({
     settleTimer.current = setTimeout(() => setSettled(true), TYPING_PAUSE)
   }
 
+  // Values of the table's data for examples: the help's, and the terms a
+  // problem's message offers.
+  const sampleOf = React.useMemo(() => {
+    const source = server ? undefined : sourceOf(rowModel.searchParts())
+    const none = { filters: {}, search: "" }
+    return (queryColumn: QueryLanguage["columns"][number]) => {
+      if (!source) return {}
+      if (queryColumn.type === "number" || queryColumn.type === "date") {
+        const extent = source.extent(queryColumn.id, none)
+        if (!extent) return {}
+        if (queryColumn.type === "date")
+          return {
+            year: partsOf(
+              dayOfDate(new Date(extent.max), queryColumn.timeZone).day
+            ).year,
+          }
+        const middle = (extent.min + extent.max) / 2
+        const step =
+          10 ** Math.max(0, Math.floor(Math.log10(Math.abs(middle) || 1)))
+        return { number: Math.round(middle / step) * step }
+      }
+      if (queryColumn.type === "text") {
+        const top = [...source.facets(queryColumn.id, none).counts]
+          .sort((a, b) => b[1] - a[1])
+          .at(0)
+        return top ? { text: top[0] } : {}
+      }
+      return {}
+    }
+  }, [server, rowModel])
+
   // Problems in words, and those to show: not the one being typed until
   // typing pauses.
   const problems = React.useMemo(
@@ -363,9 +394,9 @@ function QuerySearch({
       parsed.diagnostics.map((diagnostic): QueryProblem => ({
         start: diagnostic.start,
         end: diagnostic.end,
-        message: problemMessage(diagnostic, language, model, t),
+        message: problemMessage(diagnostic, language, model, t, sampleOf),
       })),
-    [parsed, language, model, t]
+    [parsed, language, model, t, sampleOf]
   )
   const shown = (problem: QueryProblem) =>
     !focused || settled || caret < problem.start || caret > problem.end
@@ -548,34 +579,6 @@ function QuerySearch({
     [parsed, problems, model, formatter, t, td]
   )
 
-  const sampleOf = React.useMemo(() => {
-    const source = server ? undefined : sourceOf(rowModel.searchParts())
-    const none = { filters: {}, search: "" }
-    return (queryColumn: QueryLanguage["columns"][number]) => {
-      if (!source) return {}
-      if (queryColumn.type === "number" || queryColumn.type === "date") {
-        const extent = source.extent(queryColumn.id, none)
-        if (!extent) return {}
-        if (queryColumn.type === "date")
-          return {
-            year: partsOf(
-              dayOfDate(new Date(extent.max), queryColumn.timeZone).day
-            ).year,
-          }
-        const middle = (extent.min + extent.max) / 2
-        const step =
-          10 ** Math.max(0, Math.floor(Math.log10(Math.abs(middle) || 1)))
-        return { number: Math.round(middle / step) * step }
-      }
-      if (queryColumn.type === "text") {
-        const top = [...source.facets(queryColumn.id, none).counts]
-          .sort((a, b) => b[1] - a[1])
-          .at(0)
-        return top ? { text: top[0] } : {}
-      }
-      return {}
-    }
-  }, [server, rowModel])
   const examples = React.useMemo(
     () =>
       helpOpen

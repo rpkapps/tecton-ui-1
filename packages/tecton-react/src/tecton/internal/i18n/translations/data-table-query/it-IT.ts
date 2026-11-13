@@ -98,9 +98,17 @@ export default defineTranslations({
     backwardsRange:
       "Questo intervallo inizia dopo la fine: {from} è dopo {to}.",
     unsupportedOr:
-      "OR non è supportato: si applicano tutti i termini. Per trovare uno tra più valori, separali con virgole.",
+      "OR non è supportato. Le righe devono soddisfare ogni termine. Per trovare uno tra più valori di una colonna, elencali separati da virgole: {example}",
+    unsupportedOrNoList:
+      "OR non è supportato. Le righe devono soddisfare ogni termine, quindi cerca una cosa alla volta.",
+    unsupportedMinus:
+      "L’esclusione non è supportata, quindi questo termine viene ignorato. Per cercare il testo così com’è, mettilo tra virgolette. Per restringere le righe, filtra invece i valori da tenere: {example}",
+    unsupportedMinusNoFilter:
+      "L’esclusione non è supportata, quindi questo termine viene ignorato. Per cercare il testo così com’è, mettilo tra virgolette.",
     unsupportedNot:
-      "L’esclusione non è supportata: filtra invece i valori da tenere. Per cercare questo testo, mettilo tra virgolette.",
+      "L’esclusione non è supportata, quindi NOT viene ignorato e i termini accanto continuano ad applicarsi. Per restringere le righe, filtra invece i valori da tenere: {example}",
+    unsupportedNotNoFilter:
+      "L’esclusione non è supportata, quindi NOT viene ignorato e i termini accanto continuano ad applicarsi.",
     exclusiveComparison: "Usa >= o <= con data e ora.",
     notComparable: "{column} non ha un ordine: scegli invece i suoi valori.",
     multipleBoolean: "{column} è sì o no, non entrambi.",
