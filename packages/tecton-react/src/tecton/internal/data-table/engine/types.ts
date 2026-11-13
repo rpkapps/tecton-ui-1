@@ -163,31 +163,49 @@ type DataTableSort = {
 }
 
 /**
+ * A number filter's range. Both ends are included and either may be left
+ * out; `minExclusive: true` / `maxExclusive: true` leave the bound's own
+ * value out (more than `min`, less than `max`): what the search's `>` and
+ * `<` set.
+ */
+type DataTableNumberRange = {
+  min?: number
+  max?: number
+  /** `min` itself does not match: more than `min`. */
+  minExclusive?: true
+  /** `max` itself does not match: less than `max`. */
+  maxExclusive?: true
+}
+
+/**
+ * A date filter's range. Both ends are included and either may be left
+ * out; a `to` at midnight includes that whole day.
+ */
+type DataTableDateRange = { from?: Date; to?: Date }
+
+/**
  * A column's filter, by the column's type; `custom` is for a column with a
- * `filter` function. Number and date ranges include their ends, and a `to`
- * at midnight includes that whole day. A number bound leaves its own value
- * out with `minExclusive: true` / `maxExclusive: true` (more than `min`,
- * less than `max`): what the search's `>` and `<` set.
+ * `filter` function. Every type holds a list, and a row matches when its
+ * value matches any item of it: a text it contains, one of the options or
+ * of yes / no, a number or date range it is in.
  *
  * `empty: true` is the filter's "No value": the rows without a value match
- * too, besides those the rest of the filter matches, or alone when the rest
- * is unset (a text `value` of `""`, no range, no boolean `value`, no option
- * `values`). Without it an empty value never matches.
+ * too, besides those the list matches, or alone when the list is empty.
+ * Without it an empty value never matches.
  */
 type DataTableFilterValue =
-  | { type: "text"; value: string; empty?: boolean }
+  | { type: "text"; values: ReadonlyArray<string>; empty?: boolean }
   | {
       type: "number"
-      min?: number
-      max?: number
-      /** `min` itself does not match: more than `min`. */
-      minExclusive?: true
-      /** `max` itself does not match: less than `max`. */
-      maxExclusive?: true
+      ranges: ReadonlyArray<DataTableNumberRange>
       empty?: boolean
     }
-  | { type: "date"; from?: Date; to?: Date; empty?: boolean }
-  | { type: "boolean"; value?: boolean; empty?: boolean }
+  | {
+      type: "date"
+      ranges: ReadonlyArray<DataTableDateRange>
+      empty?: boolean
+    }
+  | { type: "boolean"; values: ReadonlyArray<boolean>; empty?: boolean }
   | { type: "options"; values: ReadonlyArray<string>; empty?: boolean }
   | { type: "custom"; value: unknown }
 
@@ -241,9 +259,11 @@ export type {
   DataTableColumnGroup,
   DataTableColumns,
   DataTableColumnType,
+  DataTableDateRange,
   DataTableFilterValue,
   DataTableHeaderDetails,
   DataTableLeafColumn,
+  DataTableNumberRange,
   DataTableOption,
   DataTablePartialView,
   DataTableSort,

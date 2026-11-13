@@ -159,6 +159,8 @@ export default defineTranslations({
     searchSyntax: "Syntaxe de recherche",
     filterBy: "Filtrer par {columnName}",
     filterContains: "Contient",
+    filterContainsAny: "Contient l’un de",
+    filterAddText: "Ajouter un texte…",
     filterMin: "Min.",
     filterMax: "Max.",
     clearFilter: "Effacer",
@@ -177,6 +179,11 @@ export default defineTranslations({
       other: "{matches} sur {total} correspondent",
     },
     optionsSelected: { other: "{total} sélectionnés" },
+    filterMoreRanges: {
+      one: "Ce filtre a encore {total} plage. Effacer la supprime.",
+      many: "Ce filtre a encore {total} de plages. Effacer les supprime.",
+      other: "Ce filtre a encore {total} plages. Effacer les supprime.",
+    },
     filterChip: "{columnName} : {value}",
     activeFilters: "Filtres actifs",
     clearAll: "Tout effacer",
@@ -303,12 +310,10 @@ export default defineTranslations({
       "L’exclusion n’est pas prise en charge : ce terme est ignoré. Pour rechercher ce texte tel quel, mettez-le entre guillemets.",
     exclusiveComparison: "Utilisez >= ou <= avec une date et une heure.",
     notComparable: "{column} n’a pas d’ordre : choisissez plutôt ses valeurs.",
-    multipleBoolean: "{column} est oui ou non, pas les deux.",
-    multipleDates: "{column} prend une date ou une plage, comme 2015..2016.",
     duplicateNoMatch:
       "Aucune ligne ne peut répondre aux deux termes sur {column}.",
     duplicateNotCombinable:
-      "{column} est déjà filtré plus tôt dans la recherche : réunissez les deux dans un seul terme.",
+      "{column} est déjà filtré plus tôt dans la recherche, et un filtre ne peut pas exiger les deux textes. Indiquez-les dans un seul terme pour trouver l’un ou l’autre.",
   },
   tableColumnResizer: {
     resize: "Redimensionner {columnName}",

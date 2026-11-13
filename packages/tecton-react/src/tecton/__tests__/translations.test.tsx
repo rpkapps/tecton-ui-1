@@ -236,13 +236,14 @@ describe("translations", () => {
     }
   })
 
-  it("carries live data's strings in every locale, a form for each of its plural categories", async () => {
+  it("carries live data's and the filters' plural strings in every locale, a form for each of its plural categories", async () => {
     const keys = [
       "rowsAdded",
       "newRows",
       "newRowsAbove",
       "newRowsBelow",
       "newRowsOnOtherPages",
+      "filterMoreRanges",
     ]
     for (const [file, table] of await locales()) {
       const categories = new Intl.PluralRules(

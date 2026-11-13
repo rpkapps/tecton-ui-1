@@ -21,8 +21,11 @@ import type { EngineColumn } from "./columns"
 import type { Core } from "./core"
 import type { DataTableRowModel } from "./engine"
 import {
+  boundsOf,
   columnPredicate,
   compileFilter,
+  hasBound,
+  type NumberBounds,
   type RowPredicate,
   type SearchIndex,
 } from "./filter"
@@ -97,13 +100,15 @@ function countFacets<T>(
 }
 
 /**
- * A number column's values over the rows a predicate keeps (the search and
- * every filter but the column's own, as for `Facets`).
+ * The rows a predicate keeps (the search and every filter but the column's
+ * own, as for `Facets`) and how many of them a filter of the column keeps:
+ * a number or text column's, as its filter is typed; a number column's
+ * values too.
  */
 type NumberFacets = {
   /** How many rows the predicate keeps. */
   readonly total: number
-  /** The numbers of those rows that have one, ascending. */
+  /** The numbers of those rows that have one, ascending; none for a text column. */
   readonly values: Float64Array
   /**
    * How many of those rows `filter` keeps as well (all of them for
@@ -139,14 +144,14 @@ function countNumbers<T>(
     if (predicate && !predicate(i, items[i])) continue
     kept.push(i)
     const value = column.getValue(items[i])
-    const number = toNumber(value)
+    const number = column.type === "number" ? toNumber(value) : undefined
     if (number !== undefined) numbers.push(number)
     else if (hasNoValue(column, value)) empty++
   }
   const values = Float64Array.from(numbers).sort()
   const total = kept.length
-  // The numbers from `min` to `max`, each included unless exclusive.
-  const between = (min: number, max: number, above: boolean, below: boolean) =>
+  // The numbers within `bounds`, each end included unless exclusive.
+  const between = ({ min, max, above, below }: NumberBounds) =>
     Math.max(
       0,
       boundary(values, (value) => (below ? value < max : value <= max)) -
@@ -157,24 +162,20 @@ function countNumbers<T>(
     values,
     count(filter) {
       if (!filter) return total
-      if (column.filter || filter.type !== "number") {
+      const ranges =
+        filter.type === "number" ? filter.ranges.filter(hasBound) : []
+      // Ranges side by side may overlap: their rows are counted one by one.
+      if (column.filter || filter.type !== "number" || ranges.length > 1) {
         const own = columnPredicate(column, filter, index, items.length)
         if (!own) return total
         let count = 0
         for (const position of kept) if (own(position, items[position])) count++
         return count
       }
-      const bounded = filter.min !== undefined || filter.max !== undefined
-      if (!bounded && !filter.empty) return total
+      if (!ranges.length && !filter.empty) return total
       return (
-        (bounded
-          ? between(
-              filter.min ?? -Infinity,
-              filter.max ?? Infinity,
-              filter.minExclusive === true,
-              filter.maxExclusive === true
-            )
-          : 0) + (filter.empty ? empty : 0)
+        (ranges.length ? between(boundsOf(ranges[0])) : 0) +
+        (filter.empty ? empty : 0)
       )
     },
   }
@@ -272,7 +273,7 @@ function getFacets<T>(model: DataTableRowModel<T>, id: string): Facets {
 }
 
 /**
- * A number column's numbers over the rows matching the search and every
+ * A number or text column's matches (`NumberFacets`) over the rows matching the search and every
  * filter but its own, and how many of those rows a filter keeps; `null`
  * for another column, or in server mode (the table holds only the rows
  * loaded).
@@ -284,7 +285,8 @@ function getNumberFacets<T>(
   const parts = model.searchParts()
   const { core: rows, search, filters, server } = parts
   const column = parts.model.byId.get(id)
-  if (!column || column.type !== "number" || server) return null
+  if (!column || (column.type !== "number" && column.type !== "text") || server)
+    return null
   const others = othersThan(filters, id)
   const byColumn = cacheOf(numberCache, rows, () => new Map())
   const cached = byColumn.get(id)

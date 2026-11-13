@@ -128,6 +128,8 @@ export default defineTranslations({
     searchSyntax: "搜尋語法",
     filterBy: "依「{columnName}」篩選",
     filterContains: "包含",
+    filterContainsAny: "包含以下任一項",
+    filterAddText: "新增文字…",
     filterMin: "最小值",
     filterMax: "最大值",
     clearFilter: "清除",
@@ -143,6 +145,9 @@ export default defineTranslations({
     filterOrNoValue: "{value} 或無值",
     filterMatches: { other: "{total} 項中有 {matches} 項符合" },
     optionsSelected: { other: "已選取 {total} 個" },
+    filterMoreRanges: {
+      other: "此篩選器還有 {total} 個範圍。清除會將其移除。",
+    },
     filterChip: "{columnName}：{value}",
     activeFilters: "已套用的篩選條件",
     clearAll: "全部清除",
@@ -250,11 +255,9 @@ export default defineTranslations({
       "不支援排除，因此會忽略此條件。要搜尋這段文字本身，請加上引號。",
     exclusiveComparison: "日期和時間請使用 >= 或 <=。",
     notComparable: "{column} 沒有順序：請改為選擇它的值。",
-    multipleBoolean: "{column} 只能是是或否，不能同時為兩者。",
-    multipleDates: "{column} 只接受一個日期或一個範圍，例如 2015..2016。",
     duplicateNoMatch: "沒有任何列能同時符合 {column} 的兩個條件。",
     duplicateNotCombinable:
-      "{column} 已在搜尋前面篩選：請把兩者寫在一個條件中。",
+      "{column} 已在搜尋前面篩選過，一個篩選器無法同時要求兩段文字。請將它們寫在同一個條件中，以符合其中任一項。",
   },
   tableColumnResizer: {
     resize: "調整 {columnName} 的大小",

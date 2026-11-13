@@ -155,6 +155,8 @@ export default defineTranslations({
     searchSyntax: "Σύνταξη αναζήτησης",
     filterBy: "Φιλτράρισμα κατά {columnName}",
     filterContains: "Περιέχει",
+    filterContainsAny: "Περιέχει οποιοδήποτε από",
+    filterAddText: "Προσθήκη κειμένου…",
     filterMin: "Ελάχ.",
     filterMax: "Μέγ.",
     clearFilter: "Απαλοιφή",
@@ -173,6 +175,10 @@ export default defineTranslations({
       other: "Ταιριάζουν {matches} από {total}",
     },
     optionsSelected: { other: "{total} επιλεγμένα" },
+    filterMoreRanges: {
+      one: "Αυτό το φίλτρο έχει ακόμη {total} εύρος. Η Απαλοιφή το αφαιρεί.",
+      other: "Αυτό το φίλτρο έχει ακόμη {total} εύρη. Η Απαλοιφή τα αφαιρεί.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Ενεργά φίλτρα",
     clearAll: "Απαλοιφή όλων",
@@ -300,13 +306,10 @@ export default defineTranslations({
     exclusiveComparison: "Με ημερομηνία και ώρα χρησιμοποιήστε >= ή <=.",
     notComparable:
       "Η στήλη {column} δεν έχει σειρά: επιλέξτε αντ’ αυτού τιμές.",
-    multipleBoolean: "{column} είναι ναι ή όχι, όχι και τα δύο.",
-    multipleDates:
-      "{column} δέχεται μία ημερομηνία ή ένα εύρος, π.χ. 2015..2016.",
     duplicateNoMatch:
       "Καμία γραμμή δεν ικανοποιεί και τους δύο όρους για {column}.",
     duplicateNotCombinable:
-      "Η στήλη {column} φιλτράρεται ήδη νωρίτερα στην αναζήτηση: γράψτε και τα δύο σε έναν όρο.",
+      "Η στήλη {column} φιλτράρεται νωρίτερα στην αναζήτηση και ένα φίλτρο δεν μπορεί να απαιτεί και τα δύο κείμενα. Γράψτε τα σε έναν όρο για να ταιριάζει οποιοδήποτε από αυτά.",
   },
   tableColumnResizer: {
     resize: "Αλλαγή μεγέθους {columnName}",

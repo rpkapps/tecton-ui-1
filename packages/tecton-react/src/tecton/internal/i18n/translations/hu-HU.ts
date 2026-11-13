@@ -142,6 +142,8 @@ export default defineTranslations({
     searchSyntax: "Keresési szintaxis",
     filterBy: "Szűrés {columnName} szerint",
     filterContains: "Tartalmazza",
+    filterContainsAny: "A következők egyikét tartalmazza",
+    filterAddText: "Szöveg hozzáadása…",
     filterMin: "Min.",
     filterMax: "Max.",
     clearFilter: "Törlés",
@@ -157,6 +159,11 @@ export default defineTranslations({
     filterOrNoValue: "{value} vagy nincs érték",
     filterMatches: { other: "Egyezés: {matches}/{total}" },
     optionsSelected: { other: "{total} kijelölve" },
+    filterMoreRanges: {
+      one: "Ennek a szűrőnek még {total} tartománya van. A Törlés eltávolítja.",
+      other:
+        "Ennek a szűrőnek még {total} tartománya van. A Törlés eltávolítja őket.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktív szűrők",
     clearAll: "Összes törlése",
@@ -274,13 +281,10 @@ export default defineTranslations({
     exclusiveComparison: "Dátummal és idővel használja a >= vagy <= jelet.",
     notComparable:
       "A(z) {column} oszlopnak nincs sorrendje: inkább válassza ki az értékeit.",
-    multipleBoolean: "{column}: igen vagy nem, nem mindkettő.",
-    multipleDates:
-      "{column}: egy dátum vagy egy tartomány adható meg, például 2015..2016.",
     duplicateNoMatch:
       "Egyetlen sor sem felelhet meg a(z) {column} mindkét feltételének.",
     duplicateNotCombinable:
-      "A(z) {column} oszlopot a keresés már korábban szűri: írja a kettőt egy feltételbe.",
+      "A(z) {column} oszlop a keresésben korábban már szűrve van, és egy szűrő nem követelheti meg mindkét szöveget. Írja őket egy kifejezésbe, hogy bármelyikük egyezzen.",
   },
   tableColumnResizer: {
     resize: "{columnName} átméretezése",

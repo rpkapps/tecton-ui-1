@@ -65,13 +65,16 @@ describe("date-only strings west of UTC", () => {
     const partial = JSON.parse(
       JSON.stringify({
         filters: {
-          spud: { type: "date", from: "2024-03-01", to: "2024-03-01" },
+          spud: {
+            type: "date",
+            ranges: [{ from: "2024-03-01", to: "2024-03-01" }],
+          },
         },
       })
     ) as DataTablePartialView
     const view = reconcileView(columns, partial, defaults, ALL)
     const filter = view.filters.spud
-    expect(filter.type === "date" && filter.from?.getTime()).toBe(
+    expect(filter.type === "date" && filter.ranges[0].from?.getTime()).toBe(
       new Date(2024, 2, 1).getTime()
     )
     const result = createDataTableEngine<Well>().run({

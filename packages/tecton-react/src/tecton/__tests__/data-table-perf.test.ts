@@ -298,7 +298,7 @@ describe(
         const result = run(
           view({
             filters: {
-              oil: { type: "number", min: 1000, max: 4000 },
+              oil: { type: "number", ranges: [{ min: 1000, max: 4000 }] },
               status: { type: "options", values: ["producing", "drilling"] },
             },
           })

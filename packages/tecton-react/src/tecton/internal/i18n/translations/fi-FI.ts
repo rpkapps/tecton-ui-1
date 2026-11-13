@@ -149,6 +149,8 @@ export default defineTranslations({
     searchSyntax: "Hakusyntaksi",
     filterBy: "Suodata sarakkeen {columnName} mukaan",
     filterContains: "Sisältää",
+    filterContainsAny: "Sisältää jonkin näistä",
+    filterAddText: "Lisää teksti…",
     filterMin: "Väh.",
     filterMax: "Enint.",
     clearFilter: "Tyhjennä",
@@ -164,6 +166,11 @@ export default defineTranslations({
     filterOrNoValue: "{value} tai ei arvoa",
     filterMatches: { other: "Osumia: {matches}/{total}" },
     optionsSelected: { other: "{total} valittu" },
+    filterMoreRanges: {
+      one: "Tässä suodattimessa on vielä {total} alue. Tyhjennä poistaa sen.",
+      other:
+        "Tässä suodattimessa on vielä {total} aluetta. Tyhjennä poistaa ne.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktiiviset suodattimet",
     clearAll: "Tyhjennä kaikki",
@@ -292,13 +299,10 @@ export default defineTranslations({
       "Käytä päivämäärän ja kellonajan kanssa merkkejä >= tai <=.",
     notComparable:
       "Sarakkeella {column} ei ole järjestystä: valitse sen sijaan arvot.",
-    multipleBoolean: "{column} on kyllä tai ei, ei molempia.",
-    multipleDates:
-      "{column} ottaa yhden päivämäärän tai yhden välin, kuten 2015..2016.",
     duplicateNoMatch:
       "Mikään rivi ei voi täyttää molempia sarakkeen {column} ehtoja.",
     duplicateNotCombinable:
-      "{column} suodatetaan jo aiemmin haussa: kirjoita molemmat samaan ehtoon.",
+      "{column} on suodatettu jo aiemmin haussa, eikä yksi suodatin voi vaatia molempia tekstejä. Kirjoita ne samaan ehtoon, niin mikä tahansa niistä täsmää.",
   },
   tableColumnResizer: {
     resize: "Muuta sarakkeen {columnName} kokoa",

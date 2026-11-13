@@ -291,7 +291,7 @@ describe("DataTable change details", () => {
     )
     act(() => {
       api?.setSearch("Well")
-      api?.setFilter("field", { type: "text", value: "Gull" })
+      api?.setFilter("field", { type: "text", values: ["Gull"] })
     })
     act(() => api?.clearFilters())
     expect(onViewChange.mock.lastCall?.[1].reason).toBe("filter")

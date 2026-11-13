@@ -143,6 +143,8 @@ export default defineTranslations({
     searchSyntax: "Søkesyntaks",
     filterBy: "Filtrer etter {columnName}",
     filterContains: "Inneholder",
+    filterContainsAny: "Inneholder en av",
+    filterAddText: "Legg til tekst…",
     filterMin: "Min.",
     filterMax: "Maks.",
     clearFilter: "Fjern",
@@ -158,6 +160,10 @@ export default defineTranslations({
     filterOrNoValue: "{value} eller ingen verdi",
     filterMatches: { other: "{matches} av {total} samsvarer" },
     optionsSelected: { other: "{total} valgt" },
+    filterMoreRanges: {
+      one: "Dette filteret har {total} område til. Fjern fjerner det.",
+      other: "Dette filteret har {total} områder til. Fjern fjerner dem.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktive filtre",
     clearAll: "Fjern alle",
@@ -274,11 +280,9 @@ export default defineTranslations({
       "Utelukking støttes ikke, så denne termen ignoreres. Sett teksten i anførselstegn for å søke etter selve teksten.",
     exclusiveComparison: "Bruk >= eller <= med dato og klokkeslett.",
     notComparable: "{column} har ingen rekkefølge: velg verdiene i stedet.",
-    multipleBoolean: "{column} er ja eller nei, ikke begge.",
-    multipleDates: "{column} tar én dato eller ett område, som 2015..2016.",
     duplicateNoMatch: "Ingen rad kan oppfylle begge termene for {column}.",
     duplicateNotCombinable:
-      "{column} filtreres allerede tidligere i søket: skriv begge i én term.",
+      "{column} er filtrert tidligere i søket, og ett filter kan ikke kreve begge tekstene. Skriv dem i ett ledd for å finne en av dem.",
   },
   tableColumnResizer: {
     resize: "Endre størrelse på {columnName}",

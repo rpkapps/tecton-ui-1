@@ -5,15 +5,17 @@
  * The query is canonical: the filters in column order, each by the
  * column's key (`language.ts`), then the search. `parseQuery` reads it back
  * as the same filters and search (`sameFilters`, and the search as it is,
- * or `""` for one of spaces only):
+ * or `""` for one of spaces only). A filter's list is its items in order,
+ * separated by commas:
  *
- * - text: `name:a-12`, quoted when it has to be (`name:"a, b"`);
+ * - text: `name:a-12,b-3`, each quoted when it has to be (`name:"a, b"`);
  * - options: the options by label in lower case, when that names them, else
  *   by value, in the filter's order: `status:drilling,"shut in"`;
- * - yes / no: the boolean filter's label (`yes`), else `yes` / `no`;
+ * - yes / no: the boolean filter's labels (`yes`), else `yes` / `no`;
  * - number: `td:3000`, `td:>=3000`, `td:<=3000`, `td:1000..3000`, and with
- *   an exclusive bound `td:>3000`, `td:<3000`; a range with one is written
- *   as its two ends, `td:>1000 td:<=3000` (read back as one filter);
+ *   an exclusive bound `td:>3000`, `td:<3000` (`td:<1000,>3000`); a lone
+ *   range with both ends and an exclusive one is written as its two ends,
+ *   `td:>1000 td:<=3000` (read back as one filter);
  * - date: whole years, months or days as such (`spud:2015`,
  *   `spud:2015-06..2015-08`, `spud:2015-06-30`), else `from..to`, `>=from`,
  *   `<=to` by day (`spud:>=2015-07-01`); an end that is not a day's start
@@ -23,14 +25,21 @@
  * - "No value": `none` after the rest (`td:>=3000,none`), alone without it.
  *
  * What the query cannot say is left out: a custom filter value, a filter of
- * another type than its column's, a column no key names. `applyQuery` keeps
+ * another type than its column's, a column no key names, and a number range
+ * with both ends and an exclusive one beside other ranges (its two ends
+ * would be two terms, which keep the rows both match). `applyQuery` keeps
  * those in the view.
  */
-import type { DataTableFilterValue, DataTableView } from "../types"
+import type {
+  DataTableDateRange,
+  DataTableFilterValue,
+  DataTableNumberRange,
+  DataTableView,
+} from "../types"
 import { sameFilters, sameFilterValue } from "../view"
 import { dayOfDate, daysInMonth, formatDay, partsOf } from "./dates"
 import type { QueryColumn, QueryLanguage } from "./language"
-import { formatNumber } from "./numbers"
+import { formatNumber, joinsNumber } from "./numbers"
 import { parseQuery } from "./parse"
 import { isQuote, quote, valueToken } from "./syntax"
 import type { ParsedQuery, QueryView } from "./types"
@@ -42,6 +51,12 @@ type SerializeOptions = {
   previous?: ParsedQuery
 }
 
+/** A number range one item cannot write: both ends, one of them exclusive. */
+const twoTerms = (range: DataTableNumberRange) =>
+  range.min !== undefined &&
+  range.max !== undefined &&
+  (range.minExclusive === true || range.maxExclusive === true)
+
 /** Whether the query can say `value` as the filter of column `id`. */
 function canSay(
   language: QueryLanguage,
@@ -50,15 +65,22 @@ function canSay(
 ) {
   const column = language.byId.get(id)
   return (
-    column !== undefined && column.key !== null && value.type === column.type
+    column !== undefined &&
+    column.key !== null &&
+    value.type === column.type &&
+    !(
+      value.type === "number" &&
+      value.ranges.length > 1 &&
+      value.ranges.some(twoTerms)
+    )
   )
 }
 
-function dateValue(
+/** A date range as the query writes it; `null` for one without an end. */
+function dateRange(
   column: QueryColumn,
-  value: Extract<DataTableFilterValue, { type: "date" }>
+  { from, to }: DataTableDateRange
 ): string | null {
-  const { from, to } = value
   const zone = column.timeZone
   const end = (date: Date) => {
     const day = dayOfDate(date, zone)
@@ -92,54 +114,80 @@ function dateValue(
   return null
 }
 
+/**
+ * A number range as the query writes it: `null` for one without a bound,
+ * or its two ends (`twoTerms`) for a range with both and an exclusive one.
+ */
+function numberRange(
+  language: QueryLanguage,
+  range: DataTableNumberRange
+): string | { low: string; high: string } | null {
+  const n = (v: number) => formatNumber(v, language.numbers)
+  const { min, max, minExclusive, maxExclusive } = range
+  const low = min === undefined ? null : `${minExclusive ? ">" : ">="}${n(min)}`
+  const high =
+    max === undefined ? null : `${maxExclusive ? "<" : "<="}${n(max)}`
+  if (low && high && (minExclusive || maxExclusive)) return { low, high }
+  if (min !== undefined && max !== undefined)
+    return min === max ? n(min) : `${n(min)}..${n(max)}`
+  return low ?? high
+}
+
+/** Items joined by commas; `null` for none. */
+const listOf = (items: ReadonlyArray<string | null>) => {
+  const written = items.filter((item): item is string => item !== null)
+  return written.length ? written.join(",") : null
+}
+
 /** A filter's value as the query writes it, after its key and colon. */
 function filterValue(
   language: QueryLanguage,
   column: QueryColumn,
   value: Exclude<DataTableFilterValue, { type: "custom" }>
 ): string {
+  const none = value.empty ? "none" : null
   let text: string | null
   switch (value.type) {
     case "text":
-      text = value.value === "" ? null : valueToken(value.value)
+      text = listOf(value.values.map(valueToken))
       break
     case "options":
-      text = value.values.length
-        ? value.values.map((v) => language.valueToken(column, v)).join(",")
-        : null
-      break
     case "boolean":
-      text =
-        value.value === undefined
-          ? null
-          : language.valueToken(column, value.value)
+      text = listOf(
+        value.values.map((v: string | boolean) =>
+          language.valueToken(column, v)
+        )
+      )
       break
     case "number": {
-      const n = (v: number) => formatNumber(v, language.numbers)
-      const { min, max, minExclusive, maxExclusive } = value
-      const low =
-        min === undefined ? null : `${minExclusive ? ">" : ">="}${n(min)}`
-      const high =
-        max === undefined ? null : `${maxExclusive ? "<" : "<="}${n(max)}`
-      if (low && high && (minExclusive || maxExclusive)) {
+      const ranges = value.ranges.map((range) => numberRange(language, range))
+      const [only] = ranges
+      if (ranges.length === 1 && only !== null && typeof only === "object")
         // Two terms on the column, the second after its key again; "No
         // value" in both, as two terms keep it only when both have it.
-        const none = value.empty ? ",none" : ""
-        return `${low}${none} ${column.key}:${high}${none}`
+        return [only.low, `${column.key}:${only.high}`]
+          .map((term) => listOf([term, none]))
+          .join(" ")
+      const written: Array<string> = []
+      for (const range of ranges) {
+        if (typeof range !== "string") continue
+        // A comma the locale writes in numbers would join this range to
+        // the one before (`3,5` in German): its first number is quoted.
+        const previous = written.at(-1)
+        written.push(
+          previous !== undefined &&
+            joinsNumber(previous, range, language.numbers)
+            ? range.replace(/^(?:(?!\.\.).)+/, (first) => quote(first))
+            : range
+        )
       }
-      text =
-        min !== undefined && max !== undefined
-          ? min === max
-            ? n(min)
-            : `${n(min)}..${n(max)}`
-          : (low ?? high)
+      text = listOf(written)
       break
     }
     case "date":
-      text = dateValue(column, value)
+      text = listOf(value.ranges.map((range) => dateRange(column, range)))
   }
-  if (!value.empty) return text ?? ""
-  return text === null ? "none" : `${text},none`
+  return listOf([text, none]) ?? ""
 }
 
 /**

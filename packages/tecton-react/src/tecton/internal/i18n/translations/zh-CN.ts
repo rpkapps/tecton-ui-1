@@ -126,6 +126,8 @@ export default defineTranslations({
     searchSyntax: "搜索语法",
     filterBy: "按 {columnName} 筛选",
     filterContains: "包含",
+    filterContainsAny: "包含以下任一项",
+    filterAddText: "添加文本…",
     filterMin: "最小值",
     filterMax: "最大值",
     clearFilter: "清除",
@@ -141,6 +143,9 @@ export default defineTranslations({
     filterOrNoValue: "{value} 或无值",
     filterMatches: { other: "{total} 项中有 {matches} 项匹配" },
     optionsSelected: { other: "已选择 {total} 项" },
+    filterMoreRanges: {
+      other: "此筛选器还有 {total} 个范围。清除会将其移除。",
+    },
     filterChip: "{columnName}：{value}",
     activeFilters: "已应用的筛选条件",
     clearAll: "全部清除",
@@ -247,11 +252,9 @@ export default defineTranslations({
       "不支持排除，因此会忽略此条件。要搜索这段文本本身，请加上引号。",
     exclusiveComparison: "日期和时间请使用 >= 或 <=。",
     notComparable: "{column} 没有顺序：请改为选择它的值。",
-    multipleBoolean: "{column} 只能是是或否，不能同时为两者。",
-    multipleDates: "{column} 只接受一个日期或一个范围，例如 2015..2016。",
     duplicateNoMatch: "没有任何行能同时满足 {column} 的两个条件。",
     duplicateNotCombinable:
-      "{column} 已在搜索前面筛选：请把两者写在一个条件中。",
+      "{column} 已在搜索前面筛选过，一个筛选器不能同时要求两段文本。请将它们写在同一个条件中，以匹配其中任意一个。",
   },
   tableColumnResizer: {
     resize: "调整 {columnName} 的大小",

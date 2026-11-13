@@ -184,6 +184,10 @@ const enUS = {
     // the fields in its popover.
     filterBy: "Filter by {columnName}",
     filterContains: "Contains",
+    // A text filter: its field ("Contains"), the texts added from it, any
+    // of which a row contains (the chips' group), and the field's placeholder.
+    filterContainsAny: "Contains any of",
+    filterAddText: "Add text…",
     filterMin: "Min",
     filterMax: "Max",
     clearFilter: "Clear",
@@ -207,7 +211,7 @@ const enUS = {
     // A filter's value that also keeps the rows without one ("1,000–2,000
     // or no value"); {value} is the rest of the filter in words.
     filterOrNoValue: "{value} or no value",
-    // Under a number filter's fields, as they are typed: how many of the
+    // Under a number or text filter's fields, as they are typed: how many of the
     // rows the search and the other filters keep ({total}) the filter
     // keeps too ({matches}). The plural form follows {matches}; both are
     // formatted.
@@ -215,8 +219,16 @@ const enUS = {
       one: "{matches} of {total} matches",
       other: "{matches} of {total} match",
     },
-    // More than two options chosen in a filter; {total} is formatted.
+    // More than two items chosen in a filter (options, texts, ranges);
+    // {total} is formatted.
     optionsSelected: { other: "{total} selected" },
+    // Under a number or date filter, which edits a list's first range, when
+    // the list has more ({total}, formatted, from a search such as
+    // td:<1000,>3000); Clear (`clearFilter`) removes the whole filter.
+    filterMoreRanges: {
+      one: "This filter has {total} more range. Clear removes it.",
+      other: "This filter has {total} more ranges. Clear removes them.",
+    },
     // A chip of the active filters: the column's name and the filter's
     // value ("Status: Producing, Drilling").
     filterChip: "{columnName}: {value}",
@@ -378,11 +390,9 @@ const enUS = {
       "Excluding isn't supported, so this term is ignored. To search for the text itself, put it in quotes.",
     exclusiveComparison: "Use >= or <= with a date and time.",
     notComparable: "{column} has no order: choose its values instead.",
-    multipleBoolean: "{column} is yes or no, not both.",
-    multipleDates: "{column} takes one date or one range, as in 2015..2016.",
     duplicateNoMatch: "No row can match both terms on {column}.",
     duplicateNotCombinable:
-      "{column} is filtered earlier in the search: put both in one term.",
+      "{column} is filtered earlier in the search, and one filter can't require both texts. List them in one term to match any of them.",
   },
   tableColumnResizer: {
     resize: "Resize {columnName}",

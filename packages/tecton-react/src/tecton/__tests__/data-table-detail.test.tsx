@@ -532,7 +532,9 @@ describe("DataTableContent totals", () => {
         filterable
         pagination
         defaultPageSize={2}
-        defaultView={{ filters: { active: { type: "boolean", value: true } } }}
+        defaultView={{
+          filters: { active: { type: "boolean", values: [true] } },
+        }}
       >
         <DataTableContent aria-label="Wells" totals />
       </DataTable>

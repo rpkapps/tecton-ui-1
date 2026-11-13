@@ -74,7 +74,7 @@ describe("a day without a midnight (America/Santiago, 2026-09-06)", () => {
 
   it("is kept whole by a filter of that one day, in the column's zone and in the local zone", () => {
     const day = new Date(DAY_START)
-    const filter = { type: "date" as const, from: day, to: day }
+    const filter = { type: "date" as const, ranges: [{ from: day, to: day }] }
     expect(
       matching({ dateStyle: "medium", timeZone: "America/Santiago" }, filter)
     ).toEqual(["first", "late"])
@@ -85,7 +85,7 @@ describe("a day without a midnight (America/Santiago, 2026-09-06)", () => {
     expect(
       matching(
         { dateStyle: "medium", timeZone: "America/Santiago" },
-        { type: "date", to: new Date(DAY_START + 3_600_000) }
+        { type: "date", ranges: [{ to: new Date(DAY_START + 3_600_000) }] }
       )
     ).toEqual(["before", "first"])
   })

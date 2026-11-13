@@ -78,11 +78,7 @@ describe("date filters east of UTC", () => {
     expect(
       matching(
         { dateStyle: "medium", timeZone: "UTC" },
-        {
-          type: "date",
-          from: day,
-          to: day,
-        }
+        { type: "date", ranges: [{ from: day, to: day }] }
       )
     ).toEqual(["start", "late"])
   })
@@ -91,7 +87,10 @@ describe("date filters east of UTC", () => {
     const day = new Date(2024, 2, 1)
     // Oslo's March 1: 23:00 UTC on Feb 29 to 23:00 UTC on March 1.
     expect(
-      matching({ dateStyle: "medium" }, { type: "date", from: day, to: day })
+      matching(
+        { dateStyle: "medium" },
+        { type: "date", ranges: [{ from: day, to: day }] }
+      )
     ).toEqual(["before", "start"])
   })
 
@@ -99,10 +98,7 @@ describe("date filters east of UTC", () => {
     expect(
       matching(
         { dateStyle: "medium", timeZone: "UTC" },
-        {
-          type: "date",
-          to: new Date(Date.UTC(2024, 2, 1, 12)),
-        }
+        { type: "date", ranges: [{ to: new Date(Date.UTC(2024, 2, 1, 12)) }] }
       )
     ).toEqual(["before", "start"])
   })
@@ -129,7 +125,7 @@ describe("DataTableFilter on a date column shown in UTC", () => {
         columns={columns}
         filterable
         defaultView={{
-          filters: { spud: { type: "date", from: day, to: day } },
+          filters: { spud: { type: "date", ranges: [{ from: day, to: day }] } },
         }}
         onViewChange={onViewChange}
       >
@@ -166,8 +162,8 @@ describe("DataTableFilter on a date column shown in UTC", () => {
     await user.click(within(grid).getByRole("button", { name: /March 5th/ }))
     await waitFor(() => expect(onViewChange).toHaveBeenCalled())
     const filter = onViewChange.mock.calls.at(-1)?.[0].filters.spud
-    expect(filter.from.getTime()).toBe(Date.UTC(2024, 2, 1))
-    expect(filter.to.getTime()).toBe(Date.UTC(2024, 2, 5))
+    expect(filter.ranges[0].from.getTime()).toBe(Date.UTC(2024, 2, 1))
+    expect(filter.ranges[0].to.getTime()).toBe(Date.UTC(2024, 2, 5))
     // The calendar's code loads on demand: slow under a full parallel run.
   }, 20_000)
 })

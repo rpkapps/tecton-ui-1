@@ -156,6 +156,8 @@ export default defineTranslations({
     searchSyntax: "Sintaxis de búsqueda",
     filterBy: "Filtrar por {columnName}",
     filterContains: "Contiene",
+    filterContainsAny: "Contiene alguno de",
+    filterAddText: "Añadir texto…",
     filterMin: "Mín.",
     filterMax: "Máx.",
     clearFilter: "Borrar",
@@ -174,6 +176,11 @@ export default defineTranslations({
       other: "Coinciden {matches} de {total}",
     },
     optionsSelected: { other: "{total} seleccionados" },
+    filterMoreRanges: {
+      one: "Este filtro tiene {total} intervalo más. Borrar lo quita.",
+      many: "Este filtro tiene {total} de intervalos más. Borrar los quita.",
+      other: "Este filtro tiene {total} intervalos más. Borrar los quita.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Filtros activos",
     clearAll: "Borrar todo",
@@ -300,12 +307,10 @@ export default defineTranslations({
       "No se admite excluir, así que este término se ignora. Para buscar el texto tal cual, ponlo entre comillas.",
     exclusiveComparison: "Usa >= o <= con una fecha y hora.",
     notComparable: "{column} no tiene orden: elige sus valores en su lugar.",
-    multipleBoolean: "{column} es sí o no, no ambos.",
-    multipleDates: "{column} admite una fecha o un intervalo, como 2015..2016.",
     duplicateNoMatch:
       "Ninguna fila puede cumplir los dos términos de {column}.",
     duplicateNotCombinable:
-      "{column} ya se filtra antes en la búsqueda: une los dos en un solo término.",
+      "{column} ya se filtra antes en la búsqueda y un filtro no puede exigir ambos textos. Escríbelos en un solo término para buscar cualquiera de ellos.",
   },
   tableColumnResizer: {
     resize: "Cambiar el tamaño de {columnName}",

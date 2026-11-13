@@ -668,18 +668,18 @@ describe("view", () => {
   it("drops filters the column cannot apply", () => {
     const view = reconcile({
       filters: {
-        name: { type: "text", value: "well" },
-        oil: { type: "text", value: "12" },
-        gas: { type: "number", min: Number.NaN, max: 5 },
+        name: { type: "text", values: ["well"] },
+        oil: { type: "text", values: ["12"] },
+        gas: { type: "number", ranges: [{ min: Number.NaN, max: 5 }] },
         status: { type: "options", values: ["producing", 4] },
-        fixed: { type: "text", value: "x" },
-        ghost: { type: "text", value: "x" },
+        fixed: { type: "text", values: ["x"] },
+        ghost: { type: "text", values: ["x"] },
         custom: { type: "custom", value: "Well A-2" },
       },
     })
     expect(view.filters).toEqual({
-      name: { type: "text", value: "well" },
-      gas: { type: "number", max: 5 },
+      name: { type: "text", values: ["well"] },
+      gas: { type: "number", ranges: [{ max: 5 }] },
       status: { type: "options", values: ["producing"] },
       custom: { type: "custom", value: "Well A-2" },
     })
@@ -688,31 +688,41 @@ describe("view", () => {
   it("keeps a number filter's exclusive flags only as true, with their bound", () => {
     const view = reconcile({
       filters: {
-        oil: { type: "number", min: 1, minExclusive: true },
-        gas: { type: "number", max: 5, minExclusive: true, maxExclusive: 1 },
-        name: { type: "text", value: "x" },
+        oil: { type: "number", ranges: [{ min: 1, minExclusive: true }] },
+        gas: {
+          type: "number",
+          ranges: [{ max: 5, minExclusive: true, maxExclusive: 1 }],
+        },
+        name: { type: "text", values: ["x"] },
       },
     })
     expect(view.filters.oil).toEqual({
       type: "number",
-      min: 1,
-      minExclusive: true,
+      ranges: [{ min: 1, minExclusive: true }],
     })
-    expect(view.filters.gas).toEqual({ type: "number", max: 5 })
-    const kept = { type: "number" as const, min: 1, maxExclusive: undefined }
+    expect(view.filters.gas).toEqual({ type: "number", ranges: [{ max: 5 }] })
+    const kept = {
+      type: "number" as const,
+      ranges: [{ min: 1, maxExclusive: undefined }],
+    }
     expect(reconcile({ filters: { oil: kept } }).filters.oil).toBe(kept)
   })
 
   it("compares number filters with their exclusive flags", () => {
-    const a = { type: "number" as const, min: 1 }
-    expect(sameFilterValue(a, { type: "number", min: 1 })).toBe(true)
+    const a = { type: "number" as const, ranges: [{ min: 1 }] }
+    expect(sameFilterValue(a, { type: "number", ranges: [{ min: 1 }] })).toBe(
+      true
+    )
     expect(
-      sameFilterValue(a, { type: "number", min: 1, minExclusive: true })
+      sameFilterValue(a, {
+        type: "number",
+        ranges: [{ min: 1, minExclusive: true }],
+      })
     ).toBe(false)
     expect(
       sameFilterValue(
-        { type: "number", max: 1, maxExclusive: true },
-        { type: "number", max: 1, maxExclusive: true }
+        { type: "number", ranges: [{ max: 1, maxExclusive: true }] },
+        { type: "number", ranges: [{ max: 1, maxExclusive: true }] }
       )
     ).toBe(true)
   })
@@ -720,8 +730,8 @@ describe("view", () => {
   it("drops empty filters and custom ones without a filter function", () => {
     const view = reconcile({
       filters: {
-        name: { type: "text", value: "  " },
-        oil: { type: "number" },
+        name: { type: "text", values: ["  "] },
+        oil: { type: "number", ranges: [] },
         status: { type: "options", values: [] },
         gas: { type: "custom", value: 1 },
         custom: null,
@@ -738,23 +748,26 @@ describe("view", () => {
     const restored = JSON.parse(
       JSON.stringify({
         filters: {
-          spud: { type: "date", from: new Date(2024, 0, 1), to: "garbage" },
+          spud: {
+            type: "date",
+            ranges: [{ from: new Date(2024, 0, 1), to: "garbage" }],
+          },
         },
       })
     ) as DataTablePartialView
     const view = reconcileView(dated, restored, dates, ALL)
     const filter = view.filters.spud
-    expect(filter.type === "date" && filter.from?.getTime()).toBe(
+    expect(filter.type === "date" && filter.ranges[0].from?.getTime()).toBe(
       new Date(2024, 0, 1).getTime()
     )
-    expect(filter.type === "date" && filter.to).toBeUndefined()
+    expect(filter.type === "date" && filter.ranges[0].to).toBeUndefined()
   })
 
   it("applies nothing a feature that is off would", () => {
     const view = reconcile(
       {
         search: "well",
-        filters: { name: { type: "text", value: "well" } },
+        filters: { name: { type: "text", values: ["well"] } },
         grouping: ["name"],
       },
       { sortable: true, filterable: false, groupable: false }
@@ -816,7 +829,7 @@ describe("view", () => {
   it("returns a valid view as it is", () => {
     const valid = reconcile({
       sorting: [{ column: "oil", direction: "ascending" }],
-      filters: { name: { type: "text", value: "a" } },
+      filters: { name: { type: "text", values: ["a"] } },
       columns: {
         hidden: ["gas"],
         widths: { oil: 100 },
@@ -872,9 +885,9 @@ describe("view", () => {
     expect(setSearch(base, "")).toBe(base)
     expect(setSearch(base, "well").search).toBe("well")
 
-    const filtered = setFilter(base, "name", { type: "text", value: "a" })
-    expect(filtered.filters).toEqual({ name: { type: "text", value: "a" } })
-    expect(setFilter(filtered, "name", { type: "text", value: "a" })).toBe(
+    const filtered = setFilter(base, "name", { type: "text", values: ["a"] })
+    expect(filtered.filters).toEqual({ name: { type: "text", values: ["a"] } })
+    expect(setFilter(filtered, "name", { type: "text", values: ["a"] })).toBe(
       filtered
     )
     expect(setFilter(filtered, "name", null).filters).toEqual({})
@@ -930,14 +943,17 @@ describe("view", () => {
     expect(
       viewMatchesChanged(
         base,
-        setFilter(base, "oil", { type: "number", min: 1 })
+        setFilter(base, "oil", { type: "number", ranges: [{ min: 1 }] })
       )
     ).toBe(true)
     expect(viewMatchesChanged(base, sortColumn(base, "oil"))).toBe(false)
     expect(shouldResetPage(base, sortColumn(base, "oil"))).toBe(true)
     expect(shouldResetPage(base, setGrouping(base, ["name"]))).toBe(true)
     expect(
-      shouldResetPage(base, setFilter(base, "oil", { type: "number", min: 1 }))
+      shouldResetPage(
+        base,
+        setFilter(base, "oil", { type: "number", ranges: [{ min: 1 }] })
+      )
     ).toBe(true)
     expect(shouldResetPage(base, setColumnHidden(base, "gas", true))).toBe(
       false
@@ -1139,7 +1155,7 @@ describe("engine: memoization", () => {
     const engine = createDataTableEngine<Well>()
     const v = view({
       sorting: [{ column: "oil", direction: "ascending" }],
-      filters: { name: { type: "text", value: "well" } },
+      filters: { name: { type: "text", values: ["well"] } },
     })
     const first = run({ view: v }, engine)
     expect(run({ view: v }, engine)).toBe(first)
@@ -1257,64 +1273,123 @@ describe("engine: filters", () => {
     ids(run({ view: view({ filters }) }).rows)
 
   it("filters text by contains", () => {
-    expect(filter({ operator: { type: "text", value: "equi" } })).toEqual([
+    expect(filter({ operator: { type: "text", values: ["equi"] } })).toEqual([
       "A-2",
       "B-1",
     ])
   })
 
+  it("matches any item of a filter's list", () => {
+    // Text: contains any of them, folded alike.
+    expect(
+      filter({ operator: { type: "text", values: ["EQUI", "shell"] } })
+    ).toEqual(["A-10", "A-2", "B-1"])
+    expect(
+      filter({ operator: { type: "text", values: ["equi", "  "] } })
+    ).toEqual(["A-2", "B-1"])
+    // Numbers and dates: within any range.
+    expect(
+      filter({
+        oil: {
+          type: "number",
+          ranges: [{ max: 50, maxExclusive: true }, { min: 301 }],
+        },
+      })
+    ).toEqual(["a-1"])
+    expect(
+      filter({
+        oil: { type: "number", ranges: [{ max: 50 }, { min: 301 }] },
+      })
+    ).toEqual(["B-1", "a-1"])
+    expect(
+      filter({
+        spud: {
+          type: "date",
+          ranges: [
+            { to: new Date(2022, 2, 4) },
+            { from: new Date(2023, 5, 1), to: new Date(2023, 5, 1) },
+          ],
+        },
+      })
+    ).toEqual(["A-2", "a-1"])
+    // Yes or no: every row with a value.
+    expect(
+      filter({ active: { type: "boolean", values: [true, false] } })
+    ).toEqual(["A-10", "A-2", "a-1"])
+  })
+
   it("filters numbers by an inclusive range, without empty values", () => {
-    expect(filter({ oil: { type: "number", min: 50, max: 300 } })).toEqual([
-      "A-10",
+    expect(
+      filter({ oil: { type: "number", ranges: [{ min: 50, max: 300 }] } })
+    ).toEqual(["A-10", "B-1"])
+    expect(filter({ oil: { type: "number", ranges: [{ min: 301 }] } })).toEqual(
+      ["a-1"]
+    )
+    expect(filter({ oil: { type: "number", ranges: [{ max: 50 }] } })).toEqual([
       "B-1",
     ])
-    expect(filter({ oil: { type: "number", min: 301 } })).toEqual(["a-1"])
-    expect(filter({ oil: { type: "number", max: 50 } })).toEqual(["B-1"])
   })
 
   it("leaves an exclusive bound's own number out", () => {
     expect(
-      filter({ oil: { type: "number", min: 50, minExclusive: true } })
+      filter({
+        oil: { type: "number", ranges: [{ min: 50, minExclusive: true }] },
+      })
     ).not.toContain("B-1")
     expect(
-      filter({ oil: { type: "number", min: 50, max: 300, minExclusive: true } })
+      filter({
+        oil: {
+          type: "number",
+          ranges: [{ min: 50, max: 300, minExclusive: true }],
+        },
+      })
     ).toEqual(["A-10"])
     expect(
-      filter({ oil: { type: "number", min: 50, max: 300, maxExclusive: true } })
+      filter({
+        oil: {
+          type: "number",
+          ranges: [{ min: 50, max: 300, maxExclusive: true }],
+        },
+      })
     ).toEqual(["B-1"])
     expect(
-      filter({ oil: { type: "number", max: 50, maxExclusive: true } })
+      filter({
+        oil: { type: "number", ranges: [{ max: 50, maxExclusive: true }] },
+      })
     ).toEqual([])
   })
 
   it("filters dates by range, a midnight `to` taking in its day", () => {
     expect(
-      filter({ spud: { type: "date", from: new Date(2023, 0, 1) } })
+      filter({
+        spud: { type: "date", ranges: [{ from: new Date(2023, 0, 1) }] },
+      })
     ).toEqual(["A-10", "A-2"])
     expect(
-      filter({ spud: { type: "date", to: new Date(2022, 2, 4) } })
+      filter({ spud: { type: "date", ranges: [{ to: new Date(2022, 2, 4) }] } })
     ).toEqual(["a-1"])
     expect(
-      filter({ spud: { type: "date", to: new Date(2022, 2, 4, 11) } })
+      filter({
+        spud: { type: "date", ranges: [{ to: new Date(2022, 2, 4, 11) }] },
+      })
     ).toEqual([])
     expect(
       filter({
         spud: {
           type: "date",
-          from: new Date(2023, 5, 1),
-          to: new Date(2023, 5, 1),
+          ranges: [{ from: new Date(2023, 5, 1), to: new Date(2023, 5, 1) }],
         },
       })
     ).toEqual(["A-2"])
   })
 
   it("filters booleans, leaving out rows with no value, and options by value", () => {
-    expect(filter({ active: { type: "boolean", value: true } })).toEqual([
+    expect(filter({ active: { type: "boolean", values: [true] } })).toEqual([
       "A-2",
       "a-1",
     ])
     // B-1 has no value: neither Yes nor No.
-    expect(filter({ active: { type: "boolean", value: false } })).toEqual([
+    expect(filter({ active: { type: "boolean", values: [false] } })).toEqual([
       "A-10",
     ])
     expect(
@@ -1328,7 +1403,7 @@ describe("engine: filters", () => {
         search: "well",
         filters: {
           status: { type: "options", values: ["producing"] },
-          oil: { type: "number", min: 1 },
+          oil: { type: "number", ranges: [{ min: 1 }] },
         },
       }),
     })
@@ -1453,7 +1528,9 @@ describe("engine: tree", () => {
     ])
     expect(items(result.rows)[1]).toMatchObject({ posinset: 1, setsize: 1 })
     const shell = runTree({
-      view: view({ filters: { operator: { type: "text", value: "shell" } } }),
+      view: view({
+        filters: { operator: { type: "text", values: ["shell"] } },
+      }),
     })
     expect(ids(shell.rows)).toEqual(["field-3", "s-1"])
     expect(shell.matchingIds()).toEqual(["s-1"])
@@ -1909,7 +1986,7 @@ describe("engine: server mode", () => {
     const result = server({
       view: view({
         search: "shell",
-        filters: { oil: { type: "number", min: 1000 } },
+        filters: { oil: { type: "number", ranges: [{ min: 1000 }] } },
         sorting: [{ column: "name", direction: "ascending" }],
       }),
       pagination: { page: 3, pageSize: 2 },
@@ -2054,7 +2131,7 @@ describe("selection", () => {
     expect(
       allMatchingAfterViewChange(
         defaults,
-        setFilter(defaults, "oil", { type: "number", min: 1 }),
+        setFilter(defaults, "oil", { type: "number", ranges: [{ min: 1 }] }),
         allMatching
       )
     ).toBeNull()

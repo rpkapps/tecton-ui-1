@@ -168,6 +168,8 @@ export default defineTranslations({
     searchSyntax: "Syntaxe hledání",
     filterBy: "Filtrovat podle sloupce {columnName}",
     filterContains: "Obsahuje",
+    filterContainsAny: "Obsahuje některý z",
+    filterAddText: "Přidat text…",
     filterMin: "Min.",
     filterMax: "Max.",
     clearFilter: "Vymazat",
@@ -187,6 +189,13 @@ export default defineTranslations({
       other: "Odpovídá {matches} z {total}",
     },
     optionsSelected: { other: "Vybráno: {total}" },
+    filterMoreRanges: {
+      one: "Tento filtr má ještě {total} další rozsah. Vymazat ho odstraní.",
+      few: "Tento filtr má ještě {total} další rozsahy. Vymazat je odstraní.",
+      many: "Tento filtr má ještě {total} dalšího rozsahu. Vymazat je odstraní.",
+      other:
+        "Tento filtr má ještě {total} dalších rozsahů. Vymazat je odstraní.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktivní filtry",
     clearAll: "Vymazat vše",
@@ -331,13 +340,10 @@ export default defineTranslations({
       "Vylučování není podporováno, proto se tato podmínka nepoužije. Chcete-li hledat přímo tento text, dejte ho do uvozovek.",
     exclusiveComparison: "U data s časem použijte >= nebo <=.",
     notComparable: "Sloupec {column} nemá pořadí: vyberte raději jeho hodnoty.",
-    multipleBoolean: "{column} je ano nebo ne, ne obojí.",
-    multipleDates:
-      "{column} přijímá jedno datum nebo jeden rozsah, například 2015..2016.",
     duplicateNoMatch:
       "Žádný řádek nemůže splnit obě podmínky pro sloupec {column}.",
     duplicateNotCombinable:
-      "Sloupec {column} je už filtrován dříve v hledání: spojte obojí do jedné podmínky.",
+      "{column} je filtrován už dříve ve vyhledávání a jeden filtr nemůže vyžadovat oba texty. Uveďte je v jednom výrazu, aby odpovídal kterémukoli z nich.",
   },
   tableColumnResizer: {
     resize: "Změnit šířku sloupce {columnName}",

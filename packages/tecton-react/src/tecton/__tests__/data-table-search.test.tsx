@@ -383,7 +383,10 @@ describe("DataTableFilter", () => {
       <Wells
         defaultView={{
           filters: {
-            depth: { type: "number", min: 2000, minExclusive: true },
+            depth: {
+              type: "number",
+              ranges: [{ min: 2000, minExclusive: true }],
+            },
           },
         }}
         onViewChange={onViewChange}
@@ -401,9 +404,7 @@ describe("DataTableFilter", () => {
     expect(filterButton("Depth (m)")).toHaveTextContent("> 2,000 and ≤ 3,000")
     expect(onViewChange.mock.calls.at(-1)?.[0].filters.depth).toEqual({
       type: "number",
-      min: 2000,
-      max: 3000,
-      minExclusive: true,
+      ranges: [{ min: 2000, max: 3000, minExclusive: true }],
     })
     // The exclusive bound edited: now it is included.
     const min = screen.getByRole("textbox", { name: "Min" })
@@ -412,8 +413,7 @@ describe("DataTableFilter", () => {
     expect(filterButton("Depth (m)")).toHaveTextContent("2,000–3,000")
     expect(onViewChange.mock.calls.at(-1)?.[0].filters.depth).toEqual({
       type: "number",
-      min: 2000,
-      max: 3000,
+      ranges: [{ min: 2000, max: 3000 }],
     })
   })
 
@@ -454,7 +454,7 @@ describe("DataTableFilter", () => {
     await user.click(min)
     await user.keyboard("{Enter}")
     expect(onViewChange.mock.calls.at(-1)?.[0].filters).toEqual({
-      depth: { type: "number", min: 2000 },
+      depth: { type: "number", ranges: [{ min: 2000 }] },
     })
   })
 
@@ -503,7 +503,11 @@ describe("DataTableFilter", () => {
     await user.click(screen.getByRole("checkbox", { name: "No value" }))
     expect(matches()).toHaveTextContent("2 of 8 match")
     expect(onViewChange.mock.calls.at(-1)?.[0].filters).toEqual({
-      depth: { type: "number", min: 2500, max: 2600, empty: true },
+      depth: {
+        type: "number",
+        ranges: [{ min: 2500, max: 2600 }],
+        empty: true,
+      },
     })
     expect(names()).toEqual(["Well 01", "Well 05"])
   })
@@ -563,7 +567,7 @@ describe("DataTableFilter", () => {
     expect(min()).toHaveAccessibleDescription("Porosity %")
     await user.type(min(), "21.5{Enter}")
     expect(onViewChange.mock.calls.at(-1)?.[0].filters).toEqual({
-      porosity: { type: "number", min: 0.215 },
+      porosity: { type: "number", ranges: [{ min: 0.215 }] },
     })
     expect(
       document.querySelector('[data-slot="data-table-filter-matches"]')
@@ -613,17 +617,17 @@ describe("DataTableFilter", () => {
     expect(names()).toEqual(["Well 06"])
   })
 
-  it("filters a boolean column by Yes or No, radio buttons with counts, Clear removing the filter", async () => {
+  it("filters a boolean column by Yes and No, checkboxes with counts, Clear removing the filter", async () => {
     const user = userEvent.setup({ delay: null })
     const onViewChange = vi.fn()
     render(<Wells onViewChange={onViewChange} />)
     await user.click(filterButton("Active"))
-    const group = screen.getByRole("radiogroup", { name: "Active" })
-    const yes = within(group).getByRole("radio", { name: "Yes" })
-    const no = within(group).getByRole("radio", { name: "No" })
+    const group = screen.getByRole("group", { name: "Active" })
+    const yes = within(group).getByRole("checkbox", { name: "Yes" })
+    const no = within(group).getByRole("checkbox", { name: "No" })
     // Neither chosen is any value; no "Any" choice, and no "No value"
     // while every row has one.
-    expect(within(group).getAllByRole("radio")).toHaveLength(2)
+    expect(within(group).getAllByRole("checkbox")).toHaveLength(2)
     expect(yes).not.toBeChecked()
     expect(no).not.toBeChecked()
     expect(
@@ -634,19 +638,23 @@ describe("DataTableFilter", () => {
     expect(no.closest("div")).toHaveTextContent(/^No4$/)
     await user.click(yes)
     expect(onViewChange.mock.calls.at(-1)?.[0].filters).toEqual({
-      active: { type: "boolean", value: true },
+      active: { type: "boolean", values: [true] },
     })
     expect(names()).toEqual(["Well 01", "Well 03", "Well 05", "Well 07"])
     expect(filterButton("Active")).toHaveTextContent("Yes")
     expect(chips()).toEqual(["Active: Yes"])
-    // A radio button stays chosen when clicked again.
-    await user.click(yes)
-    expect(yes).toBeChecked()
+    // Both: any of them.
     await user.click(no)
-    expect(yes).not.toBeChecked()
+    expect(yes).toBeChecked()
     expect(no).toBeChecked()
     expect(onViewChange.mock.calls.at(-1)?.[0].filters).toEqual({
-      active: { type: "boolean", value: false },
+      active: { type: "boolean", values: [true, false] },
+    })
+    expect(names()).toHaveLength(8)
+    expect(chips()).toEqual(["Active: Yes, No"])
+    await user.click(yes)
+    expect(onViewChange.mock.calls.at(-1)?.[0].filters).toEqual({
+      active: { type: "boolean", values: [false] },
     })
     expect(names()).toEqual(["Well 02", "Well 04", "Well 06", "Well 08"])
     expect(chips()).toEqual(["Active: No"])
@@ -672,10 +680,10 @@ describe("DataTableFilter", () => {
     // Producing: wells 1, 4 and 7.
     await user.click(filterButton("Active"))
     expect(
-      screen.getByRole("radio", { name: "Yes" }).closest("div")
+      screen.getByRole("checkbox", { name: "Yes" }).closest("div")
     ).toHaveTextContent(/^Yes2$/)
     expect(
-      screen.getByRole("radio", { name: "No" }).closest("div")
+      screen.getByRole("checkbox", { name: "No" }).closest("div")
     ).toHaveTextContent(/^No1$/)
   })
 
@@ -745,8 +753,9 @@ describe("DataTableFilter", () => {
           filters: {
             spud: {
               type: "date",
-              from: new Date(2020, 2, 1),
-              to: new Date(2020, 2, 31),
+              ranges: [
+                { from: new Date(2020, 2, 1), to: new Date(2020, 2, 31) },
+              ],
             },
           },
         }}
@@ -767,8 +776,7 @@ describe("DataTableFilter", () => {
     const filters = onViewChange.mock.calls.at(-1)?.[0].filters
     expect(filters.spud).toEqual({
       type: "date",
-      from: new Date(2020, 2, 4),
-      to: new Date(2020, 2, 10),
+      ranges: [{ from: new Date(2020, 2, 4), to: new Date(2020, 2, 10) }],
     })
     await waitFor(() => expect(dialog).not.toBeInTheDocument())
     expect(filterButton("Spud date")).toHaveFocus()
@@ -781,7 +789,7 @@ describe("DataTableFilter", () => {
         <Wells
           defaultView={{
             filters: {
-              spud: { type: "date", from: new Date(2020, 2, 1) },
+              spud: { type: "date", ranges: [{ from: new Date(2020, 2, 1) }] },
             },
           }}
         />
@@ -811,7 +819,7 @@ describe("DataTableFilter", () => {
 describe("DataTableActiveFilters", () => {
   const view: DataTableView["filters"] = {
     status: { type: "options", values: ["producing", "drilling"] },
-    depth: { type: "number", min: 1500 },
+    depth: { type: "number", ranges: [{ min: 1500 }] },
   }
 
   it("shows the search and each filter as a chip, and nothing without any", () => {
@@ -843,7 +851,7 @@ describe("DataTableActiveFilters", () => {
       screen.getByRole("button", { name: /Remove.*Status: Producing/ })
     )
     expect(onViewChange.mock.calls.at(-1)?.[0].filters).toEqual({
-      depth: { type: "number", min: 1500 },
+      depth: { type: "number", ranges: [{ min: 1500 }] },
     })
     expect(onViewChange.mock.calls.at(-1)?.[1].reason).toBe("filter")
     expect(chips()).toEqual(["Search: Well", "Depth (m): ≥ 1,500"])

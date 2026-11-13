@@ -121,8 +121,7 @@ describe("DataTableSearch syntax=query: the query and the view", () => {
     await user.type(field(), "depth:>2000")
     expect(lastView(onViewChange).filters.depth).toEqual({
       type: "number",
-      min: 2000,
-      minExclusive: true,
+      ranges: [{ min: 2000, minExclusive: true }],
     })
     expect(chips()).toContain("Depth (m): > 2,000")
   })
@@ -135,7 +134,7 @@ describe("DataTableSearch syntax=query: the query and the view", () => {
           search: "well",
           filters: {
             status: { type: "options", values: ["drilling", "producing"] },
-            depth: { type: "number", min: 1500 },
+            depth: { type: "number", ranges: [{ min: 1500 }] },
           },
         }}
       />
@@ -145,7 +144,7 @@ describe("DataTableSearch syntax=query: the query and the view", () => {
       <Wells
         view={{
           search: "well",
-          filters: { depth: { type: "number", max: 3000 } },
+          filters: { depth: { type: "number", ranges: [{ max: 3000 }] } },
         }}
       />
     )
@@ -317,7 +316,10 @@ describe("DataTableSearch syntax=query: suggestions", () => {
         onViewChange={onViewChange}
         defaultView={{
           filters: {
-            depth: { type: "number", min: 3000, minExclusive: true },
+            depth: {
+              type: "number",
+              ranges: [{ min: 3000, minExclusive: true }],
+            },
           },
         }}
       />
@@ -456,6 +458,161 @@ async function press(
   await act(async () => {})
   await user.pointer({ keys: "[/MouseLeft]", target })
 }
+
+describe("DataTableSearch syntax=query: a comma means any of", () => {
+  function ListWells(props: Partial<DataTableProps<Well>>) {
+    return (
+      <DataTable
+        items={WELLS.slice(0, 8)}
+        columns={columns}
+        filterable
+        {...props}
+      >
+        <DataTableSearch syntax="query" />
+        <DataTableFilter column="name" />
+        <DataTableFilter column="depth" />
+        <DataTableActiveFilters />
+        <DataTableContent aria-label="Wells" />
+      </DataTable>
+    )
+  }
+  // Hidden from screen readers while the query's list is open.
+  const filterButton = (columnName: string) =>
+    document.querySelector<HTMLElement>(
+      `[aria-label="Filter by ${columnName}"]`
+    )!
+
+  it("offers a text column's values after a comma, not the next term's columns, and matches either value picked", async () => {
+    const user = userEvent.setup({ delay: null })
+    const onViewChange = vi.fn()
+    render(<ListWells onViewChange={onViewChange} />)
+    await user.click(field())
+    await user.type(field(), "well:")
+    expect(options()[0]).toBe("Well 011")
+    await user.keyboard("{ArrowDown}{Enter}")
+    expect(field()).toHaveValue(`well:"Well 01" `)
+    // A comma after the pick's space continues the list.
+    await user.type(field(), ",")
+    expect(field()).toHaveValue(`well:"Well 01",`)
+    expect(options()).not.toContain("well:WellText")
+    expect(options()[0]).toBe("Well 021")
+    expect(options()).not.toContain("Well 011")
+    await user.keyboard("{ArrowDown}{Enter}")
+    expect(field()).toHaveValue(`well:"Well 01","Well 02" `)
+    expect(lastView(onViewChange).filters.name).toEqual({
+      type: "text",
+      values: ["Well 01", "Well 02"],
+    })
+    expect(names()).toEqual(["Well 01", "Well 02"])
+    expect(filterButton("Well")).toHaveTextContent("Well 01, Well 02")
+    expect(chips()).toContain("Well: Well 01, Well 02")
+    // Typed by hand, an unquoted value and a comma: the column's values.
+    await user.clear(field())
+    await user.type(field(), "well:2/4-A-15,")
+    expect(options()).not.toContain("well:WellText")
+    expect(options()[0]).toBe("Well 011")
+  })
+
+  it("adds and removes a text filter's values in its popover, the query following", async () => {
+    const user = userEvent.setup({ delay: null })
+    const onViewChange = vi.fn()
+    render(<ListWells onViewChange={onViewChange} />)
+    await user.click(filterButton("Well"))
+    const input = screen.getByRole("textbox", { name: "Contains" })
+    expect(input).toHaveAttribute("placeholder", "Add text…")
+    // Typed text applies as it is typed; Enter makes it a chip.
+    await user.type(input, "01")
+    expect(names()).toEqual(["Well 01"])
+    await user.keyboard("{Enter}")
+    // A comma adds too.
+    await user.type(input, "03,")
+    expect(input).toHaveValue("")
+    const group = screen.getByRole("grid", { name: "Contains any of" })
+    expect(
+      within(group)
+        .getAllByRole("row")
+        .map((chip) => chip.textContent)
+    ).toEqual(["01", "03"])
+    expect(lastView(onViewChange).filters.name).toEqual({
+      type: "text",
+      values: ["01", "03"],
+    })
+    expect(names()).toEqual(["Well 01", "Well 03"])
+    expect(field()).toHaveValue("well:01,03")
+    // "12 of 120 match", as typed.
+    expect(
+      document.querySelector('[data-slot="data-table-filter-matches"]')
+    ).toHaveTextContent("2 of 8 match")
+    // A chip's remove button.
+    await user.click(within(group).getAllByRole("button")[0])
+    expect(lastView(onViewChange).filters.name).toEqual({
+      type: "text",
+      values: ["03"],
+    })
+    expect(field()).toHaveValue("well:03")
+    // Backspace in the empty field removes the last chip.
+    await user.click(input)
+    await user.keyboard("{Backspace}")
+    expect(lastView(onViewChange).filters).toEqual({})
+    expect(field()).toHaveValue("")
+    expect(screen.queryByRole("grid", { name: "Contains any of" })).toBeNull()
+    // The query's values become chips.
+    await user.click(field())
+    await user.type(field(), "well:05,06 ")
+    await user.click(filterButton("Well"))
+    expect(
+      within(screen.getByRole("grid", { name: "Contains any of" }))
+        .getAllByRole("row")
+        .map((chip) => chip.textContent)
+    ).toEqual(["05", "06"])
+  })
+
+  it("applies two ranges of a number column; its popover edits the first and says Clear removes the rest", async () => {
+    const user = userEvent.setup({ delay: null })
+    const onViewChange = vi.fn()
+    render(<ListWells onViewChange={onViewChange} />)
+    await user.click(field())
+    await user.type(field(), "depthm:<1500,>3000 ")
+    expect(lastView(onViewChange).filters.depth).toEqual({
+      type: "number",
+      ranges: [
+        { max: 1500, maxExclusive: true },
+        { min: 3000, minExclusive: true },
+      ],
+    })
+    // 1,000 and 1,397; 3,382 and 3,779.
+    expect(names()).toEqual(["Well 01", "Well 02", "Well 07", "Well 08"])
+    expect(chips()).toContain("Depth (m): < 1,500, > 3,000")
+    await user.click(filterButton("Depth (m)"))
+    expect(screen.getByRole("textbox", { name: "Min" })).toHaveValue("")
+    expect(screen.getByRole("textbox", { name: "Max" })).toHaveValue("1,500")
+    const note = document.querySelector(
+      '[data-slot="data-table-filter-more-ranges"]'
+    )
+    expect(note).toHaveTextContent(
+      "This filter has 1 more range. Clear removes it."
+    )
+    // The rows both ranges keep, of the 8.
+    expect(
+      document.querySelector('[data-slot="data-table-filter-matches"]')
+    ).toHaveTextContent("4 of 8 match")
+    // Editing the first range keeps the other.
+    const max = screen.getByRole("textbox", { name: "Max" })
+    await user.clear(max)
+    await user.type(max, "1200{Enter}")
+    expect(lastView(onViewChange).filters.depth).toEqual({
+      type: "number",
+      ranges: [{ max: 1200 }, { min: 3000, minExclusive: true }],
+    })
+    expect(field()).toHaveValue("depthm:<=1200,>3000")
+    await user.click(screen.getByRole("button", { name: "Clear" }))
+    expect(lastView(onViewChange).filters).toEqual({})
+    expect(field()).toHaveValue("")
+    expect(
+      document.querySelector('[data-slot="data-table-filter-more-ranges"]')
+    ).toBeNull()
+  })
+})
 
 describe("DataTableSearch syntax=query: the list is open while the field has focus", () => {
   it("stays open through a press on the clear button, the field's icon or an underlined problem", async () => {
@@ -614,7 +771,7 @@ describe("DataTableSearch syntax=query: the help", () => {
     await user.click(within(help).getByRole("button", { name: "active:yes" }))
     expect(field()).toHaveValue("active:yes ")
     expect(lastView(onViewChange).filters).toEqual({
-      active: { type: "boolean", value: true },
+      active: { type: "boolean", values: [true] },
     })
   })
 
@@ -792,7 +949,7 @@ describe("DataTableSearch syntax=query: locale and direction", () => {
     await user.type(input, ">=1.500,5")
     expect(lastView(onViewChange).filters.depth).toEqual({
       type: "number",
-      min: 1500.5,
+      ranges: [{ min: 1500.5 }],
     })
     // The mirror takes the input's direction, as its other metrics.
     expect(

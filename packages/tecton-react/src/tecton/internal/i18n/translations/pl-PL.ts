@@ -172,6 +172,8 @@ export default defineTranslations({
     searchSyntax: "Składnia wyszukiwania",
     filterBy: "Filtruj według kolumny {columnName}",
     filterContains: "Zawiera",
+    filterContainsAny: "Zawiera dowolny z",
+    filterAddText: "Dodaj tekst…",
     filterMin: "Min.",
     filterMax: "Maks.",
     clearFilter: "Wyczyść",
@@ -191,6 +193,12 @@ export default defineTranslations({
       other: "Pasuje {matches} z {total}",
     },
     optionsSelected: { other: "Wybrano: {total}" },
+    filterMoreRanges: {
+      one: "Ten filtr ma jeszcze {total} zakres. Wyczyść go usuwa.",
+      few: "Ten filtr ma jeszcze {total} zakresy. Wyczyść je usuwa.",
+      many: "Ten filtr ma jeszcze {total} zakresów. Wyczyść je usuwa.",
+      other: "Ten filtr ma jeszcze {total} zakresu. Wyczyść je usuwa.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktywne filtry",
     clearAll: "Wyczyść wszystko",
@@ -337,13 +345,10 @@ export default defineTranslations({
       "Wykluczanie nie jest obsługiwane, więc ten warunek jest pomijany. Aby wyszukać dokładnie ten tekst, ujmij go w cudzysłów.",
     exclusiveComparison: "Dla daty z godziną użyj >= lub <=.",
     notComparable: "Kolumna {column} nie ma kolejności: wybierz jej wartości.",
-    multipleBoolean: "{column} to tak lub nie, nie oba naraz.",
-    multipleDates:
-      "{column} przyjmuje jedną datę lub jeden zakres, np. 2015..2016.",
     duplicateNoMatch:
       "Żaden wiersz nie może spełnić obu warunków dla kolumny {column}.",
     duplicateNotCombinable:
-      "Kolumna {column} jest już filtrowana wcześniej w wyszukiwaniu: połącz oba w jeden warunek.",
+      "{column} jest już filtrowana wcześniej w wyszukiwaniu, a jeden filtr nie może wymagać obu tekstów. Wpisz je w jednym warunku, aby pasował dowolny z nich.",
   },
   tableColumnResizer: {
     resize: "Zmień rozmiar kolumny {columnName}",

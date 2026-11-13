@@ -13,7 +13,8 @@
  *   cannot (the root's feature off, or the column opted out), are dropped,
  *   and so are duplicates, empty filters (but one with `empty: true`, its
  *   "No value") and filters of another type than the column's (any type
- *   is kept for a column with its own `filter`);
+ *   is kept for a column with its own `filter`); a filter's list keeps the
+ *   items its type can match (no blank text, no range without an end);
  * - search is `""` while the table is not filterable;
  * - widths that are not positive numbers are dropped, the others clamped to
  *   the column's `minWidth` (48 px by default) and `maxWidth`; a column
@@ -35,7 +36,9 @@ import {
 } from "./columns"
 import type {
   DataTableColumns,
+  DataTableDateRange,
   DataTableFilterValue,
+  DataTableNumberRange,
   DataTablePartialView,
   DataTableSort,
   DataTableView,
@@ -289,8 +292,73 @@ function finiteNumber(value: unknown) {
 }
 
 /**
+ * The items of a filter's list that `clean` keeps, as it returns them, and
+ * whether every item came back as it was (the list can be kept).
+ */
+function cleanList<TItem>(
+  input: unknown,
+  clean: (item: unknown) => TItem | undefined
+): { items: Array<TItem>; same: boolean } {
+  if (!Array.isArray(input)) return { items: [], same: false }
+  const items: Array<TItem> = []
+  let same = true
+  for (const item of input as Array<unknown>) {
+    const next = clean(item)
+    if (next !== item) same = false
+    if (next !== undefined) items.push(next)
+  }
+  return { items, same }
+}
+
+const cleanText = (item: unknown) =>
+  typeof item === "string" && item.trim() !== "" ? item : undefined
+
+const cleanOption = (item: unknown) =>
+  typeof item === "string" ? item : undefined
+
+const cleanBoolean = (item: unknown) =>
+  typeof item === "boolean" ? item : undefined
+
+/** A number range with a bound, its exclusive flags only `true` and with their bound. */
+function cleanNumberRange(item: unknown): DataTableNumberRange | undefined {
+  if (!item || typeof item !== "object") return undefined
+  const range = item as DataTableNumberRange
+  const min = finiteNumber(range.min)
+  const max = finiteNumber(range.max)
+  if (min === undefined && max === undefined) return undefined
+  const minExclusive = min !== undefined && range.minExclusive === true
+  const maxExclusive = max !== undefined && range.maxExclusive === true
+  if (
+    min === range.min &&
+    max === range.max &&
+    (range.minExclusive === undefined || minExclusive) &&
+    (range.maxExclusive === undefined || maxExclusive)
+  )
+    return range
+  return {
+    ...(min === undefined ? {} : { min }),
+    ...(max === undefined ? {} : { max }),
+    ...(minExclusive ? { minExclusive } : {}),
+    ...(maxExclusive ? { maxExclusive } : {}),
+  }
+}
+
+/** A date range with an end; a view read back from JSON has strings where the dates were. */
+function cleanDateRange(item: unknown): DataTableDateRange | undefined {
+  if (!item || typeof item !== "object") return undefined
+  const range = item as DataTableDateRange
+  const from = toDate(range.from)
+  const to = toDate(range.to)
+  if (!from && !to) return undefined
+  if (from === range.from && to === range.to) return range
+  return { ...(from ? { from } : {}), ...(to ? { to } : {}) }
+}
+
+/**
  * A filter value as `column` can apply it, or `undefined` when it cannot or
- * the value filters nothing.
+ * the value filters nothing. A list keeps the items its type can match
+ * (texts that are not blank, number ranges with a bound, date ranges with
+ * an end).
  */
 function reconcileFilter(
   column: { type: string; filter?: unknown },
@@ -308,68 +376,29 @@ function reconcileFilter(
   const kept = value.empty === undefined || typeof value.empty === "boolean"
   switch (value.type) {
     case "text": {
-      const text = typeof value.value === "string" ? value.value : undefined
-      if (!empty && (text === undefined || text.trim() === "")) return undefined
-      if (kept && text !== undefined && text === value.value) return value
-      return { type: "text", value: text ?? "", ...flag }
-    }
-    case "number": {
-      const min = finiteNumber(value.min)
-      const max = finiteNumber(value.max)
-      if (min === undefined && max === undefined && !empty) return undefined
-      // An exclusive flag is kept with its bound, and only as `true`.
-      const minExclusive = min !== undefined && value.minExclusive === true
-      const maxExclusive = max !== undefined && value.maxExclusive === true
-      if (
-        kept &&
-        min === value.min &&
-        max === value.max &&
-        (value.minExclusive === undefined || minExclusive) &&
-        (value.maxExclusive === undefined || maxExclusive)
-      )
-        return value
-      return {
-        type: "number",
-        ...(min === undefined ? {} : { min }),
-        ...(max === undefined ? {} : { max }),
-        ...(minExclusive ? { minExclusive } : {}),
-        ...(maxExclusive ? { maxExclusive } : {}),
-        ...flag,
-      }
-    }
-    case "date": {
-      // A view read back from JSON has strings where the dates were.
-      const from = toDate(value.from)
-      const to = toDate(value.to)
-      if (!from && !to && !empty) return undefined
-      if (kept && from === value.from && to === value.to) return value
-      return {
-        type: "date",
-        ...(from ? { from } : {}),
-        ...(to ? { to } : {}),
-        ...flag,
-      }
-    }
-    case "boolean": {
-      const wanted = typeof value.value === "boolean" ? value.value : undefined
-      if (wanted === undefined && !empty) return undefined
-      if (kept && wanted === value.value) return value
-      return {
-        type: "boolean",
-        ...(wanted === undefined ? {} : { value: wanted }),
-        ...flag,
-      }
+      const { items, same } = cleanList(value.values, cleanText)
+      if (!items.length && !empty) return undefined
+      return kept && same ? value : { type: "text", values: items, ...flag }
     }
     case "options": {
-      const values = Array.isArray(value.values)
-        ? value.values.filter((v) => typeof v === "string")
-        : []
-      if (!values.length && !empty) return undefined
-      return kept &&
-        Array.isArray(value.values) &&
-        values.length === value.values.length
-        ? value
-        : { type: "options", values, ...flag }
+      const { items, same } = cleanList(value.values, cleanOption)
+      if (!items.length && !empty) return undefined
+      return kept && same ? value : { type: "options", values: items, ...flag }
+    }
+    case "boolean": {
+      const { items, same } = cleanList(value.values, cleanBoolean)
+      if (!items.length && !empty) return undefined
+      return kept && same ? value : { type: "boolean", values: items, ...flag }
+    }
+    case "number": {
+      const { items, same } = cleanList(value.ranges, cleanNumberRange)
+      if (!items.length && !empty) return undefined
+      return kept && same ? value : { type: "number", ranges: items, ...flag }
+    }
+    case "date": {
+      const { items, same } = cleanList(value.ranges, cleanDateRange)
+      if (!items.length && !empty) return undefined
+      return kept && same ? value : { type: "date", ranges: items, ...flag }
     }
     default:
       return undefined
@@ -474,6 +503,28 @@ function sameTime(a: Date | undefined, b: Date | undefined) {
   return a === b || (a?.getTime() ?? NaN) === (b?.getTime() ?? NaN)
 }
 
+/** Whether two lists hold the same items, in order, by `same`. */
+function sameList<TItem>(
+  a: ReadonlyArray<TItem>,
+  b: ReadonlyArray<TItem>,
+  same: (x: TItem, y: TItem) => boolean = Object.is
+) {
+  return a === b || (a.length === b.length && a.every((x, i) => same(x, b[i])))
+}
+
+function sameNumberRange(a: DataTableNumberRange, b: DataTableNumberRange) {
+  return (
+    a.min === b.min &&
+    a.max === b.max &&
+    (a.minExclusive === true) === (b.minExclusive === true) &&
+    (a.maxExclusive === true) === (b.maxExclusive === true)
+  )
+}
+
+function sameDateRange(a: DataTableDateRange, b: DataTableDateRange) {
+  return sameTime(a.from, b.from) && sameTime(a.to, b.to)
+}
+
 function sameFilterValue(a: DataTableFilterValue, b: DataTableFilterValue) {
   if (a === b) return true
   if (
@@ -484,23 +535,16 @@ function sameFilterValue(a: DataTableFilterValue, b: DataTableFilterValue) {
     return false
   switch (a.type) {
     case "text":
-      return b.type === "text" && a.value === b.value
+    case "options":
+      return b.type === a.type && sameIds(a.values, b.values)
+    case "boolean":
+      return b.type === "boolean" && sameList(a.values, b.values)
     case "number":
       return (
-        b.type === "number" &&
-        a.min === b.min &&
-        a.max === b.max &&
-        (a.minExclusive === true) === (b.minExclusive === true) &&
-        (a.maxExclusive === true) === (b.maxExclusive === true)
+        b.type === "number" && sameList(a.ranges, b.ranges, sameNumberRange)
       )
     case "date":
-      return (
-        b.type === "date" && sameTime(a.from, b.from) && sameTime(a.to, b.to)
-      )
-    case "boolean":
-      return b.type === "boolean" && a.value === b.value
-    case "options":
-      return b.type === "options" && sameIds(a.values, b.values)
+      return b.type === "date" && sameList(a.ranges, b.ranges, sameDateRange)
     case "custom":
       return b.type === "custom" && Object.is(a.value, b.value)
   }
@@ -738,9 +782,11 @@ export {
   reconcileView,
   resetColumns,
   sameColumns,
+  sameDateRange,
   sameFilters,
   sameFilterValue,
   sameIds,
+  sameNumberRange,
   sameSorting,
   sameView,
   setColumnHidden,

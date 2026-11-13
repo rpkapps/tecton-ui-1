@@ -78,7 +78,6 @@ import {
   serializeQuery,
   suggestQuery,
   type ParsedQuery,
-  type QueryFilterTerm,
   type QueryLanguage,
   type QuerySource,
   type QuerySuggestion,
@@ -91,6 +90,7 @@ import {
   type Day,
 } from "./engine/query/dates"
 import type { SearchParts } from "./engine/engine"
+import type { DataTableDateRange, DataTableFilterValue } from "./engine/types"
 import { DATE_INPUT, type DateInputModule } from "./date-input"
 import { useFeature } from "./lazy"
 import { QueryHelp } from "./query-help"
@@ -141,6 +141,26 @@ function sourceOf(parts: SearchParts<unknown>) {
   let source = sources.get(parts)
   if (!source) sources.set(parts, (source = createQuerySource(parts)))
   return source
+}
+
+/**
+ * Where a comma typed just after the space that follows a filter term's
+ * value goes instead (a pick completes its term with that space): the
+ * comma continues the term's list (`well:a-12 ,` is `well:a-12,`), so the
+ * space goes. `undefined` for any other change.
+ */
+function continuedList(parsed: ParsedQuery, next: string) {
+  const previous = parsed.text
+  if (next.length !== previous.length + 1) return undefined
+  let at = 0
+  while (at < previous.length && previous[at] === next[at]) at++
+  if (next[at] !== "," || next.slice(at + 1) !== previous.slice(at))
+    return undefined
+  if (at === 0 || !/\s/.test(previous[at - 1])) return undefined
+  const term = parsed.terms.find((other) => other.end === at - 1)
+  return term?.kind === "filter" && term.value !== undefined
+    ? at - 1
+    : undefined
 }
 
 /** The input's metrics the mirror must share for its glyphs to line up. */
@@ -478,6 +498,17 @@ function QuerySearch({
     )
     return "kind" in read && read.kind === "days" ? read.first : undefined
   })()
+  // The days of the item at the caret, read alone: a term lists any number.
+  const dateItemText = dateItem
+    ? draft.slice(dateItem.start, dateItem.end)
+    : undefined
+  const dateRange = React.useMemo(() => {
+    if (dateItemText === undefined || !column?.key) return undefined
+    const value = parseQuery(language, `${column.key}:${dateItemText}`).filters[
+      column.id
+    ] as DataTableFilterValue | undefined
+    return value?.type === "date" ? value.ranges[0] : undefined
+  }, [dateItemText, column, language])
   const dateFeature = useFeature(DATE_INPUT, calendarMode !== null)
   const loadDates = dateFeature.load
   React.useEffect(() => {
@@ -498,12 +529,13 @@ function QuerySearch({
     // field clicked at its end never shows an empty list. Not after free
     // text, still being typed, or a term that filters nothing (an unknown
     // column or value): their line says what they search for, or that
-    // there is nothing to suggest.
+    // there is nothing to suggest. Nor in a list still being written
+    // (`well:a-12,`): its next item is the column's.
     const atTermEnd =
       term?.kind === "filter" &&
       term.value !== undefined &&
       caret > 0 &&
-      !/\s/.test(draft[caret - 1]) &&
+      !/[\s,]/.test(draft[caret - 1]) &&
       (caret === draft.length || /\s/.test(draft[caret]))
     if (here.items.length > 0 || !atTermEnd) return here
     const spaced = `${draft.slice(0, caret)} ${draft.slice(caret)}`
@@ -711,10 +743,16 @@ function QuerySearch({
         inputValue={draft}
         onInputValueChange={(value, details) => {
           if (details.reason !== "input-change") return
-          change(value)
+          const comma = continuedList(parsed, value)
           markTyping()
           navigated.current = false
           setOpen(true)
+          if (comma !== undefined) {
+            change(`${value.slice(0, comma)}${value.slice(comma + 1)}`)
+            placeCaret(comma + 1)
+            return
+          }
+          change(value)
           readCaret()
           requestAnimationFrame(readCaret)
         }}
@@ -1023,7 +1061,7 @@ function QuerySearch({
                   mode={calendarMode}
                   operator={dateOperator}
                   day={comparedDay}
-                  term={filterTerm}
+                  value={dateRange}
                   timeZone={column?.timeZone}
                   t={t}
                   onPick={pickDays}
@@ -1204,7 +1242,7 @@ type DateModule = NonNullable<DateInputModule | undefined>
 /**
  * The calendar of the suggestions, for a date value: the date filter's own
  * (`DateRangePicker`'s), in range mode for a bare or `..` value and single
- * day mode after `<` `>` `<=` `>=`, showing the term's days. A pick writes
+ * day mode after `<` `>` `<=` `>=`, showing the item's days. A pick writes
  * them as the query writes days. Pointer presses keep focus in the field;
  * from the keyboard, the calendar's row in the list moves focus to a day,
  * and Escape gives it back.
@@ -1214,7 +1252,7 @@ function QueryCalendar({
   mode,
   operator,
   day,
-  term,
+  value,
   timeZone,
   rootRef,
   onPick,
@@ -1227,7 +1265,8 @@ function QueryCalendar({
   operator: string
   /** The day a comparison names. */
   day: Day | undefined
-  term: QueryFilterTerm
+  /** The days of the date item at the caret. */
+  value: DataTableDateRange | undefined
   timeZone: string | undefined
   rootRef: React.Ref<HTMLDivElement>
   onPick: (text: string) => void
@@ -1235,7 +1274,6 @@ function QueryCalendar({
   onLeave: (next: Element | null) => void
   t: Translator<"dataTableQuery">
 }) {
-  const value = term.value?.type === "date" ? term.value : undefined
   const local = (date: Date | undefined) => {
     if (!date) return undefined
     const [year, month, day] = ymd(date, timeZone)

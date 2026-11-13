@@ -5,19 +5,30 @@
  * trigger, `filter.tsx`): the column's filter, by its type (§4.1), with
  * "Clear" while one is set. It renders only while the popover is open.
  *
- * - text: a field; the rows whose display text contains it (like search);
+ * - text: a field, and the texts added from it as removable chips; the rows
+ *   whose display text contains any of them (like search). Enter or a comma
+ *   adds what is typed, Backspace in the empty field removes the last chip,
+ *   and what is typed applies too, as it is typed;
  * - number: a minimum and a maximum side by side, either left empty, with
- *   the column's unit and how many rows the bounds keep as they are typed
- *   (`NumberFilter`);
+ *   the column's unit (`NumberFilter`);
  * - date: a range of days picked on `DateRangePicker`'s calendar, in a
  *   popover like the picker's (its code and locale load on demand too,
  *   `date-calendar.tsx`; the popover keeps its size meanwhile);
- * - boolean: Yes or No, radio buttons laid out as an options filter's
- *   checkboxes, with their numbers of rows (none in server mode); neither
- *   chosen is any value;
+ * - boolean: Yes and No, checkboxes laid out as an options filter's, with
+ *   their numbers of rows (none in server mode); neither chosen is any
+ *   value;
  * - options: a checkbox per option with its number of rows: those matching
  *   the search and the other filters, counted when the popover opens (in
  *   server mode, the options' own `count`).
+ *
+ * A text or number filter shows how many rows it keeps as it is typed, of
+ * those the search and the other filters keep (not in server mode, where
+ * the table holds only the rows loaded).
+ *
+ * A number or date filter holds a list of ranges (`td:<1000,>3000` in the
+ * search), and its popover edits the first: the others stay as they are,
+ * and a muted line under it says how many there are, which Clear removes
+ * with the rest of the filter.
  *
  * Each offers "No value" while a row has none in the column (in server
  * mode always: the table sees only the loaded rows), and while it is
@@ -27,17 +38,18 @@
  * and, as in an options filter, after a yes / no filter's Yes and No.
  *
  * Text and numbers reach the view `searchDelay` ms after the last key,
- * like search; the other types at once.
+ * like search (a text added as a chip, or removed, at once); the other
+ * types at once.
  */
 import * as React from "react"
 import { cn } from "cn"
 
 import { Button } from "@tecton/react/button"
 import { Checkbox } from "@tecton/react/checkbox"
+import { Chip, ChipGroup, ChipList } from "@tecton/react/chip"
 import { Input } from "@tecton/react/input"
 import { Label } from "@tecton/react/label"
 import { PopoverContent, PopoverTitle } from "@tecton/react/popover"
-import { RadioGroup, RadioGroupItem } from "@tecton/react/radio-group"
 import { Separator } from "@tecton/react/separator"
 import {
   NumberField,
@@ -68,7 +80,9 @@ import {
   type DataTableFilterValue,
   type EngineColumn,
 } from "./engine/index"
+import type { DataTableDateRange, DataTableNumberRange } from "./engine/types"
 import { dayOf, startOfDay } from "./engine/values"
+import { sameFilterValue, sameIds } from "./engine/view"
 import { DATE_INPUT } from "./date-input"
 import { useFeature } from "./lazy"
 import type { PartPopup } from "./part-popup"
@@ -89,6 +103,12 @@ type FilterProps<TValue> = {
 
 /** `{ empty: true }` for a filter's "No value", nothing without it. */
 const emptyFlag = (empty: boolean) => (empty ? { empty } : {})
+
+/** Whether two filters, either unset (`null`), are the same. */
+const sameFilter = (
+  a: DataTableFilterValue | null,
+  b: DataTableFilterValue | null
+) => (a && b ? sameFilterValue(a, b) : a === b)
 
 /**
  * A filter's "No value" checkbox, with its number of rows when `count`
@@ -126,56 +146,186 @@ function NoValueChoice({
   )
 }
 
-type TextDraft = { text: string; empty: boolean }
+/**
+ * The muted line under a number or date filter that edits the first of
+ * its ranges: how many more it has, which Clear removes.
+ */
+function MoreRanges({
+  count,
+  className,
+}: {
+  count: number
+  className?: string
+}) {
+  const t = useTranslations("dataTable")
+  const format = useNumberFormat()
+  if (count <= 0) return null
+  return (
+    <p
+      data-slot="data-table-filter-more-ranges"
+      className={cn("text-xs text-muted-foreground", className)}
+    >
+      {t("filterMoreRanges", { count, total: format.format(count) })}
+    </p>
+  )
+}
 
+/** A text filter being edited: its chips, what is typed, its "No value". */
+type TextDraft = {
+  values: ReadonlyArray<string>
+  text: string
+  empty: boolean
+}
+
+/** The texts a draft looks for: its chips, then what is typed. */
+function textsOf({ values, text }: TextDraft): ReadonlyArray<string> {
+  const typed = text.trim()
+  return typed && !values.includes(typed) ? [...values, typed] : values
+}
+
+/** The filter of a text draft, or `null` when it filters nothing. */
+function textFilter(draft: TextDraft): DataTableFilterValue | null {
+  const values = textsOf(draft)
+  return values.length || draft.empty
+    ? { type: "text", values, ...emptyFlag(draft.empty) }
+    : null
+}
+
+/** `draft`'s chips with the texts of `typed` (split at commas) added. */
+function withTexts(draft: TextDraft, typed: string) {
+  const values = [...draft.values]
+  for (const part of typed.split(",")) {
+    const text = part.trim()
+    if (text && !values.includes(text)) values.push(text)
+  }
+  return values
+}
+
+/**
+ * A text filter: a field, and the texts added from it as chips (`Chip`s in
+ * a group of their own, each with its remove button). Enter or a comma adds
+ * what is typed; Backspace in the empty field removes the last chip. What
+ * is typed applies too, as a text beside the chips, `delay` ms after the
+ * last key.
+ */
 function TextFilter({
   value,
   set,
   delay,
   clears,
   noValue,
-}: FilterProps<Extract<DataTableFilterValue, { type: "text" }>>) {
+  matches,
+}: FilterProps<Extract<DataTableFilterValue, { type: "text" }>> & {
+  matches: NumberFacets | null
+}) {
   const t = useTranslations("dataTable")
   const id = React.useId()
+  const input = React.useRef<HTMLInputElement | null>(null)
+  // The view's filter as a draft, made again only when the view changes:
+  // the field keeps what is typed until then.
+  const viewDraft = React.useMemo(
+    (): TextDraft => ({
+      values: value?.values ?? [],
+      text: "",
+      empty: value?.empty === true,
+    }),
+    [value]
+  )
   const { draft, change, flush } = useDelayedCommit<TextDraft>({
-    value: { text: value?.value ?? "", empty: value?.empty === true },
-    commit: ({ text, empty }) =>
-      set(
-        text.trim() === "" && !empty
-          ? null
-          : { type: "text", value: text, ...emptyFlag(empty) }
-      ),
+    value: viewDraft,
+    commit: (next) => set(textFilter(next)),
     delay,
     clears,
-    same: (a, b) => a.text === b.text && a.empty === b.empty,
+    // The texts it applies, whether a chip or typed.
+    same: (a, b) => a.empty === b.empty && sameIds(textsOf(a), textsOf(b)),
   })
+  /** Sets the draft and applies it now: a chip added or removed. */
+  const commit = (next: TextDraft) => {
+    change(next)
+    flush()
+  }
+  const remove = (gone: ReadonlyArray<string>) => {
+    const values = draft.values.filter((text) => !gone.includes(text))
+    commit({ ...draft, values })
+    // The last chip gone: back to the field.
+    if (!values.length) input.current?.focus()
+  }
   return (
     <div className="flex flex-col gap-2">
       <Label htmlFor={id}>{t("filterContains")}</Label>
       <Input
+        ref={input}
         id={id}
+        placeholder={t("filterAddText")}
         value={draft.text}
-        onChange={(event) =>
-          change({ ...draft, text: event.currentTarget.value })
-        }
+        onChange={(event) => {
+          const typed = event.currentTarget.value
+          const comma = typed.lastIndexOf(",")
+          if (comma === -1) return change({ ...draft, text: typed })
+          // A comma (typed or pasted) adds what is before it.
+          commit({
+            ...draft,
+            values: withTexts(draft, typed.slice(0, comma)),
+            text: typed.slice(comma + 1).trimStart(),
+          })
+        }}
         onKeyDown={(event) => {
-          if (event.key === "Enter") flush()
+          if (event.key === "Enter") {
+            if (draft.text.trim())
+              commit({
+                ...draft,
+                values: withTexts(draft, draft.text),
+                text: "",
+              })
+            else flush()
+          } else if (
+            event.key === "Backspace" &&
+            draft.text === "" &&
+            draft.values.length > 0 &&
+            event.currentTarget.selectionStart === 0
+          ) {
+            event.preventDefault()
+            commit({ ...draft, values: draft.values.slice(0, -1) })
+          }
         }}
       />
-      {noValue && (
-        <NoValueChoice
-          checked={draft.empty}
-          onCheckedChange={(empty) => {
-            change({ ...draft, empty })
-            flush()
-          }}
-        />
+      {draft.values.length > 0 && (
+        <ChipGroup
+          aria-label={t("filterContainsAny")}
+          onRemove={remove}
+          className="py-0.5"
+        >
+          <ChipList>
+            {draft.values.map((text) => (
+              <Chip key={text} value={text} label={text}>
+                <span className="max-w-52 truncate">{text}</span>
+              </Chip>
+            ))}
+          </ChipList>
+        </ChipGroup>
+      )}
+      {(noValue || matches) && (
+        <div className="flex min-h-8 items-center gap-4">
+          {noValue && (
+            <NoValueChoice
+              className="flex-1"
+              checked={draft.empty}
+              onCheckedChange={(empty) => commit({ ...draft, empty })}
+            />
+          )}
+          {matches && (
+            <FilterMatches matches={matches} filter={textFilter(draft)} />
+          )}
+        </div>
       )}
     </div>
   )
 }
 
-/** A number filter's bounds: `null` (its field empty) is none. */
+/**
+ * A number filter's first range, as its fields hold it (`null`: the field
+ * empty), and the filter's other ranges, kept as they are.
+ */
 type Bounds = {
   min: number | null
   max: number | null
@@ -183,6 +333,7 @@ type Bounds = {
   minExclusive: boolean
   maxExclusive: boolean
   empty: boolean
+  more: ReadonlyArray<DataTableNumberRange>
 }
 
 /** The filter of `bounds`, or `null` when they filter nothing. */
@@ -192,27 +343,28 @@ function toFilter({
   minExclusive,
   maxExclusive,
   empty,
+  more,
 }: Bounds): DataTableFilterValue | null {
-  return min === null && max === null && !empty
-    ? null
-    : {
-        type: "number",
-        ...(min === null ? {} : { min }),
-        ...(max === null ? {} : { max }),
-        ...(min !== null && minExclusive ? { minExclusive: true } : {}),
-        ...(max !== null && maxExclusive ? { maxExclusive: true } : {}),
-        ...emptyFlag(empty),
-      }
+  const edited: DataTableNumberRange = {
+    ...(min === null ? {} : { min }),
+    ...(max === null ? {} : { max }),
+    ...(min !== null && minExclusive ? { minExclusive: true } : {}),
+    ...(max !== null && maxExclusive ? { maxExclusive: true } : {}),
+  }
+  const ranges = min === null && max === null ? more : [edited, ...more]
+  return ranges.length || empty
+    ? { type: "number", ranges, ...emptyFlag(empty) }
+    : null
 }
 
 /**
  * A number filter: Min and Max side by side, each a `NumberField` with its
  * minus and plus, and the column's unit on the side the column writes it
- * (`numberUnit`: its `unit`, percent sign or currency). Under them, "No
- * value" (as every filter has it) and how many rows the bounds keep, of
- * those the search and the other filters keep, counted as they are typed
- * (`numbers`; not in server mode, where the table holds only the rows
- * loaded).
+ * (`numberUnit`: its `unit`, percent sign or currency), for the filter's
+ * first range. Under them, "No value" (as every filter has it) and how
+ * many rows the filter keeps, of those the search and the other filters
+ * keep, counted as they are typed (`numbers`; not in server mode, where
+ * the table holds only the rows loaded).
  */
 function NumberFilter({
   column,
@@ -227,23 +379,28 @@ function NumberFilter({
 }) {
   const t = useTranslations("dataTable")
   const id = React.useId()
-  const { draft, change, flush } = useDelayedCommit<Bounds>({
-    value: {
-      min: value?.min ?? null,
-      max: value?.max ?? null,
-      minExclusive: value?.minExclusive === true,
-      maxExclusive: value?.maxExclusive === true,
+  // The view's filter as a draft, made again only when the view changes.
+  const viewBounds = React.useMemo((): Bounds => {
+    const ranges = value?.ranges ?? []
+    // None when the filter has no range.
+    const first = ranges.at(0)
+    const more = ranges.slice(1)
+    return {
+      min: first?.min ?? null,
+      max: first?.max ?? null,
+      minExclusive: first?.minExclusive === true,
+      maxExclusive: first?.maxExclusive === true,
       empty: value?.empty === true,
-    },
+      more,
+    }
+  }, [value])
+  const { draft, change, flush } = useDelayedCommit<Bounds>({
+    value: viewBounds,
     commit: (bounds) => set(toFilter(bounds)),
     delay,
     clears,
-    same: (a, b) =>
-      a.min === b.min &&
-      a.max === b.max &&
-      a.minExclusive === b.minExclusive &&
-      a.maxExclusive === b.maxExclusive &&
-      a.empty === b.empty,
+    // The filter they make: the first range emptied leaves the others.
+    same: (a, b) => sameFilter(toFilter(a), toFilter(b)),
   })
   const { locale } = useLocale()
   const unit = React.useMemo(
@@ -305,6 +462,7 @@ function NumberFilter({
         {field("min")}
         {field("max")}
       </div>
+      <MoreRanges count={draft.more.length} />
       {(noValue || numbers) && (
         <div className="flex min-h-8 items-center gap-4">
           {noValue && (
@@ -318,7 +476,7 @@ function NumberFilter({
             />
           )}
           {numbers && (
-            <NumberMatches numbers={numbers} filter={toFilter(draft)} />
+            <FilterMatches matches={numbers} filter={toFilter(draft)} />
           )}
         </div>
       )}
@@ -328,18 +486,18 @@ function NumberFilter({
 
 /**
  * "12 of 120 match": of the rows the search and the other filters keep,
- * those the number filter being typed keeps too, as it is typed.
+ * those the text or number filter being typed keeps too, as it is typed.
  */
-function NumberMatches({
-  numbers,
+function FilterMatches({
+  matches: facets,
   filter,
 }: {
-  numbers: NumberFacets
+  matches: NumberFacets
   filter: DataTableFilterValue | null
 }) {
   const t = useTranslations("dataTable")
   const format = useNumberFormat()
-  const matches = numbers.count(filter)
+  const matches = facets.count(filter)
   return (
     <p
       data-slot="data-table-filter-matches"
@@ -348,9 +506,42 @@ function NumberMatches({
       {t("filterMatches", {
         count: matches,
         matches: format.format(matches),
-        total: format.format(numbers.total),
+        total: format.format(facets.total),
       })}
     </p>
+  )
+}
+
+/**
+ * The rows of a list filter's choices (an options filter's options, a yes
+ * / no filter's Yes and No): a checkbox, its label and its number of rows.
+ */
+function ChoiceRow({
+  id,
+  label,
+  checked,
+  onCheckedChange,
+  count,
+}: {
+  id: string
+  label: string
+  checked: boolean
+  onCheckedChange: (checked: boolean) => void
+  count: number | undefined
+}) {
+  const format = useNumberFormat()
+  return (
+    <div className="flex min-h-8 items-center gap-2 rounded-sm px-1">
+      <Checkbox id={id} checked={checked} onCheckedChange={onCheckedChange} />
+      <Label htmlFor={id} className="flex-1 font-normal">
+        {label}
+      </Label>
+      {count !== undefined && (
+        <span className="text-xs text-muted-foreground tabular-nums">
+          {format.format(count)}
+        </span>
+      )}
+    </div>
   )
 }
 
@@ -368,65 +559,48 @@ function BooleanFilter({
   emptyCount: number | undefined
 }) {
   const t = useTranslations("dataTable")
-  const format = useNumberFormat()
   const id = React.useId()
+  const chosen = new Set(value?.values ?? [])
   const empty = value?.empty === true
-  const update = (choice: boolean | undefined, empty: boolean) =>
+  const update = (values: ReadonlyArray<boolean>, empty: boolean) =>
     set(
-      choice === undefined && !empty
-        ? null
-        : {
-            type: "boolean",
-            ...(choice === undefined ? {} : { value: choice }),
-            ...emptyFlag(empty),
-          }
+      values.length || empty
+        ? { type: "boolean", values, ...emptyFlag(empty) }
+        : null
     )
   const choices = [
     { value: true, label: t("yes") },
     { value: false, label: t("no") },
   ]
-  // An options filter's rows, as radio buttons: neither chosen is any
-  // value, as Clear leaves it.
+  // An options filter's rows: neither chosen is any value, as Clear
+  // leaves it.
   return (
-    <div className="flex flex-col">
-      <RadioGroup
-        aria-label={column.header}
-        value={value?.value ?? null}
-        onValueChange={(choice: boolean) => update(choice, empty)}
-        className="flex flex-col gap-0"
-      >
-        {choices.map((choice) => {
-          const count = counts(choice.value)
-          return (
-            <div
-              key={String(choice.value)}
-              className="flex min-h-8 items-center gap-2 rounded-sm px-1"
-            >
-              <RadioGroupItem
-                id={`${id}-${choice.value}`}
-                value={choice.value}
-              />
-              <Label
-                htmlFor={`${id}-${choice.value}`}
-                className="flex-1 font-normal"
-              >
-                {choice.label}
-              </Label>
-              {count !== undefined && (
-                <span className="text-xs text-muted-foreground tabular-nums">
-                  {format.format(count)}
-                </span>
-              )}
-            </div>
-          )
-        })}
-      </RadioGroup>
+    <div role="group" aria-label={column.header} className="flex flex-col">
+      {choices.map((choice) => (
+        <ChoiceRow
+          key={String(choice.value)}
+          id={`${id}-${choice.value}`}
+          label={choice.label}
+          checked={chosen.has(choice.value)}
+          onCheckedChange={(on) =>
+            update(
+              choices
+                .map((other) => other.value)
+                .filter((other) =>
+                  other === choice.value ? on : chosen.has(other)
+                ),
+              empty
+            )
+          }
+          count={counts(choice.value)}
+        />
+      ))}
       {noValue && (
         <>
           <Separator className="-mx-4 my-1 data-horizontal:w-auto" />
           <NoValueChoice
             checked={empty}
-            onCheckedChange={(on) => update(value?.value, on)}
+            onCheckedChange={(on) => update(value?.values ?? [], on)}
             count={emptyCount}
             className="rounded-sm px-1"
           />
@@ -450,7 +624,6 @@ function OptionsFilter({
   emptyCount: number | undefined
 }) {
   const t = useTranslations("dataTable")
-  const format = useNumberFormat()
   const id = React.useId()
   const chosen = new Set(value?.values ?? [])
   const empty = value?.empty === true
@@ -471,29 +644,16 @@ function OptionsFilter({
   }
   return (
     <div role="group" aria-label={column.header} className="flex flex-col">
-      {column.options.map((option, index) => {
-        const count = counts(option.value)
-        return (
-          <div
-            key={option.value}
-            className="flex min-h-8 items-center gap-2 rounded-sm px-1"
-          >
-            <Checkbox
-              id={`${id}-${index}`}
-              checked={chosen.has(option.value)}
-              onCheckedChange={(checked) => toggle(option.value, checked)}
-            />
-            <Label htmlFor={`${id}-${index}`} className="flex-1 font-normal">
-              {option.label}
-            </Label>
-            {count !== undefined && (
-              <span className="text-xs text-muted-foreground tabular-nums">
-                {format.format(count)}
-              </span>
-            )}
-          </div>
-        )
-      })}
+      {column.options.map((option, index) => (
+        <ChoiceRow
+          key={option.value}
+          id={`${id}-${index}`}
+          label={option.label}
+          checked={chosen.has(option.value)}
+          onCheckedChange={(checked) => toggle(option.value, checked)}
+          count={counts(option.value)}
+        />
+      ))}
       {noValue && (
         <>
           {column.options.length > 0 && (
@@ -518,7 +678,8 @@ const DATE_FILTER_MONTHS = 2
 
 /**
  * A date filter: `DateRangePicker`'s calendar, its code loaded on demand
- * (`date-calendar.tsx`, `DATE_INPUT`), its place kept meanwhile.
+ * (`date-calendar.tsx`, `DATE_INPUT`), its place kept meanwhile, for the
+ * filter's first range (the others stay as they are).
  * The first day picked starts a range, the second ends it, sets the filter
  * and closes the popover (`onPicked`), as the picker does.
  *
@@ -563,19 +724,25 @@ function DateFilter({
       <CalendarLoading numberOfMonths={DATE_FILTER_MONTHS} spinner={!module} />
     )
   const { DayFocusContext, RangeCalendar } = module
+  const ranges = value?.ranges ?? []
+  const first = ranges.at(0)
+  const more = ranges.slice(1)
   return (
     <DayFocusContext value={focusDay}>
       <RangeCalendar
         value={
-          value
-            ? { from: toCalendar(value.from), to: toCalendar(value.to) }
+          first
+            ? { from: toCalendar(first.from), to: toCalendar(first.to) }
             : undefined
         }
         onPick={(range) => {
-          set({
-            type: "date",
+          const picked: DataTableDateRange = {
             from: fromCalendar(range.from),
             to: fromCalendar(range.to),
+          }
+          set({
+            type: "date",
+            ranges: [picked, ...more],
             ...emptyFlag(value?.empty === true),
           })
           onPicked()
@@ -636,10 +803,13 @@ function FilterContent({
         : null,
     [column, server, model]
   )
-  // A number column's numbers, for the range hints and the count of
-  // matches (the model has none in server mode).
-  const numbers = React.useMemo(
-    () => (column.type === "number" ? getNumberFacets(model, column.id) : null),
+  // The rows a text or number filter keeps as it is typed, and a number
+  // column's numbers (the model has none in server mode).
+  const matches = React.useMemo(
+    () =>
+      column.type === "number" || column.type === "text"
+        ? getNumberFacets(model, column.id)
+        : null,
     [column, model]
   )
   const noValue = useNoValue(context, column, value)
@@ -650,6 +820,7 @@ function FilterContent({
         <TextFilter
           {...props}
           value={value?.type === "text" ? value : undefined}
+          matches={matches}
         />
       )
     case "number":
@@ -657,7 +828,7 @@ function FilterContent({
         <NumberFilter
           {...props}
           value={value?.type === "number" ? value : undefined}
-          numbers={numbers}
+          numbers={matches}
         />
       )
     case "date":
@@ -722,7 +893,7 @@ function DataTableFilterPopover({
           '[role="grid"] button[tabindex="0"]'
         ) ??
         element?.querySelector<HTMLElement>(
-          'input:not([type="hidden"]), [role="checkbox"], [role="radio"], button'
+          'input:not([type="hidden"]), [role="checkbox"], button'
         )
       )?.focus()
     })
@@ -730,6 +901,7 @@ function DataTableFilterPopover({
   const keyboard = popup.openedBy === "keyboard"
   const noValue = useNoValue(context, column, value)
   const dateValue = value?.type === "date" ? value : undefined
+  const moreRanges = Math.max(0, (dateValue?.ranges.length ?? 0) - 1)
   const contentProps = {
     ref: content,
     anchor: popup.content.anchor,
@@ -755,21 +927,17 @@ function DataTableFilterPopover({
         onPicked={popup.close}
       />
       {(value || noValue) && (
-        <div className="flex w-0 min-w-full items-center gap-3 border-t p-3">
+        <div className="flex w-0 min-w-full flex-wrap items-center gap-3 border-t p-3">
+          <MoreRanges count={moreRanges} className="basis-full" />
           {noValue && (
             <NoValueChoice
               className="flex-1"
               checked={dateValue?.empty === true}
               onCheckedChange={(empty) => {
-                const { from, to } = dateValue ?? {}
+                const ranges = dateValue?.ranges ?? []
                 set(
-                  from || to || empty
-                    ? {
-                        type: "date",
-                        ...(from ? { from } : {}),
-                        ...(to ? { to } : {}),
-                        ...emptyFlag(empty),
-                      }
+                  ranges.length || empty
+                    ? { type: "date", ranges, ...emptyFlag(empty) }
                     : null
                 )
               }}
@@ -796,7 +964,9 @@ function DataTableFilterPopover({
         // Min and Max share it, each with its minus and plus and the unit:
         // their text inputs alone would make it as wide as two default-width
         // inputs, and 18rem would leave each number under 3rem.
-        column.type === "number" && "w-96"
+        column.type === "number" && "w-96",
+        // The chips wrap rather than widen it.
+        column.type === "text" && "w-72"
       )}
     >
       <div className="flex min-h-6 items-center justify-between gap-4">

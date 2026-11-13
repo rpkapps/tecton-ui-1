@@ -153,6 +153,8 @@ export default defineTranslations({
     searchSyntax: "Sintassi di ricerca",
     filterBy: "Filtra per {columnName}",
     filterContains: "Contiene",
+    filterContainsAny: "Contiene uno tra",
+    filterAddText: "Aggiungi testo…",
     filterMin: "Min",
     filterMax: "Max",
     clearFilter: "Cancella",
@@ -171,6 +173,11 @@ export default defineTranslations({
       other: "{matches} di {total} corrispondono",
     },
     optionsSelected: { other: "{total} selezionati" },
+    filterMoreRanges: {
+      one: "Questo filtro ha ancora {total} intervallo. Cancella lo rimuove.",
+      many: "Questo filtro ha ancora {total} di intervalli. Cancella li rimuove.",
+      other: "Questo filtro ha ancora {total} intervalli. Cancella li rimuove.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Filtri attivi",
     clearAll: "Cancella tutto",
@@ -297,13 +304,10 @@ export default defineTranslations({
       "L’esclusione non è supportata, quindi questo termine viene ignorato. Per cercare il testo così com’è, mettilo tra virgolette.",
     exclusiveComparison: "Usa >= o <= con data e ora.",
     notComparable: "{column} non ha un ordine: scegli invece i suoi valori.",
-    multipleBoolean: "{column} è sì o no, non entrambi.",
-    multipleDates:
-      "{column} accetta una data o un intervallo, come 2015..2016.",
     duplicateNoMatch:
       "Nessuna riga può soddisfare entrambi i termini su {column}.",
     duplicateNotCombinable:
-      "{column} è già filtrato prima nella ricerca: unisci i due in un solo termine.",
+      "{column} è già filtrato prima nella ricerca e un filtro non può richiedere entrambi i testi. Scrivili in un solo termine per trovare uno qualsiasi dei due.",
   },
   tableColumnResizer: {
     resize: "Ridimensiona {columnName}",

@@ -13,19 +13,20 @@
  * contains the whole query, ignoring case and accents (`foldText`); a query
  * with a letter skips the number columns whose text cannot have one. A
  * column's filter, by its type:
- * - text: the display text contains the value, like search;
- * - number: `min` ≤ value ≤ `max` (either may be left out), `min` < value
- *   with `minExclusive` and value < `max` with `maxExclusive`;
- * - date: `from` ≤ date ≤ `to`, where a `to` at midnight takes in that day
- *   (midnight in the column's `format.timeZone`, which its days are shown
- *   in, or the local zone);
- * - boolean: the value is `value` (an empty value matches neither: rows
- *   without one show only with no filter);
+ * - text: the display text contains any of `values`, like search;
+ * - number: the value is in any of `ranges`: `min` ≤ value ≤ `max` (either
+ *   may be left out), `min` < value with `minExclusive` and value < `max`
+ *   with `maxExclusive`;
+ * - date: the date is in any of `ranges`: `from` ≤ date ≤ `to`, where a `to`
+ *   at midnight takes in that day (midnight in the column's
+ *   `format.timeZone`, which its days are shown in, or the local zone);
+ * - boolean: the value is one of `values` (an empty value matches neither:
+ *   rows without one show only with no filter);
  * - options: the value is one of `values`;
  * - the column's own `filter` function, for any filter value, when it has one.
  * An empty value (`hasNoValue`) never matches a filter, but one with `empty`
  * (its "No value"): that matches the rows without a value too, or only them
- * when the rest of the filter is unset.
+ * when the filter's list is empty.
  *
  * In a tree (`filterRows`) a matching row keeps its whole subtree, which
  * follows the usual expanded state, and its ancestors, which are kept as
@@ -37,7 +38,12 @@ import type { EngineColumn } from "./columns"
 import type { Core, RowSet } from "./core"
 import { createFolder, foldText, hasNoValue, type Formatter } from "./format"
 import type { IdleTask } from "./idle"
-import type { DataTableFilterValue, DataTableView } from "./types"
+import type {
+  DataTableDateRange,
+  DataTableFilterValue,
+  DataTableNumberRange,
+  DataTableView,
+} from "./types"
 import {
   dayOf,
   isEmptyValue,
@@ -213,9 +219,54 @@ function columnPredicate<T>(
   return (row, item) => blank(row, item) || matches(row, item)
 }
 
+/** A number range's bounds as numbers, for `inBounds`. */
+type NumberBounds = {
+  readonly min: number
+  readonly max: number
+  readonly above: boolean
+  readonly below: boolean
+}
+
+/** A number range's bounds: its ends left out are infinite. */
+const boundsOf = ({
+  min = -Infinity,
+  max = Infinity,
+  minExclusive,
+  maxExclusive,
+}: DataTableNumberRange): NumberBounds => ({
+  min,
+  max,
+  above: minExclusive === true,
+  below: maxExclusive === true,
+})
+
+/** Whether `n` is within `bounds`. */
+const inBounds = (n: number, { min, max, above, below }: NumberBounds) =>
+  (above ? n > min : n >= min) && (below ? n < max : n <= max)
+
+/** Whether a number range has a bound: one without filters nothing. */
+const hasBound = (range: DataTableNumberRange) =>
+  range.min !== undefined || range.max !== undefined
+
+/** Whether a date range has an end: one without filters nothing. */
+const hasEnd = (range: DataTableDateRange) =>
+  range.from !== undefined || range.to !== undefined
+
+/** Whether `test` holds for `n` with any of `bounds` (one, without a loop). */
+function anyOf<TBounds>(
+  bounds: ReadonlyArray<TBounds>,
+  test: (n: number, bound: TBounds) => boolean
+): (n: number) => boolean {
+  if (bounds.length === 1) {
+    const [only] = bounds
+    return (n) => test(n, only)
+  }
+  return (n) => bounds.some((bound) => test(n, bound))
+}
+
 /**
- * The rows a filter matches but for its "No value" (`empty`), or `null`
- * when the rest of it is unset.
+ * The rows a filter's list matches (its "No value", `empty`, aside), or
+ * `null` when the list is empty.
  */
 function valuePredicate<T>(
   column: EngineColumn<T>,
@@ -226,46 +277,51 @@ function valuePredicate<T>(
   const { getValue } = column
   switch (value.type) {
     case "text": {
-      const query = foldText(value.value.trim())
-      if (!query) return null
+      const queries = new Set(
+        value.values.map((text) => foldText(text.trim())).filter(Boolean)
+      )
+      if (!queries.size) return null
+      // A scan of the column's texts per value, into one mask.
       const mask = new Uint8Array(rowCount)
-      markMatches(index.texts(column), query, mask)
+      const texts = index.texts(column)
+      for (const query of queries) markMatches(texts, query, mask)
       return (row) => mask[row] === 1
     }
     case "number": {
-      if (value.min === undefined && value.max === undefined) return null
-      const { min = -Infinity, max = Infinity } = value
-      const above = value.minExclusive === true
-      const below = value.maxExclusive === true
+      const ranges = value.ranges.filter(hasBound).map(boundsOf)
+      if (!ranges.length) return null
+      const within = anyOf(ranges, inBounds)
       return (_, item) => {
         const number = toNumber(getValue(item))
-        return (
-          number !== undefined &&
-          (above ? number > min : number >= min) &&
-          (below ? number < max : number <= max)
-        )
+        return number !== undefined && within(number)
       }
     }
     case "date": {
-      if (!value.from && !value.to) return null
-      const from = value.from?.getTime() ?? -Infinity
       const { timeZone } = (column.format ?? {}) as Intl.DateTimeFormatOptions
-      const end = value.to
-        ? rangeEnd(value.to, timeZone)
-        : { time: Infinity, inclusive: true }
+      const ranges = value.ranges.filter(hasEnd).map((range) => {
+        const end = range.to
+          ? rangeEnd(range.to, timeZone)
+          : { time: Infinity, inclusive: true }
+        return { from: range.from?.getTime() ?? -Infinity, ...end }
+      })
+      if (!ranges.length) return null
+      const within = anyOf(
+        ranges,
+        (time, { from, time: end, inclusive }) =>
+          time >= from && (inclusive ? time <= end : time < end)
+      )
       return (_, item) => {
         const time = toTime(getValue(item))
-        return (
-          time !== undefined &&
-          time >= from &&
-          (end.inclusive ? time <= end.time : time < end.time)
-        )
+        return time !== undefined && within(time)
       }
     }
     case "boolean": {
-      const wanted = value.value
-      if (wanted === undefined) return null
-      return (_, item) => toBoolean(getValue(item)) === wanted
+      const wanted = new Set(value.values)
+      if (!wanted.size) return null
+      return (_, item) => {
+        const own = toBoolean(getValue(item))
+        return own !== undefined && wanted.has(own)
+      }
     }
     case "options": {
       if (!value.values.length) return null
@@ -373,10 +429,14 @@ function filterRows<T>(core: Core<T>, predicate: RowPredicate<T>): RowSet {
 }
 
 export {
+  boundsOf,
   columnPredicate,
   compileFilter,
   createSearchIndex,
   filterRows,
+  hasBound,
+  hasEnd,
+  inBounds,
   searchMask,
 }
-export type { ColumnText, RowPredicate, SearchIndex }
+export type { ColumnText, NumberBounds, RowPredicate, SearchIndex }

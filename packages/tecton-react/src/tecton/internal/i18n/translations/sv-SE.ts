@@ -144,6 +144,8 @@ export default defineTranslations({
     searchSyntax: "Söksyntax",
     filterBy: "Filtrera efter {columnName}",
     filterContains: "Innehåller",
+    filterContainsAny: "Innehåller något av",
+    filterAddText: "Lägg till text…",
     filterMin: "Min.",
     filterMax: "Max.",
     clearFilter: "Rensa",
@@ -159,6 +161,10 @@ export default defineTranslations({
     filterOrNoValue: "{value} eller inget värde",
     filterMatches: { other: "{matches} av {total} matchar" },
     optionsSelected: { other: "{total} valda" },
+    filterMoreRanges: {
+      one: "Det här filtret har {total} intervall till. Rensa tar bort det.",
+      other: "Det här filtret har {total} intervall till. Rensa tar bort dem.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktiva filter",
     clearAll: "Rensa alla",
@@ -284,12 +290,9 @@ export default defineTranslations({
       "Att utesluta stöds inte, så den här termen ignoreras. Sätt texten inom citattecken för att söka efter just den texten.",
     exclusiveComparison: "Använd >= eller <= med datum och tid.",
     notComparable: "{column} har ingen ordning: välj dess värden i stället.",
-    multipleBoolean: "{column} är ja eller nej, inte båda.",
-    multipleDates:
-      "{column} tar ett datum eller ett intervall, som 2015..2016.",
     duplicateNoMatch: "Ingen rad kan uppfylla båda termerna för {column}.",
     duplicateNotCombinable:
-      "{column} filtreras redan tidigare i sökningen: skriv båda i en term.",
+      "{column} filtreras redan tidigare i sökningen, och ett filter kan inte kräva båda texterna. Skriv dem i ett led för att matcha någon av dem.",
   },
   tableColumnResizer: {
     resize: "Ändra storlek på {columnName}",

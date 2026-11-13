@@ -172,6 +172,8 @@ export default defineTranslations({
     searchSyntax: "Синтаксис пошуку",
     filterBy: "Фільтр за стовпцем {columnName}",
     filterContains: "Містить",
+    filterContainsAny: "Містить будь-що з",
+    filterAddText: "Додати текст…",
     filterMin: "Мін.",
     filterMax: "Макс.",
     clearFilter: "Скинути",
@@ -190,6 +192,12 @@ export default defineTranslations({
       other: "Збігаються {matches} з {total}",
     },
     optionsSelected: { other: "Вибрано: {total}" },
+    filterMoreRanges: {
+      one: "Цей фільтр має ще {total} діапазон. «Скинути» видалить його.",
+      few: "Цей фільтр має ще {total} діапазони. «Скинути» видалить їх.",
+      many: "Цей фільтр має ще {total} діапазонів. «Скинути» видалить їх.",
+      other: "Цей фільтр має ще {total} діапазону. «Скинути» видалить їх.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Активні фільтри",
     clearAll: "Скинути все",
@@ -336,13 +344,10 @@ export default defineTranslations({
       "Виключення не підтримується, тому ця умова не враховується. Щоб знайти саме цей текст, візьміть його в лапки.",
     exclusiveComparison: "Для дати з часом використовуйте >= або <=.",
     notComparable: "Стовпець {column} не має порядку: виберіть його значення.",
-    multipleBoolean: "{column} — так або ні, але не обидва.",
-    multipleDates:
-      "{column} приймає одну дату або один діапазон, наприклад 2015..2016.",
     duplicateNoMatch:
       "Жоден рядок не може задовольнити обидві умови для стовпця {column}.",
     duplicateNotCombinable:
-      "Стовпець {column} уже відфільтровано раніше в пошуку: об’єднайте обидві в одну умову.",
+      "{column} вже фільтрується раніше в пошуку, і один фільтр не може вимагати обидва тексти. Вкажіть їх в одній умові, щоб підходив будь-який із них.",
   },
   tableColumnResizer: {
     resize: "Змінити розмір стовпця {columnName}",

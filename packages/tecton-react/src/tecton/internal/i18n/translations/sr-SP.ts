@@ -161,6 +161,8 @@ export default defineTranslations({
     searchSyntax: "Sintaksa pretrage",
     filterBy: "Filtriraj po koloni {columnName}",
     filterContains: "Sadrži",
+    filterContainsAny: "Sadrži bilo koji od",
+    filterAddText: "Dodaj tekst…",
     filterMin: "Min.",
     filterMax: "Maks.",
     clearFilter: "Obriši",
@@ -180,6 +182,11 @@ export default defineTranslations({
       other: "Odgovara {matches} od {total}",
     },
     optionsSelected: { other: "Izabrano: {total}" },
+    filterMoreRanges: {
+      one: "Ovaj filter ima još {total} opseg. Obriši ga uklanja.",
+      few: "Ovaj filter ima još {total} opsega. Obriši ih uklanja.",
+      other: "Ovaj filter ima još {total} opsega. Obriši ih uklanja.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktivni filteri",
     clearAll: "Obriši sve",
@@ -319,12 +326,9 @@ export default defineTranslations({
       "Isključivanje nije podržano, pa se ovaj uslov zanemaruje. Da biste pretražili baš ovaj tekst, stavite ga u navodnike.",
     exclusiveComparison: "Uz datum i vreme koristite >= ili <=.",
     notComparable: "{column} nema redosled: umesto toga izaberite vrednosti.",
-    multipleBoolean: "{column} je da ili ne, ne oboje.",
-    multipleDates:
-      "{column} prima jedan datum ili jedan opseg, npr. 2015..2016.",
     duplicateNoMatch: "Nijedan red ne može da ispuni oba uslova za {column}.",
     duplicateNotCombinable:
-      "{column} se već filtrira ranije u pretrazi: spojite oba u jedan uslov.",
+      "{column} je već filtrirana ranije u pretrazi, a jedan filter ne može da zahteva oba teksta. Navedite ih u jednom izrazu kako bi odgovarao bilo koji od njih.",
   },
   tableColumnResizer: {
     resize: "Promeni veličinu kolone {columnName}",

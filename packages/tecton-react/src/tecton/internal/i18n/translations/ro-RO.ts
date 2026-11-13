@@ -163,6 +163,8 @@ export default defineTranslations({
     searchSyntax: "Sintaxa căutării",
     filterBy: "Filtrați după {columnName}",
     filterContains: "Conține",
+    filterContainsAny: "Conține oricare dintre",
+    filterAddText: "Adăugați text…",
     filterMin: "Min.",
     filterMax: "Max.",
     clearFilter: "Ștergeți",
@@ -181,6 +183,11 @@ export default defineTranslations({
       other: "{matches} din {total} corespund",
     },
     optionsSelected: { other: "Selectate: {total}" },
+    filterMoreRanges: {
+      one: "Acest filtru mai are {total} interval. Ștergeți îl elimină.",
+      few: "Acest filtru mai are {total} intervale. Ștergeți le elimină.",
+      other: "Acest filtru mai are {total} de intervale. Ștergeți le elimină.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Filtre active",
     clearAll: "Ștergeți tot",
@@ -320,13 +327,10 @@ export default defineTranslations({
       "Excluderea nu este acceptată, așa că această condiție este ignorată. Pentru a căuta chiar acest text, puneți-l între ghilimele.",
     exclusiveComparison: "Cu dată și oră folosiți >= sau <=.",
     notComparable: "{column} nu are o ordine: alegeți în schimb valorile.",
-    multipleBoolean: "{column} este da sau nu, nu ambele.",
-    multipleDates:
-      "{column} acceptă o dată sau un interval, de exemplu 2015..2016.",
     duplicateNoMatch:
       "Niciun rând nu poate îndeplini ambele condiții pentru {column}.",
     duplicateNotCombinable:
-      "{column} este deja filtrat mai devreme în căutare: scrieți-le pe amândouă într-o singură condiție.",
+      "{column} este deja filtrată mai devreme în căutare și un filtru nu poate cere ambele texte. Scrieți-le într-un singur termen pentru a găsi oricare dintre ele.",
   },
   tableColumnResizer: {
     resize: "Redimensionați {columnName}",

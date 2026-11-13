@@ -182,6 +182,8 @@ export default defineTranslations({
     searchSyntax: "صيغة البحث",
     filterBy: "تصفية حسب {columnName}",
     filterContains: "يحتوي على",
+    filterContainsAny: "يحتوي على أي من",
+    filterAddText: "إضافة نص…",
     filterMin: "الحد الأدنى",
     filterMax: "الحد الأقصى",
     clearFilter: "مسح",
@@ -197,6 +199,14 @@ export default defineTranslations({
     filterOrNoValue: "{value} أو بلا قيمة",
     filterMatches: { other: "مطابقة: {matches} من {total}" },
     optionsSelected: { other: "تم تحديد {total}" },
+    filterMoreRanges: {
+      zero: "لا يحتوي عامل التصفية هذا على نطاقات أخرى.",
+      one: "يحتوي عامل التصفية هذا على نطاق آخر. يزيله مسح.",
+      two: "يحتوي عامل التصفية هذا على نطاقين آخرين. يزيلهما مسح.",
+      few: "يحتوي عامل التصفية هذا على {total} نطاقات أخرى. يزيلها مسح.",
+      many: "يحتوي عامل التصفية هذا على {total} نطاقًا آخر. يزيلها مسح.",
+      other: "يحتوي عامل التصفية هذا على {total} نطاق آخر. يزيلها مسح.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "عوامل التصفية النشطة",
     clearAll: "مسح الكل",
@@ -353,12 +363,9 @@ export default defineTranslations({
       "الاستبعاد غير مدعوم، لذا يُتجاهَل هذا الشرط. للبحث عن النص نفسه، ضعه بين علامتي اقتباس.",
     exclusiveComparison: "استخدم >= أو <= مع التاريخ والوقت.",
     notComparable: "لا ترتيب لـ {column}: اختر قيمه بدلًا من ذلك.",
-    multipleBoolean: "{column} نعم أو لا، وليس كليهما.",
-    multipleDates:
-      "يقبل {column} تاريخًا واحدًا أو نطاقًا واحدًا، مثل 2015..2016.",
     duplicateNoMatch: "لا يمكن لأي صف أن يحقق الشرطين على {column}.",
     duplicateNotCombinable:
-      "تمت تصفية {column} في وقت سابق من البحث: اجمع الاثنين في شرط واحد.",
+      "تمت تصفية {column} في موضع سابق من البحث، ولا يمكن لعامل تصفية واحد أن يشترط النصين معًا. اكتبهما في شرط واحد لمطابقة أي منهما.",
   },
   tableColumnResizer: {
     resize: "تغيير حجم {columnName}",

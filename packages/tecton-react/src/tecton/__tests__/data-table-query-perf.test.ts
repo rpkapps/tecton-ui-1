@@ -169,15 +169,18 @@ describe(
     it("writes a view of 6 filters within 5 ms", () => {
       const filters: Record<string, DataTableFilterValue> = {
         status: { type: "options", values: ["drilling", "producing"] },
-        oil: { type: "number", min: 1000, max: 4000, empty: true },
+        oil: {
+          type: "number",
+          ranges: [{ min: 1000, max: 4000 }],
+          empty: true,
+        },
         spud: {
           type: "date",
-          from: new Date(2015, 5, 1),
-          to: new Date(2016, 11, 31),
+          ranges: [{ from: new Date(2015, 5, 1), to: new Date(2016, 11, 31) }],
         },
-        active: { type: "boolean", value: true },
-        operator: { type: "text", value: "aker bp" },
-        name: { type: "text", value: "12" },
+        active: { type: "boolean", values: [true] },
+        operator: { type: "text", values: ["aker bp"] },
+        name: { type: "text", values: ["12"] },
       }
       const time = median(
         () => undefined,

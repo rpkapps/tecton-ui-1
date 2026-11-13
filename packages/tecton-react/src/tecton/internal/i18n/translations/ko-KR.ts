@@ -128,6 +128,8 @@ export default defineTranslations({
     searchSyntax: "검색 구문",
     filterBy: "{columnName}(으)로 필터링",
     filterContains: "포함",
+    filterContainsAny: "다음 중 하나 포함",
+    filterAddText: "텍스트 추가…",
     filterMin: "최소",
     filterMax: "최대",
     clearFilter: "지우기",
@@ -143,6 +145,10 @@ export default defineTranslations({
     filterOrNoValue: "{value} 또는 값 없음",
     filterMatches: { other: "{total}개 중 {matches}개 일치" },
     optionsSelected: { other: "{total}개 선택됨" },
+    filterMoreRanges: {
+      other:
+        "이 필터에는 범위가 {total}개 더 있습니다. 지우기를 누르면 삭제됩니다.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "적용된 필터",
     clearAll: "모두 지우기",
@@ -254,12 +260,9 @@ export default defineTranslations({
       "제외는 지원되지 않으므로 이 조건은 무시됩니다. 텍스트 자체를 검색하려면 따옴표로 묶으세요.",
     exclusiveComparison: "날짜와 시간에는 >= 또는 <=를 사용하세요.",
     notComparable: "{column}에는 순서가 없습니다. 대신 값을 선택하세요.",
-    multipleBoolean: "{column}은(는) 예 또는 아니요 중 하나입니다.",
-    multipleDates:
-      "{column}에는 날짜 하나 또는 범위 하나를 지정합니다(예: 2015..2016).",
     duplicateNoMatch: "{column}의 두 조건을 모두 만족하는 행은 없습니다.",
     duplicateNotCombinable:
-      "{column}은(는) 검색 앞부분에서 이미 필터링됩니다. 두 조건을 하나로 합치세요.",
+      "{column}은(는) 검색 앞부분에서 이미 필터링되었으며, 하나의 필터로 두 텍스트를 모두 요구할 수 없습니다. 둘 중 하나와 일치하게 하려면 한 조건에 함께 적으세요.",
   },
   tableColumnResizer: {
     resize: "{columnName} 크기 조정",

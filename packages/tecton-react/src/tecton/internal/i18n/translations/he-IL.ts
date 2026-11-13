@@ -162,6 +162,8 @@ export default defineTranslations({
     searchSyntax: "תחביר החיפוש",
     filterBy: "סנן לפי {columnName}",
     filterContains: "מכיל",
+    filterContainsAny: "מכיל אחד מתוך",
+    filterAddText: "הוספת טקסט…",
     filterMin: "מינימום",
     filterMax: "מקסימום",
     clearFilter: "נקה",
@@ -180,6 +182,11 @@ export default defineTranslations({
       other: "תואמות {matches} מתוך {total}",
     },
     optionsSelected: { other: "{total} נבחרו" },
+    filterMoreRanges: {
+      one: "למסנן הזה יש עוד טווח אחד. נקה מסיר אותו.",
+      two: "למסנן הזה יש עוד {total} טווחים. נקה מסיר אותם.",
+      other: "למסנן הזה יש עוד {total} טווחים. נקה מסיר אותם.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "מסננים פעילים",
     clearAll: "נקה הכול",
@@ -317,11 +324,9 @@ export default defineTranslations({
       "החרגה אינה נתמכת, ולכן התנאי הזה לא מוחל. כדי לחפש את הטקסט עצמו, שימו אותו במירכאות.",
     exclusiveComparison: "עם תאריך ושעה השתמשו ב־>= או ב־<=.",
     notComparable: "ל־{column} אין סדר: בחרו במקום זאת את הערכים שלה.",
-    multipleBoolean: "{column} הוא כן או לא, לא שניהם.",
-    multipleDates: "{column} מקבל תאריך אחד או טווח אחד, למשל 2015..2016.",
     duplicateNoMatch: "אף שורה לא יכולה לעמוד בשני התנאים על {column}.",
     duplicateNotCombinable:
-      "{column} כבר מסונן מוקדם יותר בחיפוש: כתבו את שניהם בתנאי אחד.",
+      "{column} כבר מסונן קודם בחיפוש, ומסנן אחד לא יכול לדרוש את שני הטקסטים. כתבו אותם במונח אחד כדי להתאים לכל אחד מהם.",
   },
   tableColumnResizer: {
     resize: "שנה את גודל {columnName}",

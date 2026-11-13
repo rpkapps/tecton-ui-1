@@ -85,13 +85,17 @@ export default function DataTablePowerSearch() {
       defaultView={{
         filters: {
           status: { type: "options", values: ["producing", "drilling"] },
-          depth: { type: "number", min: 3000, minExclusive: true },
+          depth: {
+            type: "number",
+            ranges: [{ min: 3000, minExclusive: true }],
+          },
         },
       }}
       className="w-full"
     >
       <DataTableToolbar>
         <DataTableSearch syntax="query" />
+        <DataTableFilter column="name" />
         <DataTableFilter column="status" />
         <DataTableFilter column="depth" />
         <DataTableFilter column="spud" />

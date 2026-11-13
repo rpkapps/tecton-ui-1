@@ -9,7 +9,9 @@
  *
  * The query writes a number exactly (`formatNumber`): its shortest decimal
  * digits, in full (never as an exponent), with the locale's decimal
- * separator and no grouping, so it reads back as the same number.
+ * separator and no grouping, so it reads back as the same number. In a
+ * number column's list, a comma between digits is a number's own when its
+ * locale writes one there (`joinsNumber`).
  */
 
 type NumberSymbols = { readonly decimal: string; readonly group: string }
@@ -87,6 +89,30 @@ function parseNumber(text: string, symbols: NumberSymbols): number | undefined {
   return scale === 1 ? number : number / scale
 }
 
+/**
+ * Whether a comma between `before` and `after` (the text on either side of
+ * it in a number column's value) is a number's own, its locale's decimal
+ * or grouping separator, rather than the list's: with a digit on either
+ * side, always when the locale's decimal separator is a comma ("3,5" in
+ * German), and when the locale groups with it, where it groups a number
+ * ("1,234.5" in English, but "1000,2000" is a list).
+ */
+function joinsNumber(before: string, after: string, symbols: NumberSymbols) {
+  if (symbols.decimal !== "," && symbols.group !== ",") return false
+  const left = asciiDigits(before)
+  const right = asciiDigits(after)
+  if (!/\d$/.test(left) || !/^\d/.test(right)) return false
+  if (symbols.decimal === ",") return true
+  const whole = /\d[\d,]*$/.exec(left)?.[0] ?? ""
+  // The groups after it, as many as make a number (`1,00,000`, `1,234,2000`).
+  const groups = (/^\d+(?:,\d+)*/.exec(right)?.[0] ?? "").split(",")
+  return groups.some(
+    (_, i) =>
+      parseNumber(`${whole},${groups.slice(0, i + 1).join(",")}`, symbols) !==
+      undefined
+  )
+}
+
 /** `n`'s shortest digits in full: "0.00000015" for 1.5e-7. */
 function plainDigits(n: number) {
   const text = String(Math.abs(n))
@@ -108,5 +134,5 @@ function formatNumber(n: number, symbols: NumberSymbols) {
   return n < 0 ? `-${digits}` : digits
 }
 
-export { asciiDigits, formatNumber, numberSymbols, parseNumber }
+export { asciiDigits, formatNumber, joinsNumber, numberSymbols, parseNumber }
 export type { NumberSymbols }

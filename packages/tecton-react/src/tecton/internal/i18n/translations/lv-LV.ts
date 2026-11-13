@@ -163,6 +163,8 @@ export default defineTranslations({
     searchSyntax: "Meklēšanas sintakse",
     filterBy: "Filtrēt pēc kolonnas {columnName}",
     filterContains: "Satur",
+    filterContainsAny: "Satur kādu no",
+    filterAddText: "Pievienot tekstu…",
     filterMin: "Min.",
     filterMax: "Maks.",
     clearFilter: "Notīrīt",
@@ -178,6 +180,11 @@ export default defineTranslations({
     filterOrNoValue: "{value} vai nav vērtības",
     filterMatches: { other: "Atbilst {matches} no {total}" },
     optionsSelected: { other: "Atlasīti: {total}" },
+    filterMoreRanges: {
+      zero: "Šim filtram ir vēl {total} diapazonu. Notīrīt tos noņem.",
+      one: "Šim filtram ir vēl {total} diapazons. Notīrīt to noņem.",
+      other: "Šim filtram ir vēl {total} diapazoni. Notīrīt tos noņem.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktīvie filtri",
     clearAll: "Notīrīt visu",
@@ -315,13 +322,10 @@ export default defineTranslations({
       "Izslēgšana netiek atbalstīta, tāpēc šis nosacījums tiek ignorēts. Lai meklētu tieši šo tekstu, ielieciet to pēdiņās.",
     exclusiveComparison: "Datumam ar laiku izmantojiet >= vai <=.",
     notComparable: "{column} nav secības: tā vietā izvēlieties vērtības.",
-    multipleBoolean: "{column} ir jā vai nē, ne abi.",
-    multipleDates:
-      "{column} pieņem vienu datumu vai vienu diapazonu, piemēram, 2015..2016.",
     duplicateNoMatch:
       "Neviena rinda nevar atbilst abiem {column} nosacījumiem.",
     duplicateNotCombinable:
-      "{column} jau tiek filtrēta agrāk meklēšanā: apvienojiet abus vienā nosacījumā.",
+      "{column} jau ir filtrēta agrāk meklēšanā, un viens filtrs nevar pieprasīt abus tekstus. Ierakstiet tos vienā nosacījumā, lai atbilstu jebkurš no tiem.",
   },
   tableColumnResizer: {
     resize: "Mainīt kolonnas {columnName} izmēru",

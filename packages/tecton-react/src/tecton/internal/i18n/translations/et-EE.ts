@@ -146,6 +146,8 @@ export default defineTranslations({
     searchSyntax: "Otsingu süntaks",
     filterBy: "Filtreeri veeru {columnName} järgi",
     filterContains: "Sisaldab",
+    filterContainsAny: "Sisaldab üht järgmistest",
+    filterAddText: "Lisa tekst…",
     filterMin: "Min",
     filterMax: "Max",
     clearFilter: "Tühjenda",
@@ -161,6 +163,11 @@ export default defineTranslations({
     filterOrNoValue: "{value} või väärtus puudub",
     filterMatches: { other: "Vasteid: {matches}/{total}" },
     optionsSelected: { other: "Valitud: {total}" },
+    filterMoreRanges: {
+      one: "Sellel filtril on veel {total} vahemik. Tühjenda eemaldab selle.",
+      other:
+        "Sellel filtril on veel {total} vahemikku. Tühjenda eemaldab need.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktiivsed filtrid",
     clearAll: "Tühjenda kõik",
@@ -285,13 +292,10 @@ export default defineTranslations({
     exclusiveComparison: "Kuupäeva ja kellaajaga kasutage >= või <=.",
     notComparable:
       "Veerul {column} pole järjestust: valige selle asemel väärtused.",
-    multipleBoolean: "{column} on jah või ei, mitte mõlemad.",
-    multipleDates:
-      "{column} võtab ühe kuupäeva või ühe vahemiku, nt 2015..2016.",
     duplicateNoMatch:
       "Ükski rida ei saa vastata mõlemale veeru {column} tingimusele.",
     duplicateNotCombinable:
-      "Veergu {column} filtreeritakse otsingus juba varem: kirjutage mõlemad ühte tingimusse.",
+      "Veergu {column} filtreeritakse otsingus juba varem ja üks filter ei saa nõuda mõlemat teksti. Kirjuta need ühte tingimusse, et leida ükskõik kumb.",
   },
   tableColumnResizer: {
     resize: "Muuda veeru {columnName} laiust",

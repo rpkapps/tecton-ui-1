@@ -172,6 +172,8 @@ export default defineTranslations({
     searchSyntax: "Skladnja iskanja",
     filterBy: "Filtriraj po stolpcu {columnName}",
     filterContains: "Vsebuje",
+    filterContainsAny: "Vsebuje katerega koli od",
+    filterAddText: "Dodaj besedilo…",
     filterMin: "Najm.",
     filterMax: "Najv.",
     clearFilter: "Počisti",
@@ -192,6 +194,12 @@ export default defineTranslations({
       other: "Ustreza {matches} od {total}",
     },
     optionsSelected: { other: "Izbrano: {total}" },
+    filterMoreRanges: {
+      one: "Ta filter ima še {total} obseg. Počisti ga odstrani.",
+      two: "Ta filter ima še {total} obsega. Počisti ju odstrani.",
+      few: "Ta filter ima še {total} obsege. Počisti jih odstrani.",
+      other: "Ta filter ima še {total} obsegov. Počisti jih odstrani.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktivni filtri",
     clearAll: "Počisti vse",
@@ -337,13 +345,10 @@ export default defineTranslations({
     exclusiveComparison: "Pri datumu s časom uporabite >= ali <=.",
     notComparable:
       "{column} nima vrstnega reda: raje izberite njegove vrednosti.",
-    multipleBoolean: "{column} je da ali ne, ne oboje.",
-    multipleDates:
-      "{column} sprejme en datum ali en obseg, na primer 2015..2016.",
     duplicateNoMatch:
       "Nobena vrstica ne more izpolniti obeh pogojev za {column}.",
     duplicateNotCombinable:
-      "{column} je že filtriran prej v iskanju: združite oba v en pogoj.",
+      "{column} je v iskanju že filtriran prej in en filter ne more zahtevati obeh besedil. Navedite ju v enem izrazu, da se ujema katero koli od njiju.",
   },
   tableColumnResizer: {
     resize: "Spremeni velikost stolpca {columnName}",

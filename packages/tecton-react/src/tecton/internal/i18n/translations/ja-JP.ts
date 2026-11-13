@@ -128,6 +128,8 @@ export default defineTranslations({
     searchSyntax: "検索構文",
     filterBy: "{columnName} でフィルター",
     filterContains: "次を含む",
+    filterContainsAny: "次のいずれかを含む",
+    filterAddText: "テキストを追加…",
     filterMin: "最小",
     filterMax: "最大",
     clearFilter: "クリア",
@@ -143,6 +145,10 @@ export default defineTranslations({
     filterOrNoValue: "{value} または値なし",
     filterMatches: { other: "{total} 件中 {matches} 件が一致" },
     optionsSelected: { other: "{total} 件選択" },
+    filterMoreRanges: {
+      other:
+        "このフィルターにはほかに {total} 個の範囲があります。クリアで削除されます。",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "適用中のフィルター",
     clearAll: "すべてクリア",
@@ -255,12 +261,9 @@ export default defineTranslations({
     exclusiveComparison: "日時には >= または <= を使ってください。",
     notComparable:
       "{column} には順序がありません。代わりに値を選んでください。",
-    multipleBoolean: "{column} ははいかいいえのどちらかです。",
-    multipleDates:
-      "{column} には日付または範囲を 1 つ指定します(例: 2015..2016)。",
     duplicateNoMatch: "{column} の両方の条件に一致する行はありません。",
     duplicateNotCombinable:
-      "{column} は検索の前の方で既に絞り込まれています。両方を 1 つの条件にまとめてください。",
+      "{column} は検索の前の方で既に絞り込まれており、1 つのフィルターで両方のテキストを必須にすることはできません。いずれかに一致させるには 1 つの条件にまとめてください。",
   },
   tableColumnResizer: {
     resize: "{columnName} のサイズを変更",

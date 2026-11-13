@@ -153,6 +153,8 @@ export default defineTranslations({
     searchSyntax: "Suchsyntax",
     filterBy: "Nach {columnName} filtern",
     filterContains: "Enthält",
+    filterContainsAny: "Enthält eines von",
+    filterAddText: "Text hinzufügen…",
     filterMin: "Min.",
     filterMax: "Max.",
     clearFilter: "Zurücksetzen",
@@ -168,6 +170,11 @@ export default defineTranslations({
     filterOrNoValue: "{value} oder kein Wert",
     filterMatches: { other: "Treffer: {matches} von {total}" },
     optionsSelected: { other: "{total} ausgewählt" },
+    filterMoreRanges: {
+      one: "Dieser Filter hat noch {total} weiteren Bereich. Zurücksetzen entfernt ihn.",
+      other:
+        "Dieser Filter hat noch {total} weitere Bereiche. Zurücksetzen entfernt sie.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktive Filter",
     clearAll: "Alle zurücksetzen",
@@ -295,12 +302,9 @@ export default defineTranslations({
     exclusiveComparison: "Mit Datum und Uhrzeit >= oder <= verwenden.",
     notComparable:
       "{column} hat keine Reihenfolge: stattdessen Werte auswählen.",
-    multipleBoolean: "{column} ist Ja oder Nein, nicht beides.",
-    multipleDates:
-      "{column} nimmt ein Datum oder einen Bereich, z. B. 2015..2016.",
     duplicateNoMatch: "Keine Zeile kann beide Begriffe zu {column} erfüllen.",
     duplicateNotCombinable:
-      "{column} wird weiter vorne in der Suche gefiltert: beides in einen Begriff schreiben.",
+      "{column} wird weiter vorne in der Suche gefiltert, und ein Filter kann nicht beide Texte verlangen. Beide in einen Begriff schreiben, um einen davon zu finden.",
   },
   tableColumnResizer: {
     resize: "Größe von {columnName} ändern",

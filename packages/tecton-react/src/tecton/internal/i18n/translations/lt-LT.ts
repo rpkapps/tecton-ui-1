@@ -170,6 +170,8 @@ export default defineTranslations({
     searchSyntax: "Paieškos sintaksė",
     filterBy: "Filtruoti pagal stulpelį {columnName}",
     filterContains: "Yra",
+    filterContainsAny: "Yra bet kuris iš",
+    filterAddText: "Pridėti tekstą…",
     filterMin: "Min.",
     filterMax: "Maks.",
     clearFilter: "Išvalyti",
@@ -185,6 +187,12 @@ export default defineTranslations({
     filterOrNoValue: "{value} arba nėra reikšmės",
     filterMatches: { other: "Atitinka {matches} iš {total}" },
     optionsSelected: { other: "Pasirinkta: {total}" },
+    filterMoreRanges: {
+      one: "Šis filtras turi dar {total} intervalą. Išvalyti jį pašalina.",
+      few: "Šis filtras turi dar {total} intervalus. Išvalyti juos pašalina.",
+      many: "Šis filtras turi dar {total} intervalo. Išvalyti juos pašalina.",
+      other: "Šis filtras turi dar {total} intervalų. Išvalyti juos pašalina.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktyvūs filtrai",
     clearAll: "Išvalyti viską",
@@ -330,12 +338,9 @@ export default defineTranslations({
       "Išskyrimas nepalaikomas, todėl šios sąlygos nepaisoma. Norėdami ieškoti būtent šio teksto, įrašykite jį į kabutes.",
     exclusiveComparison: "Su data ir laiku naudokite >= arba <=.",
     notComparable: "{column} neturi tvarkos: verčiau pasirinkite reikšmes.",
-    multipleBoolean: "{column} yra taip arba ne, ne abu.",
-    multipleDates:
-      "{column} priima vieną datą arba vieną intervalą, pvz., 2015..2016.",
     duplicateNoMatch: "Nė viena eilutė negali atitikti abiejų {column} sąlygų.",
     duplicateNotCombinable:
-      "{column} jau filtruojamas anksčiau paieškoje: sujunkite abi į vieną sąlygą.",
+      "{column} jau filtruojamas anksčiau paieškoje, o vienas filtras negali reikalauti abiejų tekstų. Įrašykite juos į vieną sąlygą, kad atitiktų bet kurį iš jų.",
   },
   tableColumnResizer: {
     resize: "Keisti stulpelio {columnName} dydį",

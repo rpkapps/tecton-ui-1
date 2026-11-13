@@ -79,18 +79,30 @@ const hasQuote = (raw: string) => [...raw].some(isQuote)
 /** A value item: what lies between two commas, `start`–`end` in the text. */
 type Item = { readonly start: number; readonly end: number }
 
-/** The items of `text[from, to)`, split on commas outside quotes. */
-function itemsOf(text: string, from: number, to: number): Array<Item> {
+/**
+ * The items of `text[from, to)`, split on commas outside quotes, but those
+ * `joins` keeps in their item (a number's own, `joinsNumber`), given the
+ * item's text before the comma and the text after it.
+ */
+function itemsOf(
+  text: string,
+  from: number,
+  to: number,
+  joins?: (before: string, after: string) => boolean
+): Array<Item> {
   const items: Array<Item> = []
   let start = from
+  let at = from
   for (;;) {
-    const comma = indexOutsideQuotes(text, ",", start, to)
+    const comma = indexOutsideQuotes(text, ",", at, to)
     if (comma === -1) {
       items.push({ start, end: to })
       return items
     }
+    at = comma + 1
+    if (joins?.(text.slice(start, comma), text.slice(at, to))) continue
     items.push({ start, end: comma })
-    start = comma + 1
+    start = at
   }
 }
 

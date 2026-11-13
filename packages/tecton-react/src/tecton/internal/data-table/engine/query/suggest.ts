@@ -7,11 +7,13 @@
  * - In a free word: the columns it begins, and (from two letters) the
  *   values of options and text columns that contain it, each as a whole
  *   term (`operator:` → `operator:equinor`).
- * - In a value, the column's values with their numbers of rows over the
+ * - In a value, for the item of its list the caret is in (after a comma,
+ *   the next one), the column's values with their numbers of rows over the
  *   rest of the query (its filters and search, the column's own left out,
- *   as the filter popover counts): an options column's options, yes and
- *   no, a text column's values that contain what is typed (the most
- *   frequent ones while nothing is), and "No value" while rows have none.
+ *   as the filter popover counts), those the other items list left out: an
+ *   options column's options, yes and no, a text column's values that
+ *   contain what is typed (the most frequent ones while nothing is), and
+ *   "No value" while rows have none and no other item is.
  *   A number column's comparisons (`=`, `>`, `>=`, `<`, `<=`, `..`), a date
  *   column's (`<` before, `>` after, `..`), with the data's smallest and
  *   largest value; a date column's presets (and `last<N>` as d / w / m / y as it is
@@ -39,8 +41,16 @@ import {
   todayIn,
 } from "./dates"
 import type { QueryColumn, QueryLanguage } from "./language"
+import { joinsNumber } from "./numbers"
 import type { QuerySource } from "./source"
-import { isEmptyWord, itemsOf, keyForm, unquote, valueToken } from "./syntax"
+import {
+  isEmptyWord,
+  itemsOf,
+  keyForm,
+  unquote,
+  valueToken,
+  type Item,
+} from "./syntax"
 import type {
   ParsedQuery,
   QueryFilterTerm,
@@ -331,7 +341,15 @@ function suggestQuery(
   }
 
   function currentItem(filter: QueryFilterTerm) {
-    const items = itemsOf(text, filter.valueStart, filter.end)
+    const numbers = language.byId.get(filter.column ?? "")?.type === "number"
+    const items = itemsOf(
+      text,
+      filter.valueStart,
+      filter.end,
+      numbers
+        ? (before, after) => joinsNumber(before, after, language.numbers)
+        : undefined
+    )
     const item =
       items.find((one) => caret >= one.start && caret <= one.end) ??
       items[items.length - 1]
@@ -357,10 +375,6 @@ function suggestQuery(
           }
           return language.option(column, value)?.value ?? []
         })
-    )
-    const hasEmpty = items.some(
-      (other) =>
-        other !== item && isEmptyWord(text.slice(other.start, other.end))
     )
     const facets = source?.facets(column.id, rest)
     const candidates: Array<{
@@ -416,11 +430,19 @@ function suggestQuery(
       end: item.end,
       items: [
         ...values,
-        ...(hasEmpty
+        ...(listsEmpty(items, item)
           ? []
           : emptyOffer(column, typed, facets?.empty, filter.end, complete)),
       ],
     }
+  }
+
+  /** Whether an item of the list but `item` is "No value". */
+  function listsEmpty(items: ReadonlyArray<Item>, item: Item) {
+    return items.some(
+      (other) =>
+        other !== item && isEmptyWord(text.slice(other.start, other.end))
+    )
   }
 
   function textValue(
@@ -428,33 +450,53 @@ function suggestQuery(
     column: QueryColumn,
     rest: QueryView
   ): QuerySuggestions {
-    const typed = unquote(text.slice(filter.valueStart, caret))
+    const { items, item } = currentItem(filter)
+    const typed = unquote(text.slice(item.start, Math.max(item.start, caret)))
     const folded = foldText(typed.trim())
+    const complete = item.end === filter.end
+    // The texts listed in the other items, not offered again.
+    const listed = new Set(
+      items
+        .filter((other) => other !== item)
+        .map((other) => foldText(unquote(text.slice(other.start, other.end))))
+    )
     const facets = source?.facets(column.id, rest)
     let values: Array<{ text: string; count: number }> = []
     if (source && folded)
-      values = source.textMatches(column.id, rest, typed.trim(), limit)
+      values = source.textMatches(
+        column.id,
+        rest,
+        typed.trim(),
+        limit + listed.size
+      )
     else if (facets)
       values = [...facets.counts]
         .sort(
           (a, b) => b[1] - a[1] || a[0].localeCompare(b[0], language.locale)
         )
-        .slice(0, limit)
         .map(([value, count]) => ({ text: value, count }))
+    values = values
+      .filter((value) => !listed.has(foldText(value.text)))
+      .slice(0, limit)
     return {
       context: "value",
       column: column.id,
-      start: filter.valueStart,
-      end: filter.end,
+      start: item.start,
+      end: item.end,
       items: [
-        ...values.map((value): QuerySuggestion => ({
-          kind: "value",
-          column: column.id,
-          value: value.text,
-          count: value.count,
-          ...completing(valueToken(value.text), filter.end),
-        })),
-        ...emptyOffer(column, folded, facets?.empty, filter.end, true),
+        ...values.map((value): QuerySuggestion => {
+          const token = valueToken(value.text)
+          return {
+            kind: "value",
+            column: column.id,
+            value: value.text,
+            count: value.count,
+            ...(complete ? completing(token, filter.end) : open(token)),
+          }
+        }),
+        ...(listsEmpty(items, item)
+          ? []
+          : emptyOffer(column, folded, facets?.empty, filter.end, complete)),
       ],
     }
   }
@@ -480,7 +522,9 @@ function suggestQuery(
     const complete = end === filter.end
     const offer = (value: string) =>
       complete ? completing(value, filter.end) : open(value)
-    const bare = !operator && !ranged && items.length === 1
+    // Each item is a value or a range of its own: an empty one is offered
+    // the comparisons, after a comma too.
+    const bare = !operator && !ranged
     const out: Array<QuerySuggestion> = []
     if (bare && typed === "") {
       const extent = source?.extent(column.id, rest) ?? undefined
@@ -499,7 +543,7 @@ function suggestQuery(
     }
     if (column.type === "date")
       out.unshift(...dateValues(column, rest, typed, offer))
-    if (bare || (typed !== "" && !operator && !ranged))
+    if (bare && !listsEmpty(items, item))
       out.push(
         ...emptyOffer(
           column,

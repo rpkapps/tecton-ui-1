@@ -148,6 +148,8 @@ export default defineTranslations({
     searchSyntax: "Arama söz dizimi",
     filterBy: "{columnName} ölçütüne göre filtrele",
     filterContains: "İçerir",
+    filterContainsAny: "Şunlardan birini içerir",
+    filterAddText: "Metin ekle…",
     filterMin: "En az",
     filterMax: "En çok",
     clearFilter: "Temizle",
@@ -163,6 +165,10 @@ export default defineTranslations({
     filterOrNoValue: "{value} veya değer yok",
     filterMatches: { other: "{matches}/{total} eşleşiyor" },
     optionsSelected: { other: "{total} seçili" },
+    filterMoreRanges: {
+      one: "Bu filtrede {total} aralık daha var. Temizle onu kaldırır.",
+      other: "Bu filtrede {total} aralık daha var. Temizle onları kaldırır.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Etkin filtreler",
     clearAll: "Tümünü temizle",
@@ -278,13 +284,10 @@ export default defineTranslations({
     exclusiveComparison: "Tarih ve saatle >= veya <= kullanın.",
     notComparable:
       "{column} için sıralama yok: bunun yerine değerlerini seçin.",
-    multipleBoolean: "{column} evet ya da hayırdır, ikisi birden değil.",
-    multipleDates:
-      "{column} bir tarih ya da bir aralık alır, örneğin 2015..2016.",
     duplicateNoMatch:
       "Hiçbir satır {column} için iki koşulu birden karşılayamaz.",
     duplicateNotCombinable:
-      "{column} aramada daha önce filtreleniyor: ikisini tek bir koşulda yazın.",
+      "{column} aramada daha önce filtrelendi ve bir filtre iki metni birden gerektiremez. Herhangi biriyle eşleşmesi için ikisini tek bir terimde yazın.",
   },
   tableColumnResizer: {
     resize: "{columnName} öğesini yeniden boyutlandır",

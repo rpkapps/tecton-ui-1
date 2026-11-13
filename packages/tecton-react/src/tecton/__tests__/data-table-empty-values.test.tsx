@@ -316,14 +316,18 @@ describe("DataTableFilter No value", () => {
     await user.click(filterButton("TD (m)"))
     await user.click(screen.getByRole("checkbox", { name: "No value" }))
     expect(lastFilters(onViewChange)).toEqual({
-      depth: { type: "number", empty: true },
+      depth: { type: "number", ranges: [], empty: true },
     })
     expect(names()).toEqual(["B-2", "D-4"])
     expect(chips()).toEqual(["TD (m): No value"])
     await user.type(screen.getByRole("textbox", { name: "Min" }), "1800")
     await user.type(screen.getByRole("textbox", { name: "Max" }), "2500")
     expect(lastFilters(onViewChange)).toEqual({
-      depth: { type: "number", min: 1800, max: 2500, empty: true },
+      depth: {
+        type: "number",
+        ranges: [{ min: 1800, max: 2500 }],
+        empty: true,
+      },
     })
     expect(names()).toEqual(["A-1", "B-2", "D-4"])
     expect(chips()).toEqual(["TD (m): 1,800–2,500 or no value"])
@@ -342,8 +346,9 @@ describe("DataTableFilter No value", () => {
           filters: {
             spud: {
               type: "date",
-              from: new Date(2020, 0, 1),
-              to: new Date(2020, 11, 31),
+              ranges: [
+                { from: new Date(2020, 0, 1), to: new Date(2020, 11, 31) },
+              ],
             },
           },
         }}
@@ -355,8 +360,7 @@ describe("DataTableFilter No value", () => {
     await user.click(within(dialog).getByRole("checkbox", { name: "No value" }))
     expect(lastFilters(onViewChange).spud).toEqual({
       type: "date",
-      from: new Date(2020, 0, 1),
-      to: new Date(2020, 11, 31),
+      ranges: [{ from: new Date(2020, 0, 1), to: new Date(2020, 11, 31) }],
       empty: true,
     })
     expect(names()).toEqual(["A-1", "B-2", "D-4"])
@@ -366,7 +370,7 @@ describe("DataTableFilter No value", () => {
     expect(lastFilters(onViewChange)).toEqual({})
     await user.click(within(dialog).getByRole("checkbox", { name: "No value" }))
     expect(lastFilters(onViewChange)).toEqual({
-      spud: { type: "date", empty: true },
+      spud: { type: "date", ranges: [], empty: true },
     })
     expect(names()).toEqual(["B-2", "D-4"])
   })
@@ -378,7 +382,7 @@ describe("DataTableFilter No value", () => {
     await user.click(filterButton("Field"))
     await user.click(screen.getByRole("checkbox", { name: "No value" }))
     expect(lastFilters(onViewChange)).toEqual({
-      field: { type: "text", value: "", empty: true },
+      field: { type: "text", values: [], empty: true },
     })
     expect(names()).toEqual(["B-2", "D-4"])
     await user.type(screen.getByRole("textbox", { name: "Contains" }), "gull")
@@ -391,13 +395,14 @@ describe("DataTableFilter No value", () => {
     const onViewChange = vi.fn()
     render(<Wells onViewChange={onViewChange} />)
     await user.click(filterButton("Active"))
-    expect(screen.getAllByRole("radio")).toHaveLength(2)
-    const yes = screen.getByRole("radio", { name: "Yes" })
+    // Yes, No and No value.
+    expect(screen.getAllByRole("checkbox")).toHaveLength(3)
+    const yes = screen.getByRole("checkbox", { name: "Yes" })
     const noValue = screen.getByRole("checkbox", { name: "No value" })
     // A-1 and D-4 yes, C-3 no, B-2 none.
     expect(yes.closest("div")).toHaveTextContent(/^Yes2$/)
     expect(
-      screen.getByRole("radio", { name: "No" }).closest("div")
+      screen.getByRole("checkbox", { name: "No" }).closest("div")
     ).toHaveTextContent(/^No1$/)
     expect(noValue.closest("div")).toHaveTextContent(/^No value1$/)
     // Apart, after a separator, as an options filter's.
@@ -410,7 +415,7 @@ describe("DataTableFilter No value", () => {
     // No value alone: only the rows without one.
     await user.click(noValue)
     expect(lastFilters(onViewChange)).toEqual({
-      active: { type: "boolean", empty: true },
+      active: { type: "boolean", values: [], empty: true },
     })
     expect(names()).toEqual(["B-2"])
     expect(chips()).toEqual(["Active: No value"])
@@ -419,7 +424,7 @@ describe("DataTableFilter No value", () => {
     // Yes and No value: yes or none.
     await user.click(yes)
     expect(lastFilters(onViewChange)).toEqual({
-      active: { type: "boolean", value: true, empty: true },
+      active: { type: "boolean", values: [true], empty: true },
     })
     expect(names()).toEqual(["A-1", "B-2", "D-4"])
     expect(chips()).toEqual(["Active: Yes or no value"])
@@ -430,7 +435,7 @@ describe("DataTableFilter No value", () => {
     expect(noValue.closest("div")).toHaveTextContent(/^No value1$/)
     await user.click(noValue)
     expect(lastFilters(onViewChange)).toEqual({
-      active: { type: "boolean", value: true },
+      active: { type: "boolean", values: [true] },
     })
     expect(names()).toEqual(["A-1", "D-4"])
     expect(chips()).toEqual(["Active: Yes"])
@@ -461,17 +466,17 @@ describe("DataTableFilter No value", () => {
       </DataTable>
     )
     await user.click(filterButton("Active"))
-    const yes = screen.getByRole("radio", { name: "Yes" })
+    const yes = screen.getByRole("checkbox", { name: "Yes" })
     const noValue = screen.getByRole("checkbox", { name: "No value" })
     expect(yes.closest("div")).toHaveTextContent(/^Yes$/)
     expect(
-      screen.getByRole("radio", { name: "No" }).closest("div")
+      screen.getByRole("checkbox", { name: "No" }).closest("div")
     ).toHaveTextContent(/^No$/)
     expect(noValue.closest("div")).toHaveTextContent(/^No value$/)
     await user.click(yes)
     await user.click(noValue)
     expect(lastFilters(onViewChange)).toEqual({
-      active: { type: "boolean", value: true, empty: true },
+      active: { type: "boolean", values: [true], empty: true },
     })
     expect(chips()).toEqual(["Active: Yes or no value"])
     // The server's rows, as given.
@@ -523,7 +528,7 @@ describe("DataTableFilter No value", () => {
     await user.click(screen.getByRole("checkbox", { name: "No value" }))
     expect(lastFilters(onViewChange)).toEqual({
       status: { type: "options", values: [], empty: true },
-      depth: { type: "number", empty: true },
+      depth: { type: "number", ranges: [], empty: true },
     })
     // The server's rows, as given.
     expect(names()).toEqual(["A-1", "C-3"])
@@ -539,39 +544,44 @@ describe("DataTableFilterValue empty", () => {
   it("keeps a filter of No value alone, drops a flag that is not true", () => {
     expect(
       reconcile({
-        depth: { type: "number", empty: true },
-        spud: { type: "date", empty: true },
-        active: { type: "boolean", empty: true },
+        depth: { type: "number", ranges: [], empty: true },
+        spud: { type: "date", ranges: [], empty: true },
+        active: { type: "boolean", values: [], empty: true },
         status: { type: "options", values: [], empty: true },
-        field: { type: "text", value: "", empty: true },
+        field: { type: "text", values: [], empty: true },
       })
     ).toEqual({
-      depth: { type: "number", empty: true },
-      spud: { type: "date", empty: true },
-      active: { type: "boolean", empty: true },
+      depth: { type: "number", ranges: [], empty: true },
+      spud: { type: "date", ranges: [], empty: true },
+      active: { type: "boolean", values: [], empty: true },
       status: { type: "options", values: [], empty: true },
-      field: { type: "text", value: "", empty: true },
+      field: { type: "text", values: [], empty: true },
     })
     expect(
       reconcile({
-        depth: { type: "number", empty: "yes" },
+        depth: { type: "number", ranges: [], empty: "yes" },
         status: { type: "options", values: [], empty: false },
-        field: { type: "text", value: "x", empty: 1 },
-        active: { type: "boolean" },
+        field: { type: "text", values: ["x"], empty: 1 },
+        active: { type: "boolean", values: [] },
       })
-    ).toEqual({ field: { type: "text", value: "x" } })
+    ).toEqual({ field: { type: "text", values: ["x"] } })
     // From JSON, parts may be missing: No value alone is filled in.
     expect(
       reconcile({
         status: { type: "options", empty: true },
         field: { type: "text", empty: true },
+        depth: { type: "number", empty: true },
+        // An old shape's value is no list: "No value" alone.
+        active: { type: "boolean", value: true, empty: true },
       })
     ).toEqual({
       status: { type: "options", values: [], empty: true },
-      field: { type: "text", value: "", empty: true },
+      field: { type: "text", values: [], empty: true },
+      depth: { type: "number", ranges: [], empty: true },
+      active: { type: "boolean", values: [], empty: true },
     })
     // A view without the flag is as before.
-    const before = { depth: { type: "number", min: 2 } }
+    const before = { depth: { type: "number", ranges: [{ min: 2 }] } }
     expect(reconcile(before).depth).toBe(before.depth)
   })
 })

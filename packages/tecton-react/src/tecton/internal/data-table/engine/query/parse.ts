@@ -4,22 +4,24 @@
  *
  *   query  := term*                       side by side: every term applies
  *   term   := word | "phrase" | key ":" value | AND
- *   value  := (options, yes / no) item ("," item)*
- *           | (text) text ("," none)?
- *           | (number, date) (op? literal | literal? ".." literal?) ("," none)?
- *   op     := = | > | >= | < | <= | ≥ | ≤
+ *   value  := item ("," item)*            any of the items
+ *   item   := none | (the column's type's item)
  *   none   := none | empty                the filter's "No value"
  *
  * Free words and phrases are the view's `search`, joined by a space. A key
  * names a column (`language.ts`); its value becomes that column's filter,
- * exactly as the filter's own controls make it:
+ * exactly as the filter's own controls make it. The value is a list for
+ * every type, read alike: a comma always means "any of", and the column's
+ * type says what one item is:
  *
- * - options: a list of options, by value or label (`status:drilling,"shut in"`);
+ * - options: an option, by value or label (`status:drilling,"shut in"`);
  * - yes / no: one of them (`subsea:yes`);
- * - text: the text the column's values contain (`name:a-12`);
+ * - text: a text the column's values contain (`name:a-12,b-3`); a comma in
+ *   quotes is the text's own (`name:"a, b"`);
  * - number: `n` (that number), `>=n`, `<=n`, `a..b`, `a..`, `..b`, ends
  *   included, and `>n`, `<n`, the bound left out (`minExclusive`,
- *   `maxExclusive`), in the table's locale (`numbers.ts`);
+ *   `maxExclusive`), in the table's locale (`numbers.ts`): a range of
+ *   `ranges` (`td:<1000,>3000`);
  * - date: a date (`dates.ts`: a year, a month, a day, a preset) is its
  *   days, `>d` the days after them, `>=d` from their first, `<d` before
  *   them, `<=d` up to their last, `a..b` from a's first day to b's last
@@ -28,8 +30,9 @@
  *   `to`, an instant that is a day's start takes in that day, as the date
  *   filter reads such a `to` (the query writes that end as its day).
  *   A date with spaces in it (`jun 2015`, `30 jun 2015`) takes the words
- *   after it that make it one, when it is not a date without them;
- * - `none` or `empty` beside the value adds "No value" (`status:none`,
+ *   after it that make it one, when it is not a date without them. Each
+ *   item is a range of `ranges` (`spud:2015,last30d`);
+ * - `none` or `empty`, for any type, is "No value" (`status:none`,
  *   `td:>=3000,none`).
  *
  * A column filtered twice keeps the rows both terms match, when one filter
@@ -42,7 +45,12 @@
  * search for it as it is (`"-5"`, `"OR"`, `"10:30"`, `"http://..."`).
  * `AND` is accepted and changes nothing.
  */
-import type { DataTableFilterValue } from "../types"
+import type {
+  DataTableDateRange,
+  DataTableFilterValue,
+  DataTableNumberRange,
+} from "../types"
+import { sameDateRange, sameNumberRange } from "../view"
 import {
   parseDateLiteral,
   startOf,
@@ -52,7 +60,7 @@ import {
   type Day,
 } from "./dates"
 import type { QueryColumn, QueryLanguage } from "./language"
-import { parseNumber } from "./numbers"
+import { joinsNumber, parseNumber } from "./numbers"
 import {
   chunksOf,
   hasQuote,
@@ -152,41 +160,17 @@ class TermReader {
   }
 
   /**
-   * The items, with the "No value" words at either end taken apart (and
-   * drawn): the rest is one value (text, number, date), its commas its own.
+   * The value's items, the same way for every type: the commas between
+   * them drawn, blank ones skipped, `none` taken as "No value" (`empty`),
+   * each other item read by `read` (`undefined` when it has a problem,
+   * which `read` reported, or says nothing yet), its values kept once.
    */
-  edges(items: ReadonlyArray<Item>) {
-    let first = 0
-    let last = items.length - 1
-    let empty = false
-    const take = (item: Item) => {
-      empty = true
-      this.span(item.start, item.end, "empty")
-    }
-    while (
-      first <= last &&
-      (this.isEmpty(items[first]) || this.raw(items[first]).trim() === "")
-    ) {
-      if (this.isEmpty(items[first])) take(items[first])
-      first++
-    }
-    while (
-      last >= first &&
-      (this.isEmpty(items[last]) || this.raw(items[last]).trim() === "")
-    ) {
-      if (this.isEmpty(items[last])) take(items[last])
-      last--
-    }
-    for (let i = 1; i < items.length; i++)
-      if (i <= first || i > last)
-        this.span(items[i].start - 1, items[i].start, "separator")
-    const rest =
-      first <= last ? { start: items[first].start, end: items[last].end } : null
-    return { empty, rest }
-  }
-
-  options(items: ReadonlyArray<Item>): FilterReading {
-    const values: Array<string> = []
+  list<TItem>(
+    items: ReadonlyArray<Item>,
+    read: (item: Item, raw: string) => TItem | undefined,
+    same: (a: TItem, b: TItem) => boolean = Object.is
+  ): { values: Array<TItem>; empty: boolean } {
+    const values: Array<TItem> = []
     let empty = false
     for (const [index, item] of items.entries()) {
       if (index > 0) this.span(item.start - 1, item.start, "separator")
@@ -197,24 +181,41 @@ class TermReader {
         this.span(item.start, item.end, "empty")
         continue
       }
+      const value = read(item, raw)
+      if (value !== undefined && !values.some((other) => same(other, value)))
+        values.push(value)
+    }
+    return { values, empty }
+  }
+
+  /**
+   * Whether an option or yes / no item is a comparison or a range, which a
+   * column without an order has none of (`notComparable`, reported).
+   */
+  notComparable(item: Item, raw: string) {
+    if (hasQuote(raw) || !(OPERATOR.test(raw) || raw.includes("..")))
+      return false
+    this.problem("notComparable", item.start, item.end, {
+      operator: OPERATOR.exec(raw)?.[1] ?? "..",
+    })
+    return true
+  }
+
+  options(items: ReadonlyArray<Item>): FilterReading {
+    const { values, empty } = this.list(items, (item, raw) => {
       this.span(item.start, item.end, "value")
+      if (this.notComparable(item, raw)) return undefined
       const value = unquote(raw).trim()
-      if (!hasQuote(raw) && (OPERATOR.test(raw) || raw.includes(".."))) {
-        this.problem("notComparable", item.start, item.end, {
-          operator: OPERATOR.exec(raw)?.[1] ?? "..",
-        })
-        continue
-      }
       const option = this.language.option(this.column, value)
       if (!option) {
         this.problem("unknownValue", item.start, item.end, {
           value,
           ...suggestion(this.language.closestOption(this.column, value)?.value),
         })
-        continue
+        return undefined
       }
-      if (!values.includes(option.value)) values.push(option.value)
-    }
+      return option.value
+    })
     return this.result(
       values.length || empty
         ? { type: "options", values, ...emptyFlag(empty) }
@@ -222,74 +223,55 @@ class TermReader {
     )
   }
 
-  boolean(
-    items: ReadonlyArray<Item>,
-    start: number,
-    end: number
-  ): FilterReading {
-    const values = new Set<boolean>()
-    let empty = false
-    for (const [index, item] of items.entries()) {
-      if (index > 0) this.span(item.start - 1, item.start, "separator")
-      const raw = this.raw(item)
-      if (raw.trim() === "") continue
-      if (this.isEmpty(item)) {
-        empty = true
-        this.span(item.start, item.end, "empty")
-        continue
-      }
+  boolean(items: ReadonlyArray<Item>): FilterReading {
+    const { values, empty } = this.list(items, (item, raw) => {
       this.span(item.start, item.end, "value")
       const value = unquote(raw).trim()
       const wanted = this.language.boolean(value)
-      if (wanted === undefined) {
-        if (!hasQuote(raw) && (OPERATOR.test(raw) || raw.includes("..")))
-          this.problem("notComparable", item.start, item.end, {
-            operator: OPERATOR.exec(raw)?.[1] ?? "..",
-          })
-        else this.problem("unknownValue", item.start, item.end, { value })
-        continue
-      }
-      values.add(wanted)
-    }
-    if (values.size > 1) this.problem("multipleValues", start, end)
-    const value = values.values().next().value
+      if (wanted === undefined && !this.notComparable(item, raw))
+        this.problem("unknownValue", item.start, item.end, { value })
+      return wanted
+    })
     return this.result(
-      values.size || empty
-        ? {
-            type: "boolean",
-            ...(value === undefined ? {} : { value }),
-            ...emptyFlag(empty),
-          }
+      values.length || empty
+        ? { type: "boolean", values, ...emptyFlag(empty) }
         : undefined
     )
   }
 
   textFilter(items: ReadonlyArray<Item>): FilterReading {
-    const { empty, rest } = this.edges(items)
-    let value = ""
-    let quoted = false
-    if (rest) {
-      const raw = this.text.slice(rest.start, rest.end)
-      this.span(rest.start, rest.end, "value")
-      value = unquote(raw)
-      quoted = hasQuote(raw)
-    }
+    const { values, empty } = this.list(items, (item, raw) => {
+      this.span(item.start, item.end, "value")
+      // As it is typed: spaces are a text's own only in quotes, where they
+      // keep the chunk together, but blank texts find every row.
+      const value = unquote(raw)
+      return value.trim() === "" ? undefined : value
+    })
     return this.result(
-      (value !== "" && (quoted || value.trim() !== "")) || empty
-        ? { type: "text", value, ...emptyFlag(empty) }
+      values.length || empty
+        ? { type: "text", values, ...emptyFlag(empty) }
         : undefined
     )
   }
 
   number(items: ReadonlyArray<Item>): FilterReading {
-    const { empty, rest } = this.edges(items)
-    if (!rest)
-      return this.result(
-        empty ? { type: "number", ...emptyFlag(empty) } : undefined
-      )
+    const { values, empty } = this.list(
+      items,
+      (item) => this.numberRange(item),
+      sameNumberRange
+    )
+    return this.result(
+      values.length || empty
+        ? { type: "number", ranges: values, ...emptyFlag(empty) }
+        : undefined
+    )
+  }
+
+  /** A number item's range: a comparison or `a..b`. */
+  numberRange(item: Item): DataTableNumberRange | undefined {
     const expression = this.expression(
-      rest.start,
-      rest.end,
+      item.start,
+      item.end,
       (text, start, end) => {
         const n = parseNumber(text, this.language.numbers)
         if (n === undefined) {
@@ -300,71 +282,83 @@ class TermReader {
         return n
       }
     )
-    if (!expression)
-      return this.result(
-        empty ? { type: "number", ...emptyFlag(empty) } : undefined
-      )
-    let min: number | undefined
-    let max: number | undefined
-    let exclusive: { minExclusive?: true; maxExclusive?: true } = {}
+    if (!expression) return undefined
     if (expression.kind === "compare") {
       const { op, literal: n } = expression
-      if (op === ">") exclusive = { minExclusive: true }
-      if (op === "<") exclusive = { maxExclusive: true }
-      if (op !== "<=" && op !== "<") min = n
-      if (op !== ">=" && op !== ">") max = n
-    } else {
-      min = expression.low
-      max = expression.high
-      if (min !== undefined && max !== undefined && min > max) {
-        this.problem("backwardsRange", rest.start, rest.end, expression.texts)
-        return this.result(undefined)
+      return {
+        ...(op !== "<=" && op !== "<" ? { min: n } : {}),
+        ...(op !== ">=" && op !== ">" ? { max: n } : {}),
+        ...(op === ">" ? { minExclusive: true } : {}),
+        ...(op === "<" ? { maxExclusive: true } : {}),
       }
     }
-    return this.result({
-      type: "number",
+    const { low: min, high: max } = expression
+    if (min !== undefined && max !== undefined && min > max) {
+      this.problem("backwardsRange", item.start, item.end, expression.texts)
+      return undefined
+    }
+    return {
       ...(min === undefined ? {} : { min }),
       ...(max === undefined ? {} : { max }),
-      ...exclusive,
-      ...emptyFlag(empty),
-    })
+    }
+  }
+
+  /** Whether a date item reads as a range, or "No value", without a problem. */
+  readsAsDate(item: Item) {
+    if (this.raw(item).trim() === "" || this.isEmpty(item)) return true
+    const probe = new TermReader(
+      this.text,
+      this.language,
+      this.column,
+      this.today
+    )
+    return probe.dateRange(item) !== undefined && !probe.diagnostics.length
+  }
+
+  /**
+   * A date's own comma (`jun 30, 2015`): an item that is no date alone
+   * takes the next one when together they make one.
+   */
+  joinDates(items: ReadonlyArray<Item>): Array<Item> {
+    const joined: Array<Item> = []
+    for (let i = 0; i < items.length; i++) {
+      let item = items[i]
+      if (i + 1 < items.length && !this.readsAsDate(item)) {
+        const longer = { start: item.start, end: items[i + 1].end }
+        if (this.readsAsDate(longer)) {
+          item = longer
+          i++
+        }
+      }
+      joined.push(item)
+    }
+    return joined
   }
 
   date(items: ReadonlyArray<Item>): FilterReading {
-    const { empty, rest } = this.edges(items)
-    const emptyOnly = () =>
-      this.result(empty ? { type: "date", ...emptyFlag(empty) } : undefined)
-    if (!rest) return emptyOnly()
-    // `2015,2016`: two dates where the filter takes one range.
-    const pieces = itemsOf(this.text, rest.start, rest.end)
-    if (
-      pieces.length > 1 &&
-      pieces.every((piece) => {
-        const raw = this.raw(piece).trim()
-        return (
-          raw !== "" &&
-          "kind" in
-            parseDateLiteral(
-              unquote(raw).replace(OPERATOR, ""),
-              this.language.dates,
-              this.today(this.column.timeZone)
-            )
-        )
-      })
-    ) {
-      this.span(rest.start, rest.end, "value")
-      this.problem("multipleValues", rest.start, rest.end)
-      return this.result(undefined)
-    }
+    const { values, empty } = this.list(
+      this.joinDates(items),
+      (item) => this.dateRange(item),
+      sameDateRange
+    )
+    return this.result(
+      values.length || empty
+        ? { type: "date", ranges: values, ...emptyFlag(empty) }
+        : undefined
+    )
+  }
+
+  /** A date item's range: its days, a comparison or `a..b`. */
+  dateRange(item: Item): DataTableDateRange | undefined {
     const { timeZone } = this.column
     const expression = this.expression(
-      rest.start,
-      rest.end,
+      item.start,
+      item.end,
       (text, start, end) => {
         const literal = parseDateLiteral(
           text,
           this.language.dates,
-          this.today(this.column.timeZone)
+          this.today(timeZone)
         )
         if ("error" in literal) {
           this.dateProblem(literal, text, start, end)
@@ -378,20 +372,19 @@ class TermReader {
         return literal
       }
     )
-    if (!expression) return emptyOnly()
+    if (!expression) return undefined
     let from: Date | undefined
     let to: Date | undefined
     if (expression.kind === "compare") {
       const { op, literal } = expression
       if (literal.kind === "instant") {
         if (op === ">" || op === "<") {
-          this.problem("exclusiveComparison", rest.start, rest.end, {
+          this.problem("exclusiveComparison", item.start, item.end, {
             operator: op,
           })
-          return this.result(undefined)
+          return undefined
         }
-        const at = new Date(literal.time)
-        if (op !== "<=") from = at
+        if (op !== "<=") from = new Date(literal.time)
         if (op !== ">=") to = new Date(literal.time)
       } else if (op === ">") from = startOf(literal.last + 1, timeZone)
       else if (op === "<") to = startOf(literal.first - 1, timeZone)
@@ -418,16 +411,11 @@ class TermReader {
             ? startOf(high.last + 1, timeZone).getTime()
             : Infinity
       if (from && from.getTime() >= end) {
-        this.problem("backwardsRange", rest.start, rest.end, expression.texts)
-        return this.result(undefined)
+        this.problem("backwardsRange", item.start, item.end, expression.texts)
+        return undefined
       }
     }
-    return this.result({
-      type: "date",
-      ...(from ? { from } : {}),
-      ...(to ? { to } : {}),
-      ...emptyFlag(empty),
-    })
+    return { ...(from ? { from } : {}), ...(to ? { to } : {}) }
   }
 
   dateProblem(problem: DateProblem, text: string, start: number, end: number) {
@@ -576,14 +564,22 @@ function readFilter(
   const reader = new TermReader(text, language, column, today)
   reader.spans.push(...spans)
   const valueStart = colon + 1
-  const items = itemsOf(text, valueStart, end)
+  // A number keeps its own commas (`1,234.5`, `3,5` in German).
+  const items = itemsOf(
+    text,
+    valueStart,
+    end,
+    column.type === "number"
+      ? (before, after) => joinsNumber(before, after, language.numbers)
+      : undefined
+  )
   let reading: FilterReading
   switch (column.type) {
     case "options":
       reading = reader.options(items)
       break
     case "boolean":
-      reading = reader.boolean(items, valueStart, end)
+      reading = reader.boolean(items)
       break
     case "number":
       reading = reader.number(items)

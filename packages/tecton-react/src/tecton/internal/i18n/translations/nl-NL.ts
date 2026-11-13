@@ -152,6 +152,8 @@ export default defineTranslations({
     searchSyntax: "Zoeksyntaxis",
     filterBy: "Filteren op {columnName}",
     filterContains: "Bevat",
+    filterContainsAny: "Bevat een van",
+    filterAddText: "Tekst toevoegen…",
     filterMin: "Min.",
     filterMax: "Max.",
     clearFilter: "Wissen",
@@ -170,6 +172,10 @@ export default defineTranslations({
       other: "{matches} van {total} komen overeen",
     },
     optionsSelected: { other: "{total} geselecteerd" },
+    filterMoreRanges: {
+      one: "Dit filter heeft nog {total} bereik. Wissen verwijdert het.",
+      other: "Dit filter heeft nog {total} bereiken. Wissen verwijdert ze.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Actieve filters",
     clearAll: "Alles wissen",
@@ -296,11 +302,9 @@ export default defineTranslations({
     exclusiveComparison: "Gebruik >= of <= met een datum en tijd.",
     notComparable:
       "{column} heeft geen volgorde: kies in plaats daarvan de waarden.",
-    multipleBoolean: "{column} is ja of nee, niet allebei.",
-    multipleDates: "{column} neemt één datum of één bereik, zoals 2015..2016.",
     duplicateNoMatch: "Geen rij kan aan beide termen voor {column} voldoen.",
     duplicateNotCombinable:
-      "{column} wordt eerder in de zoekopdracht gefilterd: zet beide in één term.",
+      "{column} wordt eerder in de zoekopdracht al gefilterd, en één filter kan niet beide teksten vereisen. Zet ze in één term om een van beide te vinden.",
   },
   tableColumnResizer: {
     resize: "Formaat van {columnName} wijzigen",

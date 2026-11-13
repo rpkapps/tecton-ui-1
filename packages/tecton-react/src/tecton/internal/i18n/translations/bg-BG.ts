@@ -155,6 +155,8 @@ export default defineTranslations({
     searchSyntax: "Синтаксис на търсенето",
     filterBy: "Филтриране по {columnName}",
     filterContains: "Съдържа",
+    filterContainsAny: "Съдържа някое от",
+    filterAddText: "Добавяне на текст…",
     filterMin: "Мин.",
     filterMax: "Макс.",
     clearFilter: "Изчистване",
@@ -173,6 +175,10 @@ export default defineTranslations({
       other: "Съвпадат {matches} от {total}",
     },
     optionsSelected: { other: "Избрани: {total}" },
+    filterMoreRanges: {
+      one: "Този филтър има още {total} диапазон. Изчистване го премахва.",
+      other: "Този филтър има още {total} диапазона. Изчистване ги премахва.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Активни филтри",
     clearAll: "Изчистване на всички",
@@ -298,13 +304,10 @@ export default defineTranslations({
       "Изключването не се поддържа, затова това условие се пропуска. За да търсите самия текст, поставете го в кавички.",
     exclusiveComparison: "За дата и час използвайте >= или <=.",
     notComparable: "{column} няма подредба: изберете стойностите ѝ.",
-    multipleBoolean: "{column} е да или не, не и двете.",
-    multipleDates:
-      "{column} приема една дата или един диапазон, например 2015..2016.",
     duplicateNoMatch:
       "Нито един ред не може да изпълни и двете условия за {column}.",
     duplicateNotCombinable:
-      "{column} вече се филтрира по-рано в търсенето: обединете двете в едно условие.",
+      "{column} е филтрирана по-рано в търсенето и един филтър не може да изисква и двата текста. Изброете ги в един израз, за да съвпада с някой от тях.",
   },
   tableColumnResizer: {
     resize: "Преоразмеряване на {columnName}",

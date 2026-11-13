@@ -171,6 +171,8 @@ export default defineTranslations({
     searchSyntax: "Синтаксис поиска",
     filterBy: "Фильтр по столбцу {columnName}",
     filterContains: "Содержит",
+    filterContainsAny: "Содержит любое из",
+    filterAddText: "Добавить текст…",
     filterMin: "Мин.",
     filterMax: "Макс.",
     clearFilter: "Сбросить",
@@ -189,6 +191,13 @@ export default defineTranslations({
       other: "Совпадают {matches} из {total}",
     },
     optionsSelected: { other: "Выбрано: {total}" },
+    filterMoreRanges: {
+      one: "У этого фильтра есть ещё {total} диапазон. «Сбросить» удалит его.",
+      few: "У этого фильтра есть ещё {total} диапазона. «Сбросить» удалит их.",
+      many: "У этого фильтра есть ещё {total} диапазонов. «Сбросить» удалит их.",
+      other:
+        "У этого фильтра есть ещё {total} диапазона. «Сбросить» удалит их.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Активные фильтры",
     clearAll: "Сбросить все",
@@ -335,13 +344,10 @@ export default defineTranslations({
       "Исключение не поддерживается, поэтому это условие не учитывается. Чтобы найти именно этот текст, заключите его в кавычки.",
     exclusiveComparison: "Для даты со временем используйте >= или <=.",
     notComparable: "У столбца {column} нет порядка: выберите его значения.",
-    multipleBoolean: "{column} — да или нет, но не оба.",
-    multipleDates:
-      "{column} принимает одну дату или один диапазон, например 2015..2016.",
     duplicateNoMatch:
       "Ни одна строка не может удовлетворить оба условия по столбцу {column}.",
     duplicateNotCombinable:
-      "Столбец {column} уже отфильтрован ранее в поиске: объедините оба в одно условие.",
+      "{column} уже фильтруется раньше в поиске, и один фильтр не может требовать оба текста. Укажите их в одном условии, чтобы подходил любой из них.",
   },
   tableColumnResizer: {
     resize: "Изменить размер столбца {columnName}",

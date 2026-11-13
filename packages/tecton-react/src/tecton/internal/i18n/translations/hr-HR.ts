@@ -162,6 +162,8 @@ export default defineTranslations({
     searchSyntax: "Sintaksa pretraživanja",
     filterBy: "Filtriraj prema stupcu {columnName}",
     filterContains: "Sadrži",
+    filterContainsAny: "Sadrži bilo koji od",
+    filterAddText: "Dodaj tekst…",
     filterMin: "Min.",
     filterMax: "Maks.",
     clearFilter: "Očisti",
@@ -181,6 +183,11 @@ export default defineTranslations({
       other: "Odgovara {matches} od {total}",
     },
     optionsSelected: { other: "Odabrano: {total}" },
+    filterMoreRanges: {
+      one: "Ovaj filtar ima još {total} raspon. Očisti ga uklanja.",
+      few: "Ovaj filtar ima još {total} raspona. Očisti ih uklanja.",
+      other: "Ovaj filtar ima još {total} raspona. Očisti ih uklanja.",
+    },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktivni filtri",
     clearAll: "Očisti sve",
@@ -321,13 +328,10 @@ export default defineTranslations({
     exclusiveComparison: "Uz datum i vrijeme koristite >= ili <=.",
     notComparable:
       "{column} nema redoslijed: umjesto toga odaberite vrijednosti.",
-    multipleBoolean: "{column} je da ili ne, ne oboje.",
-    multipleDates:
-      "{column} prima jedan datum ili jedan raspon, npr. 2015..2016.",
     duplicateNoMatch:
       "Nijedan redak ne može zadovoljiti oba uvjeta za {column}.",
     duplicateNotCombinable:
-      "{column} se već filtrira ranije u pretraživanju: spojite oba u jedan uvjet.",
+      "{column} je već filtriran ranije u pretraživanju, a jedan filtar ne može zahtijevati oba teksta. Navedite ih u jednom izrazu kako bi odgovarao bilo koji od njih.",
   },
   tableColumnResizer: {
     resize: "Promijeni veličinu stupca {columnName}",

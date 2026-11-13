@@ -306,7 +306,7 @@ describe("booleans", () => {
     const data = [well("x", { active: "false" }), well("y", { active: "true" })]
     const result = run({
       items: data,
-      view: view({ filters: { active: { type: "boolean", value: false } } }),
+      view: view({ filters: { active: { type: "boolean", values: [false] } } }),
     })
     expect(keys(result.rows)).toEqual(["x"])
   })
@@ -318,7 +318,7 @@ describe("facets", () => {
       view: view({
         filters: {
           status: { type: "options", values: ["producing"] },
-          oil: { type: "number", min: 6 },
+          oil: { type: "number", ranges: [{ min: 6 }] },
         },
       }),
     })
@@ -360,7 +360,10 @@ describe("facets", () => {
     // A run with nothing changed (a sort, an expanded row): the same.
     expect(getFacets(filtered({ status }), "status")).toBe(first)
     // Another column's filter, the search or the rows: counted again.
-    const oil = filtered({ status, oil: { type: "number", min: 6 } })
+    const oil = filtered({
+      status,
+      oil: { type: "number", ranges: [{ min: 6 }] },
+    })
     expect(getFacets(oil, "status")).not.toBe(first)
     expect(getFacets(oil, "status").counts.get("producing")).toBe(1)
     expect(getFacets(filtered({ status }, "shell"), "status")).not.toBe(first)
@@ -388,7 +391,9 @@ describe("facets", () => {
     const result = run({
       items: tree,
       itemToChildren: (w) => w.children,
-      view: view({ filters: { oil: { type: "number", max: 50 } } }),
+      view: view({
+        filters: { oil: { type: "number", ranges: [{ max: 50 }] } },
+      }),
     })
     // f and b hold 100 each: a and c only.
     expect(getFacets(result, "status").counts.get("producing")).toBe(2)
@@ -400,7 +405,9 @@ describe("facets", () => {
           items: tree,
           itemToChildren: (w) => w.children,
           expanded: ["f", "b"],
-          view: view({ filters: { oil: { type: "number", max: 50 } } }),
+          view: view({
+            filters: { oil: { type: "number", ranges: [{ max: 50 }] } },
+          }),
         }),
         "status"
       ).counts.get("producing")
@@ -442,7 +449,7 @@ describe("number facets", () => {
     const result = run({
       view: view({
         filters: {
-          oil: { type: "number", min: 30 },
+          oil: { type: "number", ranges: [{ min: 30 }] },
           status: { type: "options", values: ["producing"] },
         },
       }),
@@ -461,39 +468,55 @@ describe("number facets", () => {
     // 10, 20, none, 40, 5, 7.
     expect(numbers.total).toBe(6)
     expect(numbers.count(null)).toBe(6)
-    expect(numbers.count({ type: "number" })).toBe(6)
-    expect(numbers.count({ type: "number", min: 7 })).toBe(4)
-    expect(numbers.count({ type: "number", min: 7, max: 20 })).toBe(3)
-    expect(numbers.count({ type: "number", max: 5 })).toBe(1)
-    expect(numbers.count({ type: "number", min: 21, max: 39 })).toBe(0)
-    expect(numbers.count({ type: "number", min: 40, max: 5 })).toBe(0)
+    expect(numbers.count({ type: "number", ranges: [] })).toBe(6)
+    expect(numbers.count({ type: "number", ranges: [{ min: 7 }] })).toBe(4)
+    expect(
+      numbers.count({ type: "number", ranges: [{ min: 7, max: 20 }] })
+    ).toBe(3)
+    expect(numbers.count({ type: "number", ranges: [{ max: 5 }] })).toBe(1)
+    expect(
+      numbers.count({ type: "number", ranges: [{ min: 21, max: 39 }] })
+    ).toBe(0)
+    expect(
+      numbers.count({ type: "number", ranges: [{ min: 40, max: 5 }] })
+    ).toBe(0)
     // Exclusive bounds leave their own value out.
-    expect(numbers.count({ type: "number", min: 7, minExclusive: true })).toBe(
-      3
-    )
     expect(
       numbers.count({
         type: "number",
-        min: 7,
-        max: 20,
-        minExclusive: true,
-        maxExclusive: true,
+        ranges: [{ min: 7, minExclusive: true }],
+      })
+    ).toBe(3)
+    expect(
+      numbers.count({
+        type: "number",
+        ranges: [{ min: 7, max: 20, minExclusive: true, maxExclusive: true }],
       })
     ).toBe(1)
-    expect(numbers.count({ type: "number", max: 5, maxExclusive: true })).toBe(
-      0
-    )
     expect(
-      numbers.count({ type: "number", min: 10, max: 10, maxExclusive: true })
+      numbers.count({
+        type: "number",
+        ranges: [{ max: 5, maxExclusive: true }],
+      })
+    ).toBe(0)
+    expect(
+      numbers.count({
+        type: "number",
+        ranges: [{ min: 10, max: 10, maxExclusive: true }],
+      })
     ).toBe(0)
     // "No value": the row without oil, besides or alone.
-    expect(numbers.count({ type: "number", empty: true })).toBe(1)
-    expect(numbers.count({ type: "number", min: 20, empty: true })).toBe(3)
+    expect(numbers.count({ type: "number", ranges: [], empty: true })).toBe(1)
+    expect(
+      numbers.count({ type: "number", ranges: [{ min: 20 }], empty: true })
+    ).toBe(3)
     // The same count as the rows the view keeps with that filter.
     expect(
       run({
         view: view({
-          filters: { oil: { type: "number", min: 20, empty: true } },
+          filters: {
+            oil: { type: "number", ranges: [{ min: 20 }], empty: true },
+          },
         }),
       }).matchingCount
     ).toBe(3)
@@ -508,7 +531,8 @@ describe("number facets", () => {
         type: "number",
         // Anything over `min`, the bound left out.
         filter: (item, value) =>
-          value.type === "number" && (item.oil ?? 0) > (value.min ?? 0),
+          value.type === "number" &&
+          (item.oil ?? 0) > (value.ranges[0]?.min ?? 0),
       },
     ])
     const numbers = getNumberFacets(
@@ -519,7 +543,7 @@ describe("number facets", () => {
       }),
       "oil"
     )!
-    expect(numbers.count({ type: "number", min: 10 })).toBe(2)
+    expect(numbers.count({ type: "number", ranges: [{ min: 10 }] })).toBe(2)
   })
 
   it("are none in server mode, where the table holds only the rows loaded", () => {

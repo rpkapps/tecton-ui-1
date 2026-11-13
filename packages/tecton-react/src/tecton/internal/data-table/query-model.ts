@@ -140,10 +140,6 @@ function problemMessage(
       return t("exclusiveComparison")
     case "notComparable":
       return t("notComparable", { column })
-    case "multipleValues":
-      return language.byId.get(params.column ?? "")?.type === "date"
-        ? t("multipleDates", { column })
-        : t("multipleBoolean", { column })
     case "duplicateColumn":
       return params.reason === "noMatch"
         ? t("duplicateNoMatch", { column })

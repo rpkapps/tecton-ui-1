@@ -58,8 +58,6 @@ type QueryDiagnosticCode =
   | "exclusiveComparison"
   /** A comparison or a range (`operator`) on a column that has no order. */
   | "notComparable"
-  /** More than one value where the column's filter takes one. */
-  | "multipleValues"
   /**
    * The column is filtered earlier in the query and this term cannot be
    * combined with that (`reason`: `noMatch`, nothing matches both;
