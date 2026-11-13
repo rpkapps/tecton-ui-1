@@ -9,10 +9,11 @@
  * - `format`: display text in the locale, and search's text folding.
  * - `view`: defaults, reconciliation and the view reducers.
  * - `engine`: the row pipeline (`createDataTableEngine`), over the stages
- *   of `core` (rows as positions), `filter` (search, filters, facets),
+ *   of `core` (rows as positions), `filter` (search and filters),
  *   `group` (groups as ranges), `sort` (rank-based sorting) and `rows`
  *   (display rows and pages; the content adds detail rows with
  *   `withDetailRows`); `idle` prepares ranks and the search index.
+ * - `facets`: what a column's filter offers and counts.
  * - `changes`: the rows a change of items added (`addedIds`, for live
  *   data's highlights).
  * - `aggregate`, `pagination`, `selection`: what group rows, the footer
@@ -58,7 +59,8 @@ export {
   resolveLocale,
 } from "./format"
 export type { FormatLabels, Formatter, NumberUnit } from "./format"
-export type { NumberFacets } from "./filter"
+export { getFacets, getNumberFacets, hasEmptyValues } from "./facets"
+export type { Facets, NumberFacets } from "./facets"
 export { layoutColumns } from "./layout"
 export type { ColumnLayout } from "./layout"
 export {

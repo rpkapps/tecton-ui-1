@@ -11,7 +11,9 @@ import {
   createDataTableEngine,
   createDefaultView,
   getColumnModel,
+  getFacets,
   getFormatter,
+  getNumberFacets,
   layoutColumns,
   reconcileView,
   selectAllIds,
@@ -319,25 +321,25 @@ describe("facets", () => {
       }),
     })
     // Oil ≥ 6: wells 1, 2, 4, 6.
-    expect([...result.facets("status").counts]).toEqual([
+    expect([...getFacets(result, "status").counts]).toEqual([
       ["drilling", 1],
       ["producing", 1],
       ["shut-in", 0],
       ["plugged", 1],
     ])
     // Producing and oil ≥ 6: well 1 only.
-    expect([...result.facets("operator").counts]).toEqual([["Shell", 1]])
-    expect(result.facets("status")).toBe(result.facets("status"))
-    expect(result.facets("ghost").counts.size).toBe(0)
+    expect([...getFacets(result, "operator").counts]).toEqual([["Shell", 1]])
+    expect(getFacets(result, "status")).toBe(getFacets(result, "status"))
+    expect(getFacets(result, "ghost").counts.size).toBe(0)
   })
 
   it("count booleans by their value, with the search", () => {
     const result = run({ view: view({ search: "equinor" }) })
-    expect([...result.facets("active").counts]).toEqual([
+    expect([...getFacets(result, "active").counts]).toEqual([
       ["true", 1],
       ["false", 1],
     ])
-    expect(result.facets("active").empty).toBe(0)
+    expect(getFacets(result, "active").empty).toBe(0)
   })
 
   it("are kept across runs until the rows, the search or another column's filter change", () => {
@@ -345,25 +347,26 @@ describe("facets", () => {
     const filtered = (filters: DataTablePartialView["filters"], search = "") =>
       run({ view: view({ filters, search }) }, engine)
     const status = { type: "options", values: ["producing"] } as const
-    const first = filtered({ status }).facets("status")
+    const first = getFacets(filtered({ status }), "status")
     // The column's own filter changing: the same counts.
     expect(
-      filtered({ status: { type: "options", values: ["drilling"] } }).facets(
+      getFacets(
+        filtered({ status: { type: "options", values: ["drilling"] } }),
         "status"
       )
     ).toBe(first)
     // A run with nothing changed (a sort, an expanded row): the same.
-    expect(filtered({ status }).facets("status")).toBe(first)
+    expect(getFacets(filtered({ status }), "status")).toBe(first)
     // Another column's filter, the search or the rows: counted again.
     const oil = filtered({ status, oil: { type: "number", min: 6 } })
-    expect(oil.facets("status")).not.toBe(first)
-    expect(oil.facets("status").counts.get("producing")).toBe(1)
-    expect(filtered({ status }, "shell").facets("status")).not.toBe(first)
+    expect(getFacets(oil, "status")).not.toBe(first)
+    expect(getFacets(oil, "status").counts.get("producing")).toBe(1)
+    expect(getFacets(filtered({ status }, "shell"), "status")).not.toBe(first)
     expect(
-      run(
-        { items: [...fleet], view: view({ filters: { status } }) },
-        engine
-      ).facets("status")
+      getFacets(
+        run({ items: [...fleet], view: view({ filters: { status } }) }, engine),
+        "status"
+      )
     ).not.toBe(first)
   })
 
@@ -386,24 +389,25 @@ describe("facets", () => {
       view: view({ filters: { oil: { type: "number", max: 50 } } }),
     })
     // f and b hold 100 each: a and c only.
-    expect(result.facets("status").counts.get("producing")).toBe(2)
-    expect(result.facets("status").counts.get("drilling")).toBe(0)
+    expect(getFacets(result, "status").counts.get("producing")).toBe(2)
+    expect(getFacets(result, "status").counts.get("drilling")).toBe(0)
     // Collapsed or not: the same rows count.
     expect(
-      run({
-        items: tree,
-        itemToChildren: (w) => w.children,
-        expanded: ["f", "b"],
-        view: view({ filters: { oil: { type: "number", max: 50 } } }),
-      })
-        .facets("status")
-        .counts.get("producing")
+      getFacets(
+        run({
+          items: tree,
+          itemToChildren: (w) => w.children,
+          expanded: ["f", "b"],
+          view: view({ filters: { oil: { type: "number", max: 50 } } }),
+        }),
+        "status"
+      ).counts.get("producing")
     ).toBe(2)
   })
 
   it("count the loaded rows in server mode", () => {
     const result = run({ dataMode: "server", view: view({ search: "shell" }) })
-    expect(result.facets("status").counts.get("producing")).toBe(3)
+    expect(getFacets(result, "status").counts.get("producing")).toBe(3)
   })
 })
 
@@ -442,16 +446,16 @@ describe("number facets", () => {
       }),
     })
     // Producing: wells 1, 3 and 5; well 3 has no oil.
-    const numbers = result.numberFacets("oil")!
+    const numbers = getNumberFacets(result, "oil")!
     expect(numbers.total).toBe(3)
     expect([...numbers.values]).toEqual([5, 10])
-    expect(result.numberFacets("oil")).toBe(numbers)
-    expect(result.numberFacets("status")).toBeNull()
-    expect(result.numberFacets("ghost")).toBeNull()
+    expect(getNumberFacets(result, "oil")).toBe(numbers)
+    expect(getNumberFacets(result, "status")).toBeNull()
+    expect(getNumberFacets(result, "ghost")).toBeNull()
   })
 
   it("count the rows a number filter keeps as the column's filter would", () => {
-    const numbers = run().numberFacets("oil")!
+    const numbers = getNumberFacets(run(), "oil")!
     // 10, 20, none, 40, 5, 7.
     expect(numbers.total).toBe(6)
     expect(numbers.count(null)).toBe(6)
@@ -505,14 +509,19 @@ describe("number facets", () => {
           value.type === "number" && (item.oil ?? 0) > (value.min ?? 0),
       },
     ])
-    const numbers = createDataTableEngine<Well>()
-      .run({ items: fleet, columns: own, view: defaults })
-      .numberFacets("oil")!
+    const numbers = getNumberFacets(
+      createDataTableEngine<Well>().run({
+        items: fleet,
+        columns: own,
+        view: defaults,
+      }),
+      "oil"
+    )!
     expect(numbers.count({ type: "number", min: 10 })).toBe(2)
   })
 
   it("are none in server mode, where the table holds only the rows loaded", () => {
-    expect(run({ dataMode: "server" }).numberFacets("oil")).toBeNull()
+    expect(getNumberFacets(run({ dataMode: "server" }), "oil")).toBeNull()
   })
 })
 

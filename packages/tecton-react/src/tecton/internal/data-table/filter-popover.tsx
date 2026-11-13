@@ -58,6 +58,9 @@ import {
 } from "./context"
 import { useDelayedCommit } from "./delayed-commit"
 import {
+  getFacets,
+  getNumberFacets,
+  hasEmptyValues,
   numberUnit,
   type DataTableFilterValue,
   type EngineColumn,
@@ -595,7 +598,7 @@ function useNoValue(
   )
   const model = useDataTableSelector(context, (state) => state.model)
   const chosen = value !== undefined && value.type !== "custom" && value.empty
-  return server || chosen === true || model.hasEmptyValues(column.id)
+  return server || chosen === true || hasEmptyValues(model, column.id)
 }
 
 /** The filter of `column`, by its type. */
@@ -626,14 +629,14 @@ function FilterContent({
   const facets = React.useMemo(
     () =>
       (column.type === "options" || column.type === "boolean") && !server
-        ? model.facets(column.id)
+        ? getFacets(model, column.id)
         : null,
     [column, server, model]
   )
   // A number column's numbers, for the range hints and the count of
   // matches (the model has none in server mode).
   const numbers = React.useMemo(
-    () => (column.type === "number" ? model.numberFacets(column.id) : null),
+    () => (column.type === "number" ? getNumberFacets(model, column.id) : null),
     [column, model]
   )
   const noValue = useNoValue(context, column, value)

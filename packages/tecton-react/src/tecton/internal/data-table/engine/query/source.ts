@@ -19,12 +19,11 @@
  */
 import { getColumnModel, type ColumnModel, type EngineColumn } from "../columns"
 import { buildCore, type Core } from "../core"
+import { countFacets, type Facets } from "../facets"
 import {
   compileFilter,
-  countFacets,
   createSearchIndex,
   searchMask,
-  type Facets,
   type RowPredicate,
   type SearchIndex,
 } from "../filter"

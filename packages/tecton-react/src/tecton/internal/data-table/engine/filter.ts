@@ -1,5 +1,6 @@
 /**
- * Search and column filters (§5.4), and facet counts.
+ * Search and column filters (§5.4); what a column's filter counts is in
+ * `facets.ts`.
  *
  * Rows are read by their position in the core's depth-first list. The
  * search index keeps, per column, every row's folded display text in one
@@ -30,14 +31,7 @@
  * follows the usual expanded state, and its ancestors, which are kept as
  * context (`RowSet.context`: they do not count as matches) and shown
  * expanded (`RowSet.holdsMatch`), as is any row with a match below it.
- *
- * Facets (`countFacets`) count, per value of a column, the rows matching the
- * search and every filter but the column's own: by option value for an
- * options column, by "true" and "false" for a boolean one, by display text
- * for the others, and apart the rows without a value (the "No value"
- * choice, offered while any row has none, `hasEmptyValues`). A number
- * column's (`countNumbers`) are its numbers over those rows, sorted: the
- * range they span, and the rows a number filter keeps as it is typed.
+
  */
 import type { EngineColumn } from "./columns"
 import type { Core, RowSet } from "./core"
@@ -378,169 +372,11 @@ function filterRows<T>(core: Core<T>, predicate: RowPredicate<T>): RowSet {
   }
 }
 
-/**
- * How many rows `predicate` keeps per value of `column`, and without a
- * value (`empty`; see the module comment).
- */
-type Facets = {
-  readonly counts: ReadonlyMap<string, number>
-  readonly empty: number
-}
-
-function countFacets<T>(
-  core: Core<T>,
-  column: EngineColumn<T>,
-  predicate: RowPredicate<T> | null,
-  formatter: Formatter<T>
-): Facets {
-  const { items } = core
-  const others = new Map<string, number>()
-  const add = (key: string) => others.set(key, (others.get(key) ?? 0) + 1)
-  let empty = 0
-  if (column.type === "options") {
-    const counts = new Uint32Array(column.options.length)
-    for (let i = 0; i < items.length; i++) {
-      if (predicate && !predicate(i, items[i])) continue
-      const value = column.getValue(items[i])
-      if (hasNoValue(column, value)) {
-        empty++
-        continue
-      }
-      const option = column.optionIndex.get(String(value))
-      if (option === undefined) add(String(value))
-      else counts[option]++
-    }
-    const facets = new Map(
-      column.options.map((option, i) => [option.value, counts[i]])
-    )
-    for (const [key, count] of others) facets.set(key, count)
-    return { counts: facets, empty }
-  }
-  if (column.type === "boolean") {
-    let yes = 0
-    let no = 0
-    for (let i = 0; i < items.length; i++) {
-      if (predicate && !predicate(i, items[i])) continue
-      const value = toBoolean(column.getValue(items[i]))
-      if (value === undefined) empty++
-      else if (value) yes++
-      else no++
-    }
-    return {
-      counts: new Map([
-        ["true", yes],
-        ["false", no],
-      ]),
-      empty,
-    }
-  }
-  for (let i = 0; i < items.length; i++) {
-    if (predicate && !predicate(i, items[i])) continue
-    const text = formatter.text(column, items[i])
-    if (text === "") empty++
-    else add(text)
-  }
-  return { counts: others, empty }
-}
-
-/**
- * A number column's values over the rows a predicate keeps (the search and
- * every filter but the column's own, as for `Facets`).
- */
-type NumberFacets = {
-  /** How many rows the predicate keeps. */
-  readonly total: number
-  /** The numbers of those rows that have one, ascending. */
-  readonly values: Float64Array
-  /**
-   * How many of those rows `filter` keeps as well (all of them for
-   * `null`), as the column's filter would: by its own `filter` function
-   * when it has one.
-   */
-  readonly count: (filter: DataTableFilterValue | null) => number
-}
-
-/** The index of the first of the ascending `values` that `before` refuses. */
-function boundary(values: Float64Array, before: (value: number) => boolean) {
-  let low = 0
-  let high = values.length
-  while (low < high) {
-    const middle = (low + high) >>> 1
-    if (before(values[middle])) low = middle + 1
-    else high = middle
-  }
-  return low
-}
-
-function countNumbers<T>(
-  core: Core<T>,
-  column: EngineColumn<T>,
-  predicate: RowPredicate<T> | null,
-  index: SearchIndex<T>
-): NumberFacets {
-  const { items } = core
-  const kept: Array<number> = []
-  const numbers: Array<number> = []
-  let empty = 0
-  for (let i = 0; i < items.length; i++) {
-    if (predicate && !predicate(i, items[i])) continue
-    kept.push(i)
-    const value = column.getValue(items[i])
-    const number = toNumber(value)
-    if (number !== undefined) numbers.push(number)
-    else if (hasNoValue(column, value)) empty++
-  }
-  const values = Float64Array.from(numbers).sort()
-  const total = kept.length
-  // The numbers from `min` to `max`, each included unless exclusive.
-  const between = (min: number, max: number, above: boolean, below: boolean) =>
-    Math.max(
-      0,
-      boundary(values, (value) => (below ? value < max : value <= max)) -
-        boundary(values, (value) => (above ? value <= min : value < min))
-    )
-  return {
-    total,
-    values,
-    count(filter) {
-      if (!filter) return total
-      if (column.filter || filter.type !== "number") {
-        const own = columnPredicate(column, filter, index, items.length)
-        if (!own) return total
-        let count = 0
-        for (const position of kept) if (own(position, items[position])) count++
-        return count
-      }
-      const bounded = filter.min !== undefined || filter.max !== undefined
-      if (!bounded && !filter.empty) return total
-      return (
-        (bounded
-          ? between(
-              filter.min ?? -Infinity,
-              filter.max ?? Infinity,
-              filter.minExclusive === true,
-              filter.maxExclusive === true
-            )
-          : 0) + (filter.empty ? empty : 0)
-      )
-    },
-  }
-}
-
-/** Whether any row of `core` has no value in `column` (`hasNoValue`). */
-function hasEmptyValues<T>(core: Core<T>, column: EngineColumn<T>) {
-  for (const item of core.items)
-    if (hasNoValue(column, column.getValue(item))) return true
-  return false
-}
-
 export {
+  columnPredicate,
   compileFilter,
-  countFacets,
-  countNumbers,
   createSearchIndex,
   filterRows,
-  hasEmptyValues,
   searchMask,
 }
-export type { ColumnText, Facets, NumberFacets, RowPredicate, SearchIndex }
+export type { ColumnText, RowPredicate, SearchIndex }

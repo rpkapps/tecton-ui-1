@@ -16,7 +16,8 @@
  *       each group
  *     → display rows by expanded / collapsed state (`rows.ts`; rows that
  *       did not change are the previous build's objects) → page → model
- *       (totals, facets, group contents and lookups computed when asked for).
+ *       (totals, group contents and lookups computed when asked for; a
+ *       column's facets from its `searchParts`, `facets.ts`).
  *
  * View pieces, `expanded` and `collapsedGroups` are compared by value, so
  * equal ones made anew each render redo nothing. `itemToId`,
@@ -57,14 +58,9 @@ import {
 } from "./core"
 import {
   compileFilter,
-  countFacets,
-  countNumbers,
   createSearchIndex,
   filterRows,
-  hasEmptyValues,
   searchMask,
-  type Facets,
-  type NumberFacets,
   type RowPredicate,
   type SearchIndex,
 } from "./filter"
@@ -98,7 +94,6 @@ import {
 import { rankingTask, sortRows, type SortPass } from "./sort"
 import type {
   DataTableColumns,
-  DataTableFilterValue,
   DataTableSort,
   DataTableValue,
   DataTableView,
@@ -141,10 +136,11 @@ type DataTableEngineInput<T> = {
 }
 
 /**
- * What the table searches and filters, for another reader of its rows (the
- * query language's suggestions, `query/source.ts`): the columns, every row,
- * the formatter and the search index (shared: its texts are built once),
- * and the hidden columns, which search does not read.
+ * What the table searches and filters, for another reader of its rows (a
+ * column's facets, `facets.ts`; the query language's suggestions,
+ * `query/source.ts`): the columns, every row, the formatter and the search
+ * index (shared: its texts are built once), the hidden columns, which
+ * search does not read, the rows the search matches and the filters.
  */
 type SearchParts<T> = {
   readonly model: ColumnModel<T>
@@ -152,6 +148,10 @@ type SearchParts<T> = {
   readonly formatter: Formatter<T>
   readonly index: SearchIndex<T>
   readonly hidden: ReadonlyArray<string>
+  /** The rows the search matches, as flags; `null` for no search, or in server mode. */
+  readonly search: Uint8Array | null
+  readonly filters: DataTableView["filters"]
+  readonly server: boolean
 }
 
 type DataTableRowModel<T> = {
@@ -239,24 +239,9 @@ type DataTableRowModel<T> = {
   /** The totals row over the matching items (a tree's matching leaves). */
   totals: () => TotalsRow<T>
   /**
-   * How many rows match the search and every filter but `column`'s, per
-   * value (option values for an options column, "true" and "false" for a
-   * boolean one, display text for others), and without a value.
+   * What the table searches and filters, the same object for the same
+   * model: what a column's facets are counted over (`facets.ts`).
    */
-  facets: (column: string) => Facets
-  /**
-   * A number column's numbers over the rows matching the search and every
-   * filter but its own, and how many of those rows a filter keeps; `null`
-   * for another column, or in server mode (the table holds only the rows
-   * loaded).
-   */
-  numberFacets: (column: string) => NumberFacets | null
-  /**
-   * Whether any row, matching or not, has no value in `column`: its filter
-   * then offers "No value" (in server mode, the loaded rows).
-   */
-  hasEmptyValues: (column: string) => boolean
-  /** What the table searches and filters, the same object for the same model. */
   searchParts: () => SearchParts<T>
 }
 
@@ -266,7 +251,6 @@ type DataTableEngine<T> = {
 
 const EMPTY_SET: ReadonlySet<string> = new Set()
 const NO_IDS: ReadonlyArray<string> = []
-const NO_FACETS: Facets = { counts: new Map(), empty: 0 }
 
 function defaultItemToId(item: unknown) {
   return String((item as { id?: unknown } | null)?.id)
@@ -363,35 +347,6 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
       values: Map<string, Readonly<Record<string, DataTableValue>>>
     }
   >()
-  /**
-   * Facets by column, with what they were counted over: kept across runs
-   * (a filter toggled in the popover counts the column again only when the
-   * other filters, the search or the rows change).
-   */
-  const facetCache = new Map<
-    string,
-    {
-      rows: Core<T>
-      formatter: Formatter<T>
-      search: Uint8Array | null
-      filters: DataTableView["filters"]
-      server: boolean
-      counts: Facets
-    }
-  >()
-  /** A number column's numbers, by column, kept as the facets are. */
-  const numberCache = new Map<
-    string,
-    {
-      rows: Core<T>
-      column: EngineColumn<T>
-      search: Uint8Array | null
-      filters: DataTableView["filters"]
-      numbers: NumberFacets
-    }
-  >()
-  /** Whether a column has empty values, by the rows and column read. */
-  const emptyCache = new WeakMap<Core<T>, WeakMap<EngineColumn<T>, boolean>>()
   /** The positions a filtered set keeps, as flags, by the set. */
   const keptCache = new WeakMap<RowSet, Uint8Array>()
   /** A tree's parent positions (-1 at the top level), by the rows they are of. */
@@ -703,6 +658,9 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
         formatter,
         index,
         hidden,
+        search,
+        filters,
+        server,
       }))
       return {
         rows: page.rows,
@@ -846,84 +804,6 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
           }
         }),
         searchParts: parts,
-        hasEmptyValues: (id) => {
-          const column = columns.byId.get(id)
-          if (!column) return false
-          let byColumn = emptyCache.get(rows)
-          if (!byColumn) emptyCache.set(rows, (byColumn = new WeakMap()))
-          let empty = byColumn.get(column)
-          if (empty === undefined) {
-            empty = hasEmptyValues(rows, column)
-            byColumn.set(column, empty)
-          }
-          return empty
-        },
-        facets: (id) => {
-          const column = columns.byId.get(id)
-          if (!column) return NO_FACETS
-          const others: Record<string, DataTableFilterValue> = { ...filters }
-          delete others[id]
-          const cached = facetCache.get(id)
-          if (
-            cached?.rows === rows &&
-            cached.formatter === formatter &&
-            cached.search === search &&
-            cached.server === server &&
-            sameFilters(cached.filters, others)
-          )
-            return cached.counts
-          const predicate = server
-            ? null
-            : compileFilter(
-                columns.byId,
-                filters,
-                index,
-                search,
-                items.length,
-                id
-              )
-          const counts = countFacets(rows, column, predicate, formatter)
-          facetCache.set(id, {
-            rows,
-            formatter,
-            search,
-            filters: others,
-            server,
-            counts,
-          })
-          return counts
-        },
-        numberFacets: (id) => {
-          const column = columns.byId.get(id)
-          if (!column || column.type !== "number" || server) return null
-          const others: Record<string, DataTableFilterValue> = { ...filters }
-          delete others[id]
-          const cached = numberCache.get(id)
-          if (
-            cached?.rows === rows &&
-            cached.column === column &&
-            cached.search === search &&
-            sameFilters(cached.filters, others)
-          )
-            return cached.numbers
-          const predicate = compileFilter(
-            columns.byId,
-            filters,
-            index,
-            search,
-            items.length,
-            id
-          )
-          const numbers = countNumbers(rows, column, predicate, index)
-          numberCache.set(id, {
-            rows,
-            column,
-            search,
-            filters: others,
-            numbers,
-          })
-          return numbers
-        },
       }
     }
   )
