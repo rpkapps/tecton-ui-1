@@ -14,28 +14,11 @@ import {
   LanguageSelector,
   useLanguageContext,
 } from "@/components/language-selector"
-import { hasExample, loadExample, loadExampleSource } from "@/lib/examples"
-
-const componentCache = new Map<string, Promise<React.ComponentType>>()
-const sourceCache = new Map<string, Promise<string>>()
-
-function useExample(name: string) {
-  let component = componentCache.get(name)
-  if (!component) {
-    component = loadExample(name)
-    componentCache.set(name, component)
-  }
-  let source = sourceCache.get(name)
-  if (!source) {
-    source = loadExampleSource(name)
-    sourceCache.set(name, source)
-  }
-  return { component, source }
-}
+import { getExample, getExampleSource, hasExample } from "@/lib/examples"
+import { preloadMarker } from "@/lib/preload"
 
 function Example({ name }: { name: string }) {
-  const { component } = useExample(name)
-  const Component = React.use(component)
+  const Component = React.use(getExample(name))
   return <Component />
 }
 
@@ -46,8 +29,7 @@ function ExampleSource({
   name: string
   maxLines?: number
 }) {
-  const { source } = useExample(name)
-  const code = React.use(source)
+  const code = React.use(getExampleSource(name))
   return <CodeBlock code={code} lang="tsx" maxLines={maxLines} />
 }
 
@@ -143,6 +125,7 @@ export function ComponentPreview({
           <ExampleSource name={name} maxLines={3} />
         </React.Suspense>
       }
+      {...preloadMarker("example", name)}
       {...props}
     />
   )
