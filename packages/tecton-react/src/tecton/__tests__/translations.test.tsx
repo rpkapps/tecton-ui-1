@@ -15,7 +15,9 @@ import {
 import {
   createTranslator,
   defineTranslations,
+  loadDeferred,
   loadTranslations,
+  registerTranslations,
   resolveLocale,
   useTranslations,
   type Translation,
@@ -279,6 +281,81 @@ describe("translations", () => {
         dragAndDrop: { dropOnItem: "Ablegen auf {itemText}" },
       })
     ).toBeTruthy()
+  })
+})
+
+describe("deferred translations", () => {
+  const DEFERRED = path.join(DIR, "data-table-query")
+
+  it("keeps the query field's strings out of every bundled table, in a module per locale with en-US's keys and placeholders", async () => {
+    for (const [file, table] of await locales())
+      expect([file, "dataTableQuery" in table]).toEqual([file, false])
+    expect("dataTableQuery" in (enUS as object)).toBe(false)
+    const files = readdirSync(DEFERRED).filter((file) => file.endsWith(".ts"))
+    expect(files).toHaveLength(34)
+    const english = (
+      (await import(path.join(DEFERRED, "en-US.ts"))) as { default: Table }
+    ).default.dataTableQuery
+    for (const file of files) {
+      const table = (
+        (await import(path.join(DEFERRED, file))) as { default: Table }
+      ).default
+      expect([file, Object.keys(table)]).toEqual([file, ["dataTableQuery"]])
+      // Every key translated, none left to English.
+      expect([file, Object.keys(table.dataTableQuery).sort()]).toEqual([
+        file,
+        Object.keys(english).sort(),
+      ])
+      for (const [key, translation] of Object.entries(table.dataTableQuery)) {
+        const source = english[key]
+        expect([file, key, typeof translation]).toEqual([
+          file,
+          key,
+          typeof source,
+        ])
+        if (typeof translation !== "string")
+          expect([file, key, translation.other]).toEqual([
+            file,
+            key,
+            expect.any(String),
+          ])
+        expect([file, key, placeholders(translation)]).toEqual([
+          file,
+          key,
+          placeholders(source),
+        ])
+      }
+    }
+  })
+
+  it("translates a deferred namespace once registered, its locale loaded with it", async () => {
+    const { default: english } =
+      await import("../internal/i18n/translations/data-table-query/en-US")
+    registerTranslations({
+      english,
+      loaders: {
+        "de-DE": () =>
+          import("../internal/i18n/translations/data-table-query/de-DE"),
+      },
+    })
+    function Label() {
+      const t = useTranslations("dataTableQuery")
+      return <span>{t("presetLastDays", { count: 30 })}</span>
+    }
+    render(
+      <TectonProvider locale="de-DE">
+        <Label />
+      </TectonProvider>
+    )
+    expect(screen.getByText("Last 30 days")).toBeInTheDocument()
+    expect(await screen.findByText("Letzte 30 Tage")).toBeInTheDocument()
+    await loadDeferred("dataTableQuery", "de-DE")
+    expect(
+      createTranslator("dataTableQuery", "en-US")("summaryProblems", {
+        count: 1,
+        problems: "x",
+      })
+    ).toBe("1 problem: x")
   })
 })
 
