@@ -331,6 +331,69 @@ function createFolder() {
   }
 }
 
+/** The parts of a formatted number that are its unit rather than the number. */
+const UNIT_PARTS: ReadonlySet<string> = new Set([
+  "unit",
+  "percentSign",
+  "currency",
+])
+
+/**
+ * A number column's unit apart from its numbers, for a field that holds
+ * one of them with the unit beside it (a number filter's).
+ */
+type NumberUnit = {
+  /** The unit as the column writes it ("m", "%", "$"), if it has one. */
+  unit: string | undefined
+  /**
+   * Whether the column writes the unit before its numbers ("$5" in
+   * English) or after them ("5 m", "5 %", "5 $" in French).
+   */
+  side: "start" | "end"
+  /** The factor the column shows its numbers at: 100 for a percent. */
+  scale: number
+  /** A number as the column shows it, without the unit. */
+  format: (value: number) => string
+}
+
+function numberUnit(
+  locale: string,
+  options: Intl.NumberFormatOptions | undefined
+): NumberUnit {
+  const format = getNumberFormat(resolveLocale(locale), options)
+  // The parts left of a formatted number once its unit and the spaces
+  // that set the unit apart are gone.
+  const bare = (parts: Array<Intl.NumberFormatPart>) =>
+    parts
+      .filter(
+        (part, i) =>
+          !UNIT_PARTS.has(part.type) &&
+          !(
+            part.type === "literal" &&
+            part.value.trim() === "" &&
+            (UNIT_PARTS.has(parts[i - 1]?.type ?? "") ||
+              UNIT_PARTS.has(parts[i + 1]?.type ?? ""))
+          )
+      )
+      .map((part) => part.value)
+      .join("")
+      .trim()
+  // A plural form that reads for most numbers ("5 meters").
+  const five = format.formatToParts(5)
+  const unit = five
+    .filter((part) => UNIT_PARTS.has(part.type))
+    .map((part) => part.value)
+    .join("")
+  const first = five.findIndex((part) => UNIT_PARTS.has(part.type))
+  const integer = five.findIndex((part) => part.type === "integer")
+  return {
+    unit: unit || undefined,
+    side: first !== -1 && first < integer ? "start" : "end",
+    scale: options?.style === "percent" ? 100 : 1,
+    format: (value) => bare(format.formatToParts(value)),
+  }
+}
+
 export {
   createFolder,
   dayFormat,
@@ -338,6 +401,7 @@ export {
   foldText,
   getFormatter,
   hasNoValue,
+  numberUnit,
   resolveLocale,
 }
-export type { FormatLabels, Formatter }
+export type { FormatLabels, Formatter, NumberUnit }

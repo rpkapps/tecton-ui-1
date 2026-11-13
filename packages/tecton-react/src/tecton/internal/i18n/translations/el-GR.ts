@@ -146,6 +146,10 @@ export default defineTranslations({
     filterFrom: "Από {value}",
     filterUntil: "Έως {value}",
     filterOrNoValue: "{value} ή χωρίς τιμή",
+    filterMatches: {
+      one: "Ταιριάζει {matches} από {total}",
+      other: "Ταιριάζουν {matches} από {total}",
+    },
     optionsSelected: { other: "{total} επιλεγμένα" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Ενεργά φίλτρα",

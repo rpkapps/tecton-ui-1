@@ -138,6 +138,7 @@ export default defineTranslations({
     filterFrom: "Fra {value}",
     filterUntil: "Til {value}",
     filterOrNoValue: "{value} eller ingen værdi",
+    filterMatches: { other: "{matches} af {total} matcher" },
     optionsSelected: { other: "{total} valgt" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktive filtre",

@@ -143,6 +143,7 @@ export default defineTranslations({
     filterFrom: "Alkaen {value}",
     filterUntil: "Asti {value}",
     filterOrNoValue: "{value} tai ei arvoa",
+    filterMatches: { other: "Osumia: {matches}/{total}" },
     optionsSelected: { other: "{total} valittu" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktiiviset suodattimet",

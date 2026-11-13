@@ -150,6 +150,12 @@ export default defineTranslations({
     filterFrom: "Od {value}",
     filterUntil: "Do {value}",
     filterOrNoValue: "{value} ali brez vrednosti",
+    filterMatches: {
+      one: "Ustreza {matches} od {total}",
+      two: "Ustrezata {matches} od {total}",
+      few: "Ustrezajo {matches} od {total}",
+      other: "Ustreza {matches} od {total}",
+    },
     optionsSelected: { other: "Izbrano: {total}" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktivni filtri",

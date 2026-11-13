@@ -376,7 +376,7 @@ describe("DataTableFilter", () => {
     expect(filterButton("Depth (m)")).toHaveTextContent("≤ 3,000")
   })
 
-  it("steps a number filter's bounds with its buttons and arrow keys, not native spinners", async () => {
+  it("steps a number filter's bounds with the arrow keys, without minus and plus or native spinners", async () => {
     const user = userEvent.setup({ delay: null })
     const onViewChange = vi.fn()
     render(<Wells onViewChange={onViewChange} />)
@@ -387,18 +387,172 @@ describe("DataTableFilter", () => {
     expect(
       document.querySelector('input[type="number"]:not([aria-hidden])')
     ).toBeNull()
+    expect(
+      min.closest('[data-slot="number-field-group"]')!.querySelector("button")
+    ).toBeNull()
     await user.type(min, "2000")
-    const [, increase] = min
-      .closest('[data-slot="number-field-group"]')!
-      .querySelectorAll("button")
-    expect(increase).toHaveAccessibleName("Increase")
-    await user.click(increase)
+    await user.keyboard("{ArrowUp}")
     expect(min).toHaveValue("2,001")
     await user.keyboard("{ArrowDown}{Enter}")
     expect(min).toHaveValue("2,000")
     expect(onViewChange.mock.calls.at(-1)?.[0].filters).toEqual({
       depth: { type: "number", min: 2000 },
     })
+  })
+
+  it("hints a number column's lowest and highest numbers among the rows the search and the other filters keep", async () => {
+    const user = userEvent.setup({ delay: null })
+    render(
+      <Wells
+        defaultView={{
+          filters: { status: { type: "options", values: ["producing"] } },
+        }}
+      />
+    )
+    // Producing: wells 1, 4 and 7, at 1,000, 2,191 and 3,382 m.
+    await user.click(filterButton("Depth (m)"))
+    expect(screen.getByRole("textbox", { name: "Min" })).toHaveAttribute(
+      "placeholder",
+      "1,000"
+    )
+    expect(screen.getByRole("textbox", { name: "Max" })).toHaveAttribute(
+      "placeholder",
+      "3,382"
+    )
+    expect(
+      document.querySelector('[data-slot="data-table-filter-matches"]')
+    ).toHaveTextContent("3 of 3 match")
+  })
+
+  it("says how many of those rows the bounds keep as they are typed, before they reach the view", async () => {
+    const user = userEvent.setup({ delay: null })
+    const onViewChange = vi.fn()
+    // Well 01 has no depth: "No value" is offered, and counted.
+    const items = WELLS.slice(0, 8).map((well, i) =>
+      i === 0 ? { ...well, depth: null } : well
+    )
+    render(
+      <Wells items={items} searchDelay={60_000} onViewChange={onViewChange} />
+    )
+    await user.click(filterButton("Depth (m)"))
+    const matches = () =>
+      document.querySelector('[data-slot="data-table-filter-matches"]')
+    expect(matches()).toHaveTextContent("8 of 8 match")
+    expect(screen.getByRole("textbox", { name: "Min" })).toHaveAttribute(
+      "placeholder",
+      "1,397"
+    )
+    // 2,588, 2,985, 3,382 and 3,779.
+    await user.type(screen.getByRole("textbox", { name: "Min" }), "2500")
+    expect(matches()).toHaveTextContent("4 of 8 match")
+    await user.type(screen.getByRole("textbox", { name: "Max" }), "2600")
+    expect(matches()).toHaveTextContent("1 of 8 matches")
+    expect(onViewChange).not.toHaveBeenCalled()
+    // "No value" reaches the view at once, the bounds with it.
+    await user.click(screen.getByRole("checkbox", { name: "No value" }))
+    expect(matches()).toHaveTextContent("2 of 8 match")
+    expect(onViewChange.mock.calls.at(-1)?.[0].filters).toEqual({
+      depth: { type: "number", min: 2500, max: 2600, empty: true },
+    })
+    expect(names()).toEqual(["Well 01", "Well 05"])
+  })
+
+  it("shows a number column's unit beside each bound, and its numbers as the column shows them", async () => {
+    const user = userEvent.setup({ delay: null })
+    const onViewChange = vi.fn()
+    type Zone = { id: string; depth: number; porosity: number; cost: number }
+    const zones: Array<Zone> = [
+      { id: "a", depth: 1250, porosity: 0.08, cost: 1200 },
+      { id: "b", depth: 2400.4, porosity: 0.215, cost: 950.5 },
+      { id: "c", depth: 3100, porosity: 0.3, cost: 4100 },
+    ]
+    const zoneColumns = createColumns<Zone>([
+      { id: "id", header: "Zone" },
+      {
+        id: "depth",
+        header: "Depth",
+        type: "number",
+        format: { style: "unit", unit: "meter", maximumFractionDigits: 0 },
+      },
+      {
+        id: "porosity",
+        header: "Porosity",
+        type: "number",
+        format: { style: "percent", maximumFractionDigits: 1 },
+      },
+      {
+        id: "cost",
+        header: "Cost",
+        type: "number",
+        format: { style: "currency", currency: "USD" },
+      },
+    ])
+    render(
+      <DataTable
+        items={zones}
+        columns={zoneColumns}
+        filterable
+        onViewChange={onViewChange}
+      >
+        <DataTableFilter column="depth" />
+        <DataTableFilter column="porosity" />
+        <DataTableFilter column="cost" />
+        <DataTableContent aria-label="Zones" />
+      </DataTable>
+    )
+    await user.click(filterButton("Depth"))
+    const min = () => screen.getByRole("textbox", { name: "Min" })
+    const max = () => screen.getByRole("textbox", { name: "Max" })
+    // The unit describes each field, after the column's name.
+    expect(min()).toHaveAccessibleDescription("Depth m")
+    expect(max()).toHaveAccessibleDescription("Depth m")
+    expect(min()).toHaveAttribute("placeholder", "1,250")
+    expect(max()).toHaveAttribute("placeholder", "3,100")
+    await user.keyboard("{Escape}")
+    // A percent's field holds the number as the column shows it.
+    await user.click(filterButton("Porosity"))
+    expect(min()).toHaveAccessibleDescription("Porosity %")
+    expect(min()).toHaveAttribute("placeholder", "8")
+    expect(max()).toHaveAttribute("placeholder", "30")
+    await user.type(min(), "21.5{Enter}")
+    expect(onViewChange.mock.calls.at(-1)?.[0].filters).toEqual({
+      porosity: { type: "number", min: 0.215 },
+    })
+    expect(
+      document.querySelector('[data-slot="data-table-filter-matches"]')
+    ).toHaveTextContent("2 of 3 match")
+    await user.keyboard("{Escape}")
+    // A unit the column writes first stays first.
+    await user.click(filterButton("Cost"))
+    expect(min()).toHaveAccessibleDescription("Cost $")
+    expect(min()).toHaveAttribute("placeholder", "950.50")
+    expect(max()).toHaveAttribute("placeholder", "4,100.00")
+    const parts = [
+      ...min().closest('[data-slot="number-field-group"]')!.children,
+    ].map((part) => part.getAttribute("data-slot"))
+    expect(parts).toEqual(["number-field-unit", "number-field-input"])
+  })
+
+  it("in server mode hints and counts nothing: the table holds only the rows loaded", async () => {
+    const user = userEvent.setup({ delay: null })
+    render(
+      <DataTable
+        items={WELLS.slice(0, 8)}
+        columns={columns}
+        dataMode="server"
+        filterable
+      >
+        <DataTableFilter column="depth" />
+        <DataTableContent aria-label="Wells" />
+      </DataTable>
+    )
+    await user.click(filterButton("Depth (m)"))
+    expect(screen.getByRole("textbox", { name: "Min" })).not.toHaveAttribute(
+      "placeholder"
+    )
+    expect(
+      document.querySelector('[data-slot="data-table-filter-matches"]')
+    ).toBeNull()
   })
 
   it("filters a text column by what its text contains", async () => {

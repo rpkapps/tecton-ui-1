@@ -150,6 +150,10 @@ export default defineTranslations({
     filterFrom: "З {value}",
     filterUntil: "По {value}",
     filterOrNoValue: "{value} або без значення",
+    filterMatches: {
+      one: "Збігається {matches} з {total}",
+      other: "Збігаються {matches} з {total}",
+    },
     optionsSelected: { other: "Вибрано: {total}" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Активні фільтри",

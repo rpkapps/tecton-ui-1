@@ -6,7 +6,9 @@
  * "Clear" while one is set. It renders only while the popover is open.
  *
  * - text: a field; the rows whose display text contains it (like search);
- * - number: a minimum and a maximum, either left empty;
+ * - number: a minimum and a maximum side by side, either left empty, with
+ *   the column's unit, its lowest and highest numbers as placeholders and
+ *   how many rows the bounds keep as they are typed (`NumberFilter`);
  * - date: a range of days picked on `DateRangePicker`'s calendar, in a
  *   popover like the picker's (its code and locale load on demand too,
  *   `date-calendar.tsx`; the popover keeps its size meanwhile);
@@ -39,11 +41,11 @@ import { RadioGroup, RadioGroupItem } from "@tecton/react/radio-group"
 import { Separator } from "@tecton/react/separator"
 import {
   NumberField,
-  NumberFieldDecrement,
   NumberFieldGroup,
-  NumberFieldIncrement,
   NumberFieldInput,
+  NumberFieldUnit,
 } from "@tecton/react/number-field"
+import { useLocale } from "@tecton/react/provider"
 
 import { CalendarLoading } from "../calendar-loading"
 import { useTranslations } from "../i18n/translations"
@@ -53,7 +55,12 @@ import {
   type DataTableContextValue,
 } from "./context"
 import { useDelayedCommit } from "./delayed-commit"
-import type { DataTableFilterValue, EngineColumn } from "./engine/index"
+import {
+  numberUnit,
+  type DataTableFilterValue,
+  type EngineColumn,
+  type NumberFacets,
+} from "./engine/index"
 import { dayOf, startOfDay } from "./engine/values"
 import { useFeature } from "./lazy"
 import type { PartPopup } from "./part-popup"
@@ -163,6 +170,28 @@ function TextFilter({
 /** A number filter's bounds: `null` (its field empty) is none. */
 type Bounds = { min: number | null; max: number | null; empty: boolean }
 
+/** The filter of `bounds`, or `null` when they filter nothing. */
+function toFilter({ min, max, empty }: Bounds): DataTableFilterValue | null {
+  return min === null && max === null && !empty
+    ? null
+    : {
+        type: "number",
+        ...(min === null ? {} : { min }),
+        ...(max === null ? {} : { max }),
+        ...emptyFlag(empty),
+      }
+}
+
+/**
+ * A number filter: Min and Max side by side, each a `NumberField` (no minus
+ * and plus: the arrow keys step it) with the column's unit on the side the
+ * column writes it (`numberUnit`: its `unit`, percent sign or currency)
+ * and, as its placeholder, the column's lowest or highest number among the
+ * rows the search and the other filters keep, as the column shows it.
+ * Under them, "No value" (as every filter has it) and how many of those
+ * rows the bounds keep, counted as they are typed (`numbers`; not in
+ * server mode, where the table holds only the rows loaded).
+ */
 function NumberFilter({
   column,
   value,
@@ -170,7 +199,10 @@ function NumberFilter({
   delay,
   clears,
   noValue,
-}: FilterProps<Extract<DataTableFilterValue, { type: "number" }>>) {
+  numbers,
+}: FilterProps<Extract<DataTableFilterValue, { type: "number" }>> & {
+  numbers: NumberFacets | null
+}) {
   const t = useTranslations("dataTable")
   const id = React.useId()
   const { draft, change, flush } = useDelayedCommit<Bounds>({
@@ -179,21 +211,26 @@ function NumberFilter({
       max: value?.max ?? null,
       empty: value?.empty === true,
     },
-    commit: ({ min, max, empty }) =>
-      set(
-        min === null && max === null && !empty
-          ? null
-          : {
-              type: "number",
-              ...(min === null ? {} : { min }),
-              ...(max === null ? {} : { max }),
-              ...emptyFlag(empty),
-            }
-      ),
+    commit: (bounds) => set(toFilter(bounds)),
     delay,
     clears,
     same: (a, b) => a.min === b.min && a.max === b.max && a.empty === b.empty,
   })
+  const { locale } = useLocale()
+  const unit = React.useMemo(
+    () => numberUnit(locale, column.format as Intl.NumberFormatOptions),
+    [locale, column.format]
+  )
+  // The fields hold the numbers as the column shows them (a percent's
+  // 12.5 is the 0.125 the filter holds).
+  const scaled = (number: number | null, by: number) =>
+    number === null || unit.scale === 1
+      ? number
+      : Number((number * by).toPrecision(15))
+  const { values } = numbers ?? {}
+  const ends = values?.length
+    ? { min: values[0], max: values[values.length - 1] }
+    : undefined
   // Only the number reaches the draft: the field keeps what was typed
   // ("3000.0" is the 3000 the view holds) until it loses focus.
   const field = (bound: "min" | "max") => (
@@ -203,18 +240,31 @@ function NumberFilter({
       </Label>
       <NumberField
         id={`${id}-${bound}`}
-        value={draft[bound]}
-        onValueChange={(next) => change({ ...draft, [bound]: next })}
+        value={scaled(draft[bound], unit.scale)}
+        onValueChange={(next) =>
+          change({ ...draft, [bound]: scaled(next, 1 / unit.scale) })
+        }
       >
         <NumberFieldGroup>
-          <NumberFieldDecrement />
+          {unit.unit && unit.side === "start" && (
+            <NumberFieldUnit className="ps-2 pe-0">{unit.unit}</NumberFieldUnit>
+          )}
           <NumberFieldInput
             aria-describedby={`${id}-column`}
+            className={cn(unit.unit && unit.side === "start" && "ps-1")}
+            // The column's lowest and highest numbers, as it shows them.
+            placeholder={
+              ends && Number.isFinite(ends[bound])
+                ? unit.format(ends[bound])
+                : undefined
+            }
             onKeyDown={(event) => {
               if (event.key === "Enter") flush()
             }}
           />
-          <NumberFieldIncrement />
+          {unit.unit && unit.side === "end" && (
+            <NumberFieldUnit>{unit.unit}</NumberFieldUnit>
+          )}
         </NumberFieldGroup>
       </NumberField>
     </div>
@@ -228,16 +278,52 @@ function NumberFilter({
         {field("min")}
         {field("max")}
       </div>
-      {noValue && (
-        <NoValueChoice
-          checked={draft.empty}
-          onCheckedChange={(empty) => {
-            change({ ...draft, empty })
-            flush()
-          }}
-        />
+      {(noValue || numbers) && (
+        <div className="flex min-h-8 items-center gap-4">
+          {noValue && (
+            <NoValueChoice
+              className="flex-1"
+              checked={draft.empty}
+              onCheckedChange={(empty) => {
+                change({ ...draft, empty })
+                flush()
+              }}
+            />
+          )}
+          {numbers && (
+            <NumberMatches numbers={numbers} filter={toFilter(draft)} />
+          )}
+        </div>
       )}
     </div>
+  )
+}
+
+/**
+ * "12 of 120 match": of the rows the search and the other filters keep,
+ * those the number filter being typed keeps too, as it is typed.
+ */
+function NumberMatches({
+  numbers,
+  filter,
+}: {
+  numbers: NumberFacets
+  filter: DataTableFilterValue | null
+}) {
+  const t = useTranslations("dataTable")
+  const format = useNumberFormat()
+  const matches = numbers.count(filter)
+  return (
+    <p
+      data-slot="data-table-filter-matches"
+      className="ms-auto text-xs text-muted-foreground tabular-nums"
+    >
+      {t("filterMatches", {
+        count: matches,
+        matches: format.format(matches),
+        total: format.format(numbers.total),
+      })}
+    </p>
   )
 }
 
@@ -523,6 +609,12 @@ function FilterContent({
         : null,
     [column, server, model]
   )
+  // A number column's numbers, for the range hints and the count of
+  // matches (the model has none in server mode).
+  const numbers = React.useMemo(
+    () => (column.type === "number" ? model.numberFacets(column.id) : null),
+    [column, model]
+  )
   const noValue = useNoValue(context, column, value)
   const props = { column, set, delay, clears, noValue }
   switch (column.type) {
@@ -538,6 +630,7 @@ function FilterContent({
         <NumberFilter
           {...props}
           value={value?.type === "number" ? value : undefined}
+          numbers={numbers}
         />
       )
     case "date":
@@ -671,7 +764,12 @@ function DataTableFilterPopover({
   ) : (
     <PopoverContent
       {...contentProps}
-      className="flex w-auto min-w-56 flex-col gap-3"
+      className={cn(
+        "flex w-auto min-w-56 flex-col gap-3",
+        // Min and Max share it: their fields' text inputs would make it as
+        // wide as two default-width inputs.
+        column.type === "number" && "w-72"
+      )}
     >
       <div className="flex min-h-6 items-center justify-between gap-4">
         <PopoverTitle className="text-sm">{column.header}</PopoverTitle>

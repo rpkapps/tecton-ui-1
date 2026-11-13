@@ -144,6 +144,7 @@ export default defineTranslations({
     filterFrom: "Ab {value}",
     filterUntil: "Bis {value}",
     filterOrNoValue: "{value} oder kein Wert",
+    filterMatches: { other: "Treffer: {matches} von {total}" },
     optionsSelected: { other: "{total} ausgewählt" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktive Filter",

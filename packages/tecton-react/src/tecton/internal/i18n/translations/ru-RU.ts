@@ -149,6 +149,10 @@ export default defineTranslations({
     filterFrom: "С {value}",
     filterUntil: "По {value}",
     filterOrNoValue: "{value} или нет значения",
+    filterMatches: {
+      one: "Совпадает {matches} из {total}",
+      other: "Совпадают {matches} из {total}",
+    },
     optionsSelected: { other: "Выбрано: {total}" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Активные фильтры",

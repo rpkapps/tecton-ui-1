@@ -145,6 +145,11 @@ export default defineTranslations({
     filterFrom: "Od {value}",
     filterUntil: "Do {value}",
     filterOrNoValue: "{value} ili bez vrijednosti",
+    filterMatches: {
+      one: "Odgovara {matches} od {total}",
+      few: "Odgovaraju {matches} od {total}",
+      other: "Odgovara {matches} od {total}",
+    },
     optionsSelected: { other: "Odabrano: {total}" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktivni filtri",

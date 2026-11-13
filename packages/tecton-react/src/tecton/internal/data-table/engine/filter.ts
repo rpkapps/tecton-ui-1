@@ -34,7 +34,9 @@
  * search and every filter but the column's own: by option value for an
  * options column, by "true" and "false" for a boolean one, by display text
  * for the others, and apart the rows without a value (the "No value"
- * choice, offered while any row has none, `hasEmptyValues`).
+ * choice, offered while any row has none, `hasEmptyValues`). A number
+ * column's (`countNumbers`) are its numbers over those rows, sorted: the
+ * range they span, and the rows a number filter keeps as it is typed.
  */
 import type { EngineColumn } from "./columns"
 import type { Core, RowSet } from "./core"
@@ -434,6 +436,84 @@ function countFacets<T>(
   return { counts: others, empty }
 }
 
+/**
+ * A number column's values over the rows a predicate keeps (the search and
+ * every filter but the column's own, as for `Facets`).
+ */
+type NumberFacets = {
+  /** How many rows the predicate keeps. */
+  readonly total: number
+  /** The numbers of those rows that have one, ascending. */
+  readonly values: Float64Array
+  /**
+   * How many of those rows `filter` keeps as well (all of them for
+   * `null`), as the column's filter would: by its own `filter` function
+   * when it has one.
+   */
+  readonly count: (filter: DataTableFilterValue | null) => number
+}
+
+/** The index of the first of the ascending `values` that `before` refuses. */
+function boundary(values: Float64Array, before: (value: number) => boolean) {
+  let low = 0
+  let high = values.length
+  while (low < high) {
+    const middle = (low + high) >>> 1
+    if (before(values[middle])) low = middle + 1
+    else high = middle
+  }
+  return low
+}
+
+function countNumbers<T>(
+  core: Core<T>,
+  column: EngineColumn<T>,
+  predicate: RowPredicate<T> | null,
+  index: SearchIndex<T>
+): NumberFacets {
+  const { items } = core
+  const kept: Array<number> = []
+  const numbers: Array<number> = []
+  let empty = 0
+  for (let i = 0; i < items.length; i++) {
+    if (predicate && !predicate(i, items[i])) continue
+    kept.push(i)
+    const value = column.getValue(items[i])
+    const number = toNumber(value)
+    if (number !== undefined) numbers.push(number)
+    else if (hasNoValue(column, value)) empty++
+  }
+  const values = Float64Array.from(numbers).sort()
+  const total = kept.length
+  // The numbers from `min` to `max`, both included.
+  const between = (min: number, max: number) =>
+    min > max
+      ? 0
+      : boundary(values, (value) => value <= max) -
+        boundary(values, (value) => value < min)
+  return {
+    total,
+    values,
+    count(filter) {
+      if (!filter) return total
+      if (column.filter || filter.type !== "number") {
+        const own = columnPredicate(column, filter, index, items.length)
+        if (!own) return total
+        let count = 0
+        for (const position of kept) if (own(position, items[position])) count++
+        return count
+      }
+      const bounded = filter.min !== undefined || filter.max !== undefined
+      if (!bounded && !filter.empty) return total
+      return (
+        (bounded
+          ? between(filter.min ?? -Infinity, filter.max ?? Infinity)
+          : 0) + (filter.empty ? empty : 0)
+      )
+    },
+  }
+}
+
 /** Whether any row of `core` has no value in `column` (`hasNoValue`). */
 function hasEmptyValues<T>(core: Core<T>, column: EngineColumn<T>) {
   for (const item of core.items)
@@ -444,9 +524,10 @@ function hasEmptyValues<T>(core: Core<T>, column: EngineColumn<T>) {
 export {
   compileFilter,
   countFacets,
+  countNumbers,
   createSearchIndex,
   filterRows,
   hasEmptyValues,
   searchMask,
 }
-export type { ColumnText, Facets, RowPredicate, SearchIndex }
+export type { ColumnText, Facets, NumberFacets, RowPredicate, SearchIndex }

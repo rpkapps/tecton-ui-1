@@ -46,8 +46,15 @@ export type {
   DataTableEngineInput,
   DataTableRowModel,
 } from "./engine"
-export { DEFAULT_LABELS, foldText, getFormatter, resolveLocale } from "./format"
-export type { FormatLabels, Formatter } from "./format"
+export {
+  DEFAULT_LABELS,
+  foldText,
+  getFormatter,
+  numberUnit,
+  resolveLocale,
+} from "./format"
+export type { FormatLabels, Formatter, NumberUnit } from "./format"
+export type { NumberFacets } from "./filter"
 export { layoutColumns } from "./layout"
 export type { ColumnLayout } from "./layout"
 export {

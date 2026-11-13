@@ -140,6 +140,7 @@ export default defineTranslations({
     filterFrom: "Alates {value}",
     filterUntil: "Kuni {value}",
     filterOrNoValue: "{value} või väärtus puudub",
+    filterMatches: { other: "Vasteid: {matches}/{total}" },
     optionsSelected: { other: "Valitud: {total}" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktiivsed filtrid",

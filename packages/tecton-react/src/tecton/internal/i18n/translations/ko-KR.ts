@@ -131,6 +131,7 @@ export default defineTranslations({
     filterFrom: "{value}부터",
     filterUntil: "{value}까지",
     filterOrNoValue: "{value} 또는 값 없음",
+    filterMatches: { other: "{total}개 중 {matches}개 일치" },
     optionsSelected: { other: "{total}개 선택됨" },
     filterChip: "{columnName}: {value}",
     activeFilters: "적용된 필터",

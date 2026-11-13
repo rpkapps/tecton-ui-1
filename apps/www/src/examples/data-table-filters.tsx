@@ -62,7 +62,12 @@ const columns = createColumns<Well>([
       { value: "drilling", label: "Drilling", variant: "secondary" },
     ],
   },
-  { id: "depth", header: "TD (m)", type: "number" },
+  {
+    id: "depth",
+    header: "TD",
+    type: "number",
+    format: { style: "unit", unit: "meter", maximumFractionDigits: 0 },
+  },
   { id: "spud", header: "Spud date", type: "date" },
   { id: "subsea", header: "Subsea", type: "boolean" },
 ])

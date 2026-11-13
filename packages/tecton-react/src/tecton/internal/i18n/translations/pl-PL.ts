@@ -150,6 +150,11 @@ export default defineTranslations({
     filterFrom: "Od {value}",
     filterUntil: "Do {value}",
     filterOrNoValue: "{value} lub brak wartości",
+    filterMatches: {
+      one: "Pasuje {matches} z {total}",
+      few: "Pasują {matches} z {total}",
+      other: "Pasuje {matches} z {total}",
+    },
     optionsSelected: { other: "Wybrano: {total}" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktywne filtry",

@@ -407,6 +407,72 @@ describe("facets", () => {
   })
 })
 
+describe("number facets", () => {
+  it("are a number column's numbers, sorted, over the rows matching everything but its own filter", () => {
+    const result = run({
+      view: view({
+        filters: {
+          oil: { type: "number", min: 30 },
+          status: { type: "options", values: ["producing"] },
+        },
+      }),
+    })
+    // Producing: wells 1, 3 and 5; well 3 has no oil.
+    const numbers = result.numberFacets("oil")!
+    expect(numbers.total).toBe(3)
+    expect([...numbers.values]).toEqual([5, 10])
+    expect(result.numberFacets("oil")).toBe(numbers)
+    expect(result.numberFacets("status")).toBeNull()
+    expect(result.numberFacets("ghost")).toBeNull()
+  })
+
+  it("count the rows a number filter keeps as the column's filter would", () => {
+    const numbers = run().numberFacets("oil")!
+    // 10, 20, none, 40, 5, 7.
+    expect(numbers.total).toBe(6)
+    expect(numbers.count(null)).toBe(6)
+    expect(numbers.count({ type: "number" })).toBe(6)
+    expect(numbers.count({ type: "number", min: 7 })).toBe(4)
+    expect(numbers.count({ type: "number", min: 7, max: 20 })).toBe(3)
+    expect(numbers.count({ type: "number", max: 5 })).toBe(1)
+    expect(numbers.count({ type: "number", min: 21, max: 39 })).toBe(0)
+    expect(numbers.count({ type: "number", min: 40, max: 5 })).toBe(0)
+    // "No value": the row without oil, besides or alone.
+    expect(numbers.count({ type: "number", empty: true })).toBe(1)
+    expect(numbers.count({ type: "number", min: 20, empty: true })).toBe(3)
+    // The same count as the rows the view keeps with that filter.
+    expect(
+      run({
+        view: view({
+          filters: { oil: { type: "number", min: 20, empty: true } },
+        }),
+      }).matchingCount
+    ).toBe(3)
+  })
+
+  it("count by the column's own filter function, when it has one", () => {
+    const own = createColumns<Well>([
+      ...definitions.filter((column) => column.id !== "oil"),
+      {
+        id: "oil",
+        header: "Oil",
+        type: "number",
+        // Anything over `min`, the bound left out.
+        filter: (item, value) =>
+          value.type === "number" && (item.oil ?? 0) > (value.min ?? 0),
+      },
+    ])
+    const numbers = createDataTableEngine<Well>()
+      .run({ items: fleet, columns: own, view: defaults })
+      .numberFacets("oil")!
+    expect(numbers.count({ type: "number", min: 10 })).toBe(2)
+  })
+
+  it("are none in server mode, where the table holds only the rows loaded", () => {
+    expect(run({ dataMode: "server" }).numberFacets("oil")).toBeNull()
+  })
+})
+
 describe("groups", () => {
   const nested = view({ grouping: ["status", "operator"] })
 

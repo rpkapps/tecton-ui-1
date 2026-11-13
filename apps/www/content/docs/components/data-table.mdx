@@ -148,12 +148,12 @@ Pinned cells are opaque in `var(--surface)`; a custom surface sets it: `classNam
 | `type` | Filter | Value in the view |
 | --- | --- | --- |
 | `text` | contains the text | `{ type: "text", value }` |
-| `number` | minimum and maximum | `{ type: "number", min?, max? }` |
+| `number` | Min and Max side by side, with the column's unit | `{ type: "number", min?, max? }` |
 | `date` | a [date range picker](/docs/components/date-picker) | `{ type: "date", from?, to? }` |
 | `boolean` | Yes or No, radio buttons with counts | `{ type: "boolean", value? }` |
 | `options` | a checkbox per option, with counts | `{ type: "options", values }` |
 
-A yes / no filter is laid out as an options filter, with radio buttons: neither chosen keeps every row, and Clear goes back to that. Each filter also offers "No value" (`empty: true`) for a column with empty values. Search matches the shown columns' display text, ignoring case and accents. A column's own `filter(item, value)` replaces its type's.
+A number filter's Min and Max are [number fields](/docs/tecton/number-field), stepped with the arrow keys, with the column's unit on the side the column writes it (from its `format`: a unit, a percent sign or a currency; a percent is typed as the column shows it, 12.5 for 0.125) and the column's lowest and highest numbers as their placeholders. Under them, beside "No value" when the column has empty values, the filter says how many rows match ("12 of 120 match") as the bounds are typed, of the rows the search and the other filters keep. In server mode, where the table holds only the rows loaded, it shows neither the placeholders nor the count. A yes / no filter is laid out as an options filter, with radio buttons: neither chosen keeps every row, and Clear goes back to that. Each filter also offers "No value" (`empty: true`) for a column with empty values. Search matches the shown columns' display text, ignoring case and accents. A column's own `filter(item, value)` replaces its type's.
 
 ## Empty values
 
@@ -179,7 +179,7 @@ const columns = createColumns<Well>([
 ])
 ```
 
-While a row has no value in a column, its filter offers "No value": the last option of an options filter, apart, with its count; a checkbox under a text or number filter's fields and beside a date filter's Clear; a checkbox after a yes / no filter's Yes and No, apart, with its count, as in an options filter. It keeps the rows without a value besides those the rest of the filter keeps, or only those when the rest is unset, and its chip reads "Status: Producing, No value", "TD (m): 1,000–2,000 or no value" or "Subsea: Yes or no value".
+While a row has no value in a column, its filter offers "No value": the last option of an options filter, apart, with its count; a checkbox under a text or number filter's fields and beside a date filter's Clear; a checkbox after a yes / no filter's Yes and No, apart, with its count, as in an options filter. It keeps the rows without a value besides those the rest of the filter keeps, or only those when the rest is unset, and its chip reads "Status: Producing, No value", "TD: 1,000 m–2,000 m or no value" or "Subsea: Yes or no value".
 
 In the view it is `empty: true` on the filter's value. A value without it matches as before, so saved views keep working; in server mode, where the table sees only the loaded rows, "No value" is always offered and reaches `onViewChange` for the server to apply (`OR depth IS NULL`).
 

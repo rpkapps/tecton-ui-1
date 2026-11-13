@@ -169,6 +169,30 @@ describe("translations", () => {
     ).toBe("Augmenter")
   })
 
+  it("counts a number filter's matches in every locale", async () => {
+    const tables = Object.fromEntries(await locales())
+    for (const [file, table] of Object.entries(tables))
+      expect([file, typeof table.dataTable.filterMatches]).toEqual([
+        file,
+        "object",
+      ])
+    const values = (count: number) => ({
+      count,
+      matches: String(count),
+      total: "120",
+    })
+    const en = createTranslator("dataTable", "en-US")
+    expect(en("filterMatches", values(1))).toBe("1 of 120 matches")
+    expect(en("filterMatches", values(12))).toBe("12 of 120 match")
+    const ru = createTranslator(
+      "dataTable",
+      "ru-RU",
+      tables["ru-RU.ts"] as never
+    )
+    expect(ru("filterMatches", values(1))).toBe("Совпадает 1 из 120")
+    expect(ru("filterMatches", values(5))).toBe("Совпадают 5 из 120")
+  })
+
   it("renders en-US first, then the provider's locale once it has loaded", async () => {
     function Label() {
       const t = useTranslations("tree")

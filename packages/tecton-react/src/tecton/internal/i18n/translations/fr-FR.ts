@@ -147,6 +147,10 @@ export default defineTranslations({
     filterFrom: "À partir du {value}",
     filterUntil: "Jusqu’au {value}",
     filterOrNoValue: "{value} ou aucune valeur",
+    filterMatches: {
+      one: "{matches} sur {total} correspond",
+      other: "{matches} sur {total} correspondent",
+    },
     optionsSelected: { other: "{total} sélectionnés" },
     filterChip: "{columnName} : {value}",
     activeFilters: "Filtres actifs",

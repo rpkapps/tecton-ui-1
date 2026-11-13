@@ -131,6 +131,7 @@ export default defineTranslations({
     filterFrom: "{value} 以降",
     filterUntil: "{value} まで",
     filterOrNoValue: "{value} または値なし",
+    filterMatches: { other: "{total} 件中 {matches} 件が一致" },
     optionsSelected: { other: "{total} 件選択" },
     filterChip: "{columnName}: {value}",
     activeFilters: "適用中のフィルター",

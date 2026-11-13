@@ -150,6 +150,7 @@ export default defineTranslations({
     filterFrom: "من {value}",
     filterUntil: "حتى {value}",
     filterOrNoValue: "{value} أو بلا قيمة",
+    filterMatches: { other: "مطابقة: {matches} من {total}" },
     optionsSelected: { other: "تم تحديد {total}" },
     filterChip: "{columnName}: {value}",
     activeFilters: "عوامل التصفية النشطة",

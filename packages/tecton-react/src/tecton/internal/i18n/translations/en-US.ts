@@ -178,6 +178,14 @@ const enUS = {
     // A filter's value that also keeps the rows without one ("1,000–2,000
     // or no value"); {value} is the rest of the filter in words.
     filterOrNoValue: "{value} or no value",
+    // Under a number filter's fields, as they are typed: how many of the
+    // rows the search and the other filters keep ({total}) the filter
+    // keeps too ({matches}). The plural form follows {matches}; both are
+    // formatted.
+    filterMatches: {
+      one: "{matches} of {total} matches",
+      other: "{matches} of {total} match",
+    },
     // More than two options chosen in a filter; {total} is formatted.
     optionsSelected: { other: "{total} selected" },
     // A chip of the active filters: the column's name and the filter's

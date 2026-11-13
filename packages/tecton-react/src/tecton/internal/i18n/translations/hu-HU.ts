@@ -142,6 +142,7 @@ export default defineTranslations({
     filterFrom: "{value} és később",
     filterUntil: "{value} és korábban",
     filterOrNoValue: "{value} vagy nincs érték",
+    filterMatches: { other: "Egyezés: {matches}/{total}" },
     optionsSelected: { other: "{total} kijelölve" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktív szűrők",

@@ -146,6 +146,7 @@ export default defineTranslations({
     filterFrom: "No {value}",
     filterUntil: "Līdz {value}",
     filterOrNoValue: "{value} vai nav vērtības",
+    filterMatches: { other: "Atbilst {matches} no {total}" },
     optionsSelected: { other: "Atlasīti: {total}" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktīvie filtri",

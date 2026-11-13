@@ -146,6 +146,10 @@ export default defineTranslations({
     filterFrom: "De la {value}",
     filterUntil: "Până la {value}",
     filterOrNoValue: "{value} sau nicio valoare",
+    filterMatches: {
+      one: "{matches} din {total} corespunde",
+      other: "{matches} din {total} corespund",
+    },
     optionsSelected: { other: "Selectate: {total}" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Filtre active",

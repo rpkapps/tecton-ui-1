@@ -143,6 +143,10 @@ export default defineTranslations({
     filterFrom: "Vanaf {value}",
     filterUntil: "Tot en met {value}",
     filterOrNoValue: "{value} of geen waarde",
+    filterMatches: {
+      one: "{matches} van {total} komt overeen",
+      other: "{matches} van {total} komen overeen",
+    },
     optionsSelected: { other: "{total} geselecteerd" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Actieve filters",

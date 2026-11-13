@@ -148,6 +148,7 @@ export default defineTranslations({
     filterFrom: "Nuo {value}",
     filterUntil: "Iki {value}",
     filterOrNoValue: "{value} arba nėra reikšmės",
+    filterMatches: { other: "Atitinka {matches} iš {total}" },
     optionsSelected: { other: "Pasirinkta: {total}" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktyvūs filtrai",

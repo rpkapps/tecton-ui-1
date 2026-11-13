@@ -146,6 +146,11 @@ export default defineTranslations({
     filterFrom: "Od {value}",
     filterUntil: "Do {value}",
     filterOrNoValue: "{value} alebo bez hodnoty",
+    filterMatches: {
+      one: "Zodpovedá {matches} z {total}",
+      few: "Zodpovedajú {matches} z {total}",
+      other: "Zodpovedá {matches} z {total}",
+    },
     optionsSelected: { other: "Vybraté: {total}" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktívne filtre",

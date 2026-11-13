@@ -131,6 +131,7 @@ export default defineTranslations({
     filterFrom: "{value} 起",
     filterUntil: "至 {value}",
     filterOrNoValue: "{value} 或無值",
+    filterMatches: { other: "{total} 項中有 {matches} 項符合" },
     optionsSelected: { other: "已選取 {total} 個" },
     filterChip: "{columnName}：{value}",
     activeFilters: "已套用的篩選條件",

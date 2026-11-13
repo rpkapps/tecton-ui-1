@@ -58,11 +58,13 @@ import {
 import {
   compileFilter,
   countFacets,
+  countNumbers,
   createSearchIndex,
   filterRows,
   hasEmptyValues,
   searchMask,
   type Facets,
+  type NumberFacets,
   type RowPredicate,
   type SearchIndex,
 } from "./filter"
@@ -213,6 +215,13 @@ type DataTableRowModel<T> = {
    */
   facets: (column: string) => Facets
   /**
+   * A number column's numbers over the rows matching the search and every
+   * filter but its own, and how many of those rows a filter keeps; `null`
+   * for another column, or in server mode (the table holds only the rows
+   * loaded).
+   */
+  numberFacets: (column: string) => NumberFacets | null
+  /**
    * Whether any row, matching or not, has no value in `column`: its filter
    * then offers "No value" (in server mode, the loaded rows).
    */
@@ -336,6 +345,17 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
       filters: DataTableView["filters"]
       server: boolean
       counts: Facets
+    }
+  >()
+  /** A number column's numbers, by column, kept as the facets are. */
+  const numberCache = new Map<
+    string,
+    {
+      rows: Core<T>
+      column: EngineColumn<T>
+      search: Uint8Array | null
+      filters: DataTableView["filters"]
+      numbers: NumberFacets
     }
   >()
   /** Whether a column has empty values, by the rows and column read. */
@@ -792,6 +812,37 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
             counts,
           })
           return counts
+        },
+        numberFacets: (id) => {
+          const column = columns.byId.get(id)
+          if (!column || column.type !== "number" || server) return null
+          const others: Record<string, DataTableFilterValue> = { ...filters }
+          delete others[id]
+          const cached = numberCache.get(id)
+          if (
+            cached?.rows === rows &&
+            cached.column === column &&
+            cached.search === search &&
+            sameFilters(cached.filters, others)
+          )
+            return cached.numbers
+          const predicate = compileFilter(
+            columns.byId,
+            filters,
+            index,
+            search,
+            items.length,
+            id
+          )
+          const numbers = countNumbers(rows, column, predicate, index)
+          numberCache.set(id, {
+            rows,
+            column,
+            search,
+            filters: others,
+            numbers,
+          })
+          return numbers
         },
       }
     }

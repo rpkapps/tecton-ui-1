@@ -142,6 +142,7 @@ export default defineTranslations({
     filterFrom: "{value} ve sonrası",
     filterUntil: "{value} ve öncesi",
     filterOrNoValue: "{value} veya değer yok",
+    filterMatches: { other: "{matches}/{total} eşleşiyor" },
     optionsSelected: { other: "{total} seçili" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Etkin filtreler",

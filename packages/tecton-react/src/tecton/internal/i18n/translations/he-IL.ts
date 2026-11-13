@@ -145,6 +145,10 @@ export default defineTranslations({
     filterFrom: "מ-{value}",
     filterUntil: "עד {value}",
     filterOrNoValue: "{value} או ללא ערך",
+    filterMatches: {
+      one: "תואמת {matches} מתוך {total}",
+      other: "תואמות {matches} מתוך {total}",
+    },
     optionsSelected: { other: "{total} נבחרו" },
     filterChip: "{columnName}: {value}",
     activeFilters: "מסננים פעילים",
