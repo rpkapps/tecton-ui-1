@@ -69,7 +69,7 @@ A `DataTableFooter` right after `DataTableContent` is the table's last band, ins
 
 ## Columns
 
-A column's `type` sets how its values are shown, aligned and sorted; `cell` draws your own content, and a column with `columns` is a group. With `reorderableColumns`, as here, drag a header to move its column (a grouped column moves among its group's, a group with its columns); a line shows where it will drop.
+A column's `type` sets how its values are shown, aligned and sorted; `cell` draws your own content ([Custom cells](#custom-cells)), and a column with `columns` is a group. With `reorderableColumns`, as here, drag a header to move its column (a grouped column moves among its group's, a group with its columns); a line shows where it will drop.
 
 <ComponentPreview name="data-table-columns" align="start" />
 
@@ -103,6 +103,16 @@ With a column menu (`resizableColumns`, `hideableColumns`, `pinnableColumns` or 
 ```
 
 `view.sorting` lists the sorts in order, first one first; in [server mode](#server-data) the server gets the whole list from `onViewChange`. `multiSort={false}` keeps the table to one sort: <Kbd>Shift</Kbd> + click sorts alone, the menus have no **Add to sort** and a view keeps its first sort.
+
+### Custom cells
+
+`cell(item, details)` draws a column's cell. It only changes how the value looks: sorting, filters, search, power search, grouping, totals and the CSV export still use the `accessor` value and the column's `type`. Here the well links to its page with its field under it, the engineer has an [Avatar](/docs/components/avatar), the water cut has a [Meter](/docs/tecton/meter) beside its number, and the oil rate shows how it moved; the table is sorted by oil rate, and every header still sorts its column by its value.
+
+<ComponentPreview name="data-table-custom-cells" align="start" />
+
+`details` holds the cell's `value` (from `accessor`), its `text` (the value formatted as the column formats it, with `format` and the provider locale), `emptyValue` (the muted dash read as "No value"), and the row's `id`, the `column` and the row's `depth` in a tree or groups. Draw `text` rather than formatting the value again, and return `emptyValue` for a missing value so the cell keeps the table's convention. Controls in a cell (a link, a button, an input) are reached with <Kbd>Enter</Kbd> or <Kbd>F2</Kbd> from the cell ([Keyboard](#keyboard)). Give a graphic its name (`aria-label` on the meter here) and words for what colour or an icon says (the trend's "since last month").
+
+`renderHeader` draws a header's content (`header` stays the plain text menus and screen readers use), and `renderAggregate` a totals or subtotal cell.
 
 ## Resizing
 
