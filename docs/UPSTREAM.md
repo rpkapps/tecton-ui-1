@@ -215,8 +215,9 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   exposed as `data-appearance` / `data-size`; 2px focus ring), `separator` (`emphasis` subtle /
   default / strong, `data-emphasis`, `separatorVariants`), `input` / `textarea` / `select` trigger
   (`variant` outline / filled / text, `data-variant`; `inputVariants`, `textareaVariants`,
-  `selectTriggerVariants`), `table` (`size` default / sm, `striped`; see `table` below). The `select` trigger variants and the `input-otp` container are pinned
-  in `src/tecton/__tests__/overlay-variants.test.tsx`.
+  `selectTriggerVariants`), `table` (`size` default / sm, `striped`; see `table` below). The
+  `select` trigger variants and the `input-otp` container are pinned in
+  `src/tecton/__tests__/overlay-variants.test.tsx`.
 - **`button`** — renders `data-variant` / `data-size` (as the other bases do), which the
   `button-group` rule in `style-tecton.css` keys on to give filled members the outline stroke when
   the group has an outlined member.
