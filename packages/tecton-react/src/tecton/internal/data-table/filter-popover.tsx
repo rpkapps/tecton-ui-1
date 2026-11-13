@@ -41,7 +41,9 @@ import { RadioGroup, RadioGroupItem } from "@tecton/react/radio-group"
 import { Separator } from "@tecton/react/separator"
 import {
   NumberField,
+  NumberFieldDecrement,
   NumberFieldGroup,
+  NumberFieldIncrement,
   NumberFieldInput,
   NumberFieldUnit,
 } from "@tecton/react/number-field"
@@ -183,10 +185,9 @@ function toFilter({ min, max, empty }: Bounds): DataTableFilterValue | null {
 }
 
 /**
- * A number filter: Min and Max side by side, each a `NumberField` (no minus
- * and plus: the arrow keys step it) with the column's unit on the side the
- * column writes it (`numberUnit`: its `unit`, percent sign or currency)
- * and, as its placeholder, the column's lowest or highest number among the
+ * A number filter: Min and Max side by side, each a `NumberField` with its
+ * minus and plus, and the column's unit on the side the column writes it
+ * (`numberUnit`: its `unit`, percent sign or currency) and, as its placeholder, the column's lowest or highest number among the
  * rows the search and the other filters keep, as the column shows it.
  * Under them, "No value" (as every filter has it) and how many of those
  * rows the bounds keep, counted as they are typed (`numbers`; not in
@@ -246,6 +247,7 @@ function NumberFilter({
         }
       >
         <NumberFieldGroup>
+          <NumberFieldDecrement />
           {unit.unit && unit.side === "start" && (
             <NumberFieldUnit className="ps-2 pe-0">{unit.unit}</NumberFieldUnit>
           )}
@@ -265,6 +267,7 @@ function NumberFilter({
           {unit.unit && unit.side === "end" && (
             <NumberFieldUnit>{unit.unit}</NumberFieldUnit>
           )}
+          <NumberFieldIncrement />
         </NumberFieldGroup>
       </NumberField>
     </div>
@@ -766,9 +769,10 @@ function DataTableFilterPopover({
       {...contentProps}
       className={cn(
         "flex w-auto min-w-56 flex-col gap-3",
-        // Min and Max share it: their fields' text inputs would make it as
-        // wide as two default-width inputs.
-        column.type === "number" && "w-72"
+        // Min and Max share it, each with its minus and plus and the unit:
+        // their text inputs alone would make it as wide as two default-width
+        // inputs, and 18rem would leave each number under 3rem.
+        column.type === "number" && "w-96"
       )}
     >
       <div className="flex min-h-6 items-center justify-between gap-4">
