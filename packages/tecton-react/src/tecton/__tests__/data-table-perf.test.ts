@@ -35,10 +35,13 @@
  *   collapse and expand a tree row ... 18 / 15    (no budget; limit 50)
  *   select all ....................... 15 / 23    (50)
  *   CSV, 100k × 6 columns ........... 212 / 205   (500)
+ *   live: 20 rows added, run + diff . 167 / 150   (no budget; limit 175)
+ *   live: 20 rows added, diff alone ... 7 / 8     (no budget; limit 20)
  */
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
+  addedIds,
   createColumns,
   createDataTableEngine,
   createDefaultView,
@@ -444,6 +447,53 @@ describe(
         }
       )
       expect(time).toBeLessThan(50 * HEADROOM)
+    })
+
+    // Live data (`highlightChanges`): 10 rows appended and 10 prepended to
+    // the 100,000, sorted by a number column as a live table usually is.
+    // The diff that finds the 20 is one pass over the ids, a small part of
+    // a change of items: the engine's run over the new array (its rows and
+    // the column's ranks built anew, as for any new `items`) is most of it,
+    // budgeted as the other first-time cases.
+    const LIVE_SORT: DataTablePartialView = {
+      sorting: [{ column: "oil", direction: "descending" }],
+    }
+    const liveItems = () => [
+      ...wells.slice(0, 10).map((well, i) => ({ ...well, id: `new-${i}` })),
+      ...wells,
+      ...wells
+        .slice(10, 20)
+        .map((well, i) => ({ ...well, id: `new-${10 + i}` })),
+    ]
+
+    it("runs over 100,000 items with 10 appended and 10 prepended, and finds them, within 175 ms", () => {
+      const time = median(
+        () => {
+          const state = setup({ idle: true })
+          const view = state.view(LIVE_SORT)
+          return { ...state, view, before: state.run(view), items: liveItems() }
+        },
+        ({ run, view, before, items }) => {
+          const added = addedIds(before, run(view, { items }))
+          expect(added).toHaveLength(20)
+        }
+      )
+      expect(time).toBeLessThan(175 * HEADROOM)
+    })
+
+    it("finds 20 rows added to 100,000 within 20 ms, once the engine has run", () => {
+      const time = median(
+        () => {
+          const state = setup()
+          const view = state.view(LIVE_SORT)
+          const before = state.run(view)
+          return { before, after: state.run(view, { items: liveItems() }) }
+        },
+        ({ before, after }) => {
+          expect(addedIds(before, after)).toHaveLength(20)
+        }
+      )
+      expect(time).toBeLessThan(20 * HEADROOM)
     })
 
     it("exports 6 columns as CSV within 500 ms", () => {

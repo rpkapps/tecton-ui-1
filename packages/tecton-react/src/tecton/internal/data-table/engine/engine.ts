@@ -196,6 +196,22 @@ type DataTableRowModel<T> = {
   selectableIds: () => ReadonlyArray<string>
   /** Every item, depth first, in data order. */
   allItems: () => ReadonlyArray<T>
+  /**
+   * Every item's id, in `allItems`' order: the same array while the items
+   * are (`liveChanges.ts` compares two models' ids).
+   */
+  readonly ids: ReadonlyArray<string>
+  /** Whether an item has this id, at any level of a tree, matching or not. */
+  has: (id: string) => boolean
+  /** A tree item's parent's id: `null` at the top level, in a flat list, or for an unknown id. */
+  treeParentOf: (id: string) => string | null
+  /** Whether a tree item's children are `undefined`: not loaded yet (server mode). */
+  childrenUnloaded: (id: string) => boolean
+  /**
+   * Whether the search and filters keep an item (a match, or a filtered
+   * tree's context row): shown once the tree rows and groups over it open.
+   */
+  kept: (id: string) => boolean
   /** The matching items, at every level, in display order. */
   filteredItems: () => ReadonlyArray<T>
   /** The items of the item rows in `rows`. */
@@ -376,6 +392,21 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
   >()
   /** Whether a column has empty values, by the rows and column read. */
   const emptyCache = new WeakMap<Core<T>, WeakMap<EngineColumn<T>, boolean>>()
+  /** The positions a filtered set keeps, as flags, by the set. */
+  const keptCache = new WeakMap<RowSet, Uint8Array>()
+  /** A tree's parent positions (-1 at the top level), by the rows they are of. */
+  const parentCache = new WeakMap<Core<T>, Int32Array>()
+  const parentsOf = (rows: Core<T>) => {
+    let parents = parentCache.get(rows)
+    if (!parents) {
+      parents = new Int32Array(rows.items.length).fill(-1)
+      rows.children?.forEach((list, position) => {
+        if (list) for (const child of list) parents![child] = position
+      })
+      parentCache.set(rows, parents)
+    }
+    return parents
+  }
 
   const steadySorting = steady<ReadonlyArray<DataTableSort>>(sameSorting)
   const steadyFilters = steady<DataTableView["filters"]>(sameFilters)
@@ -707,6 +738,30 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
         matchingIds: () => matchingIdList(matching(), rows),
         selectableIds: () => selectableIdList(matching(), rows, disabled),
         allItems: () => items,
+        ids,
+        has: (id) => rows.positions.has(id),
+        treeParentOf: (id) => {
+          const position = rows.positions.get(id)
+          if (position === undefined || !rows.children) return null
+          const parent = parentsOf(rows)[position]
+          return parent < 0 ? null : ids[parent]
+        },
+        childrenUnloaded: (id) => {
+          const position = rows.positions.get(id)
+          return position !== undefined && rows.unloaded?.[position] === 1
+        },
+        kept: (id) => {
+          const position = rows.positions.get(id)
+          if (position === undefined) return false
+          if (set.all === rows.all) return true
+          let flags = keptCache.get(set)
+          if (!flags) {
+            flags = new Uint8Array(items.length)
+            for (const at of set.all) flags[at] = 1
+            keptCache.set(set, flags)
+          }
+          return flags[position] === 1
+        },
         filteredItems,
         pageItems: lazy(() =>
           page.rows.flatMap((row) =>

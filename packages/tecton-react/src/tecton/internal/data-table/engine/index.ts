@@ -13,6 +13,8 @@
  *   `group` (groups as ranges), `sort` (rank-based sorting) and `rows`
  *   (display rows and pages; the content adds detail rows with
  *   `withDetailRows`); `idle` prepares ranks and the search index.
+ * - `changes`: the rows a change of items added (`addedIds`, for live
+ *   data's highlights).
  * - `aggregate`, `pagination`, `selection`: what group rows, the footer
  *   and selection compute.
  *
@@ -38,6 +40,7 @@ export type {
   HeaderCell,
   HeaderRow,
 } from "./columns"
+export { addedIds } from "./changes"
 export type { CsvOptions } from "./csv"
 export { createDataTableEngine } from "./engine"
 export type {
