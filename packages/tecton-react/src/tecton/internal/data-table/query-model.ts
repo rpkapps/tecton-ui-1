@@ -13,6 +13,7 @@ import type {
   ParsedQuery,
   QueryColumn,
   QueryDiagnostic,
+  QueryDiagnosticCode,
   QueryFilterTerm,
   QueryLanguage,
   QuerySuggestion,
@@ -36,16 +37,6 @@ type ColumnSample = (column: QueryColumn) => {
   text?: string
   number?: number
   year?: number
-}
-
-/** The name of column `id` (a filterable one, or any column of `model`). */
-function headerOf(
-  language: QueryLanguage,
-  model: ColumnModel<unknown>,
-  id: string | undefined
-) {
-  if (id === undefined) return ""
-  return language.byId.get(id)?.header ?? model.byId.get(id)?.header ?? id
 }
 
 /** The column types a "values to keep" example is written with, best first. */
@@ -79,7 +70,27 @@ function operatorExamples(
   return {}
 }
 
-/** A problem in words, from its code and parameters. */
+/** A key of the query's strings. */
+type QueryKey = Parameters<QueryT>[0]
+
+/** The keys of the problems' messages: a code, with what tells its messages apart. */
+type ProblemKey = Extract<
+  QueryKey,
+  | `${QueryDiagnosticCode}${string}`
+  | `ambiguous${string}`
+  | `duplicate${string}`
+  | `unsupported${string}`
+>
+
+/** `word` with a capital first letter, as the keys join words. */
+const capital = <TWord extends string>(word: TWord) =>
+  (word.charAt(0).toUpperCase() + word.slice(1)) as Capitalize<TWord>
+
+/**
+ * A problem in words, from its code and parameters: the message's key is
+ * the code, then what tells its messages apart (a reason, the suggestion
+ * of a typo, the operator and whether the table has an example for it).
+ */
 function problemMessage(
   diagnostic: QueryDiagnostic,
   language: QueryLanguage,
@@ -87,69 +98,44 @@ function problemMessage(
   t: QueryT,
   sample: ColumnSample = () => ({})
 ): string {
-  const { params } = diagnostic
-  const column = headerOf(language, model, params.column)
-  const value = params.value ?? ""
-  switch (diagnostic.code) {
-    case "unknownColumn": {
-      const key = params.key ?? ""
-      const suggested = params.suggestion
+  const { code, params } = diagnostic
+  const column = language.byId.get(params.column ?? "")
+  // What the user may have meant: a column's key, an option's token.
+  const suggestion =
+    params.suggestion === undefined
+      ? undefined
+      : code === "unknownColumn"
         ? language.byId.get(params.suggestion)?.key
-        : undefined
-      return suggested
-        ? t("unknownColumnSuggestion", { key, suggestion: suggested })
-        : t("unknownColumn", { key })
-    }
-    case "columnNotFilterable":
-      return t("columnNotFilterable", { column })
-    case "unknownValue": {
-      const queryColumn = params.column
-        ? language.byId.get(params.column)
-        : undefined
-      const suggested =
-        params.suggestion !== undefined && queryColumn
-          ? language.valueToken(queryColumn, params.suggestion)
-          : undefined
-      return suggested
-        ? t("unknownValueSuggestion", { column, value, suggestion: suggested })
-        : t("unknownValue", { column, value })
-    }
-    case "notANumber":
-      return t("notANumber", { value })
-    case "badDate":
-      return t("badDate", { value })
-    case "ambiguousDate":
-      return params.reason === "twoDigitYear"
-        ? t("ambiguousTwoDigitYear", { value })
-        : params.reason === "month"
-          ? t("ambiguousMonth", { value })
-          : t("ambiguousNoYear", { value })
-    case "backwardsRange":
-      return t("backwardsRange", {
-        from: params.from ?? "",
-        to: params.to ?? "",
-      })
-    case "unsupportedOperator": {
-      // What happened, and what to type instead, with the table's own terms.
-      const { list, keep } = operatorExamples(language, sample)
-      if (params.operator === "OR")
-        return list === undefined
-          ? t("unsupportedOrNoList")
-          : t("unsupportedOr", { example: list })
-      // A leading minus or NOT: the term is left out alike.
-      return keep === undefined
-        ? t("unsupportedMinusNoFilter")
-        : t("unsupportedMinus", { example: keep })
-    }
-    case "exclusiveComparison":
-      return t("exclusiveComparison")
-    case "notComparable":
-      return t("notComparable", { column })
-    case "duplicateColumn":
-      return params.reason === "noMatch"
-        ? t("duplicateNoMatch", { column })
-        : t("duplicateNotCombinable", { column })
-  }
+        : column && language.valueToken(column, params.suggestion)
+  // `OR`, `NOT` and `-`: what to type instead, with the table's own terms
+  // (a leading minus and NOT leave their term out alike).
+  const or = params.operator === "OR"
+  const examples =
+    code === "unsupportedOperator" ? operatorExamples(language, sample) : {}
+  const example = or ? examples.list : examples.keep
+  const key =
+    code === "ambiguousDate"
+      ? `ambiguous${capital(params.reason ?? "noYear")}`
+      : code === "duplicateColumn"
+        ? `duplicate${capital(params.reason ?? "notCombinable")}`
+        : code === "unsupportedOperator"
+          ? `unsupported${or ? "Or" : "Minus"}${example ? "" : or ? "NoList" : "NoFilter"}`
+          : suggestion
+            ? `${code}Suggestion`
+            : code
+  return t(key as ProblemKey, {
+    key: params.key ?? "",
+    column:
+      column?.header ??
+      (params.column === undefined
+        ? ""
+        : (model.byId.get(params.column)?.header ?? params.column)),
+    value: params.value ?? "",
+    from: params.from ?? "",
+    to: params.to ?? "",
+    suggestion: suggestion ?? "",
+    example: example ?? "",
+  })
 }
 
 /** A filter as its chip reads: "Status: Producing, Drilling". */
@@ -285,72 +271,65 @@ type SuggestionGroup = {
   readonly items: ReadonlyArray<SuggestionRow>
 }
 
+/** The presets' names, and a relative one's by its unit. */
+const PRESET_KEYS: Partial<
+  Record<
+    string,
+    `preset${"Today" | "Yesterday" | `${"This" | "Last"}${"Month" | "Year"}`}`
+  >
+> = {
+  today: "presetToday",
+  yesterday: "presetYesterday",
+  thismonth: "presetThisMonth",
+  lastmonth: "presetLastMonth",
+  thisyear: "presetThisYear",
+  lastyear: "presetLastYear",
+}
+const UNIT_KEYS = {
+  d: "presetLastDays",
+  w: "presetLastWeeks",
+  m: "presetLastMonths",
+  y: "presetLastYears",
+} as const
+
 /** A preset's name in words: "Last 30 days". */
 function presetLabel(name: string, t: QueryT) {
   const relative = RELATIVE.exec(name)
-  if (relative) {
-    const count = Number(relative[1])
-    const key = (
-      {
-        d: "presetLastDays",
-        w: "presetLastWeeks",
-        m: "presetLastMonths",
-        y: "presetLastYears",
-      } as const
-    )[relative[2] as "d" | "w" | "m" | "y"]
-    return t(key, { count })
-  }
-  switch (name) {
-    case "today":
-      return t("presetToday")
-    case "yesterday":
-      return t("presetYesterday")
-    case "thismonth":
-      return t("presetThisMonth")
-    case "lastmonth":
-      return t("presetLastMonth")
-    case "thisyear":
-      return t("presetThisYear")
-    case "lastyear":
-      return t("presetLastYear")
-  }
-  return name
+  if (relative)
+    return t(UNIT_KEYS[relative[2] as keyof typeof UNIT_KEYS], {
+      count: Number(relative[1]),
+    })
+  const key = PRESET_KEYS[name]
+  return key ? t(key) : name
 }
+
+/** The comparisons' names (a date's `<` and `>` are before and after). */
+const COMPARISON_KEYS = {
+  "=": "equalTo",
+  ">": "moreThan",
+  ">=": "atLeast",
+  "<": "lessThan",
+  "<=": "atMost",
+  "..": "between",
+} as const
 
 /** A comparison's name, by the column's type. */
 function comparisonLabel(
-  operator: string,
+  operator: keyof typeof COMPARISON_KEYS,
   type: DataTableColumnType,
   t: QueryT
 ) {
-  if (operator === "..") return t("between")
-  if (type === "date")
-    return operator.startsWith("<") ? t("before") : t("after")
-  switch (operator) {
-    case "=":
-      return t("equalTo")
-    case ">":
-      return t("moreThan")
-    case ">=":
-      return t("atLeast")
-    case "<":
-      return t("lessThan")
-    default:
-      return t("atMost")
-  }
+  return t(
+    type !== "date" || operator === ".."
+      ? COMPARISON_KEYS[operator]
+      : operator.startsWith("<")
+        ? "before"
+        : "after"
+  )
 }
 
-const TYPE_KEYS = {
-  text: "typeText",
-  number: "typeNumber",
-  date: "typeDate",
-  boolean: "typeBoolean",
-  options: "typeOptions",
-} as const
-
-function typeLabel(type: DataTableColumnType, t: QueryT) {
-  return t(TYPE_KEYS[type])
-}
+const typeLabel = (type: DataTableColumnType, t: QueryT) =>
+  t(`type${capital(type)}`)
 
 /** An offer's name, for the list's text value and screen readers. */
 function suggestionLabel(
@@ -392,7 +371,22 @@ function suggestionLabel(
   }
 }
 
-/** The suggestions in their groups, with the calendar's row for a date value. */
+/** The groups, ordered by where they go: the calendar, the values, then comparisons. */
+const GROUPS = [
+  "calendar",
+  "columns",
+  "matching",
+  "values",
+  "presets",
+  "years",
+  "months",
+  "compare",
+] as const
+
+/**
+ * The suggestions in their groups (`QuerySuggestion.group`), with the
+ * calendar's row for a date value; the comparisons with the data's range.
+ */
 function groupSuggestions(
   suggestions: QuerySuggestions,
   language: QueryLanguage,
@@ -401,90 +395,56 @@ function groupSuggestions(
   t: QueryT,
   td: TableT
 ): Array<SuggestionGroup> {
-  const groups = new Map<
-    string,
-    { label: string; hint?: string; items: Array<SuggestionRow> }
-  >()
-  const column =
-    suggestions.column === undefined
-      ? undefined
-      : language.byId.get(suggestions.column)
-  const add = (value: string, label: string, row: SuggestionRow) => {
-    let group = groups.get(value)
-    if (!group) groups.set(value, (group = { label, items: [] }))
-    group.items.push(row)
+  const rows = new Map<string, Array<SuggestionRow>>()
+  const column = language.byId.get(suggestions.column ?? "")
+  const add = (group: string, row: SuggestionRow) => {
+    let items = rows.get(group)
+    if (!items) rows.set(group, (items = []))
+    items.push(row)
   }
   if (calendar)
-    add("calendar", "", {
+    add("calendar", {
       kind: "calendar",
       id: "calendar",
-      label: calendar === "single" ? t("pickDay") : t("pickDates"),
+      label: t(calendar === "single" ? "pickDay" : "pickDates"),
     })
-  for (const [index, suggestion] of suggestions.items.entries()) {
-    const row: SuggestionRow = {
+  suggestions.items.forEach((suggestion, index) =>
+    add(suggestion.group, {
       kind: "suggestion",
       id: `${suggestion.kind}:${index}:${suggestion.text}`,
       label: suggestionLabel(suggestion, language, formatter, t, td),
       suggestion,
-    }
-    const ordered = column?.type === "number" || column?.type === "date"
-    switch (suggestion.kind) {
-      case "column":
-        add("columns", t("columnsGroup"), row)
-        break
-      case "value":
-        if (suggestions.context === "word")
-          add("matching", t("matchingGroup"), row)
-        else add("values", column?.header ?? "", row)
-        break
-      case "empty":
-        if (ordered) add("compare", t("compareGroup"), row)
-        else add("values", column?.header ?? "", row)
-        break
-      case "comparison":
-        add("compare", t("compareGroup"), row)
-        break
-      case "preset":
-        add("presets", t("presetsGroup"), row)
-        break
-      case "year":
-        add("years", t("yearsGroup"), row)
-        break
-      case "month":
-        add("months", t("monthsGroup"), row)
-        break
-    }
-  }
+    })
+  )
   // The comparisons' hint: the data's range, as the column shows it.
-  const compare = groups.get("compare")
   const range = suggestions.items.find(
     (item): item is Extract<QuerySuggestion, { kind: "comparison" }> =>
       item.kind === "comparison" && item.min !== undefined
   )
-  if (compare && range && column && range.min !== undefined) {
-    const show = (n: number) =>
-      column.type === "date"
-        ? formatter.format(column.column, new Date(n))
-        : formatter.format(column.column, n)
-    compare.hint = t("dataRange", {
-      min: show(range.min),
-      max: show(range.max ?? range.min),
-    })
-  }
-  // Ordered by where they go: the calendar, the values, then comparisons.
-  const order = [
-    "calendar",
-    "columns",
-    "matching",
-    "values",
-    "presets",
-    "years",
-    "months",
-    "compare",
-  ]
-  return order.flatMap((value) => {
-    const group = groups.get(value)
-    return group ? [{ value, ...group }] : []
+  const show = (n: number) =>
+    formatter.format(column!.column, column!.type === "date" ? new Date(n) : n)
+  return GROUPS.flatMap((value) => {
+    const items = rows.get(value)
+    if (!items) return []
+    return [
+      {
+        value,
+        label:
+          value === "calendar"
+            ? ""
+            : value === "values"
+              ? (column?.header ?? "")
+              : t(`${value}Group`),
+        hint:
+          value === "compare" && range?.min !== undefined && column
+            ? t("dataRange", {
+                min: show(range.min),
+                max: show(range.max ?? range.min),
+              })
+            : undefined,
+        items,
+      },
+    ]
   })
 }
 
@@ -531,14 +491,6 @@ function textSample(column: QueryColumn, data: ReturnType<ColumnSample>) {
   return data.text ?? column.header.split(/\s+/)[0].toLowerCase()
 }
 
-const FINDS_KEYS = {
-  options: "findsOptions",
-  boolean: "findsBoolean",
-  text: "findsText",
-  number: "findsNumber",
-  date: "findsDate",
-} as const
-
 /**
  * The help's examples, from the table's filterable columns (`language`): one
  * per column (`columnExample`), then free text and "No value".
@@ -558,7 +510,7 @@ function helpExamples(
     if (column.type === "text") words ??= textSample(column, data)
     examples.push({
       query,
-      finds: t(FINDS_KEYS[column.type], { column: column.header }),
+      finds: t(`finds${capital(column.type)}`, { column: column.header }),
     })
   }
   // Quoted when the data's text would read otherwise (`-5`, `OR`, `a:b`).

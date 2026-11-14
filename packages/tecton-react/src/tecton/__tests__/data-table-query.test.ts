@@ -2162,6 +2162,7 @@ describe("the query model's words", () => {
       groupsOf(
         en.columns.map((column) => ({
           kind: "column" as const,
+          group: "columns" as const,
           column: column.id,
           key: column.key ?? "",
           type: column.type,
@@ -2188,10 +2189,34 @@ describe("the query model's words", () => {
     expect(
       groupsOf(
         [
-          { kind: "value", column: "status", value: "shut-in", ...offer },
-          { kind: "value", column: "subsea", value: true, ...offer },
-          { kind: "value", column: "subsea", value: false, ...offer },
-          { kind: "value", column: "name", value: "A-1", ...offer },
+          {
+            kind: "value",
+            group: "matching",
+            column: "status",
+            value: "shut-in",
+            ...offer,
+          },
+          {
+            kind: "value",
+            group: "matching",
+            column: "subsea",
+            value: true,
+            ...offer,
+          },
+          {
+            kind: "value",
+            group: "matching",
+            column: "subsea",
+            value: false,
+            ...offer,
+          },
+          {
+            kind: "value",
+            group: "matching",
+            column: "name",
+            value: "A-1",
+            ...offer,
+          },
         ],
         "word"
       )
@@ -2206,8 +2231,14 @@ describe("the query model's words", () => {
     expect(
       groupsOf(
         [
-          { kind: "value", column: "status", value: "drilling", ...offer },
-          { kind: "empty", column: "status", ...offer },
+          {
+            kind: "value",
+            group: "values",
+            column: "status",
+            value: "drilling",
+            ...offer,
+          },
+          { kind: "empty", group: "values", column: "status", ...offer },
         ],
         "value",
         "status"
@@ -2217,6 +2248,7 @@ describe("the query model's words", () => {
     const comparisons = (column: string, min?: number, max?: number) =>
       operators.map((operator) => ({
         kind: "comparison" as const,
+        group: "compare" as const,
         column,
         operator,
         ...(min === undefined ? {} : { min, max }),
@@ -2226,7 +2258,7 @@ describe("the query model's words", () => {
       groupsOf(
         [
           ...comparisons("td", 1000, 4100),
-          { kind: "empty", column: "td", ...offer },
+          { kind: "empty", group: "compare", column: "td", ...offer },
         ],
         "value",
         "td"
@@ -2268,14 +2300,23 @@ describe("the query model's words", () => {
         [
           ...presets.map((preset) => ({
             kind: "preset" as const,
+            group: "presets" as const,
             column: "spud",
             preset,
             ...range,
             ...offer,
           })),
-          { kind: "year", column: "spud", year: 2015, ...range, ...offer },
+          {
+            kind: "year",
+            group: "years",
+            column: "spud",
+            year: 2015,
+            ...range,
+            ...offer,
+          },
           {
             kind: "month",
+            group: "months",
             column: "spud",
             year: 2015,
             month: 5,

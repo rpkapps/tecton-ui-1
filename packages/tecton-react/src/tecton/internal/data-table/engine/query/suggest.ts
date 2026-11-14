@@ -68,11 +68,18 @@ type Offer = {
   readonly caret: number
 }
 
+/**
+ * The group an offer is listed in: the columns, the values that match a
+ * free word, a column's values, a date's presets, years and months, and
+ * the comparisons (with "No value" for a number or a date).
+ */
+type QuerySuggestionGroup =
+  "columns" | "matching" | "values" | "presets" | "years" | "months" | "compare"
+
 /** A run of days, as a date filter holds it (`to` is its last day's start). */
 type DayRange = { readonly from: Date; readonly to: Date }
 
-type QuerySuggestion = Offer &
-  (
+type QuerySuggestion = Offer & { readonly group: QuerySuggestionGroup } & (
     | {
         readonly kind: "column"
         readonly column: string
@@ -210,6 +217,7 @@ function suggestQuery(
       .sort((a, b) => a.score - b.score)
       .map(({ column }) => ({
         kind: "column" as const,
+        group: "columns" as const,
         column: column.id,
         key: column.key ?? "",
         type: column.type,
@@ -299,6 +307,7 @@ function suggestQuery(
             count: count ?? 0,
             item: {
               kind: "value",
+              group: "matching",
               column: column.id,
               value,
               ...(count === undefined ? {} : { count }),
@@ -349,6 +358,10 @@ function suggestQuery(
     return [
       {
         kind: "empty",
+        group:
+          column.type === "number" || column.type === "date"
+            ? "compare"
+            : "values",
         column: column.id,
         ...(count === undefined ? {} : { count }),
         ...(complete ? completing(EMPTY_WORDS[0], end) : open(EMPTY_WORDS[0])),
@@ -432,6 +445,7 @@ function suggestQuery(
         const token = language.valueToken(column, candidate.value)
         return {
           kind: "value",
+          group: "values",
           column: column.id,
           value: candidate.value,
           ...(candidate.count === undefined ? {} : { count: candidate.count }),
@@ -503,6 +517,7 @@ function suggestQuery(
           const token = valueToken(value.text)
           return {
             kind: "value",
+            group: "values",
             column: column.id,
             value: value.text,
             count: value.count,
@@ -550,6 +565,7 @@ function suggestQuery(
       for (const op of operators)
         out.push({
           kind: "comparison",
+          group: "compare",
           column: column.id,
           operator: op,
           ...(extent ? { min: extent.min, max: extent.max } : {}),
@@ -646,6 +662,7 @@ function suggestQuery(
       const count = countIn(r)
       out.push({
         kind: "preset",
+        group: "presets",
         column: column.id,
         preset: name,
         from: r.from,
@@ -659,6 +676,7 @@ function suggestQuery(
       const count = yearCount(y)
       out.push({
         kind: "year",
+        group: "years",
         column: column.id,
         year: y,
         from: r.from,
@@ -673,6 +691,7 @@ function suggestQuery(
       const r = range(toDay(y, m, 1), toDay(y, m + 1, 0))
       out.push({
         kind: "month",
+        group: "months",
         column: column.id,
         year: y,
         month: m,
@@ -724,4 +743,10 @@ function suggestQuery(
 }
 
 export { suggestQuery }
-export type { DayRange, QuerySuggestion, QuerySuggestions, SuggestOptions }
+export type {
+  DayRange,
+  QuerySuggestion,
+  QuerySuggestionGroup,
+  QuerySuggestions,
+  SuggestOptions,
+}

@@ -37,6 +37,7 @@ export { suggestQuery } from "./suggest"
 export type {
   DayRange,
   QuerySuggestion,
+  QuerySuggestionGroup,
   QuerySuggestions,
   SuggestOptions,
 } from "./suggest"
