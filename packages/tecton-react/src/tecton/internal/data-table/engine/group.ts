@@ -29,7 +29,7 @@ import type { Core } from "./core"
 import { dayFormat } from "./format"
 import { hasRanks, sortRows, sortTexts, type SortPass } from "./sort"
 import {
-  isEmptyValue,
+  isEmptyIn,
   toBoolean,
   toDay,
   toDayIn,
@@ -218,6 +218,9 @@ function dateGroupOrder<T>(
   }
 }
 
+/** An options column's option `""`, as a group's value (`""` is none). */
+const BLANK_OPTION = "\u0000"
+
 /**
  * How rows are grouped by `column`: each row's value as a string, numbers
  * at the precision shown, dates by the day shown (`dateKeyReader`), `""`
@@ -228,8 +231,10 @@ function groupValueReader<T>(column: EngineColumn<T>): (item: T) => string {
     column.type === "date" ? dateKeyReader(column.format) : undefined
   return (item) => {
     const value = column.getValue(item)
-    if (isEmptyValue(value)) return ""
+    if (isEmptyIn(column, value)) return ""
     switch (column.type) {
+      case "options":
+        return value === "" ? BLANK_OPTION : String(value)
       case "date": {
         const time = toTime(value)
         return time === undefined || !dateKey ? "" : dateKey(time)

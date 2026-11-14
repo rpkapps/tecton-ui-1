@@ -6,7 +6,7 @@
  */
 import type { EngineColumn } from "./columns"
 import type { DataTableAggregate, DataTableValue } from "./types"
-import { isEmptyValue, toNumber, toTime } from "./values"
+import { isEmptyIn, toBoolean, toNumber, toTime } from "./values"
 
 function aggregate<T>(
   column: EngineColumn<T>,
@@ -52,10 +52,17 @@ function aggregate<T>(
       return dates ? new Date(best) : best
     }
     case "count": {
+      // A boolean column counts its trues, read as its cells read them.
+      const booleans = column.type === "boolean"
       let count = 0
       for (const item of items) {
         const value = column.getValue(item)
-        if (value !== false && !isEmptyValue(value)) count++
+        if (
+          booleans
+            ? toBoolean(value) === true
+            : value !== false && !isEmptyIn(column, value)
+        )
+          count++
       }
       return count
     }
@@ -63,7 +70,7 @@ function aggregate<T>(
       const distinct = new Set<unknown>()
       for (const item of items) {
         const value = column.getValue(item)
-        if (isEmptyValue(value)) continue
+        if (isEmptyIn(column, value)) continue
         distinct.add(value instanceof Date ? value.getTime() : value)
       }
       return distinct.size

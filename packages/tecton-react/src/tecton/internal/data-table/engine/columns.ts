@@ -169,7 +169,12 @@ function sortReader<T>(
     case "options":
       return (item) => {
         const value = getValue(item)
-        if (value === null || value === undefined || value === "")
+        // `""` is a value when an option has it.
+        if (
+          value === null ||
+          value === undefined ||
+          (value === "" && !optionIndex.has(""))
+        )
           return undefined
         // Values the options do not list sort after the ones they do.
         return optionIndex.get(String(value)) ?? optionIndex.size

@@ -22,6 +22,17 @@ function isEmptyValue(value: DataTableValue) {
   )
 }
 
+/**
+ * `isEmptyValue` in a column: `""` is a value of an options column that
+ * has an option `""` (its `optionIndex`; other types have none).
+ */
+function isEmptyIn(
+  column: { readonly optionIndex: ReadonlyMap<string, number> },
+  value: DataTableValue
+) {
+  return isEmptyValue(value) && !(value === "" && column.optionIndex.has(""))
+}
+
 function toNumber(value: DataTableValue): number | undefined {
   if (typeof value === "number") return Number.isNaN(value) ? undefined : value
   if (typeof value === "string") {
@@ -193,6 +204,7 @@ function dayOf(date: Date, timeZone?: string) {
 
 export {
   dayOf,
+  isEmptyIn,
   isEmptyValue,
   startOfDay,
   toBoolean,

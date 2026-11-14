@@ -1679,6 +1679,48 @@ describe("engine: grouping", () => {
     )
   })
 
+  it('sorts and groups an option `""` as a value when an option has it', () => {
+    const blank = createColumns<Well>([
+      { id: "name", header: "Well" },
+      {
+        id: "status",
+        header: "Status",
+        type: "options",
+        options: [
+          { value: "producing", label: "Producing" },
+          { value: "", label: "Unassigned" },
+        ],
+      },
+    ])
+    const list = [
+      well("1", { status: null }),
+      well("2", { status: "" }),
+      well("3", { status: "producing" }),
+    ]
+    const own = (partial: DataTablePartialView) =>
+      createDataTableEngine<Well>().run({
+        items: list,
+        columns: blank,
+        view: reconcileView(
+          blank,
+          partial,
+          createDefaultView(blank, undefined, ALL),
+          ALL
+        ),
+      })
+    // In the options' order, no value last.
+    const sorted = own({
+      sorting: [{ column: "status", direction: "ascending" }],
+    })
+    expect(ids(sorted.rows)).toEqual(["3", "2", "1"])
+    const result = own({ grouping: ["status"] })
+    expect(groups(result.rows).map((row) => [row.text, row.count])).toEqual([
+      ["Producing", 1],
+      ["Unassigned", 1],
+      ["", 1],
+    ])
+  })
+
   it("nests groups by each grouping column", () => {
     const result = grouped({ grouping: ["status", "operator"] })
     expect(
@@ -1791,6 +1833,47 @@ describe("aggregate", () => {
     expect(aggregate(status, wells, "countDistinct")).toBe(3)
     expect(aggregate(active, wells, "countDistinct")).toBe(2)
     expect(aggregate(spud, [...wells, well("y")], "countDistinct")).toBe(3)
+  })
+
+  it("counts a boolean column's trues as its cells read them", () => {
+    const lenient = [
+      "false",
+      "true",
+      0,
+      1,
+      " FALSE ",
+    ] as unknown as Array<boolean>
+    expect(
+      aggregate(
+        active,
+        lenient.map((value, i) => well(`x${i}`, { active: value })),
+        "count"
+      )
+    ).toBe(2)
+  })
+
+  it('counts an option `""` as a value when an option has it', () => {
+    const blank = createColumns<Well>([
+      {
+        id: "status",
+        header: "Status",
+        type: "options",
+        options: [
+          { value: "", label: "Unassigned" },
+          { value: "producing", label: "Producing" },
+        ],
+      },
+    ])
+    const column = getColumnModel(blank).byId.get("status") as typeof oil
+    const list = [
+      well("x", { status: "" }),
+      well("y", { status: "producing" }),
+      well("z", { status: null }),
+    ]
+    expect(aggregate(column, list, "count")).toBe(2)
+    expect(aggregate(column, list, "countDistinct")).toBe(2)
+    // Without such an option, "" is no value.
+    expect(aggregate(status, list, "count")).toBe(1)
   })
 
   it("calls an aggregate function with the values and items", () => {
