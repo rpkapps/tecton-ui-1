@@ -192,7 +192,16 @@ describe("trees", () => {
       false,
     ])
     expect(open.matchingIds()).toEqual(["t-1", "t-1-l"])
-    expect([...open.expandedByFilter()]).toEqual(["field-1"])
+    // Field 1 for the match below it, t-1 as the user opened it.
+    expect(
+      items(open.rows)
+        .filter((row) => row.expanded)
+        .map((row) => row.id)
+    ).toEqual(["field-1", "t-1"])
+    expect(items(collapsed.rows).map((row) => row.expanded)).toEqual([
+      true,
+      false,
+    ])
   })
 
   it("leaves context rows out of select all and totals; totals sum leaves", () => {

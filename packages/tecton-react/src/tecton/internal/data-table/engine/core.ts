@@ -21,6 +21,8 @@ type RowSet = {
    * (context), which do not count as matching; `null` when there are none.
    */
   readonly context: Uint8Array | null
+  /** How many rows of the set are matches: all of them but the context rows. */
+  readonly matches: number
   /** In a filtered tree: 1 for the rows with a match below them, shown expanded. */
   readonly holdsMatch: Uint8Array | null
 }
@@ -81,6 +83,7 @@ function buildCore<T>(
       children: null,
       all,
       context: null,
+      matches: data.length,
       holdsMatch: null,
       unloaded: null,
       idIssues: issues(ids, positions),
@@ -116,6 +119,7 @@ function buildCore<T>(
     children,
     all: range(items.length),
     context: null,
+    matches: items.length,
     holdsMatch: null,
     unloaded: flags,
     idIssues: issues(ids, positions),

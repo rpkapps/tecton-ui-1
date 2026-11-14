@@ -234,8 +234,6 @@ type DataTableRowModel<T> = {
    * outermost first; empty when not grouped.
    */
   groupPath: (id: string) => ReadonlyArray<string>
-  /** The rows shown expanded because a match is below them, while filtering a tree. */
-  expandedByFilter: () => ReadonlySet<string>
   /** The totals row over the matching items (a tree's matching leaves). */
   totals: () => TotalsRow<T>
   /**
@@ -775,15 +773,6 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
           }
           return values
         },
-        expandedByFilter: lazy(() => {
-          const { holdsMatch } = set
-          if (!filtering || !holdsMatch) return EMPTY_SET
-          const found = new Set<string>()
-          holdsMatch.forEach((flag, position) => {
-            if (flag) found.add(ids[position])
-          })
-          return found
-        }),
         totals: lazy(() => {
           // A tree sums its leaves: a parent's figures are usually its children's.
           const counted = rows.children
@@ -884,9 +873,7 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
         autoExpanded,
         steadyCollapsed(closedOf(input.collapsedGroups))
       )
-      const matchingCount = set.context
-        ? set.all.length - set.context.reduce((count, flag) => count + flag, 0)
-        : set.all.length
+      const matchingCount = set.matches
       const page = paging(
         allRows,
         input.pagination != null,

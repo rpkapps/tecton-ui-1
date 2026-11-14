@@ -397,6 +397,7 @@ function filterRows<T>(core: Core<T>, predicate: RowPredicate<T>): RowSet {
       children: null,
       all: roots,
       context: null,
+      matches: count,
       holdsMatch: null,
     }
   }
@@ -404,6 +405,7 @@ function filterRows<T>(core: Core<T>, predicate: RowPredicate<T>): RowSet {
   for (let i = 0; i < n; i++) if (predicate(i, items[i])) matched[i] = 1
   const keptChildren: Array<Uint32Array | undefined> = []
   const context = new Uint8Array(n)
+  let contextCount = 0
   const holdsMatch = new Uint8Array(n)
   // The kept rows of `rows` and whether a match is among them or below.
   const visit = (
@@ -424,6 +426,7 @@ function filterRows<T>(core: Core<T>, predicate: RowPredicate<T>): RowSet {
       } else if (below?.kept.length) {
         keptChildren[row] = below.kept
         context[row] = 1
+        contextCount++
         kept.push(row)
         match = true
       }
@@ -448,6 +451,7 @@ function filterRows<T>(core: Core<T>, predicate: RowPredicate<T>): RowSet {
     children: keptChildren,
     all: Uint32Array.from(all),
     context,
+    matches: all.length - contextCount,
     holdsMatch,
   }
 }

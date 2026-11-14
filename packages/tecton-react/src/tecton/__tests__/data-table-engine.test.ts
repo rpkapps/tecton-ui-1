@@ -1518,7 +1518,12 @@ describe("engine: tree", () => {
   it("keeps the ancestors of matches, shown expanded", () => {
     const result = runTree({ view: view({ search: "lateral" }) })
     expect(ids(result.rows)).toEqual(["field-1", "t-1", "t-1-l"])
-    expect([...result.expandedByFilter()].sort()).toEqual(["field-1", "t-1"])
+    // Shown expanded for the match below them.
+    expect(
+      items(result.rows)
+        .filter((row) => row.expanded)
+        .map((row) => row.id)
+    ).toEqual(["field-1", "t-1"])
     // The ancestors are context: shown, but not matches.
     expect(result.matchingIds()).toEqual(["t-1-l"])
     expect(result.matchingCount).toBe(1)
@@ -1535,7 +1540,23 @@ describe("engine: tree", () => {
     })
     expect(ids(shell.rows)).toEqual(["field-3", "s-1"])
     expect(shell.matchingIds()).toEqual(["s-1"])
-    expect(runTree().expandedByFilter().size).toBe(0)
+    expect(items(runTree().rows).some((row) => row.expanded)).toBe(false)
+  })
+
+  it("counts a filtered tree's matches as it filters, not on every run", () => {
+    const engine = createDataTableEngine<Well>()
+    const input = {
+      items: tree,
+      itemToChildren: (w: Well) => w.children,
+      view: view({ search: "lateral" }),
+    }
+    expect(run(input, engine).matchingCount).toBe(1)
+    // A run that only opens a row reads no row's flags again.
+    const reduce = vi.spyOn(Uint8Array.prototype, "reduce")
+    const opened = run({ ...input, expanded: ["t-1-l"] }, engine)
+    expect(opened.matchingCount).toBe(1)
+    expect(reduce).not.toHaveBeenCalled()
+    reduce.mockRestore()
   })
 
   it("flattens deep trees", () => {
