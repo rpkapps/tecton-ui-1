@@ -807,7 +807,7 @@ describe("DataTableSearch syntax=query: the help", () => {
 })
 
 describe("DataTableSearch syntax=query: the field stays put", () => {
-  it("(a) copies the input's metrics to the mirror on every render, resize and font load, across the md breakpoint", async () => {
+  it("(a) copies the input's metrics to the mirror on every render, resize and font load, across the md breakpoint, its text one run", async () => {
     const user = userEvent.setup({ delay: null })
     // The input is `text-base md:text-sm`: 16px below the breakpoint.
     let size = 16
@@ -818,7 +818,12 @@ describe("DataTableSearch syntax=query: the field stays put", () => {
         if (!(element instanceof HTMLInputElement)) return style
         return new Proxy(style, {
           get(target, name) {
-            if (name === "font") return `400 ${size}px / 24px Figtree`
+            // The font's longhands: its shorthand reads as "" while a
+            // variant is not its initial one.
+            if (name === "font") return ""
+            if (name === "fontSize") return `${size}px`
+            if (name === "fontFamily") return "Figtree"
+            if (name === "fontVariant") return "tabular-nums"
             if (name === "letterSpacing") return size === 16 ? "0px" : "0.1px"
             if (name === "paddingInlineStart") return "6px"
             const value = Reflect.get(target, name)
@@ -833,26 +838,34 @@ describe("DataTableSearch syntax=query: the field stays put", () => {
       value: fonts,
     })
     render(<Wells />)
-    expect(mirror().style.font).toContain("16px")
+    expect(mirror().style.fontSize).toBe("16px")
+    expect(mirror().style.fontFamily).toBe("Figtree")
+    expect(mirror().style.fontVariant).toBe("tabular-nums")
     // The window widens past the breakpoint: the input is 14px now.
     size = 14
     act(() => {
       window.dispatchEvent(new Event("resize"))
     })
-    expect(mirror().style.font).toContain("14px")
+    expect(mirror().style.fontSize).toBe("14px")
     expect(mirror().style.letterSpacing).toBe("0.1px")
     expect(mirror().parentElement!.style.insetInlineStart).toBe("6px")
     // And narrower again, on a render: no resize needed.
     size = 16
     await user.click(field())
-    await user.type(field(), "a")
-    expect(mirror().style.font).toContain("16px")
+    await user.type(field(), "status:a")
+    expect(mirror().style.fontSize).toBe("16px")
+    // One inline run, as the input's text: its spans are no flex items,
+    // which would break kerning and ligatures between them.
+    expect(mirror().children).toHaveLength(1)
+    expect(mirror().firstElementChild!.tagName).toBe("SPAN")
+    expect(mirror().firstElementChild!.children.length).toBeGreaterThan(1)
+    expect(mirror().textContent).toBe("status:a")
     // A web font arriving changes the metrics too.
     size = 15
     act(() => {
       fonts.dispatchEvent(new Event("loadingdone"))
     })
-    expect(mirror().style.font).toContain("15px")
+    expect(mirror().style.fontSize).toBe("15px")
     delete (document as { fonts?: unknown }).fonts
   })
 
@@ -1004,7 +1017,8 @@ describe("DataTableSearch syntax=query: the calendar and the list's line", () =>
       const element = await calendar()
       await waitFor(() => expect(selectedDays(element)).toEqual([day]))
     }
-  })
+    // Typed four times, a calendar each: slow beside other test files.
+  }, 20_000)
 
   it("reads a date with its own comma as one item, and a pick replaces all of it", async () => {
     const user = userEvent.setup({ delay: null })
@@ -1019,7 +1033,7 @@ describe("DataTableSearch syntax=query: the calendar and the list's line", () =>
       within(await calendar()).getAllByRole("button", { name: /15/ })[0]
     )
     expect(field()).toHaveValue("spuddate:2020-06-15 ")
-  })
+  }, 20_000)
 
   it("reads a term's problem as the list's line, and the search's line once typing pauses", async () => {
     const user = userEvent.setup({ delay: null })

@@ -15,7 +15,7 @@
  *   whose own text is transparent (its caret and selection stay native).
  *   The mirror copies the input's font metrics and inline padding on every
  *   render, window resize and font load, so its letters stay over the
- *   input's at any breakpoint.
+ *   input's at any breakpoint (`useMirror`).
  * - The suggestions at the caret (`suggestQuery`): columns with their type,
  *   values with their rows, "No value", comparisons with the data's range,
  *   a date's presets with their days, years and months, and the date
@@ -25,23 +25,25 @@
  * - The list is open the whole time the field has focus, whatever is typed,
  *   picked or pressed in the field (its buttons, its underlined problems);
  *   with no suggestion to offer, it shows one line about the term at the
- *   caret (`statusOf`), announced politely. It closes, with no animation
- *   while focus stays, when focus leaves the field and its popups, when
- *   Escape dismisses it (until the user types, clicks in the field or
- *   presses ↓), and while the help takes its place.
+ *   caret (`statusOf`, or its problem), announced politely. It closes, with
+ *   no animation while focus stays, when focus leaves the field and its
+ *   popups, when Escape dismisses it (until the user types, clicks in the
+ *   field or presses ↓), and while the help takes its place.
  * - The field never changes size as it is focused or pressed: its buttons
  *   stay under the pointer.
  * - The help ("?") lists the table's filterable columns with examples.
  *
- * The suggestions count the rows through the engine's own index (client
- * mode); in server mode an options column's `count` is all there is, and
- * the view goes to the application as the plain search's does.
+ * Its state is in hooks of their own, in the same chunk: the field's
+ * (`query-field.ts`), the list's (`query-list.ts`), and the list's parts
+ * (`query-suggestions.tsx`). The suggestions count the rows through the
+ * engine's own index (client mode); in server mode an options column's
+ * `count` is all there is, and the view goes to the application as the
+ * plain search's does.
  */
 import * as React from "react"
 import { cn } from "cn"
 import { CalendarIcon, CircleAlertIcon, SearchIcon, XIcon } from "lucide-react"
 
-import { Badge } from "@tecton/react/badge"
 import {
   Combobox,
   ComboboxCollection,
@@ -58,68 +60,49 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@tecton/react/input-group"
-import { Kbd } from "@tecton/react/kbd"
 
-import { CalendarLoading } from "../calendar-loading"
-import { useTranslations, type Translator } from "../i18n/translations"
+import { useTranslations } from "../i18n/translations"
 import {
   useDataTableContext,
   useDataTableSelector,
   useNumberFormat,
 } from "./context"
-import { useDelayedCommit } from "./delayed-commit"
 import { getColumnModel } from "./engine/columns"
-import { sameFilters } from "./engine/view"
 import {
-  applyQuery,
-  createQuerySource,
   getQueryLanguage,
   parseQuery,
-  readDateItem,
-  serializeQuery,
-  suggestQuery,
   type ParsedQuery,
-  type QueryLanguage,
-  type QuerySource,
-  type QuerySuggestion,
 } from "./engine/query/index"
-import { dayOfDate, partsOf, type Day } from "./engine/query/dates"
-import { EMPTY_WORDS } from "./engine/query/syntax"
-import type { SearchParts } from "./engine/engine"
-import type { DataTableDateRange } from "./engine/types"
-import { DATE_INPUT, type DateInputModule } from "./date-input"
-import { useFeature } from "./lazy"
 import { QueryHelp } from "./query-help"
 import {
-  dayText,
-  groupSuggestions,
+  useCaret,
+  useFieldWidth,
+  useHandoff,
+  useKeepFocus,
+  useListOpen,
+  useMirror,
+  useQueryDraft,
+  type QueryHandoff,
+} from "./query-field"
+import {
+  useDateItem,
+  useQueryKeys,
+  useQuerySource,
+  useSamples,
+  useSuggestions,
+} from "./query-list"
+import {
   helpExamples,
   problemMessage,
   statusOf,
   summaryOf,
   termAt,
-  typeLabel,
   understood,
   type SuggestionGroup,
   type SuggestionRow,
 } from "./query-model"
+import { KeyHint, QueryCalendar, SuggestionView } from "./query-suggestions"
 import { MirrorText, type QueryProblem } from "./query-text"
-
-/** How long typing pauses before the problem being typed shows. */
-const TYPING_PAUSE = 650
-
-const NO_GROUPS: Array<SuggestionGroup> = []
-
-/** What the plain field held when the query layer took its place. */
-type QueryHandoff = {
-  /** What was typed in it; `null` when nothing was. */
-  readonly text: string | null
-  readonly selectionStart: number | null
-  readonly selectionEnd: number | null
-  readonly focused: boolean
-  /** "?" was pressed before the layer loaded: the help opens. */
-  readonly help: boolean
-}
 
 type QuerySearchProps = Omit<
   React.ComponentProps<"input">,
@@ -127,15 +110,6 @@ type QuerySearchProps = Omit<
 > & {
   label: string
   handoff: QueryHandoff
-}
-
-/** The query sources of the table's search parts, kept with them. */
-const sources = new WeakMap<object, QuerySource>()
-
-function sourceOf(parts: SearchParts<unknown>) {
-  let source = sources.get(parts)
-  if (!source) sources.set(parts, (source = createQuerySource(parts)))
-  return source
 }
 
 /**
@@ -157,18 +131,6 @@ function continuedList(parsed: ParsedQuery, next: string) {
     ? at - 1
     : undefined
 }
-
-/** The input's metrics the mirror must share for its glyphs to line up. */
-const METRICS = [
-  "font",
-  "letterSpacing",
-  "wordSpacing",
-  "fontFeatureSettings",
-  "fontVariationSettings",
-  "fontKerning",
-  "textTransform",
-  "direction",
-] as const
 
 function QuerySearch({
   label,
@@ -205,253 +167,63 @@ function QuerySearch({
     [model, formatter.locale, yes, no]
   )
 
-  // The query the view reads as; the presets the field holds are kept.
-  const previous = React.useRef<ParsedQuery | undefined>(undefined)
-  const written = React.useMemo(
-    () =>
-      serializeQuery(
-        language,
-        { filters, search },
-        { previous: previous.current }
-      ),
-    [language, filters, search]
-  )
-  const latest = React.useRef(language)
-  latest.current = language
-  const sameMeaning = React.useCallback((a: string, b: string) => {
-    if (a === b) return true
-    const x = parseQuery(latest.current, a)
-    const y = parseQuery(latest.current, b)
-    return x.search === y.search && sameFilters(x.filters, y.filters)
-  }, [])
-  const { draft, change, flush } = useDelayedCommit({
-    value: written,
-    commit: (text) => {
-      const parsed = parseQuery(latest.current, text)
-      return (
-        actions.updateView(
-          (view) => applyQuery(latest.current, view, parsed),
-          (before, after) =>
-            sameFilters(before.filters, after.filters) ? "search" : "filter"
-        ) ||
-        applyQuery(latest.current, actions.currentView(), parsed) ===
-          actions.currentView()
-      )
-    },
+  const view = { filters, search }
+  const { written, draft, parsed, change, flush } = useQueryDraft(
+    language,
+    view,
+    actions,
     delay,
-    clears,
-    same: sameMeaning,
-  })
-  const parsed = React.useMemo(
-    () => parseQuery(language, draft),
-    [language, draft]
+    clears
   )
-  previous.current = parsed
 
   const inputRef = React.useRef<HTMLInputElement | null>(null)
   const mirrorRef = React.useRef<HTMLDivElement | null>(null)
   const helpPopup = React.useRef<HTMLDivElement | null>(null)
   const calendarRef = React.useRef<HTMLDivElement | null>(null)
-  const pendingCaret = React.useRef<number | null>(null)
-  const pendingSelection = React.useRef<{
-    text: string
-    start: number
-    end: number
-  } | null>(null)
-  const highlighted = React.useRef<SuggestionRow | undefined>(undefined)
-  // The highlighted row is one the user moved to (with ↑ ↓ or the pointer).
-  const navigated = React.useRef(false)
   // An example of the help was chosen: focus goes back to the field.
   const exampleChosen = React.useRef(false)
   const [group, setGroup] = React.useState<HTMLElement | null>(null)
   const [popup, setPopup] = React.useState<HTMLElement | null>(null)
-  const [caret, setCaret] = React.useState(draft.length)
-  const [focused, setFocused] = React.useState(false)
-  // The list is open while the field has focus; `false` once Escape
-  // dismissed it, until the user types, clicks in the field or presses ↓.
-  const [open, setOpen] = React.useState(false)
-  const [settled, setSettled] = React.useState(true)
   const [helpOpen, setHelpOpen] = React.useState(handoff.help)
-  const settleTimer = React.useRef<ReturnType<typeof setTimeout> | undefined>(
-    undefined
+  // The field's input group, from the input's wrapper (a stable callback:
+  // an inline one would set it again, and render again, on every commit).
+  const groupRef = React.useCallback(
+    (element: HTMLDivElement | null) =>
+      setGroup(
+        element?.closest<HTMLElement>("[data-slot=input-group]") ?? null
+      ),
+    []
   )
-  React.useEffect(() => () => clearTimeout(settleTimer.current), [])
 
-  // The plain field's state, taken over once: its text is parsed (and
-  // applied), and focus and the selection stay where they were. It showed
-  // the search only: the view's filters go before what it held, the
-  // selection moved past them.
-  React.useLayoutEffect(() => {
-    const input = inputRef.current
-    const shown = handoff.text ?? search
-    const filtersText = serializeQuery(language, { filters, search: "" })
-    const text =
-      handoff.text === null
-        ? written
-        : filtersText && handoff.text
-          ? `${filtersText} ${handoff.text}`
-          : filtersText || handoff.text
-    if (text !== written) change(text)
-    if (input && handoff.focused) {
-      input.focus()
-      const shift = text.endsWith(shown)
-        ? text.length - shown.length
-        : text.length
-      const at = (offset: number | null) =>
-        Math.min(text.length, (offset ?? shown.length) + shift)
-      // Placed once the input holds the text (the render `change` makes).
-      pendingSelection.current = {
-        text,
-        start: at(handoff.selectionStart),
-        end: at(handoff.selectionEnd),
-      }
-      setCaret(at(handoff.selectionStart))
-      setFocused(true)
-      setOpen(true)
-    }
-    // Once, on mount.
-  }, [])
+  const syncMirror = useMirror(inputRef, mirrorRef)
+  const { caret, readCaret, placeCaret, select } = useCaret(
+    inputRef,
+    draft.length,
+    syncMirror
+  )
+  useFieldWidth(group, popup)
+  useKeepFocus(group, inputRef)
+  // Focus within the field, its help or its list is still the field's.
+  const inPopup = (element: Element | null | undefined) =>
+    Boolean(
+      element &&
+      (popup?.contains(element) || helpPopup.current?.contains(element))
+    )
+  const {
+    focused,
+    open,
+    setOpen,
+    settled,
+    setSettled,
+    markTyping,
+    focus,
+    leave,
+    onOpenChange,
+  } = useListOpen(group, inPopup, flush)
+  useHandoff(handoff, language, view, written, change, inputRef, select, focus)
 
-  /** The input's caret, as the selection has it. */
-  const readCaret = React.useCallback(() => {
-    const input = inputRef.current
-    if (input) setCaret(input.selectionStart ?? input.value.length)
-  }, [])
-
-  // The mirror follows the input's horizontal scroll and its metrics, read
-  // again on every render, window resize and font load (never once only:
-  // the input's size changes at a breakpoint and with zoom, and a mirror
-  // left at the old size would draw its letters away from the caret).
-  const syncMirror = React.useCallback(() => {
-    const input = inputRef.current
-    const layer = mirrorRef.current
-    if (!input || !layer) return
-    const style = getComputedStyle(input)
-    for (const name of METRICS)
-      if (layer.style[name] !== style[name]) layer.style[name] = style[name]
-    const clip = layer.parentElement
-    if (clip) {
-      // Clipped where the input clips its text: at its content box.
-      clip.style.insetInlineStart = style.paddingInlineStart
-      clip.style.insetInlineEnd = style.paddingInlineEnd
-    }
-    layer.style.transform = `translateX(${-input.scrollLeft}px)`
-  }, [])
-  React.useLayoutEffect(() => {
-    const input = inputRef.current
-    if (input && pendingCaret.current !== null) {
-      const at = pendingCaret.current
-      pendingCaret.current = null
-      input.focus()
-      input.setSelectionRange(at, at)
-    }
-    const selection = pendingSelection.current
-    if (input && selection && input.value === selection.text) {
-      pendingSelection.current = null
-      input.setSelectionRange(selection.start, selection.end)
-    }
-    syncMirror()
-  })
-  React.useEffect(() => {
-    const input = inputRef.current
-    // Not every environment has font loading events (a test's DOM).
-    const fonts = (document as { fonts?: FontFaceSet }).fonts
-    const onSelection = () => {
-      if (input && document.activeElement === input) {
-        readCaret()
-        syncMirror()
-      }
-    }
-    window.addEventListener("resize", syncMirror)
-    fonts?.addEventListener("loadingdone", syncMirror)
-    input?.addEventListener("scroll", syncMirror)
-    document.addEventListener("selectionchange", onSelection)
-    return () => {
-      window.removeEventListener("resize", syncMirror)
-      fonts?.removeEventListener("loadingdone", syncMirror)
-      input?.removeEventListener("scroll", syncMirror)
-      document.removeEventListener("selectionchange", onSelection)
-    }
-  }, [readCaret, syncMirror])
-
-  // The list is as wide as the field on every frame: the positioner reads
-  // its anchor a frame late, so the field's width is copied into the
-  // popup from a ResizeObserver, which runs after layout and before paint.
-  React.useLayoutEffect(() => {
-    if (!group || !popup) return
-    const follow = () =>
-      popup.style.setProperty(
-        "--field-width",
-        `${group.getBoundingClientRect().width}px`
-      )
-    follow()
-    if (typeof ResizeObserver === "undefined") return
-    const observer = new ResizeObserver(follow)
-    observer.observe(group)
-    return () => observer.disconnect()
-  }, [group, popup])
-
-  // A press anywhere in the field around the input (its icon, its padding,
-  // its clear and help buttons) leaves focus in the input it already has:
-  // the field is never blurred and focused again, nor its list closed and
-  // opened again, by a press on its own parts.
-  React.useEffect(() => {
-    if (!group) return
-    const keep = (event: MouseEvent) => {
-      const input = inputRef.current
-      if (
-        event.button === 0 &&
-        input &&
-        event.target !== input &&
-        document.activeElement === input
-      )
-        event.preventDefault()
-    }
-    group.addEventListener("mousedown", keep)
-    return () => group.removeEventListener("mousedown", keep)
-  }, [group])
-
-  const placeCaret = (at: number) => {
-    pendingCaret.current = at
-    setCaret(at)
-  }
-
-  const markTyping = () => {
-    setSettled(false)
-    clearTimeout(settleTimer.current)
-    settleTimer.current = setTimeout(() => setSettled(true), TYPING_PAUSE)
-  }
-
-  // Values of the table's data for examples: the help's, and the terms a
-  // problem's message offers.
-  const sampleOf = React.useMemo(() => {
-    const source = server ? undefined : sourceOf(rowModel.searchParts())
-    const none = { filters: {}, search: "" }
-    return (queryColumn: QueryLanguage["columns"][number]) => {
-      if (!source) return {}
-      if (queryColumn.type === "number" || queryColumn.type === "date") {
-        const extent = source.extent(queryColumn.id, none)
-        if (!extent) return {}
-        if (queryColumn.type === "date")
-          return {
-            year: partsOf(
-              dayOfDate(new Date(extent.max), queryColumn.timeZone).day
-            ).year,
-          }
-        const middle = (extent.min + extent.max) / 2
-        const step =
-          10 ** Math.max(0, Math.floor(Math.log10(Math.abs(middle) || 1)))
-        return { number: Math.round(middle / step) * step }
-      }
-      if (queryColumn.type === "text") {
-        const top = [...source.facets(queryColumn.id, none).counts]
-          .sort((a, b) => b[1] - a[1])
-          .at(0)
-        return top ? { text: top[0] } : {}
-      }
-      return {}
-    }
-  }, [server, rowModel])
+  const source = useQuerySource(server, rowModel)
+  const sampleOf = useSamples(source)
 
   // Problems in words, and those to show: not the one being typed until
   // typing pauses.
@@ -464,9 +236,10 @@ function QuerySearch({
       })),
     [parsed, language, model, t, sampleOf]
   )
-  const shown = (problem: QueryProblem) =>
-    !focused || settled || caret < problem.start || caret > problem.end
-  const visible = problems.filter(shown)
+  const visible = problems.filter(
+    (problem) =>
+      !focused || settled || caret < problem.start || caret > problem.end
+  )
   const term = termAt(parsed, caret)
   const termProblem = term
     ? visible.find(
@@ -478,90 +251,37 @@ function QuerySearch({
     ? language.byId.get(filterTerm.column)
     : undefined
 
-  // The date value at the caret: the calendar, in range or single-day mode.
-  const date = React.useMemo(
-    () => readDateItem(language, parsed, caret),
-    [language, parsed, caret]
-  )
-  const calendarMode: "range" | "single" | null = !date
-    ? null
-    : date.operator && date.operator !== "="
-      ? "single"
-      : "range"
-  const dateFeature = useFeature(DATE_INPUT, calendarMode !== null)
-  const loadDates = dateFeature.load
-  React.useEffect(() => {
-    if (calendarMode !== null) loadDates()
-  }, [calendarMode, loadDates])
+  const {
+    date,
+    calendarMode,
+    module: dates,
+  } = useDateItem(language, parsed, caret)
 
   // Open while the field has focus, unless Escape dismissed it; the help,
   // drawn where the list is, takes its place while it is open.
   const popupOpen = open && focused && !helpOpen
-  const suggestions = React.useMemo(() => {
-    if (!popupOpen) return null
-    const options = {
-      source: server ? undefined : sourceOf(rowModel.searchParts()),
-    }
-    const here = suggestQuery(language, parsed, caret, options)
-    // Right after a term that is complete (`td:>3000|`), there is nothing
-    // to offer for it: offer the next term instead, as after a space, so a
-    // field clicked at its end never shows an empty list. Not after free
-    // text, still being typed, or a term that filters nothing (an unknown
-    // column or value): their line says what they search for, or that
-    // there is nothing to suggest. Nor in a list still being written
-    // (`well:a-12,`): its next item is the column's.
-    const atTermEnd =
-      term?.kind === "filter" &&
-      term.value !== undefined &&
-      caret > 0 &&
-      !/[\s,]/.test(draft[caret - 1]) &&
-      (caret === draft.length || /\s/.test(draft[caret]))
-    if (here.items.length > 0 || !atTermEnd) return here
-    const spaced = `${draft.slice(0, caret)} ${draft.slice(caret)}`
-    const next = suggestQuery(
-      language,
-      parseQuery(language, spaced),
-      caret + 1,
-      options
-    )
-    if (next.items.length === 0) return here
-    // Written at the caret, after the space this adds.
-    return {
-      ...next,
-      start: caret,
-      end: caret,
-      items: next.items.map((item) => ({
-        ...item,
-        text: ` ${item.text}`,
-        caret: item.caret + 1,
-      })),
-    }
-  }, [popupOpen, language, parsed, caret, server, rowModel, draft, term])
-  const groups = React.useMemo(
-    () =>
-      suggestions
-        ? groupSuggestions(
-            suggestions,
-            language,
-            formatter,
-            calendarMode,
-            t,
-            td
-          )
-        : [],
-    [suggestions, language, formatter, calendarMode, t, td]
+  const list = useSuggestions(
+    popupOpen,
+    language,
+    parsed,
+    caret,
+    term,
+    source,
+    calendarMode,
+    formatter,
+    t,
+    td
   )
-  const rowCount = groups.reduce((sum, g) => sum + g.items.length, 0)
+  const { suggestions, items, rowCount, highlighted, navigated } = list
   const hint =
     !termProblem && filterTerm
       ? understood(filterTerm, language, model, formatter, td)
       : null
   // In place of the suggestions when there are none, so the list never
   // shrinks to nothing: what the term at the caret does (a date term's
-  // line above it says so already).
-  // A term's problem is its line, read out (the banner atop the list is
-  // not a live region). The search's line waits for a pause in typing,
-  // never read out on every key.
+  // line above it says so already). A term's problem is its line, read out
+  // (the banner atop the list is not a live region); the search's line
+  // waits for a pause in typing, never read out on every key.
   const status =
     popupOpen && rowCount === 0
       ? (termProblem?.message ??
@@ -569,40 +289,9 @@ function QuerySearch({
           ? t("noSuggestions")
           : statusOf(term, settled, model, formatter, t, td)))
       : null
-  const typed = suggestions
-    ? draft.slice(suggestions.start, Math.max(suggestions.start, caret)).trim()
-    : ""
-  const autoHighlight =
-    typed !== "" &&
-    (suggestions?.context === "column" || suggestions?.context === "value")
-  // Something to complete at the caret: typed text, or a filter term's
-  // missing value (`status:`). Otherwise (after a space, after a complete
-  // term) Enter applies the query and Tab moves on, unless the user moved
-  // to a row.
-  const completing =
-    typed !== "" ||
-    (filterTerm?.incomplete === true && caret > filterTerm.key.end)
-
-  // The list keeps its highlighted index as its rows change, so a row
-  // highlighted as the user typed would stay highlighted in the next list
-  // (the next term's, once a pick completes a term), and Enter would pick
-  // it. With nothing to complete and no row moved to, the highlight goes:
-  // one render with no rows (in the same frame, never painted) drops it.
-  const [unhighlight, setUnhighlight] = React.useState(false)
-  React.useLayoutEffect(() => {
-    if (unhighlight) setUnhighlight(false)
-    else if (
-      popupOpen &&
-      !completing &&
-      !navigated.current &&
-      highlighted.current !== undefined
-    )
-      setUnhighlight(true)
-  })
 
   const replace = (from: number, to: number, text: string, at: number) => {
-    const next = draft.slice(0, from) + text + draft.slice(to)
-    change(next)
+    change(draft.slice(0, from) + text + draft.slice(to))
     placeCaret(from + at)
     setSettled(true)
     highlighted.current = undefined
@@ -622,18 +311,17 @@ function QuerySearch({
     })
   }
 
+  // The list stays: after an offer that completes its term (it ends with a
+  // space), it offers the next term.
   const apply = (row: SuggestionRow) => {
     if (row.kind === "calendar") return focusCalendar()
-    if (!suggestions) return
-    const { suggestion } = row
-    replace(
-      suggestions.start,
-      suggestions.end,
-      suggestion.text,
-      suggestion.caret
-    )
-    // The list stays: after an offer that completes its term (it ends with
-    // a space), it offers the next term.
+    if (suggestions)
+      replace(
+        suggestions.start,
+        suggestions.end,
+        row.suggestion.text,
+        row.suggestion.caret
+      )
   }
 
   /** Days picked on the calendar, written as the query writes them. */
@@ -661,18 +349,18 @@ function QuerySearch({
     setOpen(true)
   }
 
-  // Focus within the field, its help or its list is still the field's.
-  const inPopup = (element: Element | null | undefined) =>
-    Boolean(
-      element &&
-      (popup?.contains(element) || helpPopup.current?.contains(element))
-    )
-  const leave = () => {
-    setFocused(false)
-    setOpen(false)
-    setSettled(true)
-    flush()
-  }
+  const keys = useQueryKeys(
+    popupOpen,
+    draft === "",
+    list,
+    apply,
+    () => {
+      setSettled(true)
+      flush()
+    },
+    setOpen,
+    clear
+  )
 
   const describedBy = React.useId()
   const summary = React.useMemo(
@@ -709,8 +397,8 @@ function QuerySearch({
         {summary}
       </span>
       <Combobox<SuggestionRow>
-        items={unhighlight ? NO_GROUPS : groups}
-        filteredItems={unhighlight ? NO_GROUPS : groups}
+        items={items}
+        filteredItems={items}
         filter={null}
         value={null}
         onValueChange={(row) => {
@@ -733,23 +421,8 @@ function QuerySearch({
           requestAnimationFrame(readCaret)
         }}
         open={popupOpen}
-        onOpenChange={(next, details) => {
-          if (!next && details.reason === "item-press") return
-          // A press on the field's own parts around the input (its clear
-          // and help buttons, an underlined problem, its icon): the list
-          // knows only the input as its own, but these are the field's too.
-          if (!next && details.reason === "outside-press") {
-            const target = details.event.target
-            if (target instanceof Node && group?.contains(target)) return
-          }
-          if (!next && details.reason === "focus-out") {
-            const target = (details.event as FocusEvent | undefined)
-              ?.relatedTarget as Element | null
-            if (inPopup(target) || inPopup(document.activeElement)) return
-          }
-          setOpen(next)
-        }}
-        autoHighlight={autoHighlight}
+        onOpenChange={onOpenChange}
+        autoHighlight={list.autoHighlight}
         onItemHighlighted={(row, details) => {
           highlighted.current = row
           if (row === undefined) navigated.current = false
@@ -773,12 +446,7 @@ function QuerySearch({
           render={(inputProps: React.ComponentProps<"input">) => (
             <div
               className="relative flex min-w-0 flex-1 self-stretch"
-              ref={(element) =>
-                setGroup(
-                  element?.closest<HTMLElement>("[data-slot=input-group]") ??
-                    null
-                )
-              }
+              ref={groupRef}
             >
               <InputGroupInput
                 {...inputProps}
@@ -797,26 +465,29 @@ function QuerySearch({
                   data-slot="data-table-query-mirror"
                   className="absolute inset-y-0 start-0 flex items-center whitespace-pre"
                 >
-                  <MirrorText
-                    parsed={parsed}
-                    problems={visible}
-                    openProblem={
-                      focused && settled && !popupOpen && termProblem
-                        ? termProblem
-                        : null
-                    }
-                    onPlaceCaret={(at) => {
-                      placeCaret(at)
-                      setOpen(true)
-                    }}
-                  />
+                  {/* One inline run, as the input's text is: a flex item per
+                      span would break kerning and ligatures between them. */}
+                  <span>
+                    <MirrorText
+                      parsed={parsed}
+                      problems={visible}
+                      openProblem={
+                        focused && settled && !popupOpen && termProblem
+                          ? termProblem
+                          : null
+                      }
+                      onPlaceCaret={(at) => {
+                        placeCaret(at)
+                        setOpen(true)
+                      }}
+                    />
+                  </span>
                 </div>
               </div>
             </div>
           )}
           onFocus={() => {
-            setFocused(true)
-            setOpen(true)
+            focus()
             // A press places the caret after focusing the field: read
             // again then (and on `selectionchange`).
             readCaret()
@@ -836,50 +507,7 @@ function QuerySearch({
             }
           ) => {
             onKeyDown?.(event)
-            if (event.defaultPrevented) return
-            const rows = groups.flatMap((g) => g.items)
-            const first = rows.find((row) => row.kind !== "calendar")
-            const current = highlighted.current
-            // Tab completes what is typed (a column's key, a value) or the
-            // row moved to; with nothing to complete, it moves focus on:
-            // the list, open the whole time, never keeps Tab in the field.
-            if (
-              event.key === "Tab" &&
-              !event.shiftKey &&
-              popupOpen &&
-              (completing ||
-                (navigated.current && current?.kind !== "calendar"))
-            ) {
-              const target =
-                current?.kind === "calendar" ? first : (current ?? first)
-              if (!target) return
-              event.preventDefault()
-              event.preventBaseUIHandler?.()
-              apply(target)
-            } else if (event.key === "Enter") {
-              event.preventDefault()
-              event.preventBaseUIHandler?.()
-              // A row moved to is picked; otherwise the query applies now,
-              // and the list stays.
-              if (popupOpen && current) apply(current)
-              else {
-                setSettled(true)
-                flush()
-              }
-            } else if (event.key === "Escape") {
-              if (popupOpen) {
-                event.preventDefault()
-                event.stopPropagation()
-                event.preventBaseUIHandler?.()
-                setOpen(false)
-              } else if (draft !== "") {
-                event.preventDefault()
-                event.stopPropagation()
-                event.preventBaseUIHandler?.()
-                clear()
-                setOpen(false)
-              }
-            } else if (event.key === "ArrowDown" && !popupOpen) setOpen(true)
+            if (!event.defaultPrevented) keys(event)
           }}
         >
           <InputGroupAddon>
@@ -1037,7 +665,7 @@ function QuerySearch({
               >
                 <QueryCalendar
                   rootRef={calendarRef}
-                  module={dateFeature.module}
+                  module={dates}
                   mode={calendarMode}
                   operator={date?.operator ?? ""}
                   day={date?.day}
@@ -1068,261 +696,6 @@ function QuerySearch({
           </div>
         </ComboboxContent>
       </Combobox>
-    </div>
-  )
-}
-
-function KeyHint({
-  keys,
-  children,
-}: {
-  keys: ReadonlyArray<string>
-  children: React.ReactNode
-}) {
-  return (
-    <span className="inline-flex items-center gap-1.5">
-      <span className="inline-flex gap-0.5">
-        {keys.map((key) => (
-          <Kbd key={key}>{key}</Kbd>
-        ))}
-      </span>
-      {children}
-    </span>
-  )
-}
-
-/** A suggestion's row: its key or value, what it is, and its rows. */
-function SuggestionView({
-  row,
-  language,
-  format,
-  t,
-}: {
-  row: SuggestionRow
-  language: QueryLanguage
-  format: Intl.NumberFormat
-  t: Translator<"dataTableQuery">
-}) {
-  if (row.kind === "calendar")
-    return (
-      <>
-        <CalendarIcon aria-hidden className="text-muted-foreground" />
-        <span className="min-w-0 truncate">{row.label}</span>
-      </>
-    )
-  const s: QuerySuggestion = row.suggestion
-  const count =
-    "count" in s && s.count !== undefined ? (
-      <span className="ms-auto shrink-0 ps-3 text-xs text-muted-foreground tabular-nums">
-        {format.format(s.count)}
-      </span>
-    ) : null
-  const column = language.byId.get(s.column)
-  const code = (text: string, tone = "text-blue-830") => (
-    <code
-      className={cn("w-22 shrink-0 truncate font-mono text-[0.8125rem]", tone)}
-    >
-      {text}
-    </code>
-  )
-  switch (s.kind) {
-    case "column":
-      return (
-        <>
-          {code(`${s.key}:`)}
-          <span className="min-w-0 truncate">{row.label}</span>
-          <span className="ms-auto shrink-0 ps-3 text-xs text-muted-foreground">
-            {typeLabel(s.type, t)}
-          </span>
-        </>
-      )
-    case "value": {
-      const option =
-        column?.type === "options"
-          ? column.column.options.find((o) => o.value === s.value)
-          : undefined
-      return (
-        <>
-          {s.text.includes(":") && code(`${column?.key ?? ""}:`)}
-          {option?.variant ? (
-            <Badge variant={option.variant} appearance="outline">
-              {row.label}
-            </Badge>
-          ) : (
-            <span className="min-w-0 truncate">{row.label}</span>
-          )}
-          {count}
-        </>
-      )
-    }
-    case "empty":
-      return (
-        <>
-          {code(EMPTY_WORDS[0], "text-saffron-830")}
-          <span className="min-w-0 truncate text-muted-foreground">
-            {row.label}
-          </span>
-          {count}
-        </>
-      )
-    case "comparison":
-      return (
-        <>
-          {code(s.operator, "text-orchid-830")}
-          <span className="min-w-0 truncate">{row.label}</span>
-        </>
-      )
-    case "preset":
-    case "year":
-    case "month": {
-      const days =
-        s.kind === "year"
-          ? null
-          : new Intl.DateTimeFormat(format.resolvedOptions().locale, {
-              dateStyle: "medium",
-              timeZone: "UTC",
-            }).formatRange(
-              Date.UTC(...ymd(s.from, column?.timeZone)),
-              Date.UTC(...ymd(s.to, column?.timeZone))
-            )
-      return (
-        <>
-          {code(
-            s.kind === "preset" ? s.preset : s.text.trim(),
-            // A narrow list keeps a preset's name and days; its code is
-            // in the field once picked.
-            s.kind === "preset"
-              ? "text-green-830 @max-[26rem]/popup:hidden"
-              : "text-foreground"
-          )}
-          {s.kind !== "year" && <span className="shrink-0">{row.label}</span>}
-          {days && s.kind === "preset" && (
-            <span className="min-w-0 truncate text-xs text-muted-foreground">
-              {days}
-            </span>
-          )}
-          {count}
-        </>
-      )
-    }
-  }
-}
-
-/** A day's year, month and day in `timeZone`, for `Date.UTC`. */
-function ymd(
-  date: Date,
-  timeZone: string | undefined
-): [number, number, number] {
-  const p = partsOf(dayOfDate(date, timeZone).day)
-  return [p.year, p.month, p.day]
-}
-
-type DateModule = NonNullable<DateInputModule | undefined>
-
-/**
- * The calendar of the suggestions, for a date value: the date filter's own
- * (`DateRangePicker`'s), in range mode for a bare or `..` value and single
- * day mode after `<` `>` `<=` `>=`, showing the item's days. A pick writes
- * them as the query writes days. Pointer presses keep focus in the field;
- * from the keyboard, the calendar's row in the list moves focus to a day,
- * and Escape gives it back.
- */
-function QueryCalendar({
-  module,
-  mode,
-  operator,
-  day,
-  value,
-  timeZone,
-  rootRef,
-  onPick,
-  onEscape,
-  onLeave,
-  t,
-}: {
-  module: DateModule | undefined
-  mode: "range" | "single"
-  operator: string
-  /** The day a comparison names. */
-  day: Day | undefined
-  /** The days of the date item at the caret. */
-  value: DataTableDateRange | undefined
-  timeZone: string | undefined
-  rootRef: React.Ref<HTMLDivElement>
-  onPick: (text: string) => void
-  onEscape: () => void
-  onLeave: (next: Element | null) => void
-  t: Translator<"dataTableQuery">
-}) {
-  const local = (date: Date | undefined) => {
-    if (!date) return undefined
-    const [year, month, day] = ymd(date, timeZone)
-    return new Date(year, month, day)
-  }
-  const caption =
-    mode === "range"
-      ? t("calendarRange")
-      : operator === "<"
-        ? t("calendarBefore")
-        : operator === ">"
-          ? t("calendarAfter")
-          : operator === "<=" || operator === "≤"
-            ? t("calendarOnOrBefore")
-            : t("calendarOnOrAfter")
-  const single = (() => {
-    if (day === undefined) return undefined
-    const p = partsOf(day)
-    return new Date(p.year, p.month, p.day)
-  })()
-  return (
-    <div
-      ref={rootRef}
-      data-slot="data-table-query-calendar"
-      className="flex shrink-0 flex-col items-center"
-      onMouseDown={(event) => {
-        if ((event.target as HTMLElement).closest("button"))
-          event.preventDefault()
-      }}
-      onKeyDown={(event) => {
-        if (event.key === "Escape") {
-          event.preventDefault()
-          event.stopPropagation()
-          onEscape()
-        }
-      }}
-      onBlur={(event) => {
-        const next = event.relatedTarget
-        if (!event.currentTarget.contains(next)) onLeave(next)
-      }}
-    >
-      <p className="w-full px-3 pt-2 text-xs text-muted-foreground">
-        {caption}
-      </p>
-      {!module ? (
-        <CalendarLoading spinner />
-      ) : mode === "single" ? (
-        <module.SingleCalendar
-          key={single?.getTime() ?? "none"}
-          value={single}
-          onPick={(day) => onPick(dayText(day))}
-          captionLayout="label"
-          className="bg-transparent p-2"
-        />
-      ) : (
-        <module.RangeCalendar
-          key={`${value?.from?.getTime()}-${value?.to?.getTime()}`}
-          value={
-            value ? { from: local(value.from), to: local(value.to) } : undefined
-          }
-          numberOfMonths={1}
-          className="bg-transparent p-2"
-          onPick={(range) => {
-            const from = dayText(range.from)
-            const to = dayText(range.to)
-            onPick(from === to ? from : `${from}..${to}`)
-          }}
-        />
-      )}
     </div>
   )
 }

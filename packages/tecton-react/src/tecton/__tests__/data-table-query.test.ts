@@ -2396,15 +2396,15 @@ describe("the query model's words", () => {
 
 describe("instants at their edges", () => {
   it("reads an instant's short forms, and refuses a time or day that is not one", () => {
-    const from = (text: string) =>
-      (filterOf(`spud:>=${text}`, "spud") as { ranges: Array<{ from: Date }> })
-        .ranges[0].from
-    expect(from("2015-06-30t10:30z")).toEqual(
-      new Date("2015-06-30T10:30:00.000Z")
-    )
-    expect(from("2015-06-30T10:30:00.5+0530")).toEqual(
-      new Date("2015-06-30T05:00:00.500Z")
-    )
+    const from = (text: string) => filterOf(`spud:>=${text}`, "spud")
+    expect(from("2015-06-30t10:30z")).toEqual({
+      type: "date",
+      ranges: [{ from: new Date("2015-06-30T10:30:00.000Z") }],
+    })
+    expect(from("2015-06-30T10:30:00.5+0530")).toEqual({
+      type: "date",
+      ranges: [{ from: new Date("2015-06-30T05:00:00.500Z") }],
+    })
     for (const text of [
       "2015-06-30T24:00Z",
       "2015-06-30T10:60Z",

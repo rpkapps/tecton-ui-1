@@ -51,7 +51,12 @@ describe("DataTableSearch syntax=query: the hand-off keeps the view's filters", 
     await user.type(plain, "gulx")
     await user.keyboard("{ArrowLeft}")
     await act(async () => chunk.open())
-    const field = await screen.findByRole("combobox", { name: "Search" })
+    // The layer's modules load (and, in a test, compile) first.
+    const field = await screen.findByRole(
+      "combobox",
+      { name: "Search" },
+      { timeout: 10_000 }
+    )
     const text = "status:drilling gulx"
     expect(field).toHaveValue(text)
     expect(field).toHaveFocus()

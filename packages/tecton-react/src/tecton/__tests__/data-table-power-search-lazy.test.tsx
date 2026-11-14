@@ -93,7 +93,12 @@ describe("DataTableSearch syntax=query on demand", () => {
     // The caret moved back into the text.
     await user.keyboard("{Home}{ArrowRight>6/}")
     await act(async () => chunk.open())
-    const field = await screen.findByRole("combobox", { name: "Search" })
+    // The layer's modules load (and, in a test, compile) first.
+    const field = await screen.findByRole(
+      "combobox",
+      { name: "Search" },
+      { timeout: 10_000 }
+    )
     expect(field).toHaveValue("status:drilling well")
     expect(field).toHaveFocus()
     expect((field as HTMLInputElement).selectionStart).toBe(6)
@@ -132,7 +137,12 @@ describe("DataTableSearch syntax=query on demand", () => {
       hydrateRoot(container, tree, { onRecoverableError: recoverable })
     )
     await act(async () => chunk.open())
-    const field = await screen.findByRole("combobox", { name: "Search" })
+    // The layer's modules load (and, in a test, compile) first.
+    const field = await screen.findByRole(
+      "combobox",
+      { name: "Search" },
+      { timeout: 10_000 }
+    )
     expect(field).toHaveFocus()
     expect((field as HTMLInputElement).selectionStart).toBe(2)
     expect(recoverable).not.toHaveBeenCalled()
