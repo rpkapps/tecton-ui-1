@@ -252,27 +252,48 @@ function hidesEveryColumn<T>(
   return leaves.length > 0 && leaves.every((leaf) => set.has(leaf.id))
 }
 
+/**
+ * The items of `input` (when it is an array) that `valid` keeps, a column
+ * (`columnOf`) once, at most `limit` of them; none unless `on`. `input`
+ * itself when it keeps every item.
+ */
+function keepValid<TItem>(
+  input: ReadonlyArray<TItem> | undefined,
+  on: boolean,
+  valid: (item: TItem) => boolean,
+  columnOf: (item: TItem) => string,
+  limit = Infinity
+): ReadonlyArray<TItem> {
+  const list = Array.isArray(input) ? input : []
+  const seen = new Set<string>()
+  const next = on
+    ? list
+        .filter((item) => {
+          const keep = valid(item) && !seen.has(columnOf(item))
+          if (keep) seen.add(columnOf(item))
+          return keep
+        })
+        .slice(0, limit)
+    : []
+  return next.length === list.length && Array.isArray(input) ? input : next
+}
+
 function reconcileSorting<T>(
   model: ColumnModel<T>,
   sorting: ReadonlyArray<DataTableSort> | undefined,
   capabilities: ViewCapabilities
 ): ReadonlyArray<DataTableSort> {
-  const list = Array.isArray(sorting) ? sorting : []
-  const seen = new Set<string>()
-  const next = capabilities.sortable
-    ? list.filter((sort) => {
-        const valid =
-          typeof sort === "object" &&
-          sort !== null &&
-          model.byId.get(sort.column)?.sortable === true &&
-          (sort.direction === "ascending" || sort.direction === "descending") &&
-          !seen.has(sort.column)
-        if (valid) seen.add(sort.column)
-        return valid
-      })
-    : []
-  const kept = capabilities.multiSort === false ? next.slice(0, 1) : next
-  return kept.length === list.length && Array.isArray(sorting) ? sorting : kept
+  return keepValid(
+    sorting,
+    capabilities.sortable,
+    (sort) =>
+      typeof sort === "object" &&
+      sort !== null &&
+      model.byId.get(sort.column)?.sortable === true &&
+      (sort.direction === "ascending" || sort.direction === "descending"),
+    (sort) => sort.column,
+    capabilities.multiSort === false ? 1 : Infinity
+  )
 }
 
 function reconcileGrouping<T>(
@@ -280,18 +301,12 @@ function reconcileGrouping<T>(
   grouping: ReadonlyArray<string> | undefined,
   capabilities: ViewCapabilities
 ): ReadonlyArray<string> {
-  const list = Array.isArray(grouping) ? grouping : []
-  const seen = new Set<string>()
-  const next = capabilities.groupable
-    ? list.filter((id) => {
-        const valid = model.byId.get(id)?.groupable === true && !seen.has(id)
-        if (valid) seen.add(id)
-        return valid
-      })
-    : []
-  return next.length === list.length && Array.isArray(grouping)
-    ? grouping
-    : next
+  return keepValid(
+    grouping,
+    capabilities.groupable,
+    (id) => model.byId.get(id)?.groupable === true,
+    (id) => id
+  )
 }
 
 function finiteNumber(value: unknown) {

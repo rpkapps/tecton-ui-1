@@ -26,7 +26,7 @@
  */
 import type { EngineColumn } from "./columns"
 import type { Core } from "./core"
-import { dayFormat } from "./format"
+import { dayFormat, remembered } from "./format"
 import { hasRanks, sortRows, sortTexts, type SortPass } from "./sort"
 import {
   isEmptyIn,
@@ -89,19 +89,6 @@ function numberKey<T>(column: EngineColumn<T>, number: number) {
   return format.format(number)
 }
 
-/** `fn`, remembering its result for each time. */
-function perTime(fn: (time: number) => string) {
-  const known = new Map<number, string>()
-  return (time: number) => {
-    let key = known.get(time)
-    if (key === undefined) {
-      key = fn(time)
-      known.set(time, key)
-    }
-    return key
-  }
-}
-
 /** The parts of a day a date's group key is made of, in order. */
 const KEY_PARTS = ["era", "year", "month", "day", "weekday"] as const
 
@@ -130,7 +117,7 @@ function dateKeyReader(
   const day = dayFormat(options)
   const zone = day.timeZone
   if (isWholeDay(day))
-    return perTime(zone ? (time) => toDayIn(time, zone) : toDay)
+    return remembered(zone ? (time) => toDayIn(time, zone) : toDay)
   const format = new Intl.DateTimeFormat("en-US", {
     timeZone: zone,
     calendar: day.calendar,
@@ -141,7 +128,7 @@ function dateKeyReader(
     day: day.day && "2-digit",
     weekday: day.weekday && "short",
   })
-  return perTime((time) => {
+  return remembered((time) => {
     const parts = new Map(
       format.formatToParts(time).map((part) => [part.type, part.value])
     )

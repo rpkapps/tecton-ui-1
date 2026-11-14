@@ -382,6 +382,7 @@ export {
   getFormatter,
   hasNoValue,
   numberUnit,
+  remembered,
   resolveLocale,
 }
 export type { FormatLabels, Formatter, NumberUnit }
