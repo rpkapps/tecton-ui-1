@@ -5,7 +5,7 @@
  */
 import type { Translator } from "../i18n/translations"
 import { announce } from "../primitives/live-announcer"
-import { resolveLocale } from "./engine/index"
+import { getListFormat, resolveLocale } from "./engine/index"
 
 /** `grouping` with `column` as its last level, or without it. */
 function toggleGrouping(
@@ -25,9 +25,7 @@ function announceGrouping(
   locale: string | undefined
 ) {
   if (grouping.length === 0) return announce(t("ungrouped"))
-  const list = new Intl.ListFormat(resolveLocale(locale), {
-    type: "conjunction",
-  })
+  const list = getListFormat(resolveLocale(locale), "conjunction")
   announce(t("groupedBy", { columnNames: list.format(grouping.map(headerOf)) }))
 }
 

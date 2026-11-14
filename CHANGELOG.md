@@ -24,9 +24,11 @@ write entries and cut a release.
   no-results states, server mode (`dataMode="server"`), CSV export, keyboard navigation as a grid
   and the whole view (sort, filters, columns, page) as one controlled or uncontrolled value.
   Every filter value in the view is a list a row matches any item of, with `empty: true` for "No
-  value": `values` for text (several texts in its popover, as removable chips), options and yes /
-  no (checkboxes), and `ranges` for numbers (`{ min?, max?, minExclusive?, maxExclusive? }`) and
-  dates (`{ from?, to? }`), whose popover edits the first range and says how many more there are.
+  value": `values` for text (several texts in its popover, as removable chips; a quoted text keeps
+  its comma, `"Smith, John"`), options and yes / no (checkboxes, which keep chosen values the
+  options do not list), and `ranges` for numbers (`{ min?, max?, minExclusive?, maxExclusive? }`)
+  and dates (`{ from?, to? }`), whose popover edits the first range and says how many more there
+  are.
   A date-only string in a saved view's date filter (`"2024-03-01"`) is the start of that day in the
   column's `format.timeZone` (else the local zone), so the view keeps the same days in every zone.
   `useDataTable()` reads the table from custom parts. Its text is translated into the 34 locales.

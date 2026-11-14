@@ -2,55 +2,29 @@
  * A filter's value in words, for its `DataTableFilter` button and its chip
  * in `DataTableActiveFilters`, each item of its list side by side ("A-12,
  * B-3"; with `short`, "3 selected" past two): the texts a text filter looks
- * for, a number range ("1,000–3,000", "≥ 1,000", "> 1,000", "> 1,000 and ≤ 3,000" with an
- * exclusive bound), a range of days (one day when both
- * ends are the same), Yes / No, the options' labels ("Producing,
- * Drilling"), each with its "No value"
- * ("No value" alone, "1,000–3,000 or no value", "Producing, No value").
- * Numbers read as the column formats them, days as its date fields (its
- * `dateStyle`, else medium) in its time zone, never its time; a custom
- * filter value has no words (`null`).
+ * for, a number range ("1,000–3,000", "≥ 1,000", "> 1,000", "> 1,000 and ≤
+ * 3,000" with an exclusive bound), a range of days (one day when both ends
+ * are the same), Yes / No, the options' labels ("Producing, Drilling"),
+ * each with its "No value" ("No value" alone, "1,000–3,000 or no value",
+ * "Producing, No value"). Numbers read as the column formats them, days as
+ * its date fields (its `dateStyle`, else medium) in its time zone, never
+ * its time; a custom filter value has no words (`null`).
  */
 import type { Translator } from "../i18n/translations"
-import type {
-  DataTableFilterValue,
-  EngineColumn,
-  Formatter,
+import {
+  getListFormat,
+  type DataTableFilterValue,
+  type EngineColumn,
+  type Formatter,
 } from "./engine/index"
+import {
+  listOf,
+  type ListFilterType,
+  type ListItem,
+} from "./engine/filter-lists"
+import { dayFormat, getDateFormat } from "./engine/format"
 import type { DataTableDateRange, DataTableNumberRange } from "./engine/types"
 import { dayOf } from "./engine/values"
-
-const dayFormats = new Map<string, Intl.DateTimeFormat>()
-
-/** A date column's days, without their time: its date fields and zone. */
-function dayFormat<T>(column: EngineColumn<T>, locale: string) {
-  const {
-    dateStyle,
-    timeZone,
-    calendar,
-    numberingSystem,
-    era,
-    year,
-    month,
-    day,
-    weekday,
-  } = (column.format ?? {}) as Intl.DateTimeFormatOptions
-  const fields = { era, year, month, day, weekday }
-  const own = Object.values(fields).some((field) => field !== undefined)
-  const options: Intl.DateTimeFormatOptions = {
-    ...(dateStyle || !own ? { dateStyle: dateStyle ?? "medium" } : fields),
-    timeZone,
-    calendar,
-    numberingSystem,
-  }
-  const key = `${locale}|${JSON.stringify(options)}`
-  let format = dayFormats.get(key)
-  if (!format) {
-    format = new Intl.DateTimeFormat(locale, options)
-    dayFormats.set(key, format)
-  }
-  return format
-}
 
 function filterText<T>(
   column: EngineColumn<T>,
@@ -62,7 +36,11 @@ function filterText<T>(
   if (value.type === "custom") return null
   if (value.type === "options")
     return optionsText(column, value, formatter, t, short)
-  const items = itemTexts(column, value, formatter, t)
+  const words = ITEM_TEXTS[value.type] as ItemText<T, typeof value.type>
+  const items = (listOf(value) as ReadonlyArray<never>).flatMap((item) => {
+    const text = words(item, column, formatter, t)
+    return text ? [text] : []
+  })
   const count = items.length + (value.empty ? 1 : 0)
   if (short && count > 2) return selected(count, formatter, t)
   const text = items.length ? listText(items, formatter) : null
@@ -71,7 +49,10 @@ function filterText<T>(
   return text ? t("filterOrNoValue", { value: text }) : t("noValue")
 }
 
-/** "3 selected": a filter's items past two, on its button. */
+/**
+ * "3 selected": a filter's items past two, on its button, whatever its
+ * type (the key is named after the options filter, the first to have it).
+ */
 const selected = <T>(
   count: number,
   formatter: Formatter<T>,
@@ -84,42 +65,35 @@ const selected = <T>(
 
 /** Items side by side: "A-12, B-3". */
 const listText = <T>(items: ReadonlyArray<string>, formatter: Formatter<T>) =>
-  new Intl.ListFormat(formatter.locale, {
-    style: "short",
-    type: "unit",
-  }).format(items)
+  getListFormat(formatter.locale, "unit").format(items)
 
-/** The words of each item of a filter's list, its "No value" aside. */
-function itemTexts<T>(
+/** The words of an item of a filter's list; `null` for none. */
+type ItemText<T, TType extends ListFilterType> = (
+  item: ListItem<TType>,
   column: EngineColumn<T>,
-  value: Exclude<DataTableFilterValue, { type: "custom" | "options" }>,
   formatter: Formatter<T>,
   t: Translator<"dataTable">
-): Array<string> {
-  switch (value.type) {
-    case "text":
-      return value.values.map((text) => text.trim()).filter(Boolean)
-    case "number":
-      return value.ranges.flatMap((range) => {
-        const text = numberText(column, range, formatter, t)
-        return text === null ? [] : [text]
-      })
-    case "date": {
-      const days = dayFormat(column, formatter.locale)
-      return value.ranges.flatMap((range) => {
-        const text = dateText(range, days, t)
-        return text === null ? [] : [text]
-      })
-    }
-    case "boolean":
-      return value.values.map((wanted) => formatter.format(column, wanted))
-  }
+) => string | null
+
+/** Each item's words, by the filter's type (an options filter's are its labels, `optionsText`). */
+const ITEM_TEXTS: {
+  [TType in Exclude<ListFilterType, "options">]: ItemText<unknown, TType>
+} = {
+  text: (text) => text.trim() || null,
+  number: numberText,
+  date: (range, column, formatter, t) =>
+    dateText(
+      range,
+      getDateFormat(formatter.locale, dayFormat(column.format)),
+      t
+    ),
+  boolean: (wanted, column, formatter) => formatter.format(column, wanted),
 }
 
 /** A number range in words; `null` without a bound. */
 function numberText<T>(
-  column: EngineColumn<T>,
   { min, max, minExclusive, maxExclusive }: DataTableNumberRange,
+  column: EngineColumn<T>,
   formatter: Formatter<T>,
   t: Translator<"dataTable">
 ) {

@@ -56,6 +56,7 @@ export {
   DEFAULT_LABELS,
   foldText,
   getFormatter,
+  getListFormat,
   numberUnit,
   resolveLocale,
 } from "./format"

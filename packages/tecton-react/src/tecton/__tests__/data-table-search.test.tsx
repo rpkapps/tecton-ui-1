@@ -315,6 +315,57 @@ describe("DataTableFilter", () => {
     expect(filterButton("Status")).toHaveTextContent("Producing, Drilling")
   })
 
+  it("keeps the values chosen that the options do not list as an option is ticked", async () => {
+    const user = userEvent.setup({ delay: null })
+    const onViewChange = vi.fn()
+    render(
+      <Wells
+        onViewChange={onViewChange}
+        defaultView={{
+          filters: {
+            status: { type: "options", values: ["legacy", "producing"] },
+          },
+        }}
+      />
+    )
+    await user.click(filterButton("Status"))
+    const dialog = screen.getByRole("dialog", { name: "Status" })
+    await user.click(within(dialog).getByRole("checkbox", { name: "Drilling" }))
+    // In the options' order, then the value they do not list.
+    expect(onViewChange.mock.calls.at(-1)?.[0].filters).toEqual({
+      status: {
+        type: "options",
+        values: ["producing", "drilling", "legacy"],
+      },
+    })
+    await user.click(
+      within(dialog).getByRole("checkbox", { name: "Producing" })
+    )
+    expect(onViewChange.mock.calls.at(-1)?.[0].filters).toEqual({
+      status: { type: "options", values: ["drilling", "legacy"] },
+    })
+  })
+
+  it("keeps a quoted text's comma in the text: one chip", async () => {
+    const user = userEvent.setup({ delay: null })
+    const onViewChange = vi.fn()
+    render(<Wells onViewChange={onViewChange} />)
+    await user.click(filterButton("Well"))
+    const input = screen.getByRole("textbox", { name: "Contains" })
+    // The comma within quotes stays; the one after them adds the chip.
+    await user.type(input, '"Well 0, x",')
+    expect(input).toHaveValue("")
+    await user.type(input, '"a, b{Enter}')
+    expect(
+      within(screen.getByRole("grid", { name: "Contains any of" }))
+        .getAllByRole("row")
+        .map((chip) => chip.textContent)
+    ).toEqual(["Well 0, x", "a, b"])
+    expect(onViewChange.mock.calls.at(-1)?.[0].filters).toEqual({
+      name: { type: "text", values: ["Well 0, x", "a, b"] },
+    })
+  })
+
   it("counts an option's rows by the search and the other filters", async () => {
     const user = userEvent.setup({ delay: null })
     render(<Wells defaultView={{ search: "Well 0" }} />)

@@ -6,13 +6,14 @@
  *
  * Facets (`countFacets`) count, per value of a column, the rows matching the
  * search and every filter but the column's own: by option value for an
- * options column, by "true" and "false" for a boolean one, by display text
- * for the others, and apart the rows without a value (the "No value"
- * choice, offered while any row has none, `hasEmptyValues`). A number
- * column's (`countNumbers`) are its numbers over those rows, sorted: the
- * range they span, and the rows a number filter keeps as it is typed.
+ * options column (its options first, in order), by "true" and "false" for
+ * a boolean one, by display text for the others, and apart the rows
+ * without a value (the "No value" choice, offered while any row has none,
+ * `hasEmptyValues`). A text or number column's matches (`countMatches`)
+ * are those rows, how many of them a filter of the column keeps as it is
+ * typed, and a number column's numbers over them, sorted.
  *
- * `getFacets`, `getNumberFacets` and `hasEmptyValues` read them for a row
+ * `getFacets`, `getMatchCounts` and `hasEmptyValues` read them for a row
  * model, each kept across runs of its engine: a filter toggled in the
  * popover counts the column again only when the other filters, the search
  * or the rows change.
@@ -30,7 +31,11 @@ import {
   type SearchIndex,
 } from "./filter"
 import { hasNoValue, type Formatter } from "./format"
-import type { DataTableFilterValue, DataTableView } from "./types"
+import type {
+  DataTableFilterValue,
+  DataTableValue,
+  DataTableView,
+} from "./types"
 import { toBoolean, toNumber } from "./values"
 import { sameFilters } from "./view"
 
@@ -50,53 +55,33 @@ function countFacets<T>(
   formatter: Formatter<T>
 ): Facets {
   const { items } = core
-  const others = new Map<string, number>()
-  const add = (key: string) => others.set(key, (others.get(key) ?? 0) + 1)
+  // The keys a filter's choices are counted by, each from 0; the values the
+  // options do not list follow them as they come.
+  const counts = new Map<string, number>(
+    column.type === "boolean"
+      ? [
+          ["true", 0],
+          ["false", 0],
+        ]
+      : column.options.map((option) => [option.value, 0])
+  )
+  const keyOf =
+    column.type === "boolean"
+      ? (value: DataTableValue) => String(toBoolean(value))
+      : column.type === "options"
+        ? String
+        : (value: DataTableValue) => formatter.format(column, value)
   let empty = 0
-  if (column.type === "options") {
-    const counts = new Uint32Array(column.options.length)
-    for (let i = 0; i < items.length; i++) {
-      if (predicate && !predicate(i, items[i])) continue
-      const value = column.getValue(items[i])
-      if (hasNoValue(column, value)) {
-        empty++
-        continue
-      }
-      const option = column.optionIndex.get(String(value))
-      if (option === undefined) add(String(value))
-      else counts[option]++
-    }
-    const facets = new Map(
-      column.options.map((option, i) => [option.value, counts[i]])
-    )
-    for (const [key, count] of others) facets.set(key, count)
-    return { counts: facets, empty }
-  }
-  if (column.type === "boolean") {
-    let yes = 0
-    let no = 0
-    for (let i = 0; i < items.length; i++) {
-      if (predicate && !predicate(i, items[i])) continue
-      const value = toBoolean(column.getValue(items[i]))
-      if (value === undefined) empty++
-      else if (value) yes++
-      else no++
-    }
-    return {
-      counts: new Map([
-        ["true", yes],
-        ["false", no],
-      ]),
-      empty,
-    }
-  }
   for (let i = 0; i < items.length; i++) {
     if (predicate && !predicate(i, items[i])) continue
-    const text = formatter.text(column, items[i])
-    if (text === "") empty++
-    else add(text)
+    const value = column.getValue(items[i])
+    if (hasNoValue(column, value)) empty++
+    else {
+      const key = keyOf(value)
+      counts.set(key, (counts.get(key) ?? 0) + 1)
+    }
   }
-  return { counts: others, empty }
+  return { counts, empty }
 }
 
 /**
@@ -105,7 +90,7 @@ function countFacets<T>(
  * a number or text column's, as its filter is typed; a number column's
  * values too.
  */
-type NumberFacets = {
+type MatchCounts = {
   /** How many rows the predicate keeps. */
   readonly total: number
   /** The numbers of those rows that have one, ascending; none for a text column. */
@@ -130,12 +115,12 @@ function boundary(values: Float64Array, before: (value: number) => boolean) {
   return low
 }
 
-function countNumbers<T>(
+function countMatches<T>(
   core: Core<T>,
   column: EngineColumn<T>,
   predicate: RowPredicate<T> | null,
   index: SearchIndex<T>
-): NumberFacets {
+): MatchCounts {
   const { items } = core
   const kept: Array<number> = []
   const numbers: Array<number> = []
@@ -204,8 +189,8 @@ const facetCache = new WeakMap<
     }
   >
 >()
-/** A number column's numbers, kept as the facets are. */
-const numberCache = new WeakMap<
+/** A text or number column's matches, kept as the facets are. */
+const matchCache = new WeakMap<
   Core<unknown>,
   Map<
     string,
@@ -213,7 +198,7 @@ const numberCache = new WeakMap<
       column: EngineColumn<unknown>
       search: Uint8Array | null
       filters: DataTableView["filters"]
-      numbers: NumberFacets
+      numbers: MatchCounts
     }
   >
 >()
@@ -273,22 +258,22 @@ function getFacets<T>(model: DataTableRowModel<T>, id: string): Facets {
 }
 
 /**
- * A number or text column's matches (`NumberFacets`) over the rows matching the search and every
- * filter but its own, and how many of those rows a filter keeps; `null`
- * for another column, or in server mode (the table holds only the rows
- * loaded).
+ * A text or number column's matches (`MatchCounts`): the rows matching the
+ * search and every filter but its own, and how many of them a filter
+ * keeps; `null` for another column, or in server mode (the table holds
+ * only the rows loaded).
  */
-function getNumberFacets<T>(
+function getMatchCounts<T>(
   model: DataTableRowModel<T>,
   id: string
-): NumberFacets | null {
+): MatchCounts | null {
   const parts = model.searchParts()
   const { core: rows, search, filters, server } = parts
   const column = parts.model.byId.get(id)
   if (!column || (column.type !== "number" && column.type !== "text") || server)
     return null
   const others = othersThan(filters, id)
-  const byColumn = cacheOf(numberCache, rows, () => new Map())
+  const byColumn = cacheOf(matchCache, rows, () => new Map())
   const cached = byColumn.get(id)
   if (
     cached?.column === column &&
@@ -304,7 +289,7 @@ function getNumberFacets<T>(
     rows.items.length,
     id
   )
-  const numbers = countNumbers(rows, column, predicate, parts.index)
+  const numbers = countMatches(rows, column, predicate, parts.index)
   byColumn.set(id, {
     column: column as EngineColumn<unknown>,
     search,
@@ -331,5 +316,5 @@ function hasEmptyValues<T>(model: DataTableRowModel<T>, id: string) {
   return empty
 }
 
-export { countFacets, countNumbers, getFacets, getNumberFacets, hasEmptyValues }
-export type { Facets, NumberFacets }
+export { countFacets, countMatches, getFacets, getMatchCounts, hasEmptyValues }
+export type { Facets, MatchCounts }

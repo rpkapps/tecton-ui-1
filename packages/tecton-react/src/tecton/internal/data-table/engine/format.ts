@@ -54,6 +54,7 @@ const TEXT_CACHE_LIMIT = 20_000
 const locales = new Map<string, string>()
 const numberFormats = new Map<string, Intl.NumberFormat>()
 const dateFormats = new Map<string, Intl.DateTimeFormat>()
+const listFormats = new Map<string, Intl.ListFormat>()
 
 /** `locale` as `Intl` takes it, or `en-US` when it is not a valid tag. */
 function resolveLocale(locale: string | undefined) {
@@ -86,6 +87,23 @@ function getDateFormat(locale: string, options: Intl.DateTimeFormatOptions) {
   if (!format) {
     format = new Intl.DateTimeFormat(locale, options)
     dateFormats.set(key, format)
+  }
+  return format
+}
+
+/**
+ * A list in `locale` (resolved), made once per locale and kind: "A, B"
+ * (`unit`, short) or "A and B" (`conjunction`).
+ */
+function getListFormat(locale: string, type: "unit" | "conjunction") {
+  const key = `${locale}|${type}`
+  let format = listFormats.get(key)
+  if (!format) {
+    format = new Intl.ListFormat(
+      locale,
+      type === "unit" ? { type, style: "short" } : { type }
+    )
+    listFormats.set(key, format)
   }
   return format
 }
@@ -379,7 +397,9 @@ export {
   dayFormat,
   DEFAULT_LABELS,
   foldText,
+  getDateFormat,
   getFormatter,
+  getListFormat,
   hasNoValue,
   numberUnit,
   remembered,

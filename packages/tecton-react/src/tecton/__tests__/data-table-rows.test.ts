@@ -25,10 +25,7 @@ import {
   type ItemRow,
 } from "../internal/data-table/engine"
 import { toCsv } from "../internal/data-table/engine/csv"
-import {
-  getFacets,
-  getNumberFacets,
-} from "../internal/data-table/engine/facets"
+import { getFacets, getMatchCounts } from "../internal/data-table/engine/facets"
 import { createSearchIndex } from "../internal/data-table/engine/filter"
 import { hasRanks, sortRows } from "../internal/data-table/engine/sort"
 
@@ -464,16 +461,16 @@ describe("number facets", () => {
       }),
     })
     // Producing: wells 1, 3 and 5; well 3 has no oil.
-    const numbers = getNumberFacets(result, "oil")!
+    const numbers = getMatchCounts(result, "oil")!
     expect(numbers.total).toBe(3)
     expect([...numbers.values]).toEqual([5, 10])
-    expect(getNumberFacets(result, "oil")).toBe(numbers)
-    expect(getNumberFacets(result, "status")).toBeNull()
-    expect(getNumberFacets(result, "ghost")).toBeNull()
+    expect(getMatchCounts(result, "oil")).toBe(numbers)
+    expect(getMatchCounts(result, "status")).toBeNull()
+    expect(getMatchCounts(result, "ghost")).toBeNull()
   })
 
   it("count the rows a number filter keeps as the column's filter would", () => {
-    const numbers = getNumberFacets(run(), "oil")!
+    const numbers = getMatchCounts(run(), "oil")!
     // 10, 20, none, 40, 5, 7.
     expect(numbers.total).toBe(6)
     expect(numbers.count(null)).toBe(6)
@@ -544,7 +541,7 @@ describe("number facets", () => {
           (item.oil ?? 0) > (value.ranges[0]?.min ?? 0),
       },
     ])
-    const numbers = getNumberFacets(
+    const numbers = getMatchCounts(
       createDataTableEngine<Well>().run({
         items: fleet,
         columns: own,
@@ -556,7 +553,7 @@ describe("number facets", () => {
   })
 
   it("are none in server mode, where the table holds only the rows loaded", () => {
-    expect(getNumberFacets(run({ dataMode: "server" }), "oil")).toBeNull()
+    expect(getMatchCounts(run({ dataMode: "server" }), "oil")).toBeNull()
   })
 })
 

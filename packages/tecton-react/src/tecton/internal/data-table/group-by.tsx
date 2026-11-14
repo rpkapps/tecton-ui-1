@@ -23,7 +23,7 @@ import {
   useDataTableSelector,
   useFeatureWarning,
 } from "./context"
-import { getColumnModel, resolveLocale } from "./engine/index"
+import { getColumnModel, getListFormat, resolveLocale } from "./engine/index"
 import { DataTableGroupByMenu } from "./group-by-menu"
 import { usePartPopup } from "./part-popup"
 import { DataTableToolbarItem } from "./toolbar"
@@ -61,10 +61,9 @@ function DataTableGroupBy({
   const { byId } = getColumnModel(columns)
   const summary =
     grouping.length > 0
-      ? new Intl.ListFormat(resolveLocale(locale), {
-          type: "unit",
-          style: "short",
-        }).format(grouping.map((id) => byId.get(id)?.header ?? id))
+      ? getListFormat(resolveLocale(locale), "unit").format(
+          grouping.map((id) => byId.get(id)?.header ?? id)
+        )
       : null
   const trigger: React.ComponentProps<typeof Button> = {
     variant,
