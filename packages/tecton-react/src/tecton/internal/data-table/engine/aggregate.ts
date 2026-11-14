@@ -17,81 +17,61 @@ import { isEmptyIn, toBoolean, toNumber, toTime } from "./values"
 type Additive = "sum" | "avg" | "min" | "max" | "count"
 
 /** An additive built-in over some items: their sum and count, or the least or greatest. */
-type Running = {
-  readonly sum: number
-  readonly count: number
-  readonly best: number | undefined
-}
+type Running = { sum: number; count: number; best: number | undefined }
 
 const isAdditive = <T>(fn: DataTableAggregate<T> | null): fn is Additive =>
   typeof fn === "string" && fn !== "countDistinct"
+
+/** Adds a sum and count to `run`, and `best` when it is better for `fn`. */
+function add(
+  fn: Additive,
+  run: Running,
+  sum: number,
+  count: number,
+  best: number | undefined
+) {
+  run.sum += sum
+  run.count += count
+  if (
+    best !== undefined &&
+    (run.best === undefined ||
+      (fn === "min" ? best < run.best : best > run.best))
+  )
+    run.best = best
+}
 
 function running<T>(
   column: EngineColumn<T>,
   fn: Additive,
   items: ReadonlyArray<T>
 ): Running {
-  let sum = 0
-  let count = 0
-  let best: number | undefined
-  switch (fn) {
-    case "sum":
-    case "avg":
-      for (const item of items) {
-        const number = toNumber(column.getValue(item))
-        if (number === undefined) continue
-        sum += number
-        count++
-      }
-      break
-    case "count": {
-      // A boolean column counts its trues, read as its cells read them.
-      const booleans = column.type === "boolean"
-      for (const item of items) {
-        const value = column.getValue(item)
-        if (
-          booleans
-            ? toBoolean(value) === true
-            : value !== false && !isEmptyIn(column, value)
-        )
-          count++
-      }
-      break
-    }
-    default: {
-      // Dates stay dates; everything else is read as a number.
-      const dates = column.type === "date"
-      for (const item of items) {
-        const value = column.getValue(item)
-        const number = dates ? toTime(value) : toNumber(value)
-        if (number === undefined) continue
-        if (
-          best === undefined ||
-          (fn === "min" ? number < best : number > best)
-        )
-          best = number
-      }
+  const run: Running = { sum: 0, count: 0, best: undefined }
+  // A boolean column counts its trues, read as its cells read them; a
+  // date column's least and greatest stay dates (`result`).
+  const booleans = column.type === "boolean"
+  const dates = column.type === "date" && (fn === "min" || fn === "max")
+  for (const item of items) {
+    const value = column.getValue(item)
+    if (fn === "count") {
+      if (
+        booleans
+          ? toBoolean(value) === true
+          : value !== false && !isEmptyIn(column, value)
+      )
+        run.count++
+    } else {
+      const number = dates ? toTime(value) : toNumber(value)
+      if (number !== undefined) add(fn, run, number, 1, number)
     }
   }
-  return { sum, count, best }
+  return run
 }
 
 /** `parts` added up: the running result over all their items. */
 function combine(fn: Additive, parts: ReadonlyArray<Running>): Running {
-  let sum = 0
-  let count = 0
-  let best: number | undefined
-  for (const part of parts) {
-    sum += part.sum
-    count += part.count
-    if (
-      part.best !== undefined &&
-      (best === undefined ||
-        (fn === "min" ? part.best < best : part.best > best))
-    )
-      best = part.best
-  }
-  return { sum, count, best }
+  const run: Running = { sum: 0, count: 0, best: undefined }
+  for (const part of parts) add(fn, run, part.sum, part.count, part.best)
+  return run
 }
 
 function result<T>(
