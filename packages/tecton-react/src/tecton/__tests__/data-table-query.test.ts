@@ -30,9 +30,14 @@ import {
   type QueryDiagnosticCode,
   type QuerySuggestion,
 } from "../internal/data-table/engine/query"
-import { valueItems } from "../internal/data-table/engine/query/parse"
+import { toDay } from "../internal/data-table/engine/query/dates"
+import {
+  readDateItem,
+  valueItems,
+} from "../internal/data-table/engine/query/parse"
 import { startOfDay } from "../internal/data-table/engine/values"
 import {
+  helpExamples,
   problemMessage,
   type ColumnSample,
 } from "../internal/data-table/query-model"
@@ -1992,5 +1997,68 @@ describe("the parser, the suggestions and the view agree", () => {
     // Not after the term NOT took.
     expect(at("NOT a ").length).toBeGreaterThan(0)
     expect(at("sta").length).toBeGreaterThan(0)
+  })
+})
+
+describe("helpExamples: the data's text as the query reads it", () => {
+  const t = createTranslator("dataTableQuery", "en-US")
+  const examples = (text: string) =>
+    helpExamples(
+      en,
+      (column) => (column.type === "text" ? { text } : {}),
+      t
+    ).map((example) => example.query)
+
+  it("quotes a word or phrase that would read otherwise", () => {
+    expect(examples("gullfaks a-1").slice(0, 2)).toEqual([
+      "gullfaks",
+      `"gullfaks a-1"`,
+    ])
+    for (const [text, word, phrase] of [
+      ["-5 b", `"-5"`, `"-5 b"`],
+      ["OR b", `"OR"`, `"OR b"`],
+      ["a:b c", `"a:b"`, `"a:b c"`],
+      [`say "hi"`, "say", String.raw`"say \"hi\""`],
+    ]) {
+      const [first, second] = examples(text)
+      expect([first, second]).toEqual([word, phrase])
+      // Read back as the search they show.
+      expect(parse(first).search).toBe(text.split(" ")[0])
+      expect(parse(second).search).toBe(text)
+    }
+  })
+})
+
+describe("readDateItem: the date item at the caret", () => {
+  const read = (text: string, caret = text.length) =>
+    readDateItem(en, parse(text), caret, NOW)
+
+  it("reads its comparison as typed, its days and the day it names", () => {
+    const june = { first: toDay(2015, 5, 1), last: toDay(2015, 5, 30) }
+    expect(read("spud:<=2015-06")).toMatchObject({
+      start: 5,
+      end: 14,
+      operator: "<=",
+      range: { to: day(2015, 6, 30) },
+      day: june.last,
+    })
+    expect(read("spud:≥2015-06")?.day).toBe(june.first)
+    expect(read("spud:≥2015-06")?.operator).toBe("≥")
+    expect(read("spud:>2015-06")?.day).toBe(june.last)
+    expect(read("spud:<2015-06")?.day).toBe(june.first)
+    // The item the caret is in, its own comma kept; nothing outside a
+    // date's value.
+    expect(read("spud:2014,jun 30, 2015")).toMatchObject({
+      start: 10,
+      operator: "",
+      range: { from: day(2015, 6, 30), to: day(2015, 6, 30) },
+    })
+    expect(read("spud:2014,2015", 7)?.range).toEqual({
+      from: day(2014, 1, 1),
+      to: day(2014, 12, 31),
+    })
+    expect(read("spud:bad")?.range).toBeUndefined()
+    expect(read("spud:2015", 4)).toBeUndefined()
+    expect(read("td:>3")).toBeUndefined()
   })
 })

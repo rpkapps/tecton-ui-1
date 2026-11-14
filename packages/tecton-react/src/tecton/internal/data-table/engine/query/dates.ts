@@ -426,11 +426,63 @@ function formatDay(day: Day, unit: "day" | "month" | "year" = "day") {
   return `${pad(p.year, 4)}-${pad(p.month + 1)}-${pad(p.day)}`
 }
 
+/** A comparison of the query. */
+type Comparison = ">=" | "<=" | ">" | "<" | "="
+
+/**
+ * The ends of a date filter a comparison with a date makes, as days of
+ * the date (a filter's `to` is its last day's start): `>` from the day
+ * after its last, `>=` from its first, `<` up to the day before its first,
+ * `<=` up to its last, `=` both of its own. Each is `k` of `dayAt`; an
+ * instant is itself at either end (and `>` the instant after it).
+ */
+const BOUNDS: Record<Comparison, readonly [from?: number, to?: number]> = {
+  ">": [2],
+  ">=": [0],
+  "<": [undefined, -1],
+  "<=": [undefined, 1],
+  "=": [0, 1],
+}
+
+/** Day `k` of `BOUNDS` of `literal`: its first plus `k` (to 0), else its last plus `k - 1`. */
+const dayAt = (literal: DateLiteral, k: number, zone: string | undefined) =>
+  literal.kind === "instant"
+    ? new Date(literal.time + (k > 1 ? 1 : 0))
+    : startOf(k > 0 ? literal.last + k - 1 : literal.first + k, zone)
+
+/** The date filter range `op` with `literal` makes (`BOUNDS`). */
+function dateBounds(
+  op: Comparison,
+  literal: DateLiteral,
+  zone: string | undefined
+): { from?: Date; to?: Date } {
+  const [from, to] = BOUNDS[op]
+  return {
+    ...(from === undefined ? {} : { from: dayAt(literal, from, zone) }),
+    ...(to === undefined ? {} : { to: dayAt(literal, to, zone) }),
+  }
+}
+
+/**
+ * A date filter's end as the query writes it, the inverse of `dateBounds`
+ * at `>=` and `<=`: its day when it is that day's start in `zone`
+ * (`2015-06-30`), else the instant.
+ */
+function boundText(date: Date, zone: string | undefined) {
+  const day = dayOfDate(date, zone)
+  return {
+    ...day,
+    text: day.midnight ? formatDay(day.day) : date.toISOString(),
+  }
+}
+
 /** The day `now` falls on in `timeZone`. */
 const todayIn = (now: Date, timeZone: string | undefined) =>
   dayOfDate(now, timeZone).day
 
 export {
+  boundText,
+  dateBounds,
   PRESETS,
   RELATIVE,
   dateLocale,
@@ -445,4 +497,4 @@ export {
   toDay,
   todayIn,
 }
-export type { DateLiteral, DateLocale, DateProblem, Day }
+export type { Comparison, DateLiteral, DateLocale, DateProblem, Day }

@@ -37,7 +37,7 @@ import type {
   DataTableView,
 } from "../types"
 import { sameFilters, sameFilterValue } from "../view"
-import { dayOfDate, daysInMonth, formatDay, partsOf } from "./dates"
+import { boundText, daysInMonth, formatDay, partsOf } from "./dates"
 import type { QueryColumn, QueryLanguage } from "./language"
 import { formatNumber, joinsNumber } from "./numbers"
 import { parseQuery } from "./parse"
@@ -82,13 +82,7 @@ function dateRange(
   { from, to }: DataTableDateRange
 ): string | null {
   const zone = column.timeZone
-  const end = (date: Date) => {
-    const day = dayOfDate(date, zone)
-    return {
-      ...day,
-      text: day.midnight ? formatDay(day.day) : date.toISOString(),
-    }
-  }
+  const end = (date: Date) => boundText(date, zone)
   if (from && to) {
     const a = end(from)
     const b = end(to)
@@ -289,5 +283,5 @@ function applyQuery(
   }
 }
 
-export { applyQuery, serializeQuery }
+export { applyQuery, plainSearch, serializeQuery }
 export type { SerializeOptions }

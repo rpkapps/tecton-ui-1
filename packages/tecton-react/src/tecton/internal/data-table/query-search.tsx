@@ -75,6 +75,7 @@ import {
   createQuerySource,
   getQueryLanguage,
   parseQuery,
+  readDateItem,
   serializeQuery,
   suggestQuery,
   type ParsedQuery,
@@ -82,15 +83,9 @@ import {
   type QuerySource,
   type QuerySuggestion,
 } from "./engine/query/index"
-import {
-  dayOfDate,
-  parseDateLiteral,
-  partsOf,
-  todayIn,
-  type Day,
-} from "./engine/query/dates"
+import { dayOfDate, partsOf, type Day } from "./engine/query/dates"
 import type { SearchParts } from "./engine/engine"
-import type { DataTableDateRange, DataTableFilterValue } from "./engine/types"
+import type { DataTableDateRange } from "./engine/types"
 import { DATE_INPUT, type DateInputModule } from "./date-input"
 import { useFeature } from "./lazy"
 import { QueryHelp } from "./query-help"
@@ -104,7 +99,6 @@ import {
   termAt,
   typeLabel,
   understood,
-  valueItemAt,
   type SuggestionGroup,
   type SuggestionRow,
 } from "./query-model"
@@ -283,20 +277,34 @@ function QuerySearch({
   React.useEffect(() => () => clearTimeout(settleTimer.current), [])
 
   // The plain field's state, taken over once: its text is parsed (and
-  // applied), and focus and the selection stay where they were.
+  // applied), and focus and the selection stay where they were. It showed
+  // the search only: the view's filters go before what it held, the
+  // selection moved past them.
   React.useLayoutEffect(() => {
     const input = inputRef.current
-    const text = handoff.text ?? written
+    const shown = handoff.text ?? search
+    const filtersText = serializeQuery(language, { filters, search: "" })
+    const text =
+      handoff.text === null
+        ? written
+        : filtersText && handoff.text
+          ? `${filtersText} ${handoff.text}`
+          : filtersText || handoff.text
     if (text !== written) change(text)
     if (input && handoff.focused) {
       input.focus()
+      const shift = text.endsWith(shown)
+        ? text.length - shown.length
+        : text.length
+      const at = (offset: number | null) =>
+        Math.min(text.length, (offset ?? shown.length) + shift)
       // Placed once the input holds the text (the render `change` makes).
       pendingSelection.current = {
         text,
-        start: handoff.selectionStart ?? text.length,
-        end: handoff.selectionEnd ?? text.length,
+        start: at(handoff.selectionStart),
+        end: at(handoff.selectionEnd),
       }
-      setCaret(handoff.selectionStart ?? text.length)
+      setCaret(at(handoff.selectionStart))
       setFocused(true)
       setOpen(true)
     }
@@ -470,45 +478,15 @@ function QuerySearch({
     : undefined
 
   // The date value at the caret: the calendar, in range or single-day mode.
-  const dateItem =
-    filterTerm && column?.type === "date" && caret > filterTerm.key.end
-      ? valueItemAt(draft, filterTerm, caret)
-      : undefined
-  const dateOperator = dateItem
-    ? (/^\s*(>=|<=|≥|≤|>|<|=)/.exec(
-        draft.slice(dateItem.start, dateItem.end)
-      )?.[1] ?? "")
-    : ""
-  const calendarMode: "range" | "single" | null = !dateItem
+  const date = React.useMemo(
+    () => readDateItem(language, parsed, caret),
+    [language, parsed, caret]
+  )
+  const calendarMode: "range" | "single" | null = !date
     ? null
-    : dateOperator && dateOperator !== "="
+    : date.operator && date.operator !== "="
       ? "single"
       : "range"
-  // The day a comparison names (`>2015-06-30`: June 30), for its calendar.
-  const comparedDay = (() => {
-    if (calendarMode !== "single" || !dateItem) return undefined
-    const literal = draft
-      .slice(dateItem.start, dateItem.end)
-      .replace(/^\s*(>=|<=|≥|≤|>|<|=)/, "")
-    if (!literal.trim()) return undefined
-    const read = parseDateLiteral(
-      literal,
-      language.dates,
-      todayIn(new Date(), column?.timeZone)
-    )
-    return "kind" in read && read.kind === "days" ? read.first : undefined
-  })()
-  // The days of the item at the caret, read alone: a term lists any number.
-  const dateItemText = dateItem
-    ? draft.slice(dateItem.start, dateItem.end)
-    : undefined
-  const dateRange = React.useMemo(() => {
-    if (dateItemText === undefined || !column?.key) return undefined
-    const value = parseQuery(language, `${column.key}:${dateItemText}`).filters[
-      column.id
-    ] as DataTableFilterValue | undefined
-    return value?.type === "date" ? value.ranges[0] : undefined
-  }, [dateItemText, column, language])
   const dateFeature = useFeature(DATE_INPUT, calendarMode !== null)
   const loadDates = dateFeature.load
   React.useEffect(() => {
@@ -580,11 +558,15 @@ function QuerySearch({
   // In place of the suggestions when there are none, so the list never
   // shrinks to nothing: what the term at the caret does (a date term's
   // line above it says so already).
+  // A term's problem is its line, read out (the banner atop the list is
+  // not a live region). The search's line waits for a pause in typing,
+  // never read out on every key.
   const status =
     popupOpen && rowCount === 0
-      ? hint
-        ? t("noSuggestions")
-        : statusOf(term, termProblem !== undefined, model, formatter, t, td)
+      ? (termProblem?.message ??
+        (hint
+          ? t("noSuggestions")
+          : statusOf(term, settled, model, formatter, t, td)))
       : null
   const typed = suggestions
     ? draft.slice(suggestions.start, Math.max(suggestions.start, caret)).trim()
@@ -655,18 +637,11 @@ function QuerySearch({
 
   /** Days picked on the calendar, written as the query writes them. */
   const pickDays = (value: string) => {
-    if (!dateItem || !filterTerm) return
-    const segment = draft.slice(dateItem.start, dateItem.end)
-    const lead = /^\s*/.exec(segment)?.[0].length ?? 0
-    const text = `${dateOperator}${value}`
-    const atEnd = dateItem.end === filterTerm.end
+    if (!date || !filterTerm) return
+    const text = `${date.operator}${value}`
+    const atEnd = date.end === filterTerm.end
     const space = atEnd && !/\s/.test(draft[filterTerm.end] ?? "") ? " " : ""
-    replace(
-      dateItem.start + lead,
-      dateItem.end,
-      text + space,
-      text.length + (atEnd ? 1 : 0)
-    )
+    replace(date.start, date.end, text + space, text.length + (atEnd ? 1 : 0))
     requestAnimationFrame(() => inputRef.current?.focus())
   }
 
@@ -1042,7 +1017,11 @@ function QuerySearch({
             <ComboboxEmpty className="flex justify-start p-0 text-start">
               <span
                 data-slot="data-table-query-status"
-                className="block min-w-0 truncate px-3 py-2.5 text-sm text-muted-foreground"
+                className={cn(
+                  "block min-w-0 truncate px-3 py-2.5 text-sm text-muted-foreground",
+                  // Shown in the banner already.
+                  termProblem && "sr-only"
+                )}
               >
                 {status}
               </span>
@@ -1059,9 +1038,9 @@ function QuerySearch({
                   rootRef={calendarRef}
                   module={dateFeature.module}
                   mode={calendarMode}
-                  operator={dateOperator}
-                  day={comparedDay}
-                  value={dateRange}
+                  operator={date?.operator ?? ""}
+                  day={date?.day}
+                  value={date?.range}
                   timeZone={column?.timeZone}
                   t={t}
                   onPick={pickDays}

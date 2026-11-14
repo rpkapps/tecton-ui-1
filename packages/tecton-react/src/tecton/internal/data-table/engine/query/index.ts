@@ -22,8 +22,8 @@
  */
 export { getQueryLanguage } from "./language"
 export type { QueryColumn, QueryLanguage } from "./language"
-export { parseQuery } from "./parse"
-export type { ParseOptions } from "./parse"
+export { parseQuery, readDateItem } from "./parse"
+export type { DateItem, ParseOptions } from "./parse"
 export { applyQuery, serializeQuery } from "./serialize"
 export type { SerializeOptions } from "./serialize"
 export { createQuerySource, querySourceOf } from "./source"

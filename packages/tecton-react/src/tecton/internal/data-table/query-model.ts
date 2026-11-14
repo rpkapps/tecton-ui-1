@@ -19,7 +19,8 @@ import type {
   QueryTerm,
 } from "./engine/query/index"
 import { formatDay, toDay } from "./engine/query/dates"
-import { itemsOf, valueToken } from "./engine/query/syntax"
+import { plainSearch } from "./engine/query/serialize"
+import { quote, valueToken } from "./engine/query/syntax"
 import type { DataTableColumnType, DataTableFilterValue } from "./engine/types"
 import { filterText } from "./filter-text"
 
@@ -236,21 +237,22 @@ function understood(
 
 /**
  * The list's line when it has no suggestion to offer, about the term at
- * the caret: the text searched for ("Searching all columns for “pump”"),
- * what a filter term applies in its chip's words, or that there is nothing
- * to suggest (for a term with a problem, whose message is atop the list).
+ * the caret (one without a problem shown): the text searched for
+ * ("Searching all columns for “pump”", once typing has `settled`; a
+ * space until then, so the line keeps its height), what a filter term
+ * applies in its chip's words, or that there is nothing to suggest.
  */
 function statusOf(
   term: QueryTerm | undefined,
-  problem: boolean,
+  settled: boolean,
   model: ColumnModel<unknown>,
   formatter: Formatter<unknown>,
   t: QueryT,
   td: TableT
 ) {
-  if (!problem && term?.kind === "text" && term.text)
-    return t("statusSearching", { text: term.text })
-  if (!problem && term?.kind === "filter") {
+  if (term?.kind === "text" && term.text)
+    return settled ? t("statusSearching", { text: term.text }) : "\u00a0"
+  if (term?.kind === "filter") {
     const words = termWords(term, model, formatter, td)
     if (words) return words
   }
@@ -484,15 +486,6 @@ function groupSuggestions(
   })
 }
 
-/** The comma-separated part of a filter term's value the caret is in. */
-function valueItemAt(text: string, term: QueryFilterTerm, caret: number) {
-  const items = itemsOf(text, term.valueStart, term.end)
-  return (
-    items.find((item) => caret >= item.start && caret <= item.end) ??
-    items[items.length - 1]
-  )
-}
-
 /** A calendar day (a local `Date` at midnight) as the query writes it. */
 const dayText = (date: Date) =>
   formatDay(toDay(date.getFullYear(), date.getMonth(), date.getDate()))
@@ -566,11 +559,15 @@ function helpExamples(
       finds: t(FINDS_KEYS[column.type], { column: column.header }),
     })
   }
-  if (words !== undefined) {
-    const plain = words.split(/\s+/)[0]
-    examples.unshift({ query: plain, finds: t("findsWords") })
-    if (/\s/.test(words))
-      examples.splice(1, 0, { query: `"${words}"`, finds: t("findsPhrase") })
+  // Quoted when the data's text would read otherwise (`-5`, `OR`, `a:b`).
+  const plain = words?.trim().split(/\s+/)[0]
+  if (plain) {
+    examples.unshift({
+      query: plainSearch(plain) ? plain : quote(plain),
+      finds: t("findsWords"),
+    })
+    if (/\s/.test(words!.trim()))
+      examples.splice(1, 0, { query: quote(words!), finds: t("findsPhrase") })
   }
   const first = language.columns.find((column) => column.key !== null)
   if (first)
@@ -592,6 +589,5 @@ export {
   termAt,
   typeLabel,
   understood,
-  valueItemAt,
 }
 export type { ColumnSample, HelpExample, SuggestionGroup, SuggestionRow }

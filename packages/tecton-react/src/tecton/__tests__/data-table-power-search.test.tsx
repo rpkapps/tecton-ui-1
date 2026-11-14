@@ -679,7 +679,12 @@ describe("DataTableSearch syntax=query: the list is open while the field has foc
     const status = document.querySelector(
       '[data-slot="data-table-query-status"]'
     )!
-    expect(status).toHaveTextContent("Searching all columns for “zzzz”")
+    // Once typing pauses.
+    await waitFor(
+      () =>
+        expect(status).toHaveTextContent("Searching all columns for “zzzz”"),
+      { timeout: 2000 }
+    )
     const region = status.closest('[role="status"]')!
     expect(region).toHaveAttribute("aria-live", "polite")
     expect(region.closest('[role="listbox"]')).toBeNull()
@@ -965,4 +970,82 @@ it("fires no change for a search the view already has", () => {
   render(<Wells defaultView={{ search: "well" }} onViewChange={onViewChange} />)
   fireEvent.focus(field())
   expect(onViewChange).not.toHaveBeenCalled()
+})
+
+describe("DataTableSearch syntax=query: the calendar and the list's line", () => {
+  const calendar = () =>
+    waitFor(() => {
+      const element = document.querySelector<HTMLElement>(
+        '[data-slot="data-table-query-calendar"]'
+      )
+      expect(within(element!).getAllByRole("grid")).toHaveLength(1)
+      return element!
+    })
+  const selectedDays = (element: HTMLElement) =>
+    Array.from(
+      element.querySelectorAll(
+        "[data-selected-single=true], [data-range-start=true], [data-range-end=true]"
+      ),
+      (day) => day.textContent
+    )
+
+  it("shows the day a comparison names: the last for <= and >, the first for >= and <", async () => {
+    const user = userEvent.setup({ delay: null })
+    render(<Wells />)
+    await user.click(field())
+    for (const [operator, day] of [
+      ["<=", "30"],
+      [">", "30"],
+      [">=", "1"],
+      ["<", "1"],
+    ]) {
+      await user.clear(field())
+      await user.type(field(), `spuddate:${operator}2020-06`)
+      const element = await calendar()
+      await waitFor(() => expect(selectedDays(element)).toEqual([day]))
+    }
+  })
+
+  it("reads a date with its own comma as one item, and a pick replaces all of it", async () => {
+    const user = userEvent.setup({ delay: null })
+    render(<Wells />)
+    await user.click(field())
+    await user.type(field(), "spuddate:jun 30, 2020")
+    const element = await calendar()
+    await waitFor(() => expect(selectedDays(element)).toEqual(["30"]))
+    const fifteen = within(element).getAllByRole("button", { name: /15/ })[0]
+    await user.click(fifteen)
+    await user.click(
+      within(await calendar()).getAllByRole("button", { name: /15/ })[0]
+    )
+    expect(field()).toHaveValue("spuddate:2020-06-15 ")
+  })
+
+  it("reads a term's problem as the list's line, and the search's line once typing pauses", async () => {
+    const user = userEvent.setup({ delay: null })
+    render(<Wells />)
+    await user.click(field())
+    const status = () =>
+      document.querySelector('[data-slot="data-table-query-status"]')!
+    await user.type(field(), "zzzz")
+    expect(options()).toEqual([])
+    // Not read out on every key: nothing until a pause.
+    expect(status().textContent.trim()).toBe("")
+    await waitFor(
+      () =>
+        expect(status()).toHaveTextContent("Searching all columns for “zzzz”"),
+      { timeout: 2000 }
+    )
+    await user.clear(field())
+    await user.type(field(), "depthm:abc")
+    expect(options()).toEqual([])
+    await waitFor(
+      () => expect(status()).toHaveTextContent("“abc” is not a number."),
+      { timeout: 2000 }
+    )
+    expect(status().closest('[role="status"]')).toHaveAttribute(
+      "aria-live",
+      "polite"
+    )
+  })
 })

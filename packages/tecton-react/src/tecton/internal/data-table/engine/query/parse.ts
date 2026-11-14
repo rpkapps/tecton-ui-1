@@ -53,8 +53,8 @@ import type {
 } from "../types"
 import { sameDateRange, sameNumberRange } from "../view"
 import {
+  dateBounds,
   parseDateLiteral,
-  startOf,
   todayIn,
   type DateLiteral,
   type DateProblem,
@@ -349,74 +349,59 @@ class TermReader {
     )
   }
 
-  /** A date item's range: its days, a comparison or `a..b`. */
-  dateRange(item: Item): DataTableDateRange | undefined {
-    const { timeZone } = this.column
-    const expression = this.expression(
-      item.start,
-      item.end,
-      (text, start, end) => {
-        const literal = parseDateLiteral(
-          text,
-          this.language.dates,
-          this.today(timeZone)
-        )
-        if ("error" in literal) {
-          this.dateProblem(literal, text, start, end)
-          return undefined
-        }
-        this.span(
-          start,
-          end,
-          literal.kind === "days" && literal.preset ? "preset" : "value"
-        )
-        return literal
-      }
-    )
-    if (!expression) return undefined
-    let from: Date | undefined
-    let to: Date | undefined
-    if (expression.kind === "compare") {
-      const { op, literal } = expression
-      if (literal.kind === "instant") {
-        if (op === ">" || op === "<") {
-          this.problem("exclusiveComparison", item.start, item.end, {
-            operator: op,
-          })
-          return undefined
-        }
-        if (op !== "<=") from = new Date(literal.time)
-        if (op !== ">=") to = new Date(literal.time)
-      } else if (op === ">") from = startOf(literal.last + 1, timeZone)
-      else if (op === "<") to = startOf(literal.first - 1, timeZone)
-      else {
-        if (op !== "<=") from = startOf(literal.first, timeZone)
-        if (op !== ">=") to = startOf(literal.last, timeZone)
-      }
-    } else {
-      const { low, high } = expression
-      if (low)
-        from =
-          low.kind === "instant"
-            ? new Date(low.time)
-            : startOf(low.first, timeZone)
-      if (high)
-        to =
-          high.kind === "instant"
-            ? new Date(high.time)
-            : startOf(high.last, timeZone)
-      const end =
-        high?.kind === "instant"
-          ? high.time + 1
-          : high
-            ? startOf(high.last + 1, timeZone).getTime()
-            : Infinity
-      if (from && from.getTime() >= end) {
-        this.problem("backwardsRange", item.start, item.end, expression.texts)
+  /** A date item's comparison or range, its dates read (`expression`). */
+  dateExpression(item: Item) {
+    return this.expression(item.start, item.end, (text, start, end) => {
+      const literal = parseDateLiteral(
+        text,
+        this.language.dates,
+        this.today(this.column.timeZone)
+      )
+      if ("error" in literal) {
+        this.dateProblem(literal, text, start, end)
         return undefined
       }
+      this.span(
+        start,
+        end,
+        literal.kind === "days" && literal.preset ? "preset" : "value"
+      )
+      return literal
+    })
+  }
+
+  /** A date item's range: its days, a comparison or `a..b` (`dateBounds`). */
+  dateRange(
+    item: Item,
+    expression = this.dateExpression(item)
+  ): DataTableDateRange | undefined {
+    if (!expression) return undefined
+    const zone = this.column.timeZone
+    if (expression.kind === "compare") {
+      const { op, literal } = expression
+      if (literal.kind === "instant" && (op === ">" || op === "<")) {
+        this.problem("exclusiveComparison", item.start, item.end, {
+          operator: op,
+        })
+        return undefined
+      }
+      return dateBounds(op, literal, zone)
     }
-    return { ...(from ? { from } : {}), ...(to ? { to } : {}) }
+    const { low, high } = expression
+    const range = {
+      ...(low && dateBounds(">=", low, zone)),
+      ...(high && dateBounds("<=", high, zone)),
+    }
+    // Starting after its end: the instant or the day after it.
+    if (
+      range.from &&
+      high &&
+      range.from >= (dateBounds(">", high, zone).from as Date)
+    ) {
+      this.problem("backwardsRange", item.start, item.end, expression.texts)
+      return undefined
+    }
+    return range
   }
 
   dateProblem(problem: DateProblem, text: string, start: number, end: number) {
@@ -555,6 +540,68 @@ function valueItems(
     from,
     to
   )
+}
+
+/** The date item at the caret (`readDateItem`). */
+type DateItem = {
+  /** The item, from after its leading spaces. */
+  readonly start: number
+  readonly end: number
+  /** Its comparison as typed (`>=`, `≤`); `""` for none. */
+  readonly operator: string
+  /** Its days, read alone; `undefined` when it filters nothing yet or has a problem. */
+  readonly range: DataTableDateRange | undefined
+  /**
+   * The day a comparison names, for a calendar to show: its first for
+   * `>=` and `<`, its last for `<=` and `>` (`>2015-06`: June 30).
+   */
+  readonly day: Day | undefined
+}
+
+/**
+ * The item of a date term's value the caret is in (after a comma, the
+ * next one; past the last, the last), read alone: what the calendar of
+ * the suggestions shows and writes. `undefined` when the caret is not in
+ * a date term's value.
+ */
+function readDateItem(
+  language: QueryLanguage,
+  parsed: ParsedQuery,
+  caret: number,
+  now = new Date()
+): DateItem | undefined {
+  const { text } = parsed
+  const term = parsed.terms.find(
+    (one) => caret >= one.start && caret <= one.end
+  )
+  if (term?.kind !== "filter" || caret <= term.key.end) return undefined
+  const column = language.byId.get(term.column ?? "")
+  if (column?.type !== "date") return undefined
+  const reader = new TermReader(text, language, column, (zone) =>
+    todayIn(now, zone)
+  )
+  const items = itemsIn(reader, term.valueStart, term.end)
+  const item =
+    items.find((one) => caret >= one.start && caret <= one.end) ??
+    items[items.length - 1]
+  const { start } = reader.trimmed(item.start, item.end)
+  const operator = OPERATOR.exec(text.slice(start, item.end))?.[1] ?? ""
+  const expression = reader.dateExpression(item)
+  const range = reader.dateRange(item, expression)
+  const literal = expression?.kind === "compare" ? expression.literal : null
+  const op = expression?.kind === "compare" ? expression.op : ""
+  return {
+    start,
+    end: item.end,
+    operator,
+    range: reader.diagnostics.length ? undefined : range,
+    day:
+      literal?.kind === "days"
+        ? op === "<=" || op === ">"
+          ? literal.last
+          : literal.first
+        : undefined,
+  }
 }
 
 /** Reads the filter term `key:value` over `text[start, end)`, its colon at `colon`. */
@@ -705,7 +752,7 @@ function parseQuery(
       let end = chunk.end
       let result = read(end)
       // A range's end after a space (`spud:2015 ..2016`).
-      const next = chunks[index + 1]
+      const next = chunks.at(index + 1)
       if (
         (result.column?.type === "date" || result.column?.type === "number") &&
         next &&
@@ -816,5 +863,5 @@ function parseQuery(
   }
 }
 
-export { parseQuery, valueItems }
-export type { ParseOptions }
+export { parseQuery, readDateItem, valueItems }
+export type { DateItem, ParseOptions }
