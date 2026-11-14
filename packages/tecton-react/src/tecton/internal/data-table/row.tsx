@@ -493,7 +493,10 @@ function GroupRowComponent<T>({
         aria-rowindex={rowIndex(row.id, props["aria-rowindex"], shared)}
         aria-posinset={row.posinset}
         aria-setsize={row.setsize}
-        className="bg-table-header font-medium"
+        // A soft tint of the text colour over the surface the table sits
+        // on: apart from the header, the rows, their stripes and the
+        // selected rows, in both colour schemes.
+        className={GROUP_ROW_CLASS}
         // A quick series of clicks selects no text: each click opens or
         // closes the group.
         onMouseDown={(event) => {
@@ -522,6 +525,10 @@ function GroupRowComponent<T>({
     </TableRowConfigContext>
   )
 }
+
+/** A group row's fill and weight. */
+const GROUP_ROW_CLASS =
+  "bg-[color-mix(in_oklab,var(--color-foreground)_5%,var(--surface,var(--color-background)))] font-medium"
 
 /**
  * A group label that may go on over the empty columns after its pinned

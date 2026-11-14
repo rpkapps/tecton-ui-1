@@ -1,5 +1,9 @@
 "use client"
 
+import * as React from "react"
+
+import { Field, FieldLabel } from "@tecton/react/field"
+import { Switch } from "@tecton/react/switch"
 import {
   createColumns,
   DataTable,
@@ -84,11 +88,14 @@ const columns = createColumns<Allocation>([
 ])
 
 export default function DataTableGrouping() {
+  // Try the group rows over striped rows.
+  const [striped, setStriped] = React.useState(false)
   return (
     <DataTable
       items={ALLOCATIONS}
       columns={columns}
       groupable
+      striped={striped}
       selectionMode="multiple"
       pinnableColumns
       defaultView={{
@@ -99,6 +106,14 @@ export default function DataTableGrouping() {
     >
       <DataTableToolbar>
         <DataTableGroupBy />
+        <Field orientation="horizontal" className="w-auto">
+          <Switch
+            id="data-table-grouping-striped"
+            checked={striped}
+            onCheckedChange={setStriped}
+          />
+          <FieldLabel htmlFor="data-table-grouping-striped">Stripes</FieldLabel>
+        </Field>
       </DataTableToolbar>
       <DataTableActionBar />
       <DataTableContent aria-label="Daily allocation" totals />

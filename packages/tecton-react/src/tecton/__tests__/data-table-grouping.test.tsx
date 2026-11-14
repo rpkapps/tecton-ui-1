@@ -678,7 +678,10 @@ describe("DataTable grouping with other features", () => {
       />
     )
     const cells = [...group("Field: Gullfaks").cells]
-    expect(group("Field: Gullfaks")).toHaveClass("bg-table-header")
+    expect(group("Field: Gullfaks")).toHaveClass(
+      "bg-[color-mix(in_oklab,var(--color-foreground)_5%,var(--surface,var(--color-background)))]"
+    )
+    expect(group("Field: Gullfaks")).not.toHaveClass("bg-table-header")
     expect(cells[0]).toHaveClass("sticky", "bg-inherit")
     expect(cells.at(-1)).toHaveClass("sticky", "bg-inherit")
     // The label stays within the pinned columns.
