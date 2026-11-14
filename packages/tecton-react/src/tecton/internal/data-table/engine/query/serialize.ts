@@ -21,7 +21,8 @@
  *   `<=to` by day (`spud:>=2015-07-01`); an end that is not a day's start
  *   in the column's time zone as an instant (`2015-06-30T10:30:00.000Z`).
  *   A relative preset the previous query wrote (`previous`) is kept while
- *   the filter is still that preset's days: `spud:last30d`, not its dates;
+ *   the filter is still that preset's days: `spud:last30d`, not its dates
+ *   (the items of its term with a problem left out, as the view has none);
  * - "No value": `none` after the rest (`td:>=3000,none`), alone without it.
  *
  * What the query cannot say is left out: a custom filter value, a filter of
@@ -40,7 +41,7 @@ import { sameFilters, sameFilterValue } from "../view"
 import { boundText, daysInMonth, formatDay, partsOf } from "./dates"
 import type { QueryColumn, QueryLanguage } from "./language"
 import { formatNumber, joinsNumber } from "./numbers"
-import { parseQuery } from "./parse"
+import { parseQuery, valueItems } from "./parse"
 import {
   EMPTY_WORDS,
   isPlainValue,
@@ -214,7 +215,24 @@ function keptPreset(
       )
     )
       continue
-    const written = `${column.key}:${previous.text.slice(term.valueStart, term.end).trim()}`
+    // Its items without a problem: the view has none of the others.
+    const items = valueItems(
+      language,
+      column,
+      previous.text,
+      term.valueStart,
+      term.end,
+      now
+    )
+      .filter(
+        (item) =>
+          !previous.diagnostics.some(
+            (problem) => problem.start < item.end && problem.end > item.start
+          )
+      )
+      .map((item) => previous.text.slice(item.start, item.end).trim())
+      .filter((item) => item !== "")
+    const written = `${column.key}:${items.join(",")}`
     const read = parseQuery(language, written, { now }).filters[column.id] as
       DataTableFilterValue | undefined
     if (read && sameFilterValue(read, value)) return written

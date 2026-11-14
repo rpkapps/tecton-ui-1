@@ -42,12 +42,14 @@ spud:2015`) set the same column filters as the filter buttons and free words the
   date's presets, years, months and calendar in a list that stays open while the field has focus
   (with nothing to suggest, a line says what the term at the caret does, or its problem, read
   out politely), explains a term it cannot apply (`OR`, `NOT`, a leading `-`, an unknown column
-  or value; a `-` alone is text) instead of applying it otherwise, with what to type instead in the
-  table's own terms (`status:drilling,producing` for one of several values), lists the table's
-  columns with examples in its "?" help, and works in server mode, RTL and the 34 locales. Its
-  code loads on demand: a table with the plain search (`syntax="text"`, the default) never loads
-  it. What was typed, the focus and the caret carry over when it arrives, after the view's
-  filters, also for a field focused before a server-rendered page hydrated.
+  or value; a `-` alone is text) instead of applying it otherwise (in a list, only the item with
+  the problem is left out: `status:legacy,producing` applies `producing`, `legacy` underlined),
+  with what to type instead in the table's own terms (`status:drilling,producing` for one of
+  several values), lists the table's columns with examples in its "?" help, and works in server
+  mode, RTL and the 34 locales. Its code loads on demand: a table with the plain search
+  (`syntax="text"`, the default) never loads it. What was typed, the focus and the caret carry
+  over when it arrives, after the view's filters, also for a field focused before a
+  server-rendered page hydrated.
 - `DataTable`'s number filter ranges take `minExclusive?: true` and `maxExclusive?: true`: the
   bound's own number does not match (more than `min`, less than `max`). Its filter button and chip
   read "> 3,000" or "> 1,000 and ≤ 3,000", and editing that bound in the filter includes it again.

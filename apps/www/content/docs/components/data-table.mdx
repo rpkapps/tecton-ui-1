@@ -267,6 +267,22 @@ A term with a problem is not applied. Examples are an unknown column or value, o
 - `OR`, `NOT` and a leading `-` are not supported. They show as problems and are never applied another way. The term after `-` or `NOT` is left out with them.
 - The message says what to type instead, using the table's own columns. For one of several values, it lists the first options column's values with commas (`status:drilling,producing`). For an exclusion, it suggests listing the values to keep.
 
+In a list, a problem belongs to its item:
+
+- The other items apply, and the item with the problem is underlined on its own and stays in the field.
+- A list with no item left, such as `status:legacy`, is not applied. "No value" (`none`) counts as an item.
+- A text item is never a problem: any text is one.
+- A filter button, a chip or a controlled `view` rewrites the query from the view, which holds only the items that apply. The underlined items are dropped, as a term with a problem is.
+
+| Term                      | Applies            | Underlined                      |
+| ------------------------- | ------------------ | ------------------------------- |
+| `status:legacy,producing` | `status:producing` | `legacy`, an unknown value      |
+| `subsea:yes,maybe`        | `subsea:yes`       | `maybe`                         |
+| `td:3000,abc`             | `td:3000`          | `abc`, not a number             |
+| `spud:2015,2016..2015`    | `spud:2015`        | `2016..2015`, a backwards range |
+| `status:legacy,none`      | `status:none`      | `legacy`                        |
+| `status:legacy`           | nothing            | `legacy`                        |
+
 ### Suggestions
 
 The suggestion list opens when the field gets focus and stays open the whole time it has focus. Typing, picking, moving the caret and pressing the field's buttons never close it.

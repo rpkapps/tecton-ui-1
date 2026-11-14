@@ -40,7 +40,11 @@
  * can say that (`td:>=1000 td:<=3000` is `1000..3000`); otherwise the second
  * term is a problem (`duplicateColumn`). `OR`, `NOT` and a leading `-` are
  * problems too (a `-` alone is text, as in `A - 12`): filters cannot say "either" or "not", and a term with a
- * problem is not applied rather than applied otherwise. `NOT` takes the
+ * problem is not applied rather than applied otherwise. A problem in an
+ * item of a list (an unknown option, a number or a date that cannot be
+ * read, a backwards range) is that item's alone: it is not applied, the
+ * list's other items are (`status:legacy,producing` is `producing`), and a
+ * list with no item left is not applied at all. `NOT` takes the
  * term after it with it, as `-` does its own (`NOT drilling` searches for
  * nothing, never for "drilling"). Quote a word to
  * search for it as it is (`"-5"`, `"OR"`, `"10:30"`, `"http://..."`).
@@ -167,7 +171,8 @@ class TermReader {
    * them drawn, blank ones skipped, `none` taken as "No value" (`empty`),
    * each other item read by `item` (`undefined` when it has a problem,
    * which it reported, or says nothing yet), its values kept once; the
-   * filter they make, with no problem.
+   * filter the items without a problem make (`status:legacy,producing` is
+   * `producing`, `legacy` reported alone), none when no item makes one.
    */
   list(items: ReadonlyArray<Item>): FilterReading {
     const { type } = this.column
@@ -195,7 +200,7 @@ class TermReader {
     }
     const problem = this.diagnostics.length > 0
     const value =
-      !problem && (values.length || empty)
+      values.length || empty
         ? ({
             type,
             [type === "number" || type === "date" ? "ranges" : "values"]:

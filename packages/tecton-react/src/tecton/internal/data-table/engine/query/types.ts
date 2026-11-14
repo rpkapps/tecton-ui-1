@@ -93,7 +93,9 @@ type QueryTermBase = {
   readonly end: number
   /**
    * Whether the term reaches the view: not when it has a problem, is
-   * incomplete (`status:` while typing) or is negated.
+   * incomplete (`status:` while typing) or is negated. A problem in an
+   * item of a filter's list is that item's: the term applies its other
+   * items (`status:legacy,producing` applies `producing`), if any.
    */
   readonly applied: boolean
 }
@@ -121,8 +123,9 @@ type QueryFilterTerm = QueryTermBase & {
   readonly valueStart: number
   /**
    * What this term alone filters (before another term on the same column
-   * is combined with it): for a date, the days it was understood as, for
-   * the field to show while typing. `undefined` when it filters nothing.
+   * is combined with it), from the items of its list without a problem:
+   * for a date, the days it was understood as, for the field to show while
+   * typing. `undefined` when it filters nothing.
    */
   readonly value: DataTableFilterValue | undefined
   /** No value yet (`status:`, `td:>`): not a problem, nothing applied. */

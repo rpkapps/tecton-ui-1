@@ -9,7 +9,9 @@
  * button, a chip, a controlled view) writes the query again from the view,
  * free words kept. A term with a problem (`OR`, `NOT`, `-`, an unknown
  * column or value, a backwards range) is not applied; it is underlined
- * after a pause in typing, its message on a tooltip and atop the list.
+ * after a pause in typing, its message on a tooltip and atop the list. In
+ * a list, only the item with the problem is left out and underlined
+ * (`status:legacy,producing` applies `producing`).
  *
  * - The text is drawn in the syntax colours by a mirror over the real input,
  *   whose own text is transparent (its caret and selection stay native).

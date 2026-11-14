@@ -227,6 +227,53 @@ describe("DataTableSearch syntax=query: the query and the view", () => {
       "Status has no value “driling”. Did you mean drilling?"
     )
   })
+
+  it("applies the known values of a list, underlining an unknown one alone; the view writes the query without it", async () => {
+    const user = userEvent.setup({ delay: null })
+    const onViewChange = vi.fn()
+    render(<Wells onViewChange={onViewChange} />)
+    await user.click(field())
+    await user.type(field(), "status:legacy,producing")
+    expect(lastView(onViewChange).filters).toEqual({
+      status: { type: "options", values: ["producing"] },
+    })
+    expect(names()).toEqual(
+      WELLS.slice(0, 8)
+        .filter((well) => well.status === "producing")
+        .map((well) => well.name)
+    )
+    const filterButton = document.querySelector<HTMLElement>(
+      '[aria-label="Filter by Status"]'
+    )!
+    expect(filterButton).toHaveTextContent("Producing")
+    expect(filterButton).not.toHaveTextContent("legacy")
+    // The field keeps what was typed; only `legacy` is underlined.
+    expect(field()).toHaveValue("status:legacy,producing")
+    const underlined = () =>
+      Array.from(
+        document.querySelectorAll('[data-slot="data-table-query-problem"]'),
+        (problem) => problem.textContent
+      )
+    await waitFor(() => expect(underlined()).toEqual(["legacy"]), {
+      timeout: 2000,
+    })
+    const description = () =>
+      document.getElementById(field().getAttribute("aria-describedby")!)
+    expect(description()).toHaveTextContent("Filters: Status: Producing.")
+    expect(description()).toHaveTextContent(
+      "1 problem: Status has no value “legacy”."
+    )
+    // Ticking an option writes the query from the view: the unknown value,
+    // which the view does not hold, goes, as a term with a problem does.
+    await user.click(filterButton)
+    const dialog = screen.getByRole("dialog", { name: "Status" })
+    await user.click(within(dialog).getByRole("checkbox", { name: "Drilling" }))
+    expect(lastView(onViewChange).filters).toEqual({
+      status: { type: "options", values: ["producing", "drilling"] },
+    })
+    expect(field()).toHaveValue("status:producing,drilling")
+    expect(underlined()).toEqual([])
+  })
 })
 
 describe("DataTableSearch syntax=query: suggestions", () => {

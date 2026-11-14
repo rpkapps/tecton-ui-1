@@ -918,7 +918,6 @@ describe("parseQuery: problems", () => {
       { column: "status", value: "driling", suggestion: "drilling" },
       "driling",
     ],
-    ["status:drilling,nope", "unknownValue", { value: "nope" }, "nope"],
     [
       "subsea:maybe",
       "unknownValue",
@@ -969,14 +968,8 @@ describe("parseQuery: problems", () => {
     ],
     ["status:>drilling", "notComparable", { operator: ">" }, ">drilling"],
     ["subsea:1..2", "notComparable", { operator: ".." }, "1..2"],
-    // A problem in one item of a list: the term is not applied.
-    ["td:<1000,abc", "notANumber", { column: "td", value: "abc" }, "abc"],
-    [
-      "spud:2015,2016..2015",
-      "backwardsRange",
-      { from: "2016", to: "2015" },
-      "2016..2015",
-    ],
+    // A list whose every item has a problem: nothing of it is applied.
+    ["status:legacy", "unknownValue", { value: "legacy" }, "legacy"],
   ]
   it.each(cases)("%s: %s", (text, code, params, span) => {
     const parsed = parse(text)
@@ -1036,6 +1029,200 @@ describe("parseQuery: problems", () => {
       )!
       expect(text.slice(not.start, not.end)).toBe("NOT")
     }
+  })
+})
+
+describe("parseQuery: a problem in one item of a list", () => {
+  /** The diagnostics' codes and what they underline. */
+  const underlined = (parsed: ParsedQuery) =>
+    parsed.diagnostics.map((diagnostic) => [
+      diagnostic.code,
+      parsed.text.slice(diagnostic.start, diagnostic.end),
+    ])
+  const cases: Array<
+    [string, DataTableFilterValue, Array<[QueryDiagnosticCode, string]>]
+  > = [
+    [
+      "status:legacy,producing",
+      { type: "options", values: ["producing"] },
+      [["unknownValue", "legacy"]],
+    ],
+    [
+      "status:drilling,nope",
+      { type: "options", values: ["drilling"] },
+      [["unknownValue", "nope"]],
+    ],
+    [
+      "status:legacy,producing,olden",
+      { type: "options", values: ["producing"] },
+      [
+        ["unknownValue", "legacy"],
+        ["unknownValue", "olden"],
+      ],
+    ],
+    [
+      "status:>drilling,producing",
+      { type: "options", values: ["producing"] },
+      [["notComparable", ">drilling"]],
+    ],
+    [
+      "subsea:yes,maybe",
+      { type: "boolean", values: [true] },
+      [["unknownValue", "maybe"]],
+    ],
+    [
+      "td:3000,abc",
+      { type: "number", ranges: [{ min: 3000, max: 3000 }] },
+      [["notANumber", "abc"]],
+    ],
+    [
+      "td:<1000,abc",
+      { type: "number", ranges: [{ max: 1000, maxExclusive: true }] },
+      [["notANumber", "abc"]],
+    ],
+    [
+      "td:3000..1000,>5000",
+      { type: "number", ranges: [{ min: 5000, minExclusive: true }] },
+      [["backwardsRange", "3000..1000"]],
+    ],
+    [
+      "spud:2015,soon",
+      {
+        type: "date",
+        ranges: [{ from: day(2015, 1, 1), to: day(2015, 12, 31) }],
+      },
+      [["badDate", "soon"]],
+    ],
+    [
+      "spud:2015,2016..2015",
+      {
+        type: "date",
+        ranges: [{ from: day(2015, 1, 1), to: day(2015, 12, 31) }],
+      },
+      [["backwardsRange", "2016..2015"]],
+    ],
+    [
+      "spud:2015-13,last30d",
+      {
+        type: "date",
+        ranges: [{ from: day(2026, 10, 14), to: day(2026, 11, 12) }],
+      },
+      [["badDate", "2015-13"]],
+    ],
+    // "No value" is known: it applies beside an unknown value.
+    [
+      "status:legacy,none",
+      { type: "options", values: [], empty: true },
+      [["unknownValue", "legacy"]],
+    ],
+  ]
+  it.each(cases)(
+    "%s applies the items without a problem",
+    (text, value, problems) => {
+      const parsed = parse(text)
+      const column = text.slice(0, text.indexOf(":"))
+      expect(parsed.filters).toEqual({ [column]: value })
+      expect(underlined(parsed)).toEqual(problems)
+      const [term] = parsed.terms
+      expect(term).toMatchObject({ kind: "filter", applied: true, value })
+      expect(term.kind === "filter" && term.incomplete).toBe(false)
+    }
+  )
+
+  it("applies nothing of a list with no item left", () => {
+    for (const text of [
+      "status:legacy",
+      "status:legacy,olden",
+      "subsea:maybe",
+      "td:abc,xyz",
+      "spud:soon,2016..2015",
+    ]) {
+      const parsed = parse(text)
+      expect(parsed.filters).toEqual({})
+      expect(parsed.diagnostics.length).toBeGreaterThan(0)
+      expect(parsed.terms[0]).toMatchObject({
+        applied: false,
+        value: undefined,
+        incomplete: false,
+      })
+    }
+  })
+
+  it("has no problems in a text list: any text is one", () => {
+    expect(filterOf("name:a-12,legacy", "name")).toEqual({
+      type: "text",
+      values: ["a-12", "legacy"],
+    })
+  })
+
+  it("draws the item with a problem as any other value", () => {
+    const parsed = parse("status:legacy,producing")
+    expect(
+      parsed.spans.map((span) => [
+        span.kind,
+        parsed.text.slice(span.start, span.end),
+      ])
+    ).toEqual([
+      ["key", "status"],
+      ["colon", ":"],
+      ["value", "legacy"],
+      ["separator", ","],
+      ["value", "producing"],
+    ])
+  })
+
+  it("combines what applies with another term on the column", () => {
+    const parsed = parse("status:legacy,producing,drilling status:drilling")
+    expect(parsed.filters).toEqual({
+      status: { type: "options", values: ["drilling"] },
+    })
+    expect(codes(parsed)).toEqual(["unknownValue"])
+  })
+
+  it("rewrites the query from the view without the items it left out", () => {
+    // The view holds the known values only; a change from elsewhere writes
+    // the query from it, dropping the rest as it drops a term with a problem.
+    const parsed = parse("status:legacy,producing gull")
+    const base = createDefaultView(columns, undefined, {
+      sortable: true,
+      filterable: true,
+      groupable: true,
+    })
+    const applied = applyQuery(en, base, parsed)
+    expect(applied.filters).toEqual({
+      status: { type: "options", values: ["producing"] },
+    })
+    expect(serializeQuery(en, applied, { now: NOW, previous: parsed })).toBe(
+      "status:producing gull"
+    )
+    const ticked = {
+      ...applied,
+      filters: {
+        status: {
+          type: "options" as const,
+          values: ["producing", "drilling"],
+        },
+      },
+    }
+    expect(serializeQuery(en, ticked, { now: NOW, previous: parsed })).toBe(
+      "status:producing,drilling gull"
+    )
+    // A relative preset is kept, without the item it left out.
+    const preset = parse("spud:last30d,soon status:drilling")
+    expect(preset.filters.spud).toBeDefined()
+    expect(
+      serializeQuery(
+        en,
+        {
+          filters: {
+            ...preset.filters,
+            subsea: { type: "boolean", values: [true] },
+          },
+          search: "",
+        },
+        { now: NOW, previous: preset }
+      )
+    ).toBe("status:drilling spuddate:last30d subsea:yes")
   })
 })
 
