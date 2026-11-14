@@ -96,7 +96,7 @@ function TableBody<T>({ className, ...props }: TableBodyRowsProps<T>) {
   return (
     <tbody
       data-slot="table-body"
-      className={cn("[&_tr:last-child]:border-0", className)}
+      className={cn("bg-table-cell [&_tr:last-child]:border-0", className)}
       {...useVirtualRows(props)}
     />
   )
@@ -120,7 +120,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       className={cn(
-        "data-[state=selected]:bg-table-active data-selected:bg-table-active border-border-subtle [&:where([data-striped]>tbody>:nth-child(even):not([data-selected=true],[data-state=selected]))]:bg-surface-alt border-b transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring has-aria-expanded:bg-muted/50 data-disabled:text-muted-foreground [&:where([data-striped]>tbody>*)]:transition-[color,border-color,outline-color]",
+        "hover:bg-table-hover data-[state=selected]:bg-table-active data-selected:bg-table-active border-border-subtle [&:where([data-striped]>tbody>:nth-child(even):not([data-selected=true],[data-state=selected]))]:bg-surface-alt border-b transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring has-aria-expanded:bg-muted/50 data-disabled:text-muted-foreground [&:where([data-striped]>tbody>*)]:transition-[color,border-color,outline-color]",
         className
       )}
       {...useTableRow(props)}

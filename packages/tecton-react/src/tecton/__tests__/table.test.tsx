@@ -28,9 +28,10 @@ const THEME = `@theme inline {
   --text-sm: 14px;
   --color-surface-alt: rgb(1, 1, 1);
   --color-table-active: rgb(2, 2, 2);
-  --color-accent: rgb(3, 3, 3);
+  --color-table-hover: rgb(3, 3, 3);
   --color-muted: rgb(4, 4, 4);
   --color-table-header: rgb(5, 5, 5);
+  --color-table-cell: rgb(6, 6, 6);
   --font-weight-normal: 400;
   --font-weight-medium: 500;
 }`
@@ -38,6 +39,7 @@ const THEME = `@theme inline {
 const STRIPE = "rgb(1, 1, 1)"
 const SELECTED = "rgb(2, 2, 2)"
 const HOVER = "rgb(3, 3, 3)"
+const CELL = "rgb(6, 6, 6)"
 const PLAIN = "rgba(0, 0, 0, 0)"
 
 /**
@@ -251,6 +253,29 @@ describe("Table row header", () => {
     await applyStyles()
     expect(length(screen.getByText("34/10-A-12"), "padding-block")).toBe("4px")
     expect(length(screen.getByText("34/10-A-12"), "height")).toBe("auto")
+  })
+})
+
+describe("Table body fill", () => {
+  it("fills the body with the table's cell surface, whatever the table sits on", async () => {
+    render(<Wells />)
+    await applyStyles()
+    const body = screen.getByText("34/10-A-12").closest("tbody")!
+    expect(background(body)).toBe(CELL)
+    // The rows show it; the header and footer keep their own.
+    expect(background(row("34/10-A-12"))).toBe(PLAIN)
+    expect(background(screen.getByText("Total").closest("tfoot")!)).toBe(
+      "rgb(4, 4, 4)"
+    )
+    expect(background(screen.getByText("Well"))).toBe("rgb(5, 5, 5)")
+  })
+
+  it("hovers a row with the table's hover surface", async () => {
+    render(<Wells />)
+    await applyStyles()
+    const hovered = row("34/10-A-12")
+    hovered.setAttribute("data-hover", "")
+    expect(background(hovered)).toBe(HOVER)
   })
 })
 

@@ -1372,8 +1372,10 @@
     @apply [&_tr]:border-b-0;
   }
 
+  /* The body's own fill (Tecton's table cell surface: white in light mode),
+     under the stripes, hover and selection, whatever the table sits on. */
   .cn-table-body {
-    @apply [&_tr:last-child]:border-0;
+    @apply bg-table-cell [&_tr:last-child]:border-0;
   }
 
   .cn-table-footer {
@@ -1387,7 +1389,7 @@
      stripe. The direct-child chains reach only the table's own rows and
      cells, never a nested table's (nor, for the stripe, the footer's). */
   .cn-table-row {
-    @apply hover:bg-accent data-[state=selected]:bg-table-active data-selected:bg-table-active data-disabled:text-muted-foreground focus-visible:outline-ring border-border-subtle border-b transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 [&:where([data-striped]>tbody>:nth-child(even):not([data-selected=true],[data-state=selected]))]:bg-surface-alt [&:where([data-striped]>tbody>*)]:transition-[color,border-color,outline-color];
+    @apply hover:bg-table-hover data-[state=selected]:bg-table-active data-selected:bg-table-active data-disabled:text-muted-foreground focus-visible:outline-ring border-border-subtle border-b transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 [&:where([data-striped]>tbody>:nth-child(even):not([data-selected=true],[data-state=selected]))]:bg-surface-alt [&:where([data-striped]>tbody>*)]:transition-[color,border-color,outline-color];
   }
 
   .cn-table-row-aria {

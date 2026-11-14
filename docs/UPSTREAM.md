@@ -302,8 +302,11 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   striped). A `TableHead` with `scope="row"` (a row header in the body) takes the body
   cell's look: `h-auto py-3` (`py-1` at `sm`), `font-normal`, `text-inherit` and no header
   background (`[&[scope=row]]:`, one attribute more specific than the header's rules), so a
-  row names itself without looking like a column header. Tested in
-  `src/tecton/__tests__/table.test.tsx`.
+  row names itself without looking like a column header. The body has Tecton's table cell
+  surface as its fill (`cn-table-body`: `bg-table-cell`, white in light mode), whatever the
+  table sits on, so the stripes (`bg-surface-alt`, the page background in light mode) show on
+  it; a body row hovers with Tecton's table hover surface (`cn-table-row`: `hover:bg-table-hover`,
+  not shadcn's `accent`). Tested in `src/tecton/__tests__/table.test.tsx`.
   `Table` also takes `virtualized`: its container becomes the scroll element
   (`h-full overflow-auto`, filling a parent of bounded height), `TableHeader` sticks
   (`sticky top-0 z-10`; the colour is on the `th`) and `TableBody` mounts only the rows in view,
@@ -335,9 +338,8 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   `dialog`, `alert-dialog`, `popover`, `hover-card`, `dropdown-menu`, `context-menu` (their
   submenus are the same content), `select`, `combobox` and `command` surfaces
   `var(--color-popover)`; the sidebar
-  `var(--color-sidebar)` and its inset `var(--color-background)`. `DataTable` fills the rows of a
-  table with pinned columns with `var(--surface, var(--color-background))`, so pinned cells match
-  the surface the table sits on, through theme changes. Tecton's own surfaces in `src/tecton`
+  `var(--color-sidebar)` and its inset `var(--color-background)`. (`DataTable`'s opaque rows
+  take the table's own cell surface, `bg-table-cell`, not `--surface`.) Tecton's own surfaces in `src/tecton`
   (`Panel`, the `AppShell` parts, `ActionBar`, the composer's popup, the document tabs' strip)
   set it in their own classes.
 

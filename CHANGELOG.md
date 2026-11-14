@@ -86,6 +86,9 @@ spud:2015`) set the same column filters as the filter buttons and free words the
 
 ### Changed
 
+- `Table`: the body has Tecton's table cell surface as its fill (white in light mode) whatever the
+  table sits on, so the stripes show in light mode too, and a row hovers with Tecton's table hover
+  surface. Two theme tokens come with them: `table-cell` (`bg-table-cell`) and `table-hover`.
 - **BREAKING:** `DropdownMenu` is no longer modal by default: the page keeps scrolling while it is
   open, and a press outside closes the menu and still reaches what it pressed. Pass `modal` to get
   the previous behaviour.
