@@ -52,7 +52,6 @@ import {
   DEFAULT_PAGE_SIZES,
   getColumnModel,
   getFormatter,
-  hidesEveryColumn,
   isGroupClosed,
   layoutColumns,
   reconcileView,
@@ -89,6 +88,7 @@ import {
   type DataTableSelectionMode,
   type DataTableState,
 } from "./context"
+import { useRootWarnings } from "./dev-warnings"
 import { DRAG_AND_DROP, usePrefetchFeatures } from "./lazy"
 import {
   resolveHighlightChanges,
@@ -1108,118 +1108,24 @@ function DataTable<T>({
     reorderableColumns || rowOrder ? PREFETCH_DRAG_AND_DROP : NO_FEATURES
   )
 
-  // New columns re-render every row: said when they are new but the same.
-  const previousColumns = React.useRef(columns)
-  React.useEffect(() => {
-    const previous = previousColumns.current
-    previousColumns.current = columns
-    if (previous === columns) return
-    const ids = (handle: DataTableColumns<T>) => {
-      const { leaves, groups } = getColumnModel(handle)
-      return [...leaves.map((leaf) => leaf.id), ...groups.keys()].join(" ")
-    }
-    try {
-      if (
-        process.env.NODE_ENV !== "production" &&
-        ids(previous) === ids(columns)
-      )
-        warn(
-          "inline-columns",
-          "DataTable: `columns` is a new object on every render, with the same columns, so every row renders again on every change (a selection, a page). Make the columns once with `createColumns` at module level, or in a `React.useMemo`."
-        )
-    } catch {
-      // No `process` (no bundler): no warning.
-    }
-  }, [warn, columns])
-
-  const { idIssues } = model
-  React.useEffect(() => {
-    const { missingIds, duplicateIds } = idIssues
-    try {
-      if (process.env.NODE_ENV !== "production" && missingIds > 0)
-        warn(
-          "missing-ids",
-          `DataTable: ${missingIds} ${missingIds === 1 ? "item has" : "items have"} no id. Rows are selected, opened and kept across sorting by id: give each item an \`id\`, or pass \`itemToId\`.`
-        )
-    } catch {
-      // No `process` (no bundler): no warning.
-    }
-    try {
-      if (process.env.NODE_ENV !== "production" && duplicateIds.length > 0)
-        warn(
-          "duplicate-ids",
-          `DataTable: more than one item has the id ${duplicateIds
-            .slice(0, 5)
-            .map((id) => `"${id}"`)
-            .join(
-              ", "
-            )}${duplicateIds.length > 5 ? ` and ${duplicateIds.length - 5} more` : ""}. Rows are selected, opened and kept across sorting by id: make each item's id unique.`
-        )
-    } catch {
-      // No `process` (no bundler): no warning.
-    }
-  }, [warn, idIssues])
-  const hidesAll = hidesEveryColumn(columns, rawView.columns?.hidden)
-  React.useEffect(() => {
-    try {
-      if (process.env.NODE_ENV !== "production" && hidesAll)
-        warn(
-          "hides-every-column",
-          "DataTable: the view hides every column; the first column in its order stays shown."
-        )
-    } catch {
-      // No `process` (no bundler): no warning.
-    }
-  }, [warn, hidesAll])
-  React.useEffect(() => {
-    try {
-      if (process.env.NODE_ENV !== "production" && groupable && tree)
-        warn(
-          "groupable-tree",
-          "DataTable: `groupable` is off in a tree (`itemToChildren`): a tree's rows nest by their items, so they are not grouped."
-        )
-    } catch {
-      // No `process` (no bundler): no warning.
-    }
-  }, [warn, groupable, tree])
-  React.useEffect(() => {
-    try {
-      if (process.env.NODE_ENV !== "production" && reorderableRows && tree)
-        warn(
-          "reorderable-rows-tree",
-          "DataTable: `reorderableRows` is off in a tree (`itemToChildren`): rows are reordered in a flat list only."
-        )
-    } catch {
-      // No `process` (no bundler): no warning.
-    }
-  }, [warn, reorderableRows, tree])
-  React.useEffect(() => {
-    try {
-      if (process.env.NODE_ENV !== "production" && hasMore && pagination)
-        warn(
-          "has-more-pagination",
-          "DataTable: `hasMore` is off with `pagination`: pages are loaded a page at a time (`onPageChange`), not as the user scrolls."
-        )
-    } catch {
-      // No `process` (no bundler): no warning.
-    }
-  }, [warn, hasMore, pagination])
-  React.useEffect(() => {
-    try {
-      if (
-        process.env.NODE_ENV !== "production" &&
-        server &&
-        pagination &&
-        rowCount === undefined
-      )
-        warn(
-          "server-row-count",
-          "DataTable: in server mode, pages are counted from `rowCount`: pass the number of rows the view matches, or the table has a single page."
-        )
-    } catch {
-      // No `process` (no bundler): no warning.
-    }
-  }, [warn, server, pagination, rowCount])
+  try {
+    // The same on every render (the build's): the hooks keep their order.
+    if (process.env.NODE_ENV !== "production")
+      useRootWarnings(warn, {
+        columns,
+        idIssues: model.idIssues,
+        hidden: rawView.columns?.hidden,
+        groupable,
+        reorderableRows,
+        tree,
+        hasMore,
+        pagination,
+        server,
+        rowCount,
+      })
+  } catch {
+    // No `process` (no bundler): no warnings.
+  }
 
   return (
     <DataTableContext value={context as DataTableContextValue<unknown>}>

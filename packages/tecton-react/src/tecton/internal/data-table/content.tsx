@@ -105,6 +105,7 @@ import {
   usePrefetchFeatures,
 } from "./lazy"
 import { DataTableHeader, shownHeaderRows, type HeaderShared } from "./header"
+import { useContentWarnings } from "./dev-warnings"
 import { createLiveBridge, LiveAnchor, type LiveMessage } from "./live-bridge"
 import { describeRow, renderRow } from "./row"
 import { createRowOrder, inItemOrder, type RowOrder } from "./row-order"
@@ -769,21 +770,18 @@ function DataTableContentImpl({
         : NO_OPEN,
     [detail, options.pagination, open, model]
   )
-  React.useEffect(() => {
-    try {
-      if (
-        process.env.NODE_ENV !== "production" &&
-        renderDetail !== undefined &&
-        options.tree
-      )
-        actions.warn(
-          "detail-tree",
-          "DataTableContent: `renderDetail` is off in a tree (`itemToChildren`): a tree's rows open to show their children."
-        )
-    } catch {
-      // No `process` (no bundler): no warning.
-    }
-  }, [actions, renderDetail, options.tree])
+  try {
+    // The same on every render (the build's): the hooks keep their order.
+    if (process.env.NODE_ENV !== "production")
+      useContentWarnings(actions.warn, {
+        detail: renderDetail !== undefined,
+        tree: options.tree,
+        virtualized,
+        columns: layout.columns,
+      })
+  } catch {
+    // No `process` (no bundler): no warnings.
+  }
 
   const selection = options.selectionMode !== "none"
   const handle = options.reorderableRows
@@ -1150,22 +1148,6 @@ function DataTableContentImpl({
       rowParity,
     ]
   )
-
-  React.useEffect(() => {
-    if (!virtualized) return
-    const wrapped = layout.columns.filter((column) => column.definition.wrap)
-    try {
-      if (process.env.NODE_ENV !== "production" && wrapped.length > 0)
-        actions.warn(
-          "wrap-virtualized",
-          `DataTableContent: \`wrap\` is off for ${wrapped
-            .map((column) => `"${column.id}"`)
-            .join(", ")} in a virtualized table, whose rows are one height.`
-        )
-    } catch {
-      // No `process` (no bundler): no warning.
-    }
-  }, [actions, virtualized, layout.columns])
 
   // More rows to come: loading rows after the last one, and no bar. Not
   // while a client table searches or filters: what matches among rows not
