@@ -11,7 +11,8 @@
  *
  * Search matches the rows where any searchable, shown column's display text
  * contains the whole query, ignoring case and accents (`foldText`); a query
- * with a letter skips the number columns whose text cannot have one. A
+ * with a letter skips the number columns whose text cannot have one (no
+ * value shown as it is has a letter, `SearchIndex.lettered`). A
  * column's filter, by its type:
  * - text: the display text contains any of `values`, like search;
  * - number: the value is in any of `ranges`: `min` ≤ value ≤ `max` (either
@@ -64,10 +65,17 @@ type SearchIndex<T> = {
   texts: (column: EngineColumn<T>) => ColumnText
   /** Building the column's texts as an idle task. */
   task: (column: EngineColumn<T>) => IdleTask
+  /**
+   * Whether a number column has a value it shows as it is (a string it
+   * cannot read as a number) with a letter in it ("N/A"): looked for once.
+   */
+  lettered: (column: EngineColumn<T>) => boolean
 }
 
 /** Rows per building step. */
 const STEP = 4096
+
+const LETTER = /\p{L}/u
 
 function* buildTexts<T>(
   items: ReadonlyArray<T>,
@@ -112,6 +120,7 @@ function createSearchIndex<T>(
     }
     return job
   }
+  const lettered = new Map<EngineColumn<T>, boolean>()
   const finish = (column: EngineColumn<T>, texts: ColumnText) => {
     built.set(column, texts)
     building.delete(column)
@@ -133,6 +142,22 @@ function createSearchIndex<T>(
         if (step.done) finish(column, step.value)
       },
     }),
+    lettered(column) {
+      let found = lettered.get(column)
+      if (found === undefined) {
+        // The values alone, not their texts: most are numbers.
+        found = items.some((item) => {
+          const value = column.getValue(item)
+          return (
+            typeof value === "string" &&
+            toNumber(value) === undefined &&
+            LETTER.test(value)
+          )
+        })
+        lettered.set(column, found)
+      }
+      return found
+    },
   }
 }
 
@@ -153,12 +178,11 @@ function markMatches(
   }
 }
 
-const LETTER = /\p{L}/u
-
 /**
- * Whether a number column's display text is digits, signs, separators and
- * `%` only: decimal or percent, in standard notation (currencies, units,
- * and compact or scientific notation can write letters).
+ * Whether a number column's numbers are written with digits, signs,
+ * separators and `%` only: decimal or percent, in standard notation
+ * (currencies, units, and compact or scientific notation can write
+ * letters). Its values that are not numbers show as they are, and may.
  */
 function lettersFree<T>(column: EngineColumn<T>) {
   if (column.type !== "number") return false
@@ -183,10 +207,10 @@ function searchMask<T>(
   if (!query) return null
   const mask = new Uint8Array(rowCount)
   // A plain number's text has no letters: a query with one cannot match
-  // it, and its column (the costliest to format) is not read at all.
+  // it, and a column of them alone (the costliest to format) is not read.
   const letters = LETTER.test(query)
   for (const column of columns)
-    if (!letters || !lettersFree(column))
+    if (!letters || !lettersFree(column) || index.lettered(column))
       markMatches(index.texts(column), query, mask)
   return mask
 }

@@ -2457,4 +2457,28 @@ describe("engine: search and number columns", () => {
     expect(search("eur 1,234")).toEqual(["a-1"])
     expect(search("1,234.5 x")).toEqual([])
   })
+
+  it("finds the text a number column shows as it is", () => {
+    const plain = createColumns<Well>([
+      { id: "name", header: "Name" },
+      { id: "oil", header: "Oil", type: "number" },
+    ])
+    const shown = (query: string, oil: unknown) =>
+      ids(
+        createDataTableEngine<Well>().run({
+          items: [well("x", { oil: oil as number }), well("y", { oil: 5 })],
+          columns: plain,
+          view: reconcileView(
+            plain,
+            { search: query },
+            createDefaultView(plain),
+            ALL
+          ),
+        }).rows
+      )
+    expect(shown("n/a", "N/A")).toEqual(["x"])
+    expect(shown("pending", "Pending")).toEqual(["x"])
+    // Words still skip a column of numbers alone.
+    expect(shown("n/a", 7)).toEqual([])
+  })
 })
