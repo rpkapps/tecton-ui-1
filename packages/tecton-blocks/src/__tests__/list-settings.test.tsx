@@ -132,7 +132,9 @@ describe("settings-01", () => {
     const role = screen.getByRole("combobox", { name: "Role" })
     expect(role).toHaveTextContent("Subsurface lead")
     await user.click(role)
-    await user.click(screen.getByRole("option", { name: "Drilling engineer" }))
+    await user.click(
+      await screen.findByRole("option", { name: "Drilling engineer" })
+    )
     expect(role).toHaveTextContent("Drilling engineer")
     await user.click(screen.getByRole("button", { name: "Save changes" }))
     expect(onSave).toHaveBeenCalledWith(
