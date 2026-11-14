@@ -1333,6 +1333,10 @@ describe("DataTable column pinning", () => {
       .closest("td")!
     expect(checkbox).toHaveClass("sticky")
     expect(checkbox.style.insetInlineStart).toBe("0px")
+    // With the focus, over the next pinned cell: its control's ring shows
+    // past its edge (the selection column has no end padding).
+    expect(checkbox).toHaveClass("has-[:focus-visible]:z-[2]")
+    expect(wells).toHaveClass("has-[:focus-visible]:z-[21]")
     // The row is opaque, for its cells to take its fill.
     expect(body.closest("tr")).toHaveClass(
       "bg-[var(--surface,var(--color-background))]"

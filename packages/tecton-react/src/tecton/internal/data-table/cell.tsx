@@ -184,10 +184,13 @@ function pinStyle(pin: CellPin): React.CSSProperties {
  * A pinned body cell: over the cells scrolled under it, in its row's fill
  * (a row header's own transparent fill too). It covers its part of the
  * focused row's outline, so it draws that part: the ring along its top and
- * bottom, and on the row's first and last cell its outer side.
+ * bottom, and on the row's first and last cell its outer side. A cell
+ * holding the keyboard focus goes over the other pinned cells, for its
+ * control's focus ring to show past its edge (the selection column has no
+ * end padding).
  */
 const pinnedCellClassName = cn(
-  "sticky z-[1] bg-inherit [&[scope=row]]:bg-inherit",
+  "sticky z-[1] bg-inherit has-[:focus-visible]:z-[2] [&[scope=row]]:bg-inherit",
   "[tr:focus-visible>&]:shadow-[inset_0_2px_0_var(--color-ring),inset_0_-2px_0_var(--color-ring)]",
   "[tr:focus-visible>&:first-child]:shadow-[inset_0_2px_0_var(--color-ring),inset_0_-2px_0_var(--color-ring),inset_2px_0_0_var(--color-ring)]",
   "rtl:[tr:focus-visible>&:first-child]:shadow-[inset_0_2px_0_var(--color-ring),inset_0_-2px_0_var(--color-ring),inset_-2px_0_0_var(--color-ring)]",
@@ -250,7 +253,7 @@ function pinEdgeClassName(pin: CellPin | undefined, clip = true) {
 }
 
 /** A pinned header cell: over the other header cells and their resizers. */
-const pinnedHeadClassName = "sticky z-20"
+const pinnedHeadClassName = "sticky z-20 has-[:focus-visible]:z-[21]"
 
 /** A row with pinned cells is opaque, for its cells to take its fill. */
 const pinnedRowClassName = "bg-[var(--surface,var(--color-background))]"
