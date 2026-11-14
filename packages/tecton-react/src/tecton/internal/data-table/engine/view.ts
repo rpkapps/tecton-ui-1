@@ -286,11 +286,16 @@ function reconcileSorting<T>(
   return keepValid(
     sorting,
     capabilities.sortable,
-    (sort) =>
-      typeof sort === "object" &&
-      sort !== null &&
-      model.byId.get(sort.column)?.sortable === true &&
-      (sort.direction === "ascending" || sort.direction === "descending"),
+    // Views come from JSON and application state: anything may be here.
+    (sort: unknown) => {
+      if (!sort || typeof sort !== "object") return false
+      const { column, direction } = sort as Record<string, unknown>
+      return (
+        typeof column === "string" &&
+        model.byId.get(column)?.sortable === true &&
+        (direction === "ascending" || direction === "descending")
+      )
+    },
     (sort) => sort.column,
     capabilities.multiSort === false ? 1 : Infinity
   )
