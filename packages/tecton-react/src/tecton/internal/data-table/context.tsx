@@ -28,7 +28,7 @@ import {
   type Formatter,
 } from "./engine/index"
 import type { LiveState } from "./live"
-import type { ActionInternals } from "./root"
+import type { ActionInternals } from "./actions"
 import type { Warn } from "./warnings"
 
 // Development only: every warning is behind `process.env.NODE_ENV`,
