@@ -63,10 +63,7 @@ import {
   type DataTableOptions,
 } from "./context"
 import {
-  clampColumnWidth,
   getColumnModel,
-  MAX_COLUMN_WIDTH,
-  MIN_COLUMN_WIDTH,
   setColumnWidth,
   toggleSorting,
   type ColumnLayout,
@@ -76,7 +73,7 @@ import {
   type HeaderCell,
   type HeaderRow,
 } from "./engine/index"
-import { RESIZER, useFeature } from "./lazy"
+import { loadFeature, RESIZER, useFeature } from "./lazy"
 import { createPressWait } from "./press-wait"
 import { DataTableSelectionCheckbox } from "./selection-checkbox"
 
@@ -243,7 +240,7 @@ function useResizer(on: boolean) {
     />
   )
   return {
-    Resizer: feature.module?.TableColumnResizer,
+    Resizer: feature.module?.DataTableColumnResizer,
     placeholder,
     load,
     /** The resizer is mounted: it takes a drag started before it came. */
@@ -342,31 +339,6 @@ function HiddenDescriptions({
   )
 }
 
-/**
- * The width a column shows while its resizer is dragged; the filler shows
- * its real width, which the space it takes makes wider than its own.
- */
-function useResizerValue(
-  element: HTMLElement | null,
-  filler: boolean,
-  width: number
-) {
-  const [rendered, setRendered] = React.useState<number | null>(null)
-  React.useLayoutEffect(() => {
-    if (!filler || !element || typeof ResizeObserver === "undefined") {
-      setRendered(null)
-      return
-    }
-    const update = () =>
-      setRendered(Math.round(element.getBoundingClientRect().width) || null)
-    update()
-    const observer = new ResizeObserver(update)
-    observer.observe(element)
-    return () => observer.disconnect()
-  }, [element, filler])
-  return Math.max(width, rendered ?? 0)
-}
-
 function DataTableColumnHeader<T>({
   column,
   index,
@@ -416,18 +388,11 @@ function DataTableColumnHeader<T>({
   const draggable = order !== null && shared.movable.has(column.id)
   const dragging = useColumnDragging(order, column.id)
   const ids = useDescriptions(column.description, draggable)
-  const [element, setElement] = React.useState<HTMLElement | null>(null)
-  const dragRef = draggable ? order.register(column.id) : null
-  const ref = React.useCallback(
-    (node: HTMLTableCellElement | null) => {
-      dragRef?.(node)
-      setElement(node)
-    },
-    [dragRef]
-  )
+  const ref = draggable ? order.register(column.id) : undefined
   const triggerRef = React.useRef<HTMLButtonElement | null>(null)
-  const resizeHintId = `${React.useId()}-resize`
   const resizerRef = React.useRef<HTMLDivElement | null>(null)
+  // Fit to content, once the resizer is there (`column-resizer.tsx`).
+  const fitRef = React.useRef<((event: Event | undefined) => void) | null>(null)
   const resizer = useResizer(canResize)
   const Resizer = resizer.Resizer
   const startResizer = resizer.start
@@ -451,68 +416,18 @@ function DataTableColumnHeader<T>({
     (pin?.edge || ruled) && "after:bg-transparent"
   )
 
-  // The resizer's width while it changes: drawn through `preview`, so only
-  // this cell renders until the drag ends (or the keyboard is done).
-  const [live, setLive] = React.useState<number | null>(null)
-  const width = sizing?.widths[index] ?? 0
-  const filler = sizing?.filler === index
-  // What the column shows: the filler is as wide as the space it takes.
-  const shownWidth = useResizerValue(element, filler, width)
-  // After each commit, the widths drawn are the table's again: the new
-  // one, or the old one when the view did not take it (cancelled, or a
-  // controlled view left as it was).
-  const [commits, setCommits] = React.useState(0)
-  const { restore } = sizer
-  React.useLayoutEffect(() => {
-    if (commits > 0) restore()
-  }, [commits, restore])
-  // The width the column had as a drag or resize mode began: what a commit
-  // compares with (the filler's own width follows the preview).
-  const start = React.useRef<number | null>(null)
   const setWidth = (next: number | null, event: Event | undefined) =>
     context.actions.updateView(
       (view) => setColumnWidth(view, column.id, next),
       "resize",
       event
     )
-  const commit = (next: number, event: Event | undefined) => {
-    const from = start.current ?? shownWidth
-    start.current = null
-    setLive(null)
-    setCommits((count) => count + 1)
-    // A width the column had already, which the view does not hold, is no
-    // change: a cancelled drag, a key at a bound.
-    const set = Object.hasOwn(
-      context.store.get().view.columns.widths,
-      column.id
-    )
-    if (!set && next === from) return
-    setWidth(next, event)
-  }
+  // Fit to content, by the resizer's code: asked for now if it is to come.
   const fit = (event: Event | undefined) => {
-    const fitted = sizer.fit(column.id)
-    if (fitted !== null)
-      commit(clampColumnWidth(column.minWidth, column.maxWidth, fitted), event)
-  }
-  // Resize mode, from the menu's "Resize column": the resizer has focus,
-  // the keys change the width drawn, Enter, Tab or leaving keeps it and
-  // Escape puts it back; both give focus back to the menu button.
-  const [resizing, setResizing] = React.useState(false)
-  const keyboard = React.useRef(false)
-  const enter = () => {
-    keyboard.current = true
-    setResizing(true)
-  }
-  const leave = (keep: boolean, event?: Event) => {
-    if (!keyboard.current) return
-    keyboard.current = false
-    setResizing(false)
-    if (keep && live !== null) commit(live, event)
-    else if (live !== null) {
-      start.current = null
-      setLive(null)
-      restore()
-    }
+    if (fitRef.current) return fitRef.current(event)
+    loadFeature(RESIZER)
+      .then(() => setTimeout(() => fitRef.current?.(event)))
+      .catch(() => undefined)
   }
   // The user has set its width: "Reset width" returns it to its own.
   const hasWidth = useDataTableSelector(context, (state) =>
@@ -551,7 +466,7 @@ function DataTableColumnHeader<T>({
       announceSort={announceSort}
       triggerRef={triggerRef}
       resizerRef={resizerRef}
-      onFit={(event) => fit(event)}
+      onFit={fit}
       onResetWidth={hasWidth ? (event) => setWidth(null, event) : undefined}
       className={MENU_BUTTON[column.align]}
     />
@@ -660,61 +575,22 @@ function DataTableColumnHeader<T>({
       {canResize && !Resizer && resizer.placeholder(grip)}
       {canResize && Resizer && (
         <Resizer
-          ref={resizerRef}
-          // Not one of the grid's stops, and a press does not focus it: the
-          // menu's "Resize column" reaches it (resize mode).
-          tabIndex={-1}
-          onMouseDown={(event) => event.preventDefault()}
-          aria-describedby={resizing ? resizeHintId : undefined}
-          className={grip}
-          edge={gripEdge}
-          label={column.header}
-          // A column hidden below a breakpoint has no width: its own then.
-          value={Math.max(
-            column.minWidth ?? MIN_COLUMN_WIDTH,
-            live ?? shownWidth
-          )}
-          min={column.minWidth ?? MIN_COLUMN_WIDTH}
-          // The default ceiling bounds the widths the user sets, never the
-          // width the column has (a stretched one may be wider).
-          max={
-            column.maxWidth ??
-            Math.max(
-              MAX_COLUMN_WIDTH,
-              live === null ? shownWidth : (start.current ?? shownWidth)
-            )
+          column={column as EngineColumn<unknown>}
+          context={context as DataTableContextValue<unknown>}
+          sizer={sizer}
+          at={
+            index +
+            (options.reorderableRows ? 1 : 0) +
+            (options.selectionMode === "none" ? 0 : 1)
           }
-          // Only the menu's "Resize column" focuses it (a press does not).
-          onFocus={enter}
-          onBlur={(event) => leave(true, event.nativeEvent)}
-          onKeyDown={(event) => {
-            const keep = event.key === "Enter" || event.key === "Tab"
-            if (!keep && event.key !== "Escape") return
-            event.preventDefault()
-            event.stopPropagation()
-            leave(keep, event.nativeEvent)
-            triggerRef.current?.focus()
-          }}
-          onValueChange={(next) => {
-            start.current ??= live ?? shownWidth
-            setLive(next)
-            sizer.preview(column.id, next)
-          }}
-          // A drag ends with its width; keys wait for Enter (resize mode).
-          onValueCommitted={(next, details) => {
-            if (details.reason === "drag") commit(next, details.event)
-          }}
-          // A double click fits the column to its content.
-          onDoubleClick={(event) => {
-            event.preventDefault()
-            fit(event.nativeEvent)
-          }}
+          width={sizing.widths[index]}
+          filler={sizing.filler === index}
+          edge={gripEdge}
+          className={grip}
+          resizerRef={resizerRef}
+          triggerRef={triggerRef}
+          fitRef={fitRef}
         />
-      )}
-      {canResize && (
-        <span id={resizeHintId} hidden>
-          {t("resizeHint")}
-        </span>
       )}
       <HiddenDescriptions
         description={column.description}

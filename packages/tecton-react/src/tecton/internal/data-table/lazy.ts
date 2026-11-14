@@ -46,8 +46,11 @@ function feature<TModule extends object>(
 
 /** `reorderableColumns`, `reorderableRows`: one chunk for both. */
 const DRAG_AND_DROP = feature(() => import("./reorder"))
-/** `resizableColumns`: the columns' resizers and their drags. */
-const RESIZER = feature(() => import("../../table-column-resizer"))
+/**
+ * `resizableColumns`: the columns' resizers, their drags, resize mode and
+ * Fit to content (`TableColumnResizer` with `column-resizer.tsx`).
+ */
+const RESIZER = feature(() => import("./column-resizer"))
 /**
  * `highlightChanges`: what added rows look like and do in the content
  * (`live-rows.tsx`), loaded as soon as the table mounts, before rows come.

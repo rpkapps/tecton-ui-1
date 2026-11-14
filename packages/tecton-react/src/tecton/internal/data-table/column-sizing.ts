@@ -19,8 +19,9 @@
  *   the table's, and where pinned columns stick (variables on the frame,
  *   which the pinned cells read) directly (`preview`), with no render of
  *   the table; the view takes the width when the drag ends.
- * - `fit` lays the table out at its content's width for a moment to read a
- *   column's: its widest cell rendered, or its header.
+ * - Fit to content (`column-resizer.tsx`, with the resizer) lays the table
+ *   out at its content's width for a moment to read a column's: its widest
+ *   cell rendered, or its header (`headerWidthOf`).
  * - The columns of controls before the data columns (the rows' drag
  *   handles, then the selection checkboxes) are measured too, and size as
  *   one: the engine's selection column, which sticks at the start while a
@@ -149,8 +150,6 @@ type ColumnSizer = {
   preview: (column: string, width: number) => void
   /** Draws the widths the table has, after a preview the view did not take. */
   restore: () => void
-  /** The width of a column's content: its widest cell rendered, or its header. */
-  fit: (column: string) => number | null
   /** The breakpoints the window is below now, of those the columns hide at. */
   below: ReadonlySet<string>
 }
@@ -347,26 +346,6 @@ function useColumnSizing({
       const { sizing: current } = latest.current
       if (current) draw(current)
     },
-    fit(id: string) {
-      const current = latest.current
-      const index = current.layout.columns.findIndex(
-        (column) => column.id === id
-      )
-      const table = frame.current?.querySelector("table")
-      const head = table?.tHead?.rows
-      if (index < 0 || !table || !head?.length) return null
-      const offset = current.lead
-      const last = head[head.length - 1]
-      const cell = (cellsByColumn(last) ?? [...last.cells])[index + offset] as
-        HTMLTableCellElement | undefined
-      const col = table.querySelector<HTMLElement>(
-        `colgroup[data-slot="data-table-columns"] > col:nth-child(${index + offset + 1})`
-      )
-      if (!cell) return null
-      // Laid out at its content's width: the column is as wide as its
-      // widest cell (rendered) or its header.
-      return atContentWidth(table, () => Math.ceil(headerWidthOf(cell)), col)
-    },
   }))
 
   const style = React.useMemo(
@@ -454,5 +433,5 @@ function tableStyle(sizing: ColumnSizing) {
   }
 }
 
-export { colWidths, pinOffset, tableStyle, useColumnSizing }
+export { colWidths, headerWidthOf, pinOffset, tableStyle, useColumnSizing }
 export type { ColumnSizer, SizingMode }
