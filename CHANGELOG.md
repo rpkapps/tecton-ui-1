@@ -31,17 +31,19 @@ write entries and cut a release.
 - `DataTableSearch syntax="query"`: a power search. Typed terms (`status:drilling td:>3000
 spud:2015`) set the same column filters as the filter buttons and free words the search: a comma
   means "any of" for every column type (`well:a-12,b-3`, `td:<1000,>3000`, `spud:2015,last30d`;
-  a number or date keeps its own comma, `1,234.5`, `jun 30, 2015`), and a
-  filter button, chip or controlled view writes the query again. The field draws the query in
+  a number or date keeps its own comma, `1,234.5`, `jun 30, 2015`; a range's `..` may follow a
+  space, `spud:2015 ..2016`), a typed term replaces its column's filter (also one the query cannot
+  write), and a filter button, chip or controlled view writes the query again. The field draws the query in
   colours, suggests columns, values with their row counts, comparisons with the data's range and a
   date's presets, years, months and calendar in a list that stays open while the field has focus
-  (with nothing to suggest, a line says what the term at the caret does), explains a term it cannot apply (`OR`, `NOT`, `-`, an
-  unknown column or value) instead of applying it otherwise, with what to type instead in the
+  (with nothing to suggest, a line says what the term at the caret does, or its problem, read
+  out politely), explains a term it cannot apply (`OR`, `NOT`, a leading `-`, an unknown column
+  or value; a `-` alone is text) instead of applying it otherwise, with what to type instead in the
   table's own terms (`status:drilling,producing` for one of several values), lists the table's
   columns with examples in its "?" help, and works in server mode, RTL and the 34 locales. Its
   code loads on demand: a table with the plain search (`syntax="text"`, the default) never loads
-  it. What was typed, the focus and the caret carry over when it arrives, also for a field focused
-  before a server-rendered page hydrated.
+  it. What was typed, the focus and the caret carry over when it arrives, after the view's
+  filters, also for a field focused before a server-rendered page hydrated.
 - `DataTable`'s number filter ranges take `minExclusive?: true` and `maxExclusive?: true`: the
   bound's own number does not match (more than `min`, less than `max`). Its filter button and chip
   read "> 3,000" or "> 1,000 and ≤ 3,000", and editing that bound in the filter includes it again.
