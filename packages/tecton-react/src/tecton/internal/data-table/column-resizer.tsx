@@ -20,7 +20,7 @@ import * as React from "react"
 
 import { TableColumnResizer } from "../../table-column-resizer"
 import { useTranslations } from "../i18n/translations"
-import { atContentWidth, cellsByColumn } from "../table-grid"
+import { atContentWidth, cellsByColumn } from "../grid-dom"
 import { headerWidthOf, type ColumnSizer } from "./column-sizing"
 import type { DataTableContextValue } from "./context"
 import {

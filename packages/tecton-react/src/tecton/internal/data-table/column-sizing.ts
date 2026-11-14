@@ -29,7 +29,7 @@
  */
 import * as React from "react"
 
-import { atContentWidth, cellsByColumn } from "../table-grid"
+import { atContentWidth, cellsByColumn } from "../grid-dom"
 import {
   columnWidth,
   sizeColumns,

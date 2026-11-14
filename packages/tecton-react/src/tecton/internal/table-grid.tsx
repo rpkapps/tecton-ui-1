@@ -57,6 +57,20 @@ import * as React from "react"
 
 import { useDirection } from "@tecton/react/provider"
 
+import {
+  cellsByColumn,
+  FOCUSABLE,
+  isCell,
+  isFocusableControl,
+  isMac,
+  isResizer,
+  isShown,
+  isTextEntry,
+  putBackTabIndex,
+  shownAt,
+  shownFrom,
+  takesKeys,
+} from "./grid-dom"
 import { useTranslations } from "./i18n/translations"
 import type { ChangeEventDetails } from "./primitives/event-details"
 import { announce } from "./primitives/live-announcer"
@@ -294,176 +308,6 @@ function useTableGridRow() {
   return React.useContext(TableScopeContext)?.config ?? null
 }
 
-/** Elements that take focus, besides the rows and cells the grid focuses. */
-const FOCUSABLE =
-  'a[href], area[href], button, input, select, textarea, iframe, summary, [contenteditable]:not([contenteditable="false"]), [tabindex]'
-
-const isMac = () =>
-  typeof navigator !== "undefined" &&
-  /mac|iphone|ipad|ipod/i.test(navigator.platform)
-
-const TEXT_INPUTS = new Set([
-  "text",
-  "search",
-  "email",
-  "url",
-  "tel",
-  "password",
-  "number",
-  "date",
-  "datetime-local",
-  "month",
-  "time",
-  "week",
-])
-
-/** A field that takes the arrow keys and typing itself. */
-function isTextEntry(element: HTMLElement) {
-  if (element.isContentEditable) return true
-  if (element instanceof HTMLTextAreaElement) return true
-  if (element instanceof HTMLSelectElement) return true
-  if (element instanceof HTMLInputElement) return TEXT_INPUTS.has(element.type)
-  const role = element.getAttribute("role")
-  return role === "textbox" || role === "combobox" || role === "spinbutton"
-}
-
-/**
- * A control that takes keys the grid would take (the arrows, Home / End,
- * Space, typing): a text field, a select, a slider, a radio. The grid
- * leaves its keys to it, and a cell holding one is entered (`contentOf`).
- */
-function takesKeys(element: HTMLElement) {
-  if (isTextEntry(element)) return true
-  if (element instanceof HTMLInputElement)
-    return element.type === "range" || element.type === "radio"
-  const role = element.getAttribute("role")
-  return role === "slider" || role === "radio" || role === "listbox"
-}
-
-function isCell(element: Element): element is HTMLTableCellElement {
-  return element.tagName === "TD" || element.tagName === "TH"
-}
-
-/** Whether a cell is laid out: not hidden below a breakpoint (`hidden md:table-cell`). */
-function isShown(cell: Element) {
-  if (cell.getClientRects().length > 0) return true
-  // No boxes: hidden, unless nothing in the table is laid out (a table not
-  // rendered yet, or no layout at all), when every cell counts.
-  const table = cell.closest("table")
-  return !table || table.getClientRects().length === 0
-}
-
-/** The nearest cell laid out from `cell` on, `step` 1 forwards or -1 backwards. */
-function shownFrom(cell: Element | null, step: 1 | -1) {
-  for (
-    let at = cell;
-    at;
-    at = step === 1 ? at.nextElementSibling : at.previousElementSibling
-  )
-    if (isCell(at) && isShown(at)) return at
-  return null
-}
-
-/**
- * The cell over each column of a header or footer row, a cell of a row
- * above spanning down into it (`rowSpan`) included; `null` for a body row,
- * or a section with no cell spanning rows, whose rows' own cells are their
- * columns.
- */
-function cellsByColumn(
-  row: HTMLTableRowElement
-): Array<HTMLTableCellElement> | null {
-  const section = row.parentElement
-  if (
-    !(section instanceof HTMLTableSectionElement) ||
-    section.tagName === "TBODY"
-  )
-    return null
-  const rows = [...section.rows]
-  if (!rows.some((each) => [...each.cells].some((cell) => cell.rowSpan > 1)))
-    return null
-  const grid = rows.map((): Array<HTMLTableCellElement> => [])
-  rows.forEach((each, y) => {
-    let x = 0
-    for (const cell of each.cells) {
-      while (grid[y][x]) x++
-      const down = Math.min(Math.max(1, cell.rowSpan), rows.length - y)
-      for (let dy = 0; dy < down; dy++)
-        for (let dx = 0; dx < cell.colSpan; dx++) grid[y + dy][x + dx] = cell
-      x += cell.colSpan
-    }
-  })
-  return grid[rows.indexOf(row)] ?? null
-}
-
-/**
- * `read`'s result with the table laid out at its content's width for the
- * moment: every column as wide as its content, none given the space left,
- * in the automatic layout (with `col` given, without that column's width).
- */
-function atContentWidth<T>(
-  table: HTMLTableElement,
-  read: () => T,
-  col?: HTMLElement | null
-): T {
-  const { style } = table
-  const saved = [style.tableLayout, style.width, style.minWidth]
-  const width = col?.style.width ?? ""
-  Object.assign(style, {
-    tableLayout: "auto",
-    width: "max-content",
-    minWidth: "0",
-  })
-  if (col) col.style.width = ""
-  try {
-    return read()
-  } finally {
-    ;[style.tableLayout, style.width, style.minWidth] = saved
-    if (col) col.style.width = width
-  }
-}
-
-/** The first cell laid out from column `from` on, `step` 1 forwards or -1 backwards. */
-function shownAt(
-  cells: ReadonlyArray<HTMLTableCellElement>,
-  from: number,
-  step: 1 | -1
-) {
-  for (let at = from; at >= 0 && at < cells.length; at += step)
-    if (isShown(cells[at])) return cells[at]
-  return null
-}
-
-/** Gives an element the tab index it had (`null`: none). */
-function putBackTabIndex(
-  element: HTMLElement,
-  original: string | null | undefined
-) {
-  if (original == null) element.removeAttribute("tabindex")
-  else element.setAttribute("tabindex", original)
-}
-
-/** A column resizer: never one of the grid's stops, nor its tab stop. */
-function isResizer(element: HTMLElement) {
-  return element.dataset.slot === "table-column-resizer"
-}
-
-/**
- * A control the user can focus (not disabled, hidden or inert). A column
- * resizer is left out: it takes the arrow keys itself, so it is reached
- * through its column's menu ("Resize column") instead.
- */
-function isFocusableControl(element: HTMLElement) {
-  if (element.tagName === "TR" || isCell(element)) return false
-  if (isResizer(element)) return false
-  if ((element as HTMLButtonElement).disabled) return false
-  if (element instanceof HTMLInputElement && element.type === "hidden")
-    return false
-  if (element.hidden || element.closest('[aria-hidden="true"], [inert]'))
-    return false
-  return true
-}
-
 const NONE_SELECTED: ReadonlySet<string> = new Set()
 
 /** A plain table's: it selects nothing. */
@@ -471,6 +315,119 @@ const NO_OPTIONS: TableGridOptions = {
   getAllValues: () => [],
   isDisabled: () => false,
   getSelectedCount: () => 0,
+}
+
+/**
+ * A grid's selection: its state (`useSelection`, the rows "select all"
+ * stands for being `getAllValues`), the store the rows read theirs from,
+ * its announcements, and the header checkbox's state. `isDisabled` says
+ * whether a row is disabled, rendered or not; `getOrder` gives the rows a
+ * Shift range runs over, `getText` a row's text.
+ */
+function useGridSelection(
+  grid: boolean,
+  selectionMode: SelectionMode,
+  {
+    onValueChange,
+    disallowEmptySelection = false,
+    getAllValues,
+    isSelectable: isSelectableProp,
+    getSelectedCount,
+  }: TableGridOptions,
+  value: ReadonlyArray<string> | undefined,
+  isDisabled: (key: string) => boolean,
+  getOrder: () => Array<string>,
+  getText: (key: string) => string,
+  hasFocus: () => boolean
+) {
+  const isSelectable = (key: string) =>
+    !isDisabled(key) && (isSelectableProp?.(key) ?? true)
+
+  const selection = useSelection({
+    mode: selectionMode,
+    value,
+    onValueChange,
+    disallowEmptySelection,
+    isSelectable,
+    getOrder,
+    getAllKeys: () => [...getAllValues()],
+  })
+
+  const [store] = React.useState(() =>
+    createStore<TableGridState>({ selected: NONE_SELECTED, rows: 0 })
+  )
+  React.useLayoutEffect(() => {
+    store.set({ selected: grid ? selection.selected : NONE_SELECTED })
+  }, [store, grid, selection.selected])
+  React.useLayoutEffect(() => {
+    if (selectionMode !== "multiple") return
+    const all = getAllValues()
+    if (store.get().all !== all) store.set({ all })
+  })
+
+  useSelectionAnnouncement({
+    selected: selection.selected,
+    mode: selectionMode,
+    behavior: "toggle",
+    hasFocus,
+    getText,
+    getCount: () => getSelectedCount(selection.selected),
+    getAllKeys: getAllValues,
+  })
+
+  /**
+   * The rows given that can be selected, as a list and a set: read once for
+   * each list given.
+   */
+  const given = React.useRef<{
+    all: ReadonlyArray<string>
+    keys: Array<string>
+    set: ReadonlySet<string>
+  } | null>(null)
+  const givenKeys = (all: ReadonlyArray<string>) => {
+    if (given.current?.all !== all) {
+      const keys = all.filter(isSelectable)
+      given.current = { all, keys, set: new Set(keys) }
+    }
+    return given.current
+  }
+  /** The last header state, kept while the selection and the rows stay. */
+  const header = React.useRef<{
+    keys: Array<string>
+    selected: ReadonlySet<string>
+    state: HeaderSelection
+  } | null>(null)
+
+  const headerSelection = (): HeaderSelection => {
+    const { selected } = store.get()
+    if (selected.size === 0) return "none"
+    const { keys, set } = givenKeys(getAllValues())
+    const last = header.current
+    if (last?.keys === keys && last.selected === selected) return last.state
+    // Selected rows outside the ones given (filtered out) do not count.
+    // The smaller side is walked: a few selected rows of many, or every
+    // row given when as many are selected.
+    let state: HeaderSelection
+    if (selected.size < keys.length) {
+      state = "none"
+      for (const key of selected)
+        if (set.has(key)) {
+          state = "some"
+          break
+        }
+    } else {
+      let count = 0
+      for (const key of keys) if (selected.has(key)) count++
+      state = count === 0 ? "none" : count === keys.length ? "all" : "some"
+    }
+    header.current = { keys, selected, state }
+    return state
+  }
+
+  const canSelectAll = () =>
+    selectionMode === "multiple" && givenKeys(getAllValues()).keys.length > 0
+
+  return { selection, store, isSelectable, headerSelection, canSelectAll }
 }
 
 /**
@@ -490,13 +447,9 @@ function useTableGrid(own: React.ComponentProps<"table">) {
   const outerRow = scope?.row ?? null
   const {
     selectionMode: selectionModeProp = "none",
-    onValueChange,
     disallowEmptySelection = false,
     onActivate,
-    getAllValues,
-    isSelectable: isSelectableProp,
     isDisabled: isDisabledProp,
-    getSelectedCount,
     tree: treeProp = false,
     controller,
     restoreFocusTo,
@@ -628,99 +581,21 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     return describeAt(index).textValue ?? key
   }
 
-  // ---- selection ----------------------------------------------------------
-
-  const isSelectable = (key: string) =>
-    !isDisabled(key) && (isSelectableProp?.(key) ?? true)
-
-  const selection = useSelection({
-    mode: selectionMode,
-    value,
-    onValueChange,
-    disallowEmptySelection,
-    isSelectable,
-    getOrder: allKeys,
-    getAllKeys: () => [...getAllValues()],
-  })
-
-  const [store] = React.useState(() =>
-    createStore<TableGridState>({ selected: NONE_SELECTED, rows: 0 })
-  )
-  React.useLayoutEffect(() => {
-    store.set({ selected: grid ? selection.selected : NONE_SELECTED })
-  }, [store, grid, selection.selected])
-  React.useLayoutEffect(() => {
-    if (selectionMode !== "multiple") return
-    const all = getAllValues()
-    if (store.get().all !== all) store.set({ all })
-  })
-
   const hasFocus = () => {
     const el = table.current
     return !!el && el.contains(el.ownerDocument.activeElement)
   }
-
-  useSelectionAnnouncement({
-    selected: selection.selected,
-    mode: selectionMode,
-    behavior: "toggle",
-    hasFocus,
-    getText: textOf,
-    getCount: () => getSelectedCount(selection.selected),
-    getAllKeys: getAllValues,
-  })
-
-  /**
-   * The rows given that can be selected, as a list and a set: read once for
-   * each list given.
-   */
-  const given = React.useRef<{
-    all: ReadonlyArray<string>
-    keys: Array<string>
-    set: ReadonlySet<string>
-  } | null>(null)
-  const givenKeys = (all: ReadonlyArray<string>) => {
-    if (given.current?.all !== all) {
-      const keys = all.filter(isSelectable)
-      given.current = { all, keys, set: new Set(keys) }
-    }
-    return given.current
-  }
-  /** The last header state, kept while the selection and the rows stay. */
-  const header = React.useRef<{
-    keys: Array<string>
-    selected: ReadonlySet<string>
-    state: HeaderSelection
-  } | null>(null)
-
-  const headerSelection = (): HeaderSelection => {
-    const { selected } = store.get()
-    if (selected.size === 0) return "none"
-    const { keys, set } = givenKeys(getAllValues())
-    const last = header.current
-    if (last?.keys === keys && last.selected === selected) return last.state
-    // Selected rows outside the ones given (filtered out) do not count.
-    // The smaller side is walked: a few selected rows of many, or every
-    // row given when as many are selected.
-    let state: HeaderSelection
-    if (selected.size < keys.length) {
-      state = "none"
-      for (const key of selected)
-        if (set.has(key)) {
-          state = "some"
-          break
-        }
-    } else {
-      let count = 0
-      for (const key of keys) if (selected.has(key)) count++
-      state = count === 0 ? "none" : count === keys.length ? "all" : "some"
-    }
-    header.current = { keys, selected, state }
-    return state
-  }
-
-  const canSelectAll = () =>
-    selectionMode === "multiple" && givenKeys(getAllValues()).keys.length > 0
+  const { selection, store, isSelectable, headerSelection, canSelectAll } =
+    useGridSelection(
+      grid,
+      selectionMode,
+      config ?? NO_OPTIONS,
+      value,
+      isDisabled,
+      allKeys,
+      textOf,
+      hasFocus
+    )
 
   // ---- tab stop -----------------------------------------------------------
 
@@ -2079,8 +1954,6 @@ function useTableContainer(own: React.Ref<HTMLDivElement> | undefined) {
 }
 
 export {
-  atContentWidth,
-  cellsByColumn,
   TableContainerContext,
   TableGridOptionsContext,
   TableGridProvider,

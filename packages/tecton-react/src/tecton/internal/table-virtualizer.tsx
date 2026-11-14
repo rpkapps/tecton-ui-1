@@ -53,8 +53,8 @@ import * as React from "react"
 import { flushSync } from "react-dom"
 
 import { useVirtualList } from "./primitives/virtual-list"
+import { atContentWidth } from "./grid-dom"
 import {
-  atContentWidth,
   useTableGridContext,
   useTableGridOptions,
   type RowDescription,
