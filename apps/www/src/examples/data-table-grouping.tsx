@@ -1,9 +1,5 @@
 "use client"
 
-import * as React from "react"
-
-import { Field, FieldLabel } from "@tecton/react/field"
-import { Switch } from "@tecton/react/switch"
 import {
   createColumns,
   DataTable,
@@ -25,41 +21,56 @@ type Allocation = {
   water: number
 }
 
-const WELLS = [
-  ["34/10-A-12", "Gullfaks", "Gullfaks A", "producing"],
-  ["34/10-A-17", "Gullfaks", "Gullfaks A", "producing"],
-  ["34/10-A-23", "Gullfaks", "Gullfaks A", "injecting"],
-  ["34/10-B-3", "Gullfaks", "Gullfaks B", "producing"],
-  ["34/10-B-9", "Gullfaks", "Gullfaks B", "shut-in"],
-  ["34/10-C-7", "Gullfaks", "Gullfaks C", "producing"],
-  ["34/7-D-2", "Snorre", "Snorre A", "producing"],
-  ["34/7-D-6", "Snorre", "Snorre A", "injecting"],
-  ["34/7-P-11", "Snorre", "Snorre B", "shut-in"],
-  ["34/7-P-14", "Snorre", "Snorre B", "producing"],
-  ["2/8-C-3", "Valhall", "Valhall PH", "producing"],
-  ["2/8-F-14", "Valhall", "Valhall Flank", "producing"],
-  ["2/8-F-19", "Valhall", "Valhall Flank", "injecting"],
-] as const
+type Status = Allocation["status"]
 
-const ALLOCATIONS: Array<Allocation> = WELLS.map(
-  ([well, field, installation, status], i) => {
-    const flowing = status === "producing"
-    return {
-      id: well,
-      well,
-      field,
-      installation,
-      status,
-      hours: status === "shut-in" ? 0 : [24, 22.5, 24, 18, 24, 21][i % 6],
-      oil: flowing ? 600 + ((i * 787) % 1900) : 0,
-      gas: flowing ? 60 + ((i * 53) % 190) : 0,
-      water: status === "shut-in" ? 0 : 150 + ((i * 331) % 1100),
-    }
-  }
+/** Each installation's wells: the slot prefix and each well's status. */
+const INSTALLATIONS: ReadonlyArray<
+  [field: string, installation: string, prefix: string, wells: string]
+> = [
+  ["Gullfaks", "Gullfaks A", "34/10-A-", "ppipps"],
+  ["Gullfaks", "Gullfaks B", "34/10-B-", "psppi"],
+  ["Gullfaks", "Gullfaks C", "34/10-C-", "ppips"],
+  ["Snorre", "Snorre A", "34/7-D-", "pipp"],
+  ["Snorre", "Snorre B", "34/7-P-", "sppip"],
+  ["Statfjord", "Statfjord A", "33/9-A-", "ppsi"],
+  ["Statfjord", "Statfjord B", "33/9-B-", "pipsp"],
+  ["Statfjord", "Statfjord C", "33/9-C-", "ppip"],
+  ["Oseberg", "Oseberg A", "30/6-A-", "pippp"],
+  ["Oseberg", "Oseberg C", "30/6-C-", "psip"],
+  ["Oseberg", "Oseberg Sør", "30/9-J-", "ppi"],
+  ["Valhall", "Valhall PH", "2/8-C-", "ppsp"],
+  ["Valhall", "Valhall Flank", "2/8-F-", "pippi"],
+]
+
+const STATUS: Record<string, Status> = {
+  p: "producing",
+  i: "injecting",
+  s: "shut-in",
+}
+
+const ALLOCATIONS: Array<Allocation> = INSTALLATIONS.flatMap(
+  ([field, installation, prefix, wells], at) =>
+    [...wells].map((code, n) => {
+      const status = STATUS[code]
+      const i = at * 7 + n
+      const flowing = status === "producing"
+      const well = `${prefix}${3 + n * 4 + (at % 3)}`
+      return {
+        id: well,
+        well,
+        field,
+        installation,
+        status,
+        hours: status === "shut-in" ? 0 : [24, 22.5, 24, 18, 24, 21][i % 6],
+        oil: flowing ? 600 + ((i * 787) % 1900) : 0,
+        gas: flowing ? 60 + ((i * 53) % 190) : 0,
+        water: status === "shut-in" ? 0 : 150 + ((i * 331) % 1100),
+      }
+    })
 )
 
 const columns = createColumns<Allocation>([
-  { id: "well", header: "Well", width: 140 },
+  { id: "well", header: "Well", width: 170 },
   { id: "field", header: "Field", width: 120 },
   { id: "installation", header: "Installation", width: 150 },
   {
@@ -88,32 +99,23 @@ const columns = createColumns<Allocation>([
 ])
 
 export default function DataTableGrouping() {
-  // Try the group rows over striped rows.
-  const [striped, setStriped] = React.useState(false)
   return (
     <DataTable
       items={ALLOCATIONS}
       columns={columns}
       groupable
-      striped={striped}
       selectionMode="multiple"
       pinnableColumns
       defaultView={{
-        grouping: ["field"],
+        grouping: ["field", "installation"],
         columns: { pinned: { start: ["well"] } },
       }}
-      className="w-full"
+      // A bounded height: the rows scroll under the header, each group's
+      // row stuck under it while its rows go past.
+      className="h-96 w-full"
     >
       <DataTableToolbar>
         <DataTableGroupBy />
-        <Field orientation="horizontal" className="w-auto">
-          <Switch
-            id="data-table-grouping-striped"
-            checked={striped}
-            onCheckedChange={setStriped}
-          />
-          <FieldLabel htmlFor="data-table-grouping-striped">Stripes</FieldLabel>
-        </Field>
       </DataTableToolbar>
       <DataTableActionBar />
       <DataTableContent aria-label="Daily allocation" totals />
