@@ -43,6 +43,13 @@ import type {
   DataTableSort,
   DataTableView,
 } from "./types"
+import {
+  listFilter,
+  listOf,
+  type ListFilterType,
+  type ListFilterValue,
+  type ListItem,
+} from "./filter-lists"
 import { DATE_ONLY, startOfDay, toDate } from "./values"
 
 /** The root's features that decide which parts of a view apply. */
@@ -369,6 +376,20 @@ function cleanDateRange(
   return { ...(from ? { from } : {}), ...(to ? { to } : {}) }
 }
 
+/** A list filter type's items: how one is cleaned (`undefined`: dropped), and compared. */
+type ListRules<TItem> = {
+  clean: (item: unknown, timeZone: string | undefined) => TItem | undefined
+  same: (a: TItem, b: TItem) => boolean
+}
+
+const LISTS: { [TType in ListFilterType]: ListRules<ListItem<TType>> } = {
+  text: { clean: cleanText, same: Object.is },
+  options: { clean: cleanOption, same: Object.is },
+  boolean: { clean: cleanBoolean, same: Object.is },
+  number: { clean: cleanNumberRange, same: sameNumberRange },
+  date: { clean: cleanDateRange, same: sameDateRange },
+}
+
 /**
  * A filter value as `column` can apply it, or `undefined` when it cannot or
  * the value filters nothing. A list keeps the items its type can match
@@ -385,42 +406,19 @@ function reconcileFilter(
   const value = input as DataTableFilterValue
   if (!column.filter && value.type !== column.type) return undefined
   if (value.type === "custom") return column.filter ? value : undefined
+  if (!Object.hasOwn(LISTS, value.type)) return undefined
+  const rules = LISTS[value.type] as ListRules<ListItem<ListFilterType>>
+  const { timeZone } = (column.format ?? {}) as Intl.DateTimeFormatOptions
+  const { items, same } = cleanList(listOf(value), (item) =>
+    rules.clean(item, timeZone)
+  )
   // "No value": only `true` counts; a flag that is not a boolean goes.
-  const empty = value.empty === true
-  const flag = empty ? { empty } : {}
-  const kept = value.empty === undefined || typeof value.empty === "boolean"
-  switch (value.type) {
-    case "text": {
-      const { items, same } = cleanList(value.values, cleanText)
-      if (!items.length && !empty) return undefined
-      return kept && same ? value : { type: "text", values: items, ...flag }
-    }
-    case "options": {
-      const { items, same } = cleanList(value.values, cleanOption)
-      if (!items.length && !empty) return undefined
-      return kept && same ? value : { type: "options", values: items, ...flag }
-    }
-    case "boolean": {
-      const { items, same } = cleanList(value.values, cleanBoolean)
-      if (!items.length && !empty) return undefined
-      return kept && same ? value : { type: "boolean", values: items, ...flag }
-    }
-    case "number": {
-      const { items, same } = cleanList(value.ranges, cleanNumberRange)
-      if (!items.length && !empty) return undefined
-      return kept && same ? value : { type: "number", ranges: items, ...flag }
-    }
-    case "date": {
-      const { timeZone } = (column.format ?? {}) as Intl.DateTimeFormatOptions
-      const { items, same } = cleanList(value.ranges, (item) =>
-        cleanDateRange(item, timeZone)
-      )
-      if (!items.length && !empty) return undefined
-      return kept && same ? value : { type: "date", ranges: items, ...flag }
-    }
-    default:
-      return undefined
-  }
+  const next = listFilter(value.type, items, value.empty === true)
+  return next &&
+    same &&
+    (value.empty === undefined || typeof value.empty === "boolean")
+    ? value
+    : (next ?? undefined)
 }
 
 function reconcileFilters<T>(
@@ -525,7 +523,7 @@ function sameTime(a: Date | undefined, b: Date | undefined) {
 function sameList<TItem>(
   a: ReadonlyArray<TItem>,
   b: ReadonlyArray<TItem>,
-  same: (x: TItem, y: TItem) => boolean = Object.is
+  same: (x: TItem, y: TItem) => boolean
 ) {
   return a === b || (a.length === b.length && a.every((x, i) => same(x, b[i])))
 }
@@ -545,27 +543,17 @@ function sameDateRange(a: DataTableDateRange, b: DataTableDateRange) {
 
 function sameFilterValue(a: DataTableFilterValue, b: DataTableFilterValue) {
   if (a === b) return true
-  if (
-    a.type !== "custom" &&
-    b.type !== "custom" &&
-    (a.empty === true) !== (b.empty === true)
+  if (a.type !== b.type) return false
+  if (a.type === "custom") return Object.is(a.value, (b as typeof a).value)
+  const other = b as ListFilterValue
+  return (
+    (a.empty === true) === (other.empty === true) &&
+    sameList(
+      listOf(a),
+      listOf(other),
+      LISTS[a.type].same as ListRules<unknown>["same"]
+    )
   )
-    return false
-  switch (a.type) {
-    case "text":
-    case "options":
-      return b.type === a.type && sameIds(a.values, b.values)
-    case "boolean":
-      return b.type === "boolean" && sameList(a.values, b.values)
-    case "number":
-      return (
-        b.type === "number" && sameList(a.ranges, b.ranges, sameNumberRange)
-      )
-    case "date":
-      return b.type === "date" && sameList(a.ranges, b.ranges, sameDateRange)
-    case "custom":
-      return b.type === "custom" && Object.is(a.value, b.value)
-  }
 }
 
 function sameFilters(a: DataTableView["filters"], b: DataTableView["filters"]) {

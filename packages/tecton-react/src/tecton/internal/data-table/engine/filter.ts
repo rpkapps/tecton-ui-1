@@ -21,9 +21,7 @@
  * - date: the date is in any of `ranges`: `from` ≤ date ≤ `to`, where a `to`
  *   at midnight takes in that day (midnight in the column's
  *   `format.timeZone`, which its days are shown in, or the local zone);
- * - boolean: the value is one of `values` (an empty value matches neither:
- *   rows without one show only with no filter);
- * - options: the value is one of `values`;
+ * - boolean and options: the value (yes / no, an option) is one of `values`;
  * - the column's own `filter` function, for any filter value, when it has one.
  * An empty value (`hasNoValue`) never matches a filter, but one with `empty`
  * (its "No value"): that matches the rows without a value too, or only them
@@ -33,10 +31,10 @@
  * follows the usual expanded state, and its ancestors, which are kept as
  * context (`RowSet.context`: they do not count as matches) and shown
  * expanded (`RowSet.holdsMatch`), as is any row with a match below it.
-
  */
 import type { EngineColumn } from "./columns"
 import type { Core, RowSet } from "./core"
+import { listOf, type ListFilterValue } from "./filter-lists"
 import { createFolder, foldText, hasNoValue, type Formatter } from "./format"
 import type { IdleTask } from "./idle"
 import type {
@@ -45,14 +43,7 @@ import type {
   DataTableNumberRange,
   DataTableView,
 } from "./types"
-import {
-  dayOf,
-  isEmptyValue,
-  startOfDay,
-  toBoolean,
-  toNumber,
-  toTime,
-} from "./values"
+import { dayOf, startOfDay, toBoolean, toNumber, toTime } from "./values"
 
 /** Whether the row at `index` (depth first) holding `item` matches. */
 type RowPredicate<T> = (index: number, item: T) => boolean
@@ -276,16 +267,18 @@ const hasBound = (range: DataTableNumberRange) =>
 const hasEnd = (range: DataTableDateRange) =>
   range.from !== undefined || range.to !== undefined
 
-/** Whether `test` holds for `n` with any of `bounds` (one, without a loop). */
-function anyOf<TBounds>(
-  bounds: ReadonlyArray<TBounds>,
-  test: (n: number, bound: TBounds) => boolean
-): (n: number) => boolean {
-  if (bounds.length === 1) {
-    const [only] = bounds
-    return (n) => test(n, only)
+/** A date range's times as number bounds: its end as `rangeEnd` reads it. */
+function dateBounds(
+  { from, to }: DataTableDateRange,
+  timeZone: string | undefined
+): NumberBounds {
+  const end = to ? rangeEnd(to, timeZone) : { time: Infinity, inclusive: true }
+  return {
+    min: from?.getTime() ?? -Infinity,
+    max: end.time,
+    above: false,
+    below: !end.inclusive,
   }
-  return (n) => bounds.some((bound) => test(n, bound))
 }
 
 /**
@@ -294,67 +287,46 @@ function anyOf<TBounds>(
  */
 function valuePredicate<T>(
   column: EngineColumn<T>,
-  value: Exclude<DataTableFilterValue, { type: "custom" }>,
+  value: ListFilterValue,
   index: SearchIndex<T>,
   rowCount: number
 ): RowPredicate<T> | null {
   const { getValue } = column
-  switch (value.type) {
-    case "text": {
-      const queries = new Set(
-        value.values.map((text) => foldText(text.trim())).filter(Boolean)
-      )
-      if (!queries.size) return null
-      // A scan of the column's texts per value, into one mask.
-      const mask = new Uint8Array(rowCount)
-      const texts = index.texts(column)
-      for (const query of queries) markMatches(texts, query, mask)
-      return (row) => mask[row] === 1
+  if (value.type === "text") {
+    const queries = new Set(
+      value.values.map((text) => foldText(text.trim())).filter(Boolean)
+    )
+    if (!queries.size) return null
+    // A scan of the column's texts per value, into one mask.
+    const mask = new Uint8Array(rowCount)
+    const texts = index.texts(column)
+    for (const query of queries) markMatches(texts, query, mask)
+    return (row) => mask[row] === 1
+  }
+  if (value.type === "number" || value.type === "date") {
+    // Numbers and times, within any of the bounds.
+    const { timeZone } = (column.format ?? {}) as Intl.DateTimeFormatOptions
+    const bounds =
+      value.type === "number"
+        ? value.ranges.filter(hasBound).map(boundsOf)
+        : value.ranges
+            .filter(hasEnd)
+            .map((range) => dateBounds(range, timeZone))
+    if (!bounds.length) return null
+    const read = value.type === "number" ? toNumber : toTime
+    return (_, item) => {
+      const n = read(getValue(item))
+      return n !== undefined && bounds.some((bound) => inBounds(n, bound))
     }
-    case "number": {
-      const ranges = value.ranges.filter(hasBound).map(boundsOf)
-      if (!ranges.length) return null
-      const within = anyOf(ranges, inBounds)
-      return (_, item) => {
-        const number = toNumber(getValue(item))
-        return number !== undefined && within(number)
-      }
-    }
-    case "date": {
-      const { timeZone } = (column.format ?? {}) as Intl.DateTimeFormatOptions
-      const ranges = value.ranges.filter(hasEnd).map((range) => {
-        const end = range.to
-          ? rangeEnd(range.to, timeZone)
-          : { time: Infinity, inclusive: true }
-        return { from: range.from?.getTime() ?? -Infinity, ...end }
-      })
-      if (!ranges.length) return null
-      const within = anyOf(
-        ranges,
-        (time, { from, time: end, inclusive }) =>
-          time >= from && (inclusive ? time <= end : time < end)
-      )
-      return (_, item) => {
-        const time = toTime(getValue(item))
-        return time !== undefined && within(time)
-      }
-    }
-    case "boolean": {
-      const wanted = new Set(value.values)
-      if (!wanted.size) return null
-      return (_, item) => {
-        const own = toBoolean(getValue(item))
-        return own !== undefined && wanted.has(own)
-      }
-    }
-    case "options": {
-      if (!value.values.length) return null
-      const values = new Set(value.values)
-      return (_, item) => {
-        const v = getValue(item)
-        return v !== null && v !== undefined && values.has(String(v))
-      }
-    }
+  }
+  // Yes / no and options: the value, as the list's items read, is one of them.
+  const list = listOf(value)
+  if (!list.length) return null
+  const wanted = new Set(list.map(String))
+  const boolean = value.type === "boolean"
+  return (_, item) => {
+    const own = boolean ? toBoolean(getValue(item)) : getValue(item)
+    return own !== null && own !== undefined && wanted.has(String(own))
   }
 }
 
