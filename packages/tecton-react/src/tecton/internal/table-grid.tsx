@@ -139,6 +139,12 @@ type TableGridOptions = {
    */
   rowParity?: (index: number) => 0 | 1 | null
   /**
+   * The body rows (by index) that stick over a virtualized body's row at
+   * `index` while it is at the top of the view (a group's rows under its
+   * group row): kept rendered there, wherever they are.
+   */
+  stickyRowsOf?: (index: number) => ReadonlyArray<number>
+  /**
    * Where focus goes when the body row it was on (by its `value`, or its
    * `id`) went away: the body index (from 0) of a row that closed over it
    * (a group), `null` for the grid's own choice (the row now in its place,

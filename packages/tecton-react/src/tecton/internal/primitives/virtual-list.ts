@@ -41,6 +41,12 @@ type VirtualListOptions = {
   settleMs?: number
   /** Indices that stay rendered wherever the scroll is (the focused row). */
   keep?: ReadonlyArray<number>
+  /**
+   * Indices that stay rendered while the row at `index` is the first under
+   * the top of the view (`start` below it): a table's group rows, which
+   * stick there while their rows scroll past.
+   */
+  keepFor?: (index: number) => ReadonlyArray<number>
   /** The rows whose height is not `stride`: index → px. */
   sizes?: ReadonlyMap<number, number>
   /**
@@ -152,6 +158,7 @@ function useVirtualList({
   sync = false,
   settleMs = 0,
   keep = [],
+  keepFor,
   sizes,
   start = 0,
   enabled = true,
@@ -243,7 +250,9 @@ function useVirtualList({
     : Math.max(overscan, Math.ceil(overscanPx / stride))
   const first = Math.max(0, layout.indexAt(top) - extra)
   const last = Math.min(count - 1, layout.endAt(top + height) + extra)
-  const keepKey = keep.join(",")
+  const held =
+    enabled && keepFor && count > 0 ? keepFor(layout.indexAt(top)) : NO_INDICES
+  const keepKey = [...keep, ...held].join(",")
   const indices = React.useMemo(() => {
     if (!enabled) return NO_INDICES
     const set = new Set<number>()

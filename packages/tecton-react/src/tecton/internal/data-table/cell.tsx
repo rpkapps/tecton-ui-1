@@ -17,7 +17,8 @@
  *
  * A pinned column's cells stick to their edge (`position: sticky`, at a
  * variable of the frame's, `column-sizing.ts`) with their row's
- * background: the row is then opaque, and its cells inherit its fill, so
+ * background: the row is then opaque (the table's cell surface), and its
+ * cells inherit its fill, so
  * stripes, hover and selection show on them too. A stuck cell would be
  * painted over the row's collapsed border (unevenly, by browser), so a
  * table with pinned columns draws each cell's border itself, in separate
@@ -105,8 +106,16 @@ type RowShared<T> = {
   selectionPin: CellPin | undefined
   /** The handle column's pin, likewise. */
   handlePin: CellPin | undefined
-  /** Columns are pinned: the row is opaque, each cell draws its border. */
+  /**
+   * Cells stick (pinned columns, or group rows): the row is opaque, each
+   * cell draws its border.
+   */
   pinned: boolean
+  /**
+   * Group rows stick (`sticky-groups.ts`): measures them again, for a
+   * group row that mounts or takes another's place in a virtualized body.
+   */
+  stickyGroups: (() => void) | null
   /** Live data's highlights (`highlightChanges`); `null` when off. */
   live: FlashStore | null
   actions: DataTableActions<T>
@@ -255,8 +264,12 @@ function pinEdgeClassName(pin: CellPin | undefined, clip = true) {
 /** A pinned header cell: over the other header cells and their resizers. */
 const pinnedHeadClassName = "sticky z-20 has-[:focus-visible]:z-[21]"
 
-/** A row with pinned cells is opaque, for its cells to take its fill. */
-const pinnedRowClassName = "bg-[var(--surface,var(--color-background))]"
+/**
+ * A row with pinned cells is opaque, for its cells to take its fill: the
+ * table's cell surface, as the body's (`TableBody`), under its stripe,
+ * hover and selection.
+ */
+const pinnedRowClassName = "bg-table-cell"
 
 /**
  * Every body cell of a table with pinned columns: the row's border, drawn

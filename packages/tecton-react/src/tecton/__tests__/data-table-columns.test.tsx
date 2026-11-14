@@ -464,7 +464,7 @@ describe("DataTable column widths", () => {
     )
   })
 
-  it("keeps the rows of a table on a card in the card's fill", () => {
+  it("keeps the rows of a table on a card in the table's own cell fill", () => {
     render(
       <Card>
         <Fields
@@ -475,10 +475,11 @@ describe("DataTable column widths", () => {
       </Card>
     )
     const card = document.querySelector<HTMLElement>('[data-slot="card"]')!
-    // The card says what its surface is; pinned rows are filled with it.
+    // The card says what its surface is; pinned rows keep the table's
+    // cell surface on it, as the body does.
     expect(card).toHaveClass("[--surface:var(--color-card)]")
     expect(screen.getByText("Valhall").closest("tr")).toHaveClass(
-      "bg-[var(--surface,var(--color-background))]"
+      "bg-table-cell"
     )
   })
 })
@@ -1338,9 +1339,7 @@ describe("DataTable column pinning", () => {
     expect(checkbox).toHaveClass("has-[:focus-visible]:z-[2]")
     expect(wells).toHaveClass("has-[:focus-visible]:z-[21]")
     // The row is opaque, for its cells to take its fill.
-    expect(body.closest("tr")).toHaveClass(
-      "bg-[var(--surface,var(--color-background))]"
-    )
+    expect(body.closest("tr")).toHaveClass("bg-table-cell")
     // Its inner edge draws a divider, and a shadow over the columns
     // scrolled under it: the scroll fade's keyframes on the pinned cells,
     // not a mask over the table.

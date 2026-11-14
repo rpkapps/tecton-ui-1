@@ -185,7 +185,7 @@ For a plain [Table](/docs/components/table), put a `TableColumnResizer` last in 
 | `hideableColumns`    | hides a column                    | `columns.hidden` | `hideable: false`    |
 | `pinnableColumns`    | pins a column to the start or end | `columns.pinned` | `pinnable: false`    |
 
-Pinned cells are opaque, filled with `var(--surface)`. On a custom surface, set that variable too: `className="bg-muted [--surface:var(--color-muted)]"`.
+Pinned cells are opaque, in the rows' own fill: the table's cell surface, whatever the table sits on, with its stripes, hover and selection.
 
 ## Search and filters
 
@@ -410,6 +410,8 @@ While any row has no value in a column, that column's filter offers "No value":
 
 `virtualized` on `DataTableContent` renders only the rows in view. Give the root or the content a bounded height.
 
+A table of bounded height scrolls without `virtualized` too, with its header at the top. `virtualized` is for long lists, where rendering every row would be slow.
+
 <ComponentPreview name="data-table-virtual" align="start" />
 
 For rows the server sends in batches, see [Load more](#load-more).
@@ -565,6 +567,10 @@ Both use `expanded` / `onExpandedChange`. In server mode, a row whose children a
 
 <ComponentPreview name="data-table-grouping" align="start" />
 
+- Each group has a row: its value, its number of rows and its subtotals. Click it, or press <Kbd>→</Kbd> / <Kbd>←</Kbd>, to open or close the group.
+- In a table of bounded height (`className="h-96"` on the root or the content), the rows scroll under the header. A group's row stays under the header while its rows scroll past, and the next group's row pushes it up. Nested groups stack under the groups above them.
+- Group rows have the stripes' fill, so a grouped table has no stripes.
+
 Number columns sum and boolean columns count by default. Set a column's `aggregate` to `"avg"`, `"min"`, `"max"`, `"count"`, `"countDistinct"` or a function. `renderAggregate` draws the cell.
 
 ## Editing
@@ -586,6 +592,7 @@ A `cell` can also render a field. <Kbd>Enter</Kbd> or <Kbd>F2</Kbd> moves into i
 - Compact rows are shorter, with smaller text.
 - The footer matches: the pager gets small arrows, a small Select and a small page field.
 - A selected or hovered row keeps its own fill over the stripes.
+- Not while rows are grouped: the group rows have the stripes' fill, so a grouped table shows no stripes. They come back when the grouping is cleared.
 
 ## States
 
@@ -882,7 +889,7 @@ The root `div`. Every `on…Change` gets the new value and `eventDetails` (`reas
 | `loadMore`               | `"scroll" \| "button"`                              | `"scroll"`                | Load as the end of the rows nears, or on Show more.                                                                           |
 | `onLoadMore`             | `() => void`                                        | -                         | Called to load the next rows.                                                                                                 |
 | `size`                   | `"default" \| "sm"`                                 | `"default"`               | Compact rows.                                                                                                                 |
-| `striped`                | `boolean`                                           | `false`                   | Alternate row fills.                                                                                                          |
+| `striped`                | `boolean`                                           | `false`                   | Alternate row fills, not while rows are grouped.                                                                              |
 | `highlightChanges`       | `boolean \| { added?: boolean; duration?: number }` | `false`                   | Highlights rows added to `items` until they are seen, then fades them over `duration` ms (1500). See [Live data](#live-data). |
 | `sortable`               | `boolean`                                           | `true`                    | Headers sort.                                                                                                                 |
 | `multiSort`              | `boolean`                                           | `true`                    | Sorting by several columns: <Kbd>Shift</Kbd> + click, Add to sort.                                                            |

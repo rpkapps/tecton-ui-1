@@ -43,6 +43,7 @@ import { DRAG_AND_DROP, useFeature } from "./lazy"
 import type { FlashStore } from "./live-bridge"
 import { describeRow } from "./row"
 import { createRowOrder, inItemOrder, type RowOrder } from "./row-order"
+import { stickyRowsOf } from "./sticky-groups"
 import { useStable } from "./use-stable"
 
 type Row = BodyRow<unknown>
@@ -159,6 +160,7 @@ type RowSharedBase = Pick<
   | "handlePin"
   | "virtualized"
   | "live"
+  | "stickyGroups"
 >
 
 /**
@@ -386,12 +388,20 @@ function useGridOptions(
     [shared]
   )
   // Open detail rows take their row's fill; the other rows keep their
-  // stripes. Only then a new function per set of rows: the grid's options
-  // otherwise stay as they are.
-  const parity = options.striped && !!shared.detail && shared.virtualized
+  // stripes (none while grouped). Only then a new function per set of
+  // rows: the grid's options otherwise stay as they are.
+  const parity =
+    options.striped && !shared.grouped && !!shared.detail && shared.virtualized
   const rowParity = React.useMemo(
     () => (parity ? rowParityOf(rows) : undefined),
     [parity, rows]
+  )
+  // A virtualized body keeps the group rows of the row at the top rendered,
+  // where they stick (`sticky-groups.ts`).
+  const sticky = shared.grouped && shared.virtualized
+  const stickyRows = React.useMemo(
+    () => (sticky ? stickyRowsOf(rows) : undefined),
+    [sticky, rows]
   )
   const [asked] = React.useState(
     (): Pick<
@@ -434,6 +444,7 @@ function useGridOptions(
     describeItem,
     tree: shared.levelled,
     rowParity,
+    stickyRowsOf: stickyRows,
     ...asked,
   })
 }

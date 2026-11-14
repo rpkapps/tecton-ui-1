@@ -176,10 +176,7 @@ function ComponentPreviewTabs({
         data-align={align}
         data-chromeless={chromeLessOnMobile}
         className={cn(
-          // The surface an example sits on: the page's background (the site's
-          // own --surface is its cards'), which a table with pinned columns
-          // fills its rows with.
-          "preview relative flex min-h-72 w-full justify-center p-10 [--surface:var(--color-background)] data-[align=center]:items-center data-[align=end]:items-start data-[align=start]:items-start data-[chromeless=true]:h-auto data-[chromeless=true]:p-0 sm:data-[align=end]:items-end",
+          "preview relative flex min-h-72 w-full justify-center p-10 data-[align=center]:items-center data-[align=end]:items-start data-[align=start]:items-start data-[chromeless=true]:h-auto data-[chromeless=true]:p-0 sm:data-[align=end]:items-end",
           previewClassName
         )}
       >

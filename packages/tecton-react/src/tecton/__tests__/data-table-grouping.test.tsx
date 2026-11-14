@@ -678,9 +678,8 @@ describe("DataTable grouping with other features", () => {
       />
     )
     const cells = [...group("Field: Gullfaks").cells]
-    expect(group("Field: Gullfaks")).toHaveClass(
-      "bg-[color-mix(in_oklab,var(--color-foreground)_5%,var(--surface,var(--color-background)))]"
-    )
+    // The stripes' fill, which a grouped table does not draw.
+    expect(group("Field: Gullfaks")).toHaveClass("bg-surface-alt")
     expect(group("Field: Gullfaks")).not.toHaveClass("bg-table-header")
     expect(cells[0]).toHaveClass("sticky", "bg-inherit")
     expect(cells.at(-1)).toHaveClass("sticky", "bg-inherit")

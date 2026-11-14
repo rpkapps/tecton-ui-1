@@ -238,14 +238,17 @@ function useMoreRows(
   const { actions } = context
   const { rows, more, button, inlineError } = after
   const shown = (more && button) || inlineError
+  const view = useDataTableSelector(context, (state) => state.view)
+  // Not while rows are grouped: grouped rows are never striped.
   const nextStriped = React.useMemo(
     () =>
       options.striped &&
+      view.grouping.length === 0 &&
       shown &&
       rows.reduce((count, row) => count + (row.kind === "detail" ? 0 : 1), 0) %
         2 ===
         1,
-    [options.striped, shown, rows]
+    [options.striped, view.grouping, shown, rows]
   )
   const items = model.allItems()
   const focusTable = React.useCallback(() => actions.focusTable(), [actions])
@@ -260,7 +263,6 @@ function useMoreRows(
     focusTable,
   })
   const target = React.useRef<HTMLTableSectionElement | null>(null)
-  const view = useDataTableSelector(context, (state) => state.view)
   useLoadMore(target, container, {
     on: more && !inlineError && !loading && !button,
     virtualized,
@@ -269,6 +271,9 @@ function useMoreRows(
   })
   return { nextStriped, showMore, target }
 }
+
+/** A body of the table's own besides `TableBody`: its fill (`TableBody`'s). */
+const BODY_FILL = "bg-table-cell"
 
 /** The rows after the last row (see the module comment), in a body of their own. */
 function moreRows(
@@ -285,7 +290,7 @@ function moreRows(
   const slot = "data-table-loading-more"
   if (inlineError)
     return (
-      <tbody data-slot={slot}>
+      <tbody data-slot={slot} className={BODY_FILL}>
         <DataTableMoreError
           columns={shared.columnCount}
           size={options.size}
@@ -297,7 +302,7 @@ function moreRows(
     )
   if (!more) return null
   return button ? (
-    <tbody data-slot={slot}>
+    <tbody data-slot={slot} className={BODY_FILL}>
       <DataTableShowMore
         columns={shared.columnCount}
         size={options.size}
@@ -309,10 +314,10 @@ function moreRows(
       />
     </tbody>
   ) : (
-    <tbody ref={target} aria-hidden data-slot={slot}>
+    <tbody ref={target} aria-hidden data-slot={slot} className={BODY_FILL}>
       {loadingRows(MORE_ROWS, columns, shared)}
     </tbody>
   )
 }
 
-export { afterRows, moreRows, useMoreRows }
+export { afterRows, BODY_FILL, moreRows, useMoreRows }
