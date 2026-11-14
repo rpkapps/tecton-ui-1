@@ -276,7 +276,10 @@ function PageSize({
 const STEADY =
   "grid tabular-nums before:invisible before:col-start-1 before:row-start-1 before:content-[attr(data-widest)] *:col-start-1 *:row-start-1"
 
-/** "1–10 of 240": the rows of the page, announced as they change. */
+/**
+ * "1–10 of 240": the rows of the page. Its live copy, for screen readers,
+ * says them as they change, also once a narrow strip has hidden them.
+ */
 function RowRange({ context }: { context: DataTableContextValue<unknown> }) {
   const t = useTranslations("dataTable")
   const format = useNumberFormat()
@@ -293,31 +296,40 @@ function RowRange({ context }: { context: DataTableContextValue<unknown> }) {
   )
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1
   const to = Math.min(page * pageSize, total)
+  const text = t("rowRange", {
+    from: format.format(from),
+    to: format.format(to),
+    total: format.format(total),
+  })
   return (
-    <span
-      data-slot="data-table-row-range"
-      data-step="range"
-      aria-live="polite"
-      aria-atomic="true"
-      data-widest={t("rowRange", {
-        from: format.format(total),
-        to: format.format(total),
-        total: format.format(total),
-      })}
-      className={cn(
-        "justify-items-start text-muted-foreground",
-        STEADY,
-        STEPS.range
-      )}
-    >
-      <span>
-        {t("rowRange", {
-          from: format.format(from),
-          to: format.format(to),
+    <>
+      <span
+        data-slot="data-table-row-range"
+        data-step="range"
+        // Said by its copy below, which stays when a narrow strip hides it.
+        aria-hidden
+        data-widest={t("rowRange", {
+          from: format.format(total),
+          to: format.format(total),
           total: format.format(total),
         })}
+        className={cn(
+          "justify-items-start text-muted-foreground",
+          STEADY,
+          STEPS.range
+        )}
+      >
+        <span>{text}</span>
       </span>
-    </span>
+      <span
+        data-slot="data-table-row-range-status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {text}
+      </span>
+    </>
   )
 }
 

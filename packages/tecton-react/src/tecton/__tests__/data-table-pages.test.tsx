@@ -436,11 +436,22 @@ describe("DataTable pages", () => {
     expect(other.style.minHeight).toBe("")
   })
 
-  it("announces the rows shown as they change", () => {
+  it("announces the rows shown as they change, also once a narrow strip hides them", () => {
     render(<Wells />)
+    const live = document.querySelector<HTMLElement>(
+      '[data-slot="data-table-row-range-status"]'
+    )
+    expect(live).toHaveAttribute("aria-live", "polite")
+    expect(live).toHaveClass("sr-only")
+    // Not within the part a narrow strip lets go of (`data-step`), which
+    // is not said twice.
+    expect(live?.closest("[data-step]")).toBeNull()
     expect(
       document.querySelector('[data-slot="data-table-row-range"]')
-    ).toHaveAttribute("aria-live", "polite")
+    ).toHaveAttribute("aria-hidden", "true")
+    expect(live).toHaveTextContent("1–10 of 23")
+    fireEvent.click(button("Next page"))
+    expect(live).toHaveTextContent("11–20 of 23")
   })
 
   it("offers its own page sizes, or none", async () => {
