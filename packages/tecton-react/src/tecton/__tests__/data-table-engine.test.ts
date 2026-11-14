@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
+  addedIds,
   aggregate,
   allMatchingAfterViewChange,
   allMatchingValue,
@@ -2107,6 +2108,37 @@ describe("engine: server mode", () => {
       ["h", true, true, false],
       ["h-1", true, false, false],
     ])
+  })
+
+  it("counts a loaded subtree as a load, not as rows added, at every level", () => {
+    const tree = (children: Array<Well> | undefined) => [
+      well("p", { children }),
+      well("q", { children: [] }),
+    ]
+    const input = {
+      itemToChildren: (w: Well) => w.children,
+      expanded: ["p"],
+    }
+    const before = server({ ...input, items: tree(undefined) })
+    const loaded = server({
+      ...input,
+      items: tree([
+        well("c", { children: [well("g", { children: [well("gg")] })] }),
+      ]),
+    })
+    expect(addedIds(before, loaded)).toEqual([])
+    // A row added beside loaded ones, and a new subtree, are additions.
+    const more = server({
+      ...input,
+      items: [
+        ...tree([
+          well("c", { children: [well("g", { children: [well("gg")] })] }),
+          well("d"),
+        ]),
+        well("r", { children: [well("r-1")] }),
+      ],
+    })
+    expect(addedIds(loaded, more)).toEqual(["d", "r", "r-1"])
   })
 })
 

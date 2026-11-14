@@ -17,7 +17,7 @@
  *   ends it, and the batch `onLoadMore` asked for;
  * - in server mode, the rows of a new view: the first `items` after its
  *   search, filters, sorting, grouping, page or page size change;
- * - in a tree, the children of a row whose children were not loaded.
+ * - in a tree, the rows under a row whose children were not loaded.
  *
  * In client mode `items` are compared, not the rows the view shows: a
  * search or filter that shows rows already there adds none.

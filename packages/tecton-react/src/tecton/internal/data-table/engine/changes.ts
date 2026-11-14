@@ -4,10 +4,11 @@
  * One pass over `next`'s ids with a lookup in `previous`'s: O(n), however
  * many rows came or where they are.
  *
- * In a tree, the children that arrive under a row whose children were not
+ * In a tree, the rows that arrive under a row whose children were not
  * loaded (`undefined` in `previous`: a server tree loading a row as it
- * opens) are a load, not additions; a child added to a row whose children
- * were there is one, whether that row is open or not.
+ * opens), at any depth, are a load, not additions; a child added to a row
+ * whose children were there is one, whether that row is open or not, and
+ * so is a new row's subtree.
  */
 import type { DataTableRowModel } from "./engine"
 
@@ -19,13 +20,12 @@ function addedIds<T>(
   if (previous.ids === next.ids) return added
   for (const id of next.ids) {
     if (previous.has(id)) continue
-    const parent = next.treeParentOf(id)
-    if (
-      parent !== null &&
-      previous.has(parent) &&
-      previous.childrenUnloaded(parent)
-    )
-      continue
+    // The nearest ancestor `previous` had: a row under one whose children
+    // were not loaded came with their load, however deep.
+    let parent = next.treeParentOf(id)
+    while (parent !== null && !previous.has(parent))
+      parent = next.treeParentOf(parent)
+    if (parent !== null && previous.childrenUnloaded(parent)) continue
     added.push(id)
   }
   return added
