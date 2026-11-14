@@ -22,11 +22,10 @@ type VirtualListOptions = {
   /** Rows rendered beyond each edge of the view. */
   overscan?: number
   /**
-   * Px rendered beyond each edge of the view, when more than `overscan`
-   * rows: a fast flick then finds rows already in place.
+   * Heights of the view rendered beyond each edge of it (1: a screenful
+   * each way), when more than `overscan` rows: a fast flick then finds
+   * rows already in place.
    */
-  overscanPx?: number
-  /** Like `overscanPx`, in heights of the view (1: a screenful each way). */
   overscanViews?: number
   /**
    * Applies a scroll before the browser paints it (`flushSync`), so the
@@ -34,10 +33,10 @@ type VirtualListOptions = {
    */
   sync?: boolean
   /**
-   * With `overscanPx`: a scroll that jumps past the rows already prepared
-   * (the scrollbar dragged, End) renders only `overscan` rows beyond the
-   * view, so each frame of the jump mounts about a screenful; `overscanPx`
-   * comes back this many ms after the scrolling stops.
+   * With `overscanViews`: a scroll that jumps past the rows already
+   * prepared (the scrollbar dragged, End) renders only `overscan` rows
+   * beyond the view, so each frame of the jump mounts about a screenful;
+   * `overscanViews` comes back this many ms after the scrolling stops.
    */
   settleMs?: number
   /** Indices that stay rendered wherever the scroll is (the focused row). */
@@ -54,8 +53,8 @@ type VirtualListOptions = {
 
 type VirtualList = {
   ref: (element: HTMLElement | null) => void
-  /** The indices to render, in order. */
-  indices: Array<number>
+  /** The indices to render, in order (none while not `enabled`). */
+  indices: ReadonlyArray<number>
   offset: (index: number) => number
   size: number
   /** Scrolls the least needed to bring row `index` into view. */
@@ -70,6 +69,8 @@ type VirtualList = {
    */
   jumping: boolean
 }
+
+const NO_INDICES: ReadonlyArray<number> = []
 
 /** The view height before any layout (and on the server): ten rows. */
 const FALLBACK_ROWS = 10
@@ -147,7 +148,6 @@ function useVirtualList({
   count,
   stride,
   overscan = 4,
-  overscanPx: overscanPxOption = 0,
   overscanViews = 0,
   sync = false,
   settleMs = 0,
@@ -164,7 +164,7 @@ function useVirtualList({
     jumping: false,
   })
   const cleanup = React.useRef<(() => void) | null>(null)
-  const overscanPx = overscanPxOption + overscanViews * view.height
+  const overscanPx = overscanViews * view.height
   const latest = React.useRef({ sync, settleMs, overscanPx })
   React.useInsertionEffect(() => {
     latest.current = { sync, settleMs, overscanPx }
@@ -245,7 +245,7 @@ function useVirtualList({
   const last = Math.min(count - 1, layout.endAt(top + height) + extra)
   const keepKey = keep.join(",")
   const indices = React.useMemo(() => {
-    if (!enabled) return Array.from({ length: count }, (_, i) => i)
+    if (!enabled) return NO_INDICES
     const set = new Set<number>()
     for (let i = first; i <= last; i++) set.add(i)
     for (const i of keepKey ? keepKey.split(",").map(Number) : [])

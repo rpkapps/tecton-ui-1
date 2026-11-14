@@ -401,7 +401,11 @@ function useColumnSizing({
         : undefined,
     [sizing, scrollbar]
   )
-  return { mode, sizing, controls, style, ...actions }
+  // One object while none of it changes: the header renders with it.
+  return React.useMemo(
+    () => ({ mode, sizing, controls, style, ...actions }),
+    [mode, sizing, controls, style, actions]
+  )
 }
 
 function widthOf(element: Element) {

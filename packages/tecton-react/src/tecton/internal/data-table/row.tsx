@@ -163,7 +163,10 @@ function ItemRowComponent<T>({
     shared.selection && shared.disabledReasons && row.disabled
       ? actions.disabledReasonOf(row.item)
       : undefined
-  const reasonId = React.useId()
+  const id = React.useId()
+  const reasonId = `${id}-reason`
+  // The row header's, which names the row's checkbox.
+  const headerId = `${id}-header`
   const live = useLiveRowProps(shared.live, row.key)
   return (
     <TableRowConfigContext value={config}>
@@ -209,11 +212,15 @@ function ItemRowComponent<T>({
             )}
             style={shared.selectionPin && pinStyle(shared.selectionPin)}
           >
-            <DataTableSelectionCheckbox reason={reason} reasonId={reasonId} />
+            <DataTableSelectionCheckbox
+              reason={reason}
+              reasonId={reasonId}
+              rowHeaderId={shared.rowHeader ? headerId : undefined}
+            />
           </TableCell>
         )}
         {shared.columns.map((column, index) =>
-          renderCell(column, index, row, shared)
+          renderCell(column, index, row, shared, headerId)
         )}
       </TableRow>
     </TableRowConfigContext>

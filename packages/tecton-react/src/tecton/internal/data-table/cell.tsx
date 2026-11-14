@@ -99,6 +99,8 @@ type RowShared<T> = {
   fixed: boolean
   /** Each column's pin, by its place in `columns`. */
   pins: ReadonlyArray<CellPin | undefined>
+  /** Each column's body cells' class and style, by its place (`bodyCellsOf`). */
+  cells: ReadonlyArray<CellLook>
   /** The selection column's pin: at the start while a column is pinned there. */
   selectionPin: CellPin | undefined
   /** The handle column's pin, likewise. */
@@ -418,20 +420,36 @@ function numericClassName<T>(column: EngineColumn<T>) {
   )
 }
 
-function bodyClassName<T>(
-  column: EngineColumn<T>,
-  pin: CellPin | undefined,
-  shared: RowShared<T>
-) {
-  return cn(
-    columnClassName(column),
-    numericClassName(column),
-    shared.fixed && "overflow-hidden text-ellipsis",
-    shared.pinned && cellBorderClassName,
-    shared.wrap && column.definition.wrap && "whitespace-normal",
-    pin && pinnedCellClassName,
-    pinEdgeClassName(pin)
-  )
+/** A body cell's class and style. */
+type CellLook = {
+  className: string
+  style: React.CSSProperties | undefined
+}
+
+/**
+ * Each shown column's body cells' class and style, by its place
+ * (`RowShared.cells`): worked out once for the rows, not per cell.
+ */
+function bodyCellsOf<T>(
+  columns: ReadonlyArray<EngineColumn<T>>,
+  pins: ReadonlyArray<CellPin | undefined>,
+  { fixed, pinned, wrap }: Pick<RowShared<T>, "fixed" | "pinned" | "wrap">
+): Array<CellLook> {
+  return columns.map((column, index) => {
+    const pin = pins[index]
+    return {
+      className: cn(
+        columnClassName(column),
+        numericClassName(column),
+        fixed && "overflow-hidden text-ellipsis",
+        pinned && cellBorderClassName,
+        wrap && column.definition.wrap && "whitespace-normal",
+        pin && pinnedCellClassName,
+        pinEdgeClassName(pin)
+      ),
+      style: pin && pinStyle(pin),
+    }
+  })
 }
 
 /**
@@ -574,17 +592,19 @@ function rowText<T>(item: T, shared: RowShared<T>) {
   return shared.rowHeader ? shared.formatter.text(shared.rowHeader, item) : ""
 }
 
-/** A body cell of an item row; `index` is the column's place in `shared.columns`. */
+/**
+ * A body cell of an item row; `index` is the column's place in
+ * `shared.columns`, `headerId` the row header's id.
+ */
 function renderCell<T>(
   column: EngineColumn<T>,
   index: number,
   row: ItemRow<T>,
-  shared: RowShared<T>
+  shared: RowShared<T>,
+  headerId: string
 ): React.ReactNode {
   let content = cellContent(column, row, shared)
-  const pin = shared.pins[index]
-  const className = bodyClassName(column, pin, shared)
-  const style = pin && pinStyle(pin)
+  const { className, style } = shared.cells[index]
   if (column !== shared.rowHeader)
     return (
       <TableCell key={column.id} className={className} style={style}>
@@ -623,7 +643,13 @@ function renderCell<T>(
     )
   // A row header takes the look of its row's cells (the table's own).
   return (
-    <TableHead key={column.id} scope="row" className={className} style={style}>
+    <TableHead
+      key={column.id}
+      id={headerId}
+      scope="row"
+      className={className}
+      style={style}
+    >
       {content}
     </TableHead>
   )
@@ -631,6 +657,7 @@ function renderCell<T>(
 
 export {
   ALIGN,
+  bodyCellsOf,
   cellBorderClassName,
   columnClassName,
   emptyValueContent,

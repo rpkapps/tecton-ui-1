@@ -209,6 +209,12 @@ type TableGridState = {
   selected: ReadonlySet<string>
   /** Bumped when rows mount or unmount: the header checkbox reads it. */
   rows: number
+  /**
+   * The rows "select all" stands for (`getAllValues`) as of the table's
+   * last render: a new list tells the header checkbox, which renders with
+   * the header, not with the rows.
+   */
+  all?: ReadonlyArray<string>
 }
 
 type HeaderSelection = "all" | "some" | "none"
@@ -623,6 +629,11 @@ function useTableGrid(own: React.ComponentProps<"table">) {
   React.useLayoutEffect(() => {
     store.set({ selected: grid ? selection.selected : NONE_SELECTED })
   }, [store, grid, selection.selected])
+  React.useLayoutEffect(() => {
+    if (selectionMode !== "multiple" || !getAllValues) return
+    const all = getAllValues()
+    if (store.get().all !== all) store.set({ all })
+  })
 
   const hasFocus = () => {
     const el = table.current

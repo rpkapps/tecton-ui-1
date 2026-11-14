@@ -20,6 +20,8 @@ type DataTableSelectionCheckboxProps = Omit<
   reason?: React.ReactNode
   /** The id of the reason's hidden text, for the row to be described by it too. */
   reasonId?: string
+  /** The id of the row's header cell, which names a row's checkbox with "Select". */
+  rowHeaderId?: string
 }
 
 /**
@@ -43,6 +45,7 @@ function DataTableSelectionCheckbox({
   disabled,
   reason,
   reasonId: reasonIdProp,
+  rowHeaderId,
   ...props
 }: DataTableSelectionCheckboxProps) {
   const grid = useTableGridContext()
@@ -55,13 +58,11 @@ function DataTableSelectionCheckbox({
   const row = context?.value === undefined ? null : context
   const t = useTranslations("table")
   const id = React.useId()
-  const element = React.useRef<HTMLElement | null>(null)
   // A row's checkbox is named from its first render, by ids of the
   // grid's own (the checkbox's and its row header's), so the checkbox
   // never looks for a label of its own: as rows mount while the table
   // scrolls, that search reads through the whole document.
   const selfId = `${id}-select`
-  const [header, setHeader] = React.useState<string | null>(`${id}-row`)
 
   const value = row?.value
   const checked = useStore(grid.store, (state) =>
@@ -76,33 +77,8 @@ function DataTableSelectionCheckbox({
   // The header's: nothing to select (no rows, or none selectable).
   const empty = useStore(grid.store, () => !row && !grid.canSelectAll())
 
-  // Named after the row too: "Select" and the row's header (or first
-  // text), which takes the id named at first unless it has one.
-  React.useLayoutEffect(() => {
-    const self = element.current
-    const tr = row ? self?.closest("tr") : null
-    if (!self || !tr) return
-    const cells = [...tr.cells].filter((cell) => !cell.contains(self))
-    const cell =
-      cells.find((candidate) => candidate.tagName === "TH") ??
-      cells.find((candidate) => candidate.textContent.trim())
-    if (!cell) {
-      setHeader(null)
-      return
-    }
-    if (!cell.id) cell.id = `${id}-row`
-    setHeader(cell.id)
-  })
-  const labelledBy = row && header ? `${selfId} ${header}` : undefined
-
-  const setRef = React.useCallback(
-    (node: HTMLElement | null) => {
-      element.current = node
-      if (typeof ref === "function") ref(node)
-      else if (ref) (ref as React.RefObject<HTMLElement | null>).current = node
-    },
-    [ref]
-  )
+  // Named after the row too: "Select" and the row's header.
+  const labelledBy = row && rowHeaderId ? `${selfId} ${rowHeaderId}` : undefined
 
   // The press reads the row it is in now: a row updated in place for
   // another (the table virtualized) keeps its checkbox.
@@ -149,7 +125,7 @@ function DataTableSelectionCheckbox({
       <Checkbox
         data-slot="table-selection-checkbox"
         {...own}
-        ref={setRef}
+        ref={ref}
         aria-label={label}
         aria-labelledby={labelledBy}
         aria-describedby={describedBy}
@@ -162,7 +138,7 @@ function DataTableSelectionCheckbox({
     ),
     [
       own,
-      setRef,
+      ref,
       label,
       labelledBy,
       describedBy,

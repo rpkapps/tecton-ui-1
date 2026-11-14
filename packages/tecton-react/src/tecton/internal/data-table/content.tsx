@@ -57,6 +57,7 @@ import {
   type TableGridOptions,
 } from "../table-grid"
 import {
+  bodyCellsOf,
   emptyValueContent,
   groupCellsOf,
   groupLabelWidth,
@@ -905,6 +906,11 @@ function DataTableContentImpl({
       return label
     }
   }, [tTable, columnsById])
+  const cells = React.useMemo(
+    () =>
+      bodyCellsOf(shownColumns, pins, { fixed, pinned, wrap: !virtualized }),
+    [shownColumns, pins, fixed, pinned, virtualized]
+  )
   const noValue = tTable("noValue")
   const emptyValue = React.useMemo(() => emptyValueContent(noValue), [noValue])
   const shared = React.useMemo<RowShared<unknown>>(
@@ -948,6 +954,7 @@ function DataTableContentImpl({
       headerRows: headerLayout.headerRows.length,
       fixed,
       pins,
+      cells,
       selectionPin,
       handlePin,
       pinned,
@@ -983,6 +990,7 @@ function DataTableContentImpl({
       virtualized,
       fixed,
       pins,
+      cells,
       selectionPin,
       handlePin,
       pinned,
@@ -1294,19 +1302,36 @@ function DataTableContentImpl({
     (empty ?? <DataTableEmptyState />)
   )
 
-  const header: HeaderShared<unknown> = {
-    context,
-    columns,
-    layout: headerLayout,
-    sorting,
-    options,
-    sizer,
-    pins,
-    selectionPin,
-    handlePin,
-    order: order.order,
-    movable: order.movable,
-  }
+  // One object while the header draws the same: a live tick or new items
+  // render no header cell.
+  const header = React.useMemo<HeaderShared<unknown>>(
+    () => ({
+      context,
+      columns,
+      layout: headerLayout,
+      sorting,
+      options,
+      sizer,
+      pins,
+      selectionPin,
+      handlePin,
+      order: order.order,
+      movable: order.movable,
+    }),
+    [
+      context,
+      columns,
+      headerLayout,
+      sorting,
+      options,
+      sizer,
+      pins,
+      selectionPin,
+      handlePin,
+      order.order,
+      order.movable,
+    ]
+  )
   // The highlight's length, read by its animation (`live-rows.tsx`).
   const Live = live ? liveFeature.module?.DataTableLive : undefined
   const liveDuration = live

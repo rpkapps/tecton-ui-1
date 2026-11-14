@@ -853,7 +853,7 @@ function cellPin<T>(
     : { ...last, edge: first.edge }
 }
 
-function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
+function DataTableHeaderImpl<T>({ shared }: { shared: HeaderShared<T> }) {
   const t = useTranslations("table")
   const tDataTable = useTranslations("dataTable")
   const { layout, options } = shared
@@ -961,6 +961,11 @@ function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
     </TableHeader>
   )
 }
+
+/** The header: it renders again only when what it draws changes (`shared`). */
+const DataTableHeader = React.memo(
+  DataTableHeaderImpl
+) as typeof DataTableHeaderImpl
 
 /**
  * The header rows to draw: the columns' (the last), and each row of groups

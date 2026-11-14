@@ -103,10 +103,12 @@ function Wells({
           >
             {checkboxes && (
               <TableCell>
-                <DataTableSelectionCheckbox />
+                <DataTableSelectionCheckbox rowHeaderId={`${well.id}-name`} />
               </TableCell>
             )}
-            <TableHead scope="row">{well.name}</TableHead>
+            <TableHead id={`${well.id}-name`} scope="row">
+              {well.name}
+            </TableHead>
             <TableCell>
               {link ? <a href={`#${well.id}`}>{well.status}</a> : well.status}
             </TableCell>
