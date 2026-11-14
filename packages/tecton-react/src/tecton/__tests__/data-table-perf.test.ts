@@ -37,11 +37,14 @@
  *   CSV, 100k × 6 columns ........... 212 / 205   (500)
  *   live: 20 rows added, run + diff . 167 / 150   (no budget; limit 175)
  *   live: 20 rows added, diff alone ... 7 / 8     (no budget; limit 20)
+ *   live: a batch of 500 planned ....... 1 / 1     (no budget; limit 20;
+ *                                                   ~420 before)
  */
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
   addedIds,
+  ALL_OPEN,
   createColumns,
   createDataTableEngine,
   createDefaultView,
@@ -57,6 +60,7 @@ import {
   type DataTableView,
 } from "../internal/data-table/engine"
 import { toCsv } from "../internal/data-table/engine/csv"
+import { planBatch } from "../internal/data-table/live-rows"
 
 const ROWS = 100_000
 const RUNS = 5
@@ -491,6 +495,42 @@ describe(
         },
         ({ before, after }) => {
           expect(addedIds(before, after)).toHaveLength(20)
+        }
+      )
+      expect(time).toBeLessThan(20 * HEADROOM)
+    })
+
+    it("plans a batch of 500 rows added to 2 groups of 50,000 within 20 ms", () => {
+      // What the content's live module does with a batch in its layout
+      // effect: the row or group that shows each, and the groups the rows
+      // made. Every row of a group listed for each row added took ~420 ms.
+      const halves = wells.map((well, i) => ({
+        ...well,
+        status: STATUSES[i % 2],
+      }))
+      const time = median(
+        () => {
+          const state = setup({ input: { items: halves } })
+          const view = state.view({ grouping: ["status"] })
+          const before = state.run(view)
+          const after = state.run(view, {
+            items: [
+              ...halves,
+              ...halves
+                .slice(0, 500)
+                .map((well, i) => ({ ...well, id: `new-${i}` })),
+            ],
+          })
+          const ids = addedIds(before, after)
+          expect(ids).toHaveLength(500)
+          return { after, batch: { ids, released: new Set<string>() } }
+        },
+        ({ after, batch }) => {
+          const plan = planBatch(after, ALL_OPEN, batch)
+          let groups = 0
+          for (const target of plan.targets.keys())
+            groups += plan.newGroups(target).length + Number(plan.own(target))
+          expect(groups).toBe(500)
         }
       )
       expect(time).toBeLessThan(20 * HEADROOM)

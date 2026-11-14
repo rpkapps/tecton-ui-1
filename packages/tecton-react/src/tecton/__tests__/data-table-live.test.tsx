@@ -579,6 +579,38 @@ describe("DataTable highlightChanges: trees and groups", () => {
 })
 
 describe("DataTable highlightChanges: the highlight", () => {
+  it("reads no layout on a render or a scroll while nothing is live", () => {
+    geometry()
+    const reads = () =>
+      vi.mocked(Element.prototype.getBoundingClientRect).mock.calls.length
+    // The layout reads of a sort (a render of the content) and a scroll,
+    // with live data on and off.
+    const readsOf = (highlightChanges: boolean) => {
+      const { rerender, unmount } = render(
+        <Live highlightChanges={highlightChanges} />
+      )
+      // A row added and seen, its highlight over: nothing live is left.
+      rerender(
+        <Live
+          highlightChanges={highlightChanges}
+          items={[...READINGS, reading(15)]}
+        />
+      )
+      act(() => vi.advanceTimersByTime(2000))
+      const before = reads()
+      fireEvent.click(
+        within(screen.getByRole("columnheader", { name: "Value" })).getByRole(
+          "button"
+        )
+      )
+      scrollTo(40)
+      const count = reads() - before
+      unmount()
+      return count
+    }
+    expect(readsOf(true)).toBe(readsOf(false))
+  })
+
   it("fades a row landing in view at once, and ends after its duration (1,500 ms, or its own)", () => {
     geometry()
     const { rerender } = render(<Live />)

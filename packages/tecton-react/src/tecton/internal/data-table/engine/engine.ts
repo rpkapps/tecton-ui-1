@@ -220,6 +220,8 @@ type DataTableRowModel<T> = {
   groupKeys: () => ReadonlyArray<string>
   /** A group's item ids, nested groups included, in display order. */
   groupIds: (key: string) => ReadonlyArray<string>
+  /** How many items a group holds, nested groups included (`groupIds`' length, without the list). */
+  groupCount: (key: string) => number
   /**
    * A group's item ids that can be selected (not disabled), in display
    * order: what its checkbox selects. The same array while the groups and
@@ -755,6 +757,7 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
           const range = groupRange(key)
           return range ? Array.from(range, (position) => ids[position]) : NO_IDS
         },
+        groupCount: (key) => groupRange(key)?.length ?? 0,
         groupItems: (key) => {
           const range = groupRange(key)
           return range ? Array.from(range, (position) => items[position]) : []

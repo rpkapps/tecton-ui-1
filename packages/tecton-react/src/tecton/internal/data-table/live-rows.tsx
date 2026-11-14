@@ -28,7 +28,7 @@
  *   the scroll ends: the rows it passes stay counted), at once to one
  *   further away or with reduced motion. Pressed from the keyboard (no
  *   pointer, `detail` 0), focus goes to that row, the button going.
- * - The row the user is on never moves (`LiveAnchor`, `createAnchor`): a
+ * - The row the user is on never moves (`LiveAnchor`, `live-anchor.ts`): a
  *   change of `items` keeps the row with an open menu or popover, else the
  *   one with focus, else the one under the pointer, else (scrolled into the
  *   rows) the first in view where it was. At the top of the rows and idle,
@@ -55,14 +55,21 @@ import {
   type ClosedGroups,
   type DataTableRowModel,
 } from "./engine/index"
-import type { LiveState } from "./live"
+import type { LiveBatch, LiveState } from "./live"
 import {
-  type Anchor,
-  type AnchorSnapshot,
-  type LiveBridge,
-  type LiveMessage,
+  createAnchor,
+  partsOf,
+  regionOf,
+  rowsInUse,
+  scrollRowsBy,
+  type Region,
+} from "./live-anchor"
+import type {
+  FlashState,
+  FlashStore,
+  LiveBridge,
+  LiveMessage,
 } from "./live-bridge"
-import { FRAME, scrollParentOf } from "./scroll-parent"
 
 /** The highlight's keyframes. */
 const FLASH_ANIMATION = "tecton-live-added"
@@ -108,59 +115,6 @@ const GLIDE_LIMIT = 1000
 
 function now() {
   return typeof performance === "undefined" ? Date.now() : performance.now()
-}
-
-/** The elements of a content's table, as laid out now. */
-type Parts = {
-  table: HTMLTableElement
-  body: HTMLTableSectionElement
-  /** Where the rows scroll: the table's container when virtualized, else an ancestor, or the page (`null`). */
-  scroller: HTMLElement | null
-}
-
-function partsOf(frame: HTMLElement | null, virtualized: boolean) {
-  const container = frame?.querySelector<HTMLElement>(`:scope > ${FRAME}`)
-  const table = container?.querySelector<HTMLTableElement>(":scope > table")
-  const body = table?.querySelector<HTMLTableSectionElement>(
-    ':scope > tbody[data-slot="table-body"]'
-  )
-  if (!container || !table || !body) return null
-  return {
-    table,
-    body,
-    scroller: virtualized ? container : scrollParentOf(table),
-  } satisfies Parts
-}
-
-/**
- * Where the body's rows are seen, in viewport px: the scroll area's
- * client box within the frame, under the header and over a footer.
- * `laidOut` is false without layout (no size: on the server, in tests).
- */
-type Region = { top: number; bottom: number; laidOut: boolean }
-
-function regionOf(frame: HTMLElement, parts: Parts): Region {
-  const box = frame.getBoundingClientRect()
-  let top = box.top
-  let bottom = box.bottom
-  const { scroller, table } = parts
-  if (scroller) {
-    const area = scroller.getBoundingClientRect()
-    top = Math.max(top, area.top + scroller.clientTop)
-    bottom = Math.min(
-      bottom,
-      area.top + scroller.clientTop + scroller.clientHeight
-    )
-  } else {
-    const view = frame.ownerDocument.defaultView
-    top = Math.max(top, 0)
-    if (view) bottom = Math.min(bottom, view.innerHeight)
-  }
-  if (table.tHead)
-    top = Math.max(top, table.tHead.getBoundingClientRect().bottom)
-  if (table.tFoot)
-    bottom = Math.min(bottom, table.tFoot.getBoundingClientRect().top)
-  return { top, bottom, laidOut: box.height > 0 }
 }
 
 /** Where an added row is: in view, above or below it, or on an earlier or later page. */
@@ -241,9 +195,9 @@ function placeOf(key: string, placing: Placing): Place | null {
  * closed group it is in, or of the nearest tree row shown above it;
  * `null` when the search or filters hide it.
  */
-function targetOf(
+function targetOf<T>(
   id: string,
-  model: DataTableRowModel<unknown>,
+  model: DataTableRowModel<T>,
   closed: ClosedGroups
 ): string | null {
   if (!model.kept(id)) return null
@@ -279,36 +233,6 @@ function prefersReducedMotion(view: Window | null | undefined) {
     typeof view?.matchMedia === "function" &&
     view.matchMedia("(prefers-reduced-motion: reduce)").matches
   )
-}
-
-/**
- * Scrolls the rows by `delta` px, in their scroll area or the page; at
- * once unless `smooth`, whatever the page's `scroll-behavior`.
- */
-function scrollRowsBy(
-  frame: HTMLElement,
-  scroller: HTMLElement | null,
-  delta: number,
-  smooth = false
-) {
-  ;(scroller ?? frame.ownerDocument.defaultView)?.scrollBy({
-    top: delta,
-    behavior: smooth ? "smooth" : "instant",
-  })
-}
-
-/** The first of the rows (in DOM order, top to bottom) whose bottom is past `top`. */
-function firstBelow(rows: HTMLCollectionOf<HTMLTableRowElement>, top: number) {
-  let low = 0
-  let high = rows.length
-  while (low < high) {
-    const middle = (low + high) >> 1
-    const box = rows[middle].getBoundingClientRect()
-    // Hidden rows (a detail row's parity row) have no box: look after them.
-    if (box.height > 0 && box.bottom > top + 0.5) high = middle
-    else low = middle + 1
-  }
-  return low
 }
 
 /** The "new rows" buttons' counts, by where the rows are. */
@@ -393,74 +317,98 @@ type LiveRowsState = {
   pressAfter: { focus: boolean } | null
   /** A button's smooth scroll under way: what its end calls (one at a time). */
   glide: (() => void) | null
-  timers: Set<ReturnType<typeof setTimeout>>
-  frame: number
+  /** Whether the last look at the rows counted any for the buttons. */
+  counted: boolean
 }
 
-/** Live data for `DataTableContent` (see the module comment). */
-function useLiveRows({
-  live,
-  bridge,
-  onMessage,
-  frame,
-  virtualized,
-  model,
-  rows,
-  pagination,
-  closedGroups,
-  grid,
-  actions,
-}: DataTableLiveProps) {
-  const flashStore = bridge.flashes
-  const indexOf = React.useMemo(() => rowIndexOf(rows), [rows])
-  const latest = React.useRef({
-    live,
-    virtualized,
-    model,
-    rows,
-    pagination,
-    closedGroups,
-    indexOf,
-  })
-  React.useInsertionEffect(() => {
-    latest.current = {
-      live,
-      virtualized,
-      model,
-      rows,
-      pagination,
-      closedGroups,
-      indexOf,
-    }
-  })
+/** What the hooks read of the latest render. */
+type Latest = Pick<
+  DataTableLiveProps,
+  "live" | "virtualized" | "model" | "rows" | "pagination" | "closedGroups"
+> & { indexOf: (key: string) => number }
 
-  const [pills, setPills] = React.useState<Pills>(NO_PILLS)
-  const [edges, setEdges] = React.useState<Edges>({ top: 0, bottom: 0 })
-  const announce = useLiveAnnouncer(onMessage)
-  const [state] = React.useState<LiveRowsState>(() => ({
-    unseen: new Set(),
-    handled: null,
-    pointer: null,
-    releaseTimer: null,
-    popups: null,
-    pending: null,
-    pressAfter: null,
-    glide: null,
-    timers: new Set(),
-    frame: 0,
-  }))
+/**
+ * The live module's timers and animation frames, all stopped at once when
+ * it goes (`dispose`).
+ */
+type Disposer = {
+  timeout: (run: () => void, ms: number) => ReturnType<typeof setTimeout>
+  clear: (timer: ReturnType<typeof setTimeout> | null) => void
+  /** The next frame of `view`, if it has frames; returns its cancel. */
+  frame: (view: Window, run: () => void) => () => void
+  dispose: () => void
+}
 
-  const placing = React.useCallback(() => {
-    const current = latest.current
-    return placingOf(
-      frame.current,
-      current.virtualized,
-      current.model,
-      current.pagination,
-      current.indexOf
-    )
-  }, [frame])
+function createDisposer(): Disposer {
+  const timers = new Set<ReturnType<typeof setTimeout>>()
+  const frames = new Map<number, Window>()
+  return {
+    timeout(run, ms) {
+      const timer = setTimeout(() => {
+        timers.delete(timer)
+        run()
+      }, ms)
+      timers.add(timer)
+      return timer
+    },
+    clear(timer) {
+      if (timer === null) return
+      clearTimeout(timer)
+      timers.delete(timer)
+    },
+    frame(view, run) {
+      if (typeof view.requestAnimationFrame !== "function") return () => {}
+      const id = view.requestAnimationFrame(() => {
+        frames.delete(id)
+        run()
+      })
+      frames.set(id, view)
+      return () => {
+        if (frames.delete(id)) view.cancelAnimationFrame(id)
+      }
+    },
+    dispose() {
+      for (const timer of timers) clearTimeout(timer)
+      timers.clear()
+      for (const [id, view] of frames) view.cancelAnimationFrame(id)
+      frames.clear()
+    },
+  }
+}
 
+/** What the hooks share: the frame, the latest render, the state, the timers. */
+type Live = {
+  frame: React.RefObject<HTMLDivElement | null>
+  latest: React.RefObject<Latest>
+  state: LiveRowsState
+  disposer: Disposer
+}
+
+/** Whether a highlight waits to be seen (at full strength). */
+const waiting = (flashes: FlashState["flashes"]) => {
+  for (const start of flashes.values()) if (start === null) return true
+  return false
+}
+
+/**
+ * Whether the rows need looking at again (`update`): rows not seen yet,
+ * a highlight waiting, rows kept back, a page or a press to come, or the
+ * buttons showing a count. Without, a render or a scroll reads no layout.
+ */
+function busy({ latest, state }: Live, flashes: FlashState["flashes"]) {
+  return (
+    state.unseen.size > 0 ||
+    latest.current.live.held.size > 0 ||
+    state.pending !== null ||
+    state.pressAfter !== null ||
+    state.counted ||
+    waiting(flashes)
+  )
+}
+
+/** The highlights: set on rows, and their fades kept on their clocks. */
+function useFlashes(live: Live, flashStore: FlashStore) {
+  const { frame, latest, disposer } = live
   const syncFlashes = React.useCallback(() => {
     const body = partsOf(frame.current, latest.current.virtualized)?.body
     if (!body) return
@@ -468,7 +416,7 @@ function useLiveRows({
       ":scope > tr[data-live-added]"
     ))
       syncFlash(row)
-  }, [frame])
+  }, [frame, latest])
 
   /**
    * Highlights the rows `keys`: at full strength until seen (`start`
@@ -482,9 +430,8 @@ function useLiveRows({
       for (const key of keys) flashes.set(key, start)
       flashStore.set({ flashes })
       if (start === null) return
-      const timer = setTimeout(
+      disposer.timeout(
         () => {
-          state.timers.delete(timer)
           const after = new Map(flashStore.get().flashes)
           let changed = false
           for (const key of keys)
@@ -493,15 +440,41 @@ function useLiveRows({
         },
         Math.max(0, start + duration - now())
       )
-      state.timers.add(timer)
       // The rows render with it at once; their animations are set on its
       // clock before the next paint.
       const view = frame.current?.ownerDocument.defaultView
-      if (typeof view?.requestAnimationFrame === "function")
-        view.requestAnimationFrame(syncFlashes)
+      if (view) disposer.frame(view, syncFlashes)
     },
-    [flashStore, state, frame, syncFlashes]
+    [flashStore, latest, disposer, frame, syncFlashes]
   )
+  return { syncFlashes, flash }
+}
+
+/**
+ * The "new rows" buttons: the rows looked at (`update`), counted by where
+ * they are, the buttons placed; again as the rows scroll and the window
+ * resizes. `glide` waits for a button's smooth scroll.
+ */
+function usePills(
+  live: Live,
+  virtualized: boolean,
+  flashStore: FlashStore,
+  { syncFlashes, flash }: ReturnType<typeof useFlashes>
+) {
+  const { frame, latest, state, disposer } = live
+  const [pills, setPills] = React.useState<Pills>(NO_PILLS)
+  const [edges, setEdges] = React.useState<Edges>({ top: 0, bottom: 0 })
+
+  const placing = React.useCallback(() => {
+    const current = latest.current
+    return placingOf(
+      frame.current,
+      current.virtualized,
+      current.model,
+      current.pagination,
+      current.indexOf
+    )
+  }, [frame, latest])
 
   /**
    * The rows as they are now: the added rows seen (half in view) stop
@@ -513,6 +486,7 @@ function useLiveRows({
     const current = latest.current
     const element = frame.current
     if (!element) {
+      state.counted = false
       setPills((before) => (samePills(before, NO_PILLS) ? before : NO_PILLS))
       return
     }
@@ -549,8 +523,9 @@ function useLiveRows({
       if (gone) flashStore.set({ flashes: gone })
       flash(seen, now())
     }
+    state.counted = counts.above + counts.below + counts.pages > 0
     setPills((before) => (samePills(before, counts) ? before : counts))
-    if (counts.above + counts.below + counts.pages === 0) return
+    if (!state.counted) return
     const parts = partsOf(element, current.virtualized)
     if (!parts) return
     const region = regionOf(element, parts)
@@ -567,7 +542,7 @@ function useLiveRows({
         ? before
         : next
     )
-  }, [frame, placing, state, flashStore, flash])
+  }, [frame, latest, placing, state, flashStore, flash])
 
   /**
    * Waits for a button's smooth scroll in `target` to end (`scrollend`, or
@@ -583,96 +558,93 @@ function useLiveRows({
       }
       state.glide = end
       target.addEventListener("scrollend", end, { once: true })
-      setTimeout(end, GLIDE_LIMIT)
+      disposer.timeout(end, GLIDE_LIMIT)
     },
-    [state, update]
+    [state, update, disposer]
   )
 
-  /** Scrolls to the row `key` (smoothly unless the user prefers reduced motion), or focuses it. */
-  const revealRow = React.useCallback(
-    (key: string, focus: boolean) => {
-      const index = latest.current.indexOf(key)
-      const element = frame.current
-      if (index < 0 || !element) return
-      if (focus) return grid.current?.focusRow(index)
-      const parts = partsOf(element, latest.current.virtualized)
-      const row = parts
-        ? [...parts.body.rows].find((each) => each.dataset.liveKey === key)
-        : undefined
-      const region = parts ? regionOf(element, parts) : null
-      if (parts && row && region?.laidOut) {
-        const box = row.getBoundingClientRect()
-        const delta =
-          box.top < region.top
-            ? box.top - region.top
-            : box.bottom > region.bottom
-              ? box.bottom - region.bottom
-              : 0
-        if (Math.abs(delta) < 0.5) return
-        const view = element.ownerDocument.defaultView
-        const smooth = !prefersReducedMotion(view)
-        if (smooth && view) glide(parts.scroller ?? view)
-        scrollRowsBy(element, parts.scroller, delta, smooth)
-        return
-      }
-      grid.current?.scrollToIndex(index)
+  // Scrolling and resizing: the counts, the buttons' place, and the
+  // highlights of rows scrolled into view (nothing to look at, nothing
+  // read). Where the rows scroll is known once they are laid out, and may
+  // change (a table growing taller than its parent): looked at after each
+  // render.
+  const listening = React.useRef<{
+    target: EventTarget
+    stop: () => void
+  } | null>(null)
+  React.useLayoutEffect(() => {
+    const element = frame.current
+    const view = element?.ownerDocument.defaultView
+    const parts = partsOf(element, virtualized)
+    const target = parts ? (parts.scroller ?? view ?? null) : null
+    if (listening.current?.target === target) return
+    listening.current?.stop()
+    listening.current = null
+    if (!target || !view) return
+    let cancel: (() => void) | null = null
+    const changed = () => {
+      const { flashes } = flashStore.get()
+      if (cancel || (!flashes.size && !busy(live, flashes))) return
+      cancel = disposer.frame(view, () => {
+        cancel = null
+        const { flashes } = flashStore.get()
+        if (flashes.size) syncFlashes()
+        if (busy(live, flashes)) update()
+      })
+    }
+    target.addEventListener("scroll", changed, { passive: true })
+    view.addEventListener("resize", changed)
+    listening.current = {
+      target,
+      stop: () => {
+        target.removeEventListener("scroll", changed)
+        view.removeEventListener("resize", changed)
+        cancel?.()
+        cancel = null
+      },
+    }
+  })
+  React.useEffect(
+    () => () => {
+      listening.current?.stop()
+      listening.current = null
     },
-    [frame, grid, glide]
+    []
   )
 
-  /**
-   * Goes to the new rows `kind` counts: the topmost above, the nearest
-   * below, or the first one on another page (turned to).
-   */
-  const goTo = React.useCallback(
-    (kind: PillKind, focus: boolean) => {
-      const { model, closedGroups } = latest.current
-      const at = placing()
-      let first: string | null = null
-      let firstIndex = Infinity
-      for (const id of state.unseen) {
-        const target = targetOf(id, model, closedGroups)
-        const place = target !== null && at ? placeOf(target, at) : null
-        const of = place === "before" || place === "after" ? "pages" : place
-        const index = target === null ? -1 : model.indexOfRow(target)
-        if (of === kind && index >= 0 && index < firstIndex) {
-          first = target
-          firstIndex = index
-        }
-      }
-      if (first === null) return
-      const page = Math.floor(firstIndex / model.pageSize) + 1
-      if (kind === "pages" && page !== model.page) {
-        state.pending = { key: first, page, focus }
-        actions.setPage(page, "new-rows")
-      } else revealRow(first, focus)
-    },
-    [placing, state, actions, revealRow]
-  )
+  return { pills, edges, placing, update, glide }
+}
 
+/**
+ * Client pages: rows that would land on an earlier page are kept back
+ * while the user uses the rows, and added `RELEASE_DELAY` after that
+ * ends: the row under the pointer, focus leaving, a row's menu closing.
+ */
+function useHoldRelease(live: Live, actions: DataTableActions<unknown>) {
+  const { frame, latest, state, disposer } = live
   /** Whether the user is using the rows: a row's popup open, focus or the pointer in them. */
   const interacting = React.useCallback(() => {
     const body = partsOf(frame.current, latest.current.virtualized)?.body
     return !!body && rowsInUse(body, state.pointer).some(Boolean)
-  }, [frame, state])
+  }, [frame, latest, state])
 
   const stopWatching = React.useCallback(() => {
-    if (state.releaseTimer) clearTimeout(state.releaseTimer)
+    disposer.clear(state.releaseTimer)
     state.releaseTimer = null
     state.popups?.disconnect()
     state.popups = null
-  }, [state])
+  }, [state, disposer])
 
   /**
-   * Client pages: adds the rows kept back `RELEASE_DELAY` after the user
-   * stops using the rows (`holding`: rows are being kept back now, not
-   * rendered as such yet).
+   * Adds the rows kept back `RELEASE_DELAY` after the user stops using the
+   * rows (`holding`: rows are being kept back now, not rendered as such
+   * yet).
    */
   const scheduleRelease = React.useCallback(
     (holding = false) => {
       if (!holding && latest.current.live.held.size === 0) return
-      if (state.releaseTimer) clearTimeout(state.releaseTimer)
-      state.releaseTimer = setTimeout(() => {
+      disposer.clear(state.releaseTimer)
+      state.releaseTimer = disposer.timeout(() => {
         state.releaseTimer = null
         if (latest.current.live.held.size === 0) return
         if (!interacting()) {
@@ -692,7 +664,7 @@ function useLiveRows({
         }
       }, RELEASE_DELAY)
     },
-    [state, interacting, stopWatching, actions, frame]
+    [latest, state, disposer, interacting, stopWatching, actions, frame]
   )
 
   // The user's use of the rows: the row under the pointer, focus leaving.
@@ -722,114 +694,187 @@ function useLiveRows({
       element.removeEventListener("focusout", focusOut)
       state.pointer = null
     }
-  }, [frame, state, scheduleRelease])
+  }, [frame, latest, state, scheduleRelease])
 
-  // Scrolling and resizing: the counts, the buttons' place, and the
-  // highlights of rows scrolled into view. Where the rows scroll is known
-  // once they are laid out, and may change (a table growing taller than
-  // its parent): looked at after each render.
-  const listening = React.useRef<{
-    target: EventTarget
-    stop: () => void
-  } | null>(null)
-  React.useLayoutEffect(() => {
-    const element = frame.current
-    const view = element?.ownerDocument.defaultView
-    const parts = partsOf(element, virtualized)
-    const target = parts ? (parts.scroller ?? view ?? null) : null
-    if (listening.current?.target === target) return
-    listening.current?.stop()
-    listening.current = null
-    if (!target || !view) return
-    const changed = () => {
-      if (state.frame || typeof view.requestAnimationFrame !== "function")
+  return { interacting, stopWatching, scheduleRelease }
+}
+
+/** The buttons' presses: to a row above or below, or to another page. */
+function useGoTo(
+  live: Live,
+  grid: React.RefObject<TableGridController | null>,
+  actions: DataTableActions<unknown>,
+  { placing, glide }: Pick<ReturnType<typeof usePills>, "placing" | "glide">
+) {
+  const { frame, latest, state } = live
+  /** Scrolls to the row `key` (smoothly unless the user prefers reduced motion), or focuses it. */
+  const revealRow = React.useCallback(
+    (key: string, focus: boolean) => {
+      const index = latest.current.indexOf(key)
+      const element = frame.current
+      if (index < 0 || !element) return
+      if (focus) return grid.current?.focusRow(index)
+      const parts = partsOf(element, latest.current.virtualized)
+      const row = parts
+        ? [...parts.body.rows].find((each) => each.dataset.liveKey === key)
+        : undefined
+      const region = parts ? regionOf(element, parts) : null
+      if (parts && row && region?.laidOut) {
+        const box = row.getBoundingClientRect()
+        const delta =
+          box.top < region.top
+            ? box.top - region.top
+            : box.bottom > region.bottom
+              ? box.bottom - region.bottom
+              : 0
+        if (Math.abs(delta) < 0.5) return
+        const view = element.ownerDocument.defaultView
+        const smooth = !prefersReducedMotion(view)
+        if (smooth && view) glide(parts.scroller ?? view)
+        scrollRowsBy(element, parts.scroller, delta, smooth)
         return
-      state.frame = view.requestAnimationFrame(() => {
-        state.frame = 0
-        syncFlashes()
-        update()
-      })
-    }
-    target.addEventListener("scroll", changed, { passive: true })
-    view.addEventListener("resize", changed)
-    listening.current = {
-      target,
-      stop: () => {
-        target.removeEventListener("scroll", changed)
-        view.removeEventListener("resize", changed)
-        if (state.frame) view.cancelAnimationFrame(state.frame)
-        state.frame = 0
-      },
-    }
-  })
-  React.useEffect(
-    () => () => {
-      listening.current?.stop()
-      listening.current = null
+      }
+      grid.current?.scrollToIndex(index)
     },
-    []
+    [frame, latest, grid, glide]
   )
 
-  // Gone (live data off, the table unmounted): nothing left running or
-  // highlighted.
-  React.useEffect(
-    () => () => {
-      stopWatching()
-      state.glide = null
-      for (const timer of state.timers) clearTimeout(timer)
-      state.timers.clear()
-      state.unseen.clear()
-      flashStore.set({ flashes: new Map() })
+  /**
+   * Goes to the new rows `kind` counts: the topmost above, the nearest
+   * below, or the first one on another page (turned to).
+   */
+  const goTo = React.useCallback(
+    (kind: PillKind, focus: boolean) => {
+      const { model, closedGroups } = latest.current
+      const at = placing()
+      let first: string | null = null
+      let firstIndex = Infinity
+      for (const id of state.unseen) {
+        const target = targetOf(id, model, closedGroups)
+        const place = target !== null && at ? placeOf(target, at) : null
+        const of = place === "before" || place === "after" ? "pages" : place
+        const index = target === null ? -1 : model.indexOfRow(target)
+        if (of === kind && index >= 0 && index < firstIndex) {
+          first = target
+          firstIndex = index
+        }
+      }
+      if (first === null) return
+      const page = Math.floor(firstIndex / model.pageSize) + 1
+      if (kind === "pages" && page !== model.page) {
+        state.pending = { key: first, page, focus }
+        actions.setPage(page, "new-rows")
+      } else revealRow(first, focus)
     },
-    [state, stopWatching, flashStore]
+    [latest, placing, state, actions, revealRow]
   )
+  return { revealRow, goTo }
+}
 
-  // After each render: a new batch of rows, a page turned to for one, the
-  // counts and fades.
+/** What a batch of added rows highlights (`planBatch`). */
+type BatchPlan = {
+  /** By the row that shows them (`targetOf`), the batch's ids, in order. */
+  targets: ReadonlyMap<string, ReadonlyArray<string>>
+  /** How many to announce: those shown, but the released (said when they came). */
+  announced: number
+  /** Whether `target` is a row of its own, or a group all of whose rows came. */
+  own: (target: string) => boolean
+  /** The groups an added row is in that came with the batch: new too. */
+  newGroups: (target: string) => ReadonlyArray<string>
+}
+
+/**
+ * What a batch of added rows highlights. A group is new when every row in
+ * it came with the batch: its rows added are counted once per batch, not
+ * its rows listed per row added.
+ */
+function planBatch<T>(
+  model: DataTableRowModel<T>,
+  closedGroups: ClosedGroups,
+  batch: LiveBatch
+): BatchPlan {
+  const added = new Set(batch.ids)
+  const targets = new Map<string, Array<string>>()
+  const addedIn = new Map<string, number>()
+  let announced = 0
+  for (const id of batch.ids) {
+    for (const key of model.groupPath(id))
+      addedIn.set(key, (addedIn.get(key) ?? 0) + 1)
+    const target = targetOf(id, model, closedGroups)
+    if (target === null) continue
+    if (!batch.released.has(id)) announced++
+    const ids = targets.get(target)
+    if (ids) ids.push(id)
+    else targets.set(target, [id])
+  }
+  const isNew = (key: string) => addedIn.get(key) === model.groupCount(key)
+  return {
+    targets,
+    announced,
+    own: (target) => added.has(target) || (!model.has(target) && isNew(target)),
+    newGroups: (target) =>
+      added.has(target)
+        ? model
+            .groupPath(target)
+            .filter((key) => !targets.has(key) && isNew(key))
+        : [],
+  }
+}
+
+/**
+ * After each render: a new batch of rows (highlighted where they land,
+ * counted, announced, or kept back), a page turned to for one, the counts
+ * and fades. Nothing to look at (`busy`), it reads no layout.
+ */
+function useBatch(
+  live: Live,
+  props: Pick<
+    DataTableLiveProps,
+    "live" | "model" | "closedGroups" | "pagination" | "actions"
+  >,
+  flashStore: FlashStore,
+  announce: (count: number) => void,
+  { flash, syncFlashes }: ReturnType<typeof useFlashes>,
+  { placing, update }: ReturnType<typeof usePills>,
+  {
+    interacting,
+    stopWatching,
+    scheduleRelease,
+  }: ReturnType<typeof useHoldRelease>,
+  { revealRow, goTo }: ReturnType<typeof useGoTo>
+) {
+  const { state } = live
+  const { model, closedGroups, pagination, actions } = props
+  const held = props.live.held
+  const { batch } = props.live
   React.useLayoutEffect(() => {
-    const { batch } = live
     if (batch && batch !== state.handled) {
       state.handled = batch
       const at = placing()
-      const added = new Set(batch.ids)
-      const byTarget = new Map<string, Array<string>>()
-      let announced = 0
-      for (const id of batch.ids) {
-        const target = targetOf(id, model, closedGroups)
-        if (target === null) continue
-        if (!batch.released.has(id)) announced++
-        const ids = byTarget.get(target)
-        if (ids) ids.push(id)
-        else byTarget.set(target, [id])
-      }
+      const plan = planBatch(model, closedGroups, batch)
       const using = pagination && interacting()
       const hold: Array<string> = []
-      const keys: Array<string> = []
-      for (const [target, ids] of byTarget) {
+      const keys = new Set<string>()
+      for (const [target, ids] of plan.targets) {
         // A row of its own (or a group it makes) landing on an earlier
         // page moves the page's rows: kept back while in use.
-        const own =
-          added.has(target) ||
-          (!model.has(target) &&
-            model.groupIds(target).every((id) => added.has(id)))
-        if (using && own && at && placeOf(target, at) === "before") {
+        if (
+          using &&
+          plan.own(target) &&
+          at &&
+          placeOf(target, at) === "before"
+        ) {
           hold.push(...ids)
           continue
         }
-        keys.push(target)
+        keys.add(target)
         // The groups the row made, new with it, are new too.
-        if (added.has(target))
-          for (const key of model.groupPath(target))
-            if (
-              !byTarget.has(key) &&
-              model.groupIds(key).every((id) => added.has(id))
-            )
-              keys.push(key)
+        for (const key of plan.newGroups(target)) keys.add(key)
         for (const id of ids) state.unseen.add(id)
       }
-      if (announced > 0) announce(announced)
+      if (plan.announced > 0) announce(plan.announced)
       // All wait to be seen; those in view are, below (`update`).
-      flash(keys, null)
+      flash([...keys], null)
       if (hold.length) {
         actions.holdRows(hold)
         // Added once the user is done: the pointer and focus say when, a
@@ -844,16 +889,74 @@ function useLiveRows({
     }
     // Nothing kept back any more (added, or removed by the application),
     // and none just asked for: nothing to watch.
-    if (live.held.size === 0 && !state.releaseTimer) stopWatching()
-    syncFlashes()
-    update()
+    if (held.size === 0 && !state.releaseTimer) stopWatching()
+    const { flashes } = flashStore.get()
+    if (flashes.size) syncFlashes()
+    if (busy(live, flashes)) update()
     const press = state.pressAfter
-    if (press && live.held.size === 0) {
+    if (press && held.size === 0) {
       state.pressAfter = null
       goTo("pages", press.focus)
     }
   })
+}
 
+/** Live data for `DataTableContent` (see the module comment). */
+function useLiveRows(props: DataTableLiveProps) {
+  const { live, bridge, onMessage, frame, rows, grid, actions } = props
+  const flashStore = bridge.flashes
+  const indexOf = React.useMemo(() => rowIndexOf(rows), [rows])
+  const latest = React.useRef<Latest>({ ...props, indexOf })
+  React.useInsertionEffect(() => {
+    latest.current = {
+      live,
+      virtualized: props.virtualized,
+      model: props.model,
+      rows,
+      pagination: props.pagination,
+      closedGroups: props.closedGroups,
+      indexOf,
+    }
+  })
+  const [shared] = React.useState((): Omit<Live, "frame" | "latest"> => ({
+    state: {
+      unseen: new Set(),
+      handled: null,
+      pointer: null,
+      releaseTimer: null,
+      popups: null,
+      pending: null,
+      pressAfter: null,
+      glide: null,
+      counted: false,
+    },
+    disposer: createDisposer(),
+  }))
+  const own: Live = { ...shared, frame, latest }
+  const { state, disposer } = shared
+  const announce = useLiveAnnouncer(onMessage)
+
+  const flashes = useFlashes(own, flashStore)
+  const pills = usePills(own, props.virtualized, flashStore, flashes)
+  const hold = useHoldRelease(own, actions)
+  const go = useGoTo(own, grid, actions, pills)
+  useBatch(own, props, flashStore, announce, flashes, pills, hold, go)
+
+  // Gone (live data off, the table unmounted): nothing left running or
+  // highlighted.
+  const { stopWatching } = hold
+  React.useEffect(
+    () => () => {
+      stopWatching()
+      state.glide = null
+      disposer.dispose()
+      state.unseen.clear()
+      flashStore.set({ flashes: new Map() })
+    },
+    [state, disposer, stopWatching, flashStore]
+  )
+
+  const { goTo } = go
   const pressed = React.useCallback(
     (kind: PillKind, event: React.MouseEvent) => {
       // A click from the keyboard (or a screen reader) has no detail: focus
@@ -878,113 +981,7 @@ function useLiveRows({
     }
   }, [bridge, frame, state])
 
-  return { pills, edges, pressed }
-}
-
-/** A keyed body row: the row of `node`, if it is one of `body`'s. */
-function rowOf(body: HTMLTableSectionElement, node: Element | null) {
-  const row = node?.closest<HTMLTableRowElement>("tr[data-live-key]")
-  return row?.parentElement === body ? row : null
-}
-
-/** The rows in use: the one whose menu or popover is open, the one with focus, the one under the pointer. */
-function rowsInUse(body: HTMLTableSectionElement, pointer: Element | null) {
-  return [
-    rowOf(body, body.querySelector('[aria-haspopup][aria-expanded="true"]')),
-    rowOf(body, body.ownerDocument.activeElement),
-    rowOf(body, pointer),
-  ]
-}
-
-/**
- * The row the user is on, which a change of the items keeps still: the
- * row whose menu or popover is open, else the one with focus, else the
- * one under the pointer (each while any of it is in view), else, scrolled
- * into the rows, the first in view. `null` at the top of the rows and
- * idle: rows added above push the others down.
- */
-function anchorRow(parts: Parts, region: Region, pointer: Element | null) {
-  const { body } = parts
-  for (const row of rowsInUse(body, pointer)) {
-    const box = row?.getBoundingClientRect()
-    // Any of it in view.
-    if (box && box.bottom > region.top + 0.5 && box.top < region.bottom - 0.5)
-      return row
-  }
-  if (body.getBoundingClientRect().top >= region.top - 0.5) return null
-  return body.rows[firstBelow(body.rows, region.top)] ?? null
-}
-
-/** A content's `Anchor` (see `LiveAnchor`). */
-function createAnchor(
-  frame: React.RefObject<HTMLDivElement | null>,
-  latest: React.RefObject<{
-    virtualized: boolean
-    indexOf: (key: string) => number
-  }>,
-  state: LiveRowsState
-): Anchor {
-  return {
-    capture() {
-      const element = frame.current
-      const parts = partsOf(element, latest.current.virtualized)
-      if (!element || !parts) return null
-      const region = regionOf(element, parts)
-      if (!region.laidOut) return null
-      const anchor = anchorRow(parts, region, state.pointer)
-      if (!anchor) return null
-      // The anchor, and the next rows in case it goes.
-      const { rows } = parts.body
-      const kept: AnchorSnapshot["rows"] = []
-      let height = 0
-      for (
-        let at = Array.prototype.indexOf.call(rows, anchor);
-        at >= 0 && at < rows.length && kept.length < 3;
-        at++
-      ) {
-        const row = rows[at]
-        const key = row.dataset.liveKey
-        if (key === undefined) continue
-        const box = row.getBoundingClientRect()
-        if (!height) height = box.height
-        kept.push({ key, top: box.top, index: latest.current.indexOf(key) })
-      }
-      return kept.length
-        ? { rows: kept, height, scroller: parts.scroller }
-        : null
-    },
-    restore(snapshot) {
-      const element = frame.current
-      const parts = partsOf(element, latest.current.virtualized)
-      if (!element || !parts) return
-      const rendered = new Map<string, HTMLTableRowElement>()
-      for (const row of parts.body.rows) {
-        const key = row.dataset.liveKey
-        if (key !== undefined) rendered.set(key, row)
-      }
-      for (const { key, top, index } of snapshot.rows) {
-        const row = rendered.get(key)
-        if (row) {
-          scrollRowsBy(
-            element,
-            snapshot.scroller,
-            row.getBoundingClientRect().top - top
-          )
-          return
-        }
-        // Out of a virtualized body's window now: moved by its rows.
-        const now = latest.current.indexOf(key)
-        if (now >= 0 && index >= 0) {
-          scrollRowsBy(
-            element,
-            snapshot.scroller,
-            (now - index) * snapshot.height
-          )
-          return
-        }
-      }
-    },
-  }
+  return { pills: pills.pills, edges: pills.edges, pressed }
 }
 
 /** A button's content: what it counts, kept while it goes so its text stays. */
@@ -1100,5 +1097,5 @@ function DataTableLive(props: DataTableLiveProps) {
   )
 }
 
-export { ANNOUNCE_INTERVAL, DataTableLive, RELEASE_DELAY }
+export { ANNOUNCE_INTERVAL, DataTableLive, planBatch, RELEASE_DELAY }
 export type { DataTableLiveProps }
