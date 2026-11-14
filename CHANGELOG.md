@@ -27,6 +27,8 @@ write entries and cut a release.
   value": `values` for text (several texts in its popover, as removable chips), options and yes /
   no (checkboxes), and `ranges` for numbers (`{ min?, max?, minExclusive?, maxExclusive? }`) and
   dates (`{ from?, to? }`), whose popover edits the first range and says how many more there are.
+  A date-only string in a saved view's date filter (`"2024-03-01"`) is the start of that day in the
+  column's `format.timeZone` (else the local zone), so the view keeps the same days in every zone.
   `useDataTable()` reads the table from custom parts. Its text is translated into the 34 locales.
 - `DataTableSearch syntax="query"`: a power search. Typed terms (`status:drilling td:>3000
 spud:2015`) set the same column filters as the filter buttons and free words the search: a comma

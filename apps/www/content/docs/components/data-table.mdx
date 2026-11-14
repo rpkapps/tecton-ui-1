@@ -640,6 +640,11 @@ The sorting, search, filters, grouping and column layout are one JSON object. St
 
 A saved view is checked against the columns. Unknown or opted-out columns are dropped, without an error.
 
+Dates in a saved view:
+
+- JSON turns a date filter's `from` and `to` into strings. The view reads them back as dates.
+- A date-only string (`"2024-03-01"`) is the start of that day in the column's `format.timeZone`, or the local zone without one. A `to` like it takes in the whole day, wherever the table runs.
+
 ## Custom parts and export
 
 `useDataTable()` gives a component inside `DataTable` the table's state and actions. For example, `exportCsv` backs a download button.
@@ -1113,6 +1118,7 @@ type DataTableNumberRange = {
 }
 
 // Both ends are included; a `to` at midnight includes that whole day.
+// "2024-03-01" is that day in the column's `format.timeZone`.
 type DataTableDateRange = { from?: Date; to?: Date }
 ```
 

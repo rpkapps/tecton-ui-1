@@ -203,6 +203,7 @@ function dayOf(date: Date, timeZone?: string) {
 }
 
 export {
+  DATE_ONLY,
   dayOf,
   isEmptyIn,
   isEmptyValue,

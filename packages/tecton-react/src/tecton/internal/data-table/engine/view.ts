@@ -43,7 +43,7 @@ import type {
   DataTableSort,
   DataTableView,
 } from "./types"
-import { toDate } from "./values"
+import { DATE_ONLY, startOfDay, toDate } from "./values"
 
 /** The root's features that decide which parts of a view apply. */
 type ViewCapabilities = {
@@ -343,12 +343,27 @@ function cleanNumberRange(item: unknown): DataTableNumberRange | undefined {
   }
 }
 
-/** A date range with an end; a view read back from JSON has strings where the dates were. */
-function cleanDateRange(item: unknown): DataTableDateRange | undefined {
+/**
+ * A date range with an end; a view read back from JSON has strings where
+ * the dates were. A date-only string ("2024-03-01") is that day's start
+ * in `timeZone`, the column's (the local zone without one), as the
+ * filter's calendar picks it: a `to` then takes in the whole day.
+ */
+function cleanDateRange(
+  item: unknown,
+  timeZone: string | undefined
+): DataTableDateRange | undefined {
   if (!item || typeof item !== "object") return undefined
   const range = item as DataTableDateRange
-  const from = toDate(range.from)
-  const to = toDate(range.to)
+  const date = (value: unknown) => {
+    const day = typeof value === "string" ? DATE_ONLY.exec(value) : null
+    const parsed = toDate(value as Date | undefined)
+    return day && parsed
+      ? startOfDay(Number(day[1]), Number(day[2]) - 1, Number(day[3]), timeZone)
+      : parsed
+  }
+  const from = date(range.from)
+  const to = date(range.to)
   if (!from && !to) return undefined
   if (from === range.from && to === range.to) return range
   return { ...(from ? { from } : {}), ...(to ? { to } : {}) }
@@ -361,7 +376,7 @@ function cleanDateRange(item: unknown): DataTableDateRange | undefined {
  * an end).
  */
 function reconcileFilter(
-  column: { type: string; filter?: unknown },
+  column: { type: string; filter?: unknown; format?: object },
   input: unknown
 ): DataTableFilterValue | undefined {
   // Views come from JSON and application state: anything may be here.
@@ -396,7 +411,10 @@ function reconcileFilter(
       return kept && same ? value : { type: "number", ranges: items, ...flag }
     }
     case "date": {
-      const { items, same } = cleanList(value.ranges, cleanDateRange)
+      const { timeZone } = (column.format ?? {}) as Intl.DateTimeFormatOptions
+      const { items, same } = cleanList(value.ranges, (item) =>
+        cleanDateRange(item, timeZone)
+      )
       if (!items.length && !empty) return undefined
       return kept && same ? value : { type: "date", ranges: items, ...flag }
     }

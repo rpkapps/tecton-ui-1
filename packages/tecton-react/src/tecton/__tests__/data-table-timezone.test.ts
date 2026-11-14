@@ -85,6 +85,63 @@ describe("date-only strings west of UTC", () => {
     expect(result.matchingIds()).toEqual(["a", "c"])
   })
 
+  it("filter by the day in the column's time zone, wherever the table runs", () => {
+    const zoned = createColumns<Well>([
+      { id: "id", header: "Well" },
+      {
+        id: "spud",
+        header: "Spud",
+        type: "date",
+        format: { dateStyle: "medium", timeZone: "UTC" },
+      },
+    ])
+    const items: Array<Well> = [
+      { id: "a", spud: "2024-03-01T12:00:00Z" },
+      { id: "b", spud: "2024-03-01T23:59:00Z" },
+      { id: "c", spud: "2024-03-02T00:00:00Z" },
+      { id: "d", spud: "2024-02-29T23:59:00Z" },
+    ]
+    const matching = () => {
+      const view = reconcileView(
+        zoned,
+        {
+          filters: {
+            spud: {
+              type: "date",
+              ranges: [{ from: "2024-03-01", to: "2024-03-01" }],
+            },
+          },
+        } as unknown as DataTablePartialView,
+        createDefaultView(zoned, undefined, ALL),
+        ALL
+      )
+      const filter = view.filters.spud
+      return {
+        from: filter.type === "date" && filter.ranges[0].from?.toISOString(),
+        ids: createDataTableEngine<Well>()
+          .run({ items, columns: zoned, view })
+          .matchingIds(),
+      }
+    }
+    // Node applies a change of `TZ` at once: the same view in four zones.
+    try {
+      for (const tz of [
+        "UTC",
+        "America/New_York",
+        "Asia/Tokyo",
+        "America/Los_Angeles",
+      ]) {
+        process.env.TZ = tz
+        expect(matching(), tz).toEqual({
+          from: "2024-03-01T00:00:00.000Z",
+          ids: ["a", "b"],
+        })
+      }
+    } finally {
+      process.env.TZ = "America/Los_Angeles"
+    }
+  })
+
   it("group by their own day", () => {
     const view = reconcileView(columns, { grouping: ["spud"] }, defaults, ALL)
     const result = createDataTableEngine<Well>().run({
