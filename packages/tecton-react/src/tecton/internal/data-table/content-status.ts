@@ -122,31 +122,21 @@ function useStatus({
  * last is said: a search, a load or "Show more" after rows were added
  * replaces their message.
  */
-function useContentStatus({
-  matchKey,
-  server,
-  model,
-  loading,
-  failed,
-  searching,
-  rows,
-  added,
-  live,
-}: {
+function useContentStatus(
   /** What the rows match, as a key: a change makes the status count them. */
-  matchKey: string
-  server: boolean
-  model: DataTableRowModel<unknown>
-  loading: boolean
-  failed: boolean
-  searching: boolean
+  matchKey: string,
+  server: boolean,
+  model: DataTableRowModel<unknown>,
+  loading: boolean,
+  failed: boolean,
+  searching: boolean,
   /** The body's rows. */
-  rows: number
+  rows: number,
   /** What "Show more" brought last (`useShowMore`). */
-  added: { count: number; key: number } | null
+  added: { count: number; key: number } | null,
   /** Live data is on. */
   live: boolean
-}) {
+) {
   const [liveMessage, setLiveMessage] = React.useState<LiveMessage | null>(null)
   const results = useResults({
     matchKey,

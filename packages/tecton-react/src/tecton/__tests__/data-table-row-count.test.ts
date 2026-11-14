@@ -1,10 +1,15 @@
 import { describe, expect, it } from "vitest"
 
 import { ariaRowCount } from "../internal/data-table/content-rows"
-import type { BodyRow } from "../internal/data-table/engine/index"
+import type { BodyRow, EngineRow } from "../internal/data-table/engine/index"
 
 const item = (id: string, continued = false) =>
   ({ kind: "item", id, key: id, continued }) as unknown as BodyRow<unknown>
+/** The model's counts: the rows the view matches, and every page's rows. */
+const counts = (rowCount: number, all = rowCount) => ({
+  rowCount,
+  allRows: Array.from<EngineRow<unknown>>({ length: all }),
+})
 const group = (key: string) =>
   ({ kind: "group", id: key, key }) as unknown as BodyRow<unknown>
 
@@ -17,8 +22,7 @@ const PAGES = {
   virtualized: false,
   headerRows: 1,
   footerRows: 0,
-  matched: 23,
-  allRows: 23,
+  model: counts(23),
   openOnPages: 0,
   bodyRows: Array.from({ length: 10 }, (_, i) => item(`w${i}`)),
   shown: 10,
@@ -33,7 +37,7 @@ describe("ariaRowCount", () => {
   it("counts none in the error state", () => {
     expect(ariaRowCount({ ...PAGES, failed: true })).toBeUndefined()
     expect(
-      ariaRowCount({ ...PAGES, failed: true, server: true, matched: 240 })
+      ariaRowCount({ ...PAGES, failed: true, server: true, model: counts(240) })
     ).toBeUndefined()
   })
 
@@ -42,7 +46,7 @@ describe("ariaRowCount", () => {
       ariaRowCount({
         ...PAGES,
         server: true,
-        matched: 240,
+        model: counts(240, 3),
         bodyRows: [group("g"), item("a"), item("b", true)],
         shown: 3,
       })
@@ -54,7 +58,12 @@ describe("ariaRowCount", () => {
     expect(ariaRowCount(loaded)).toBe(-1)
     // Known: the server's count, past the rows loaded.
     expect(
-      ariaRowCount({ ...loaded, server: true, virtualized: true, matched: 240 })
+      ariaRowCount({
+        ...loaded,
+        server: true,
+        virtualized: true,
+        model: counts(240, 10),
+      })
     ).toBe(241)
   })
 

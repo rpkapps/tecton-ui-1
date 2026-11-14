@@ -116,30 +116,20 @@ function hideBelowColumn<T>(column: EngineColumn<T>) {
   return hideBelow ? HIDE_BELOW_COLUMN[hideBelow] : undefined
 }
 
-function useContentColumns({
-  context,
-  frame,
-  container,
-  columns,
-  layout,
-  options,
-  ready,
-  rows,
-  rtl,
-}: {
-  context: DataTableContextValue<unknown>
-  frame: React.RefObject<HTMLElement | null>
+function useContentColumns(
+  context: DataTableContextValue<unknown>,
+  frame: React.RefObject<HTMLElement | null>,
   /** The table's scroll container. */
-  container: React.RefObject<HTMLElement | null>
-  columns: DataTableColumns<unknown>
-  layout: ColumnLayout<unknown>
-  options: DataTableOptions
+  container: React.RefObject<HTMLElement | null>,
+  columns: DataTableColumns<unknown>,
+  layout: ColumnLayout<unknown>,
+  options: DataTableOptions,
   /** The table can be measured (not the first load's skeleton). */
-  ready: boolean
+  ready: boolean,
   /** Rows are shown and not loading: their content is what is measured. */
-  rows: boolean
+  rows: boolean,
   rtl: boolean
-}) {
+) {
   const selection = options.selectionMode !== "none"
   const handle = options.reorderableRows
   const widths = useDataTableSelector(

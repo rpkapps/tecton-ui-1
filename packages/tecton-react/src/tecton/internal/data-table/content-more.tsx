@@ -9,8 +9,12 @@
 import * as React from "react"
 
 import type { RowShared } from "./cell"
-import type { DataTableActions, DataTableContextValue } from "./context"
-import { useDataTableSelector } from "./context"
+import {
+  useDataTableSelector,
+  type DataTableActions,
+  type DataTableContextValue,
+  type DataTableOptions,
+} from "./context"
 import type { BodyRow, DataTableRowModel, EngineColumn } from "./engine/index"
 import { focusFree, useFocusAway } from "./focus-continuity"
 import { scrollParentOf } from "./scroll-parent"
@@ -195,21 +199,16 @@ function useShowMore({
  * the server's to say (server mode). With `loadMore="button"`, "Show more"
  * in their place, without the observer.
  */
-function afterRows({
-  error,
-  hasMore,
-  button,
-  bodyRows,
-  server,
-  searching,
-}: {
-  error: React.ReactNode
-  hasMore: boolean
-  button: boolean
-  bodyRows: ReadonlyArray<Row>
-  server: boolean
+function afterRows(
+  error: React.ReactNode,
+  hasMore: boolean,
+  /** `loadMore="button"`. */
+  button: boolean,
+  bodyRows: ReadonlyArray<Row>,
+  server: boolean,
+  /** The view searches or filters. */
   searching: boolean
-}) {
+) {
   const inlineError = Boolean(error) && hasMore && bodyRows.length > 0
   const failed = Boolean(error) && !inlineError
   const rows = failed ? NO_ROWS : bodyRows
@@ -225,38 +224,28 @@ type After = ReturnType<typeof afterRows>
  * take their row's fill), "Show more", and load more on scroll.
  */
 function useMoreRows(
+  context: DataTableContextValue<unknown>,
   after: After,
-  {
-    context,
-    frame,
-    container,
-    striped,
-    loading,
-    virtualized,
-    model,
-    focusRow,
-  }: {
-    context: DataTableContextValue<unknown>
-    frame: React.RefObject<HTMLElement | null>
-    container: React.RefObject<HTMLElement | null>
-    striped: boolean
-    loading: boolean
-    virtualized: boolean
-    model: DataTableRowModel<unknown>
-    focusRow: (index: number) => void
-  }
+  frame: React.RefObject<HTMLElement | null>,
+  /** The table's scroll container. */
+  container: React.RefObject<HTMLElement | null>,
+  options: DataTableOptions,
+  loading: boolean,
+  virtualized: boolean,
+  model: DataTableRowModel<unknown>,
+  focusRow: (index: number) => void
 ) {
   const { actions } = context
   const { rows, more, button, inlineError } = after
   const shown = (more && button) || inlineError
   const nextStriped = React.useMemo(
     () =>
-      striped &&
+      options.striped &&
       shown &&
       rows.reduce((count, row) => count + (row.kind === "detail" ? 0 : 1), 0) %
         2 ===
         1,
-    [striped, shown, rows]
+    [options.striped, shown, rows]
   )
   const items = model.allItems()
   const focusTable = React.useCallback(() => actions.focusTable(), [actions])
@@ -281,65 +270,49 @@ function useMoreRows(
   return { nextStriped, showMore, target }
 }
 
-/** The rows after the last row (see the module comment), in bodies of their own. */
-function DataTableMoreRows({
-  after,
-  more: { nextStriped, showMore, target },
-  shared,
-  columns,
-  size,
-  error,
-  shown,
-  total,
-  loading,
-  actions,
-  retryable,
-}: {
-  after: After
-  more: ReturnType<typeof useMoreRows>
-  shared: RowShared<unknown>
-  columns: ReadonlyArray<EngineColumn<unknown>>
-  size: "default" | "sm"
-  error: React.ReactNode
-  /** The items loaded. */
-  shown: number
-  /** The rows the server matches, when known. */
-  total: number | undefined
-  loading: boolean
+/** The rows after the last row (see the module comment), in a body of their own. */
+function moreRows(
+  { more, inlineError, button }: After,
+  { nextStriped, showMore, target }: ReturnType<typeof useMoreRows>,
+  shared: RowShared<unknown>,
+  columns: ReadonlyArray<EngineColumn<unknown>>,
+  options: DataTableOptions,
+  model: DataTableRowModel<unknown>,
+  error: React.ReactNode,
+  loading: boolean,
   actions: DataTableActions<unknown>
-  retryable: boolean
-}) {
-  const { more, inlineError, button } = after
+) {
+  const slot = "data-table-loading-more"
   if (inlineError)
     return (
-      <tbody data-slot="data-table-loading-more">
+      <tbody data-slot={slot}>
         <DataTableMoreError
           columns={shared.columnCount}
-          size={size}
+          size={options.size}
           striped={nextStriped}
           description={error === true ? undefined : error}
-          onRetry={retryable ? actions.retry : undefined}
+          onRetry={options.retryable ? actions.retry : undefined}
         />
       </tbody>
     )
   if (!more) return null
   return button ? (
-    <tbody data-slot="data-table-loading-more">
+    <tbody data-slot={slot}>
       <DataTableShowMore
         columns={shared.columnCount}
-        size={size}
+        size={options.size}
         striped={nextStriped}
-        shown={shown}
-        total={total}
+        shown={model.allItems().length}
+        total={options.rowCountKnown ? model.rowCount : undefined}
         loading={loading}
         onShowMore={showMore.press}
       />
     </tbody>
   ) : (
-    <tbody ref={target} aria-hidden data-slot="data-table-loading-more">
+    <tbody ref={target} aria-hidden data-slot={slot}>
       {loadingRows(MORE_ROWS, columns, shared)}
     </tbody>
   )
 }
 
-export { afterRows, DataTableMoreRows, useMoreRows }
+export { afterRows, moreRows, useMoreRows }

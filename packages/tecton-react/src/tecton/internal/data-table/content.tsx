@@ -54,7 +54,7 @@ import {
 import { groupLabelWidth } from "./cell"
 import { tableStyle } from "./column-sizing"
 import { useContentColumns } from "./content-columns"
-import { afterRows, DataTableMoreRows, useMoreRows } from "./content-more"
+import { afterRows, moreRows, useMoreRows } from "./content-more"
 import {
   ariaRowCount,
   useDetailRows,
@@ -295,16 +295,15 @@ function DataTableContentImpl({
     // No `process` (no bundler): no warnings.
   }
 
-  const rtl = useDirection() === "rtl"
-  const after = afterRows({
+  const after = afterRows(
     error,
-    hasMore: options.hasMore,
-    button: options.loadMore === "button",
+    options.hasMore,
+    options.loadMore === "button",
     bodyRows,
     server,
-    searching,
-  })
-  const { failed, rows, more } = after
+    searching
+  )
+  const { failed, rows } = after
   const firstLoad = loading && !failed && rows.length === 0
   const frame = React.useRef<HTMLDivElement | null>(null)
   const pinned = layout.pinnedStart + layout.pinnedEnd > 0
@@ -318,17 +317,17 @@ function DataTableContentImpl({
     selectionPin,
     order,
     colgroup,
-  } = useContentColumns({
+  } = useContentColumns(
     context,
     frame,
     container,
     columns,
     layout,
     options,
-    ready: !firstLoad,
-    rows: rows.length > 0 && !loading,
-    rtl,
-  })
+    !firstLoad,
+    rows.length > 0 && !loading,
+    useDirection() === "rtl"
+  )
   const { sizing } = sizer
 
   const gridController = React.useRef<TableGridController | null>(null)
@@ -352,28 +351,29 @@ function DataTableContentImpl({
     options.reorderableRows
   )
 
-  const shared = useRowShared({
+  const shared = useRowShared(
     context,
-    columns,
-    shownColumns,
-    rowHeader: layout.rowHeader,
-    formatter,
     options,
     model,
-    grouped,
-    detail,
-    detailStore,
+    columns,
+    layout.rowHeader,
+    detail ? detailStore : null,
     openOnPages,
-    order: rowOrder.order,
-    headerRows: headerLayout.headerRows.length,
-    fixed: sizing !== null,
-    pins,
-    pinned,
-    selectionPin,
-    handlePin,
-    virtualized,
-    live: live ? liveBridge.flashes : null,
-  })
+    {
+      columns: shownColumns,
+      formatter,
+      grouped,
+      order: rowOrder.order,
+      headerRows: headerLayout.headerRows.length,
+      fixed: sizing !== null,
+      pins,
+      pinned,
+      selectionPin,
+      handlePin,
+      virtualized,
+      live: live ? liveBridge.flashes : null,
+    }
+  )
   // Set on every grouped table's frame, so a grouped table in a detail row
   // never reads the outer one's.
   const reachWidth = grouped
@@ -385,25 +385,16 @@ function DataTableContentImpl({
     (row: Row) => renderRow(row, shared),
     [shared]
   )
-  const restoreFocusTo = useGroupFocusRestore({
-    context,
-    frame,
-    controller: gridController,
-    rows,
-    model,
-  })
-  const grid = useGridOptions({
+  const grid = useGridOptions(
     context,
     options,
     shared,
     rows,
-    controller: gridController,
-    restoreFocusTo,
-    virtualized,
-    detail,
-  })
+    gridController,
+    useGroupFocusRestore(context, frame, gridController, rows, model)
+  )
 
-  const refreshing = loading && !failed && rows.length > 0 && !more
+  const refreshing = loading && !failed && rows.length > 0 && !after.more
   // The frame, for the table's own use and the caller's `ref`.
   const setFrame = React.useCallback(
     (element: HTMLDivElement | null) => {
@@ -429,38 +420,38 @@ function DataTableContentImpl({
     (index: number) => gridController.current?.focusRow(index),
     []
   )
-  const moreRows = useMoreRows(after, {
+  const more = useMoreRows(
     context,
+    after,
     frame,
     container,
-    striped: options.striped,
+    options,
     loading,
     virtualized,
     model,
-    focusRow,
-  })
-  const status = useContentStatus({
+    focusRow
+  )
+  const status = useContentStatus(
     matchKey,
     server,
     model,
     loading,
     failed,
     searching,
-    rows: rows.length,
-    added: moreRows.showMore.added,
-    live: live !== null,
-  })
+    rows.length,
+    more.showMore.added,
+    live !== null
+  )
   const footerRows = totals && !failed && !firstLoad ? 1 : 0
   const rowCount = ariaRowCount({
     failed,
-    more,
+    more: after.more,
     server,
     pagination: options.pagination,
     virtualized,
     headerRows: headerLayout.headerRows.length,
     footerRows,
-    matched: model.rowCount,
-    allRows: model.allRows.length,
+    model,
     openOnPages: openOnPages.length,
     bodyRows,
     shown: rows.length,
@@ -573,19 +564,17 @@ function DataTableContentImpl({
                   {render}
                 </TableBody>
               )}
-              <DataTableMoreRows
-                after={after}
-                more={moreRows}
-                shared={shared}
-                columns={layout.columns}
-                size={options.size}
-                error={error}
-                shown={model.allItems().length}
-                total={options.rowCountKnown ? model.rowCount : undefined}
-                loading={loading}
-                actions={actions}
-                retryable={options.retryable}
-              />
+              {moreRows(
+                after,
+                more,
+                shared,
+                layout.columns,
+                options,
+                model,
+                error,
+                loading,
+                actions
+              )}
               {footerRows > 0 && (
                 <DataTableTotals
                   model={model}

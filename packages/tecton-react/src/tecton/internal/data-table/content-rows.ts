@@ -144,52 +144,39 @@ function rowParityOf(rows: ReadonlyArray<BodyRow<unknown>>) {
   }
 }
 
-/** What every row renders with (`RowShared`): one object while none of it changes. */
-function useRowShared({
-  context,
-  columns,
-  shownColumns,
-  rowHeader,
-  formatter,
-  options,
-  model,
-  grouped,
-  detail,
-  detailStore,
-  openOnPages,
-  order,
-  headerRows,
-  fixed,
-  pins,
-  pinned,
-  selectionPin,
-  handlePin,
-  virtualized,
-  live,
-}: {
-  context: DataTableContextValue<unknown>
-  columns: DataTableColumns<unknown>
-  shownColumns: ReadonlyArray<EngineColumn<unknown>>
-  /** The row header column's id. */
-  rowHeader: string | undefined
-  formatter: Formatter<unknown>
-  options: DataTableOptions
-  model: DataTableRowModel<unknown>
-  grouped: boolean
-  detail: boolean
-  detailStore: DetailStore
-  openOnPages: ReadonlyArray<string>
-  order: RowOrder | null
-  headerRows: number
-  fixed: boolean
-  pins: ReadonlyArray<CellPin | undefined>
-  /** Columns are pinned. */
-  pinned: boolean
-  selectionPin: CellPin | undefined
-  handlePin: CellPin | undefined
-  virtualized: boolean
-  live: FlashStore | null
-}): RowShared<unknown> {
+/** What `useRowShared` takes as it is (`RowShared`'s own fields). */
+type RowSharedBase = Pick<
+  RowShared<unknown>,
+  | "columns"
+  | "formatter"
+  | "grouped"
+  | "order"
+  | "headerRows"
+  | "fixed"
+  | "pins"
+  | "pinned"
+  | "selectionPin"
+  | "handlePin"
+  | "virtualized"
+  | "live"
+>
+
+/**
+ * What every row renders with (`RowShared`): one object while none of it
+ * changes. `base` holds the fields taken as they are; `rowHeader` is the
+ * row header column's id, `columns` every column.
+ */
+function useRowShared(
+  context: DataTableContextValue<unknown>,
+  options: DataTableOptions,
+  model: DataTableRowModel<unknown>,
+  columns: DataTableColumns<unknown>,
+  rowHeader: string | undefined,
+  detail: DetailStore | null,
+  openOnPages: ReadonlyArray<string>,
+  base: RowSharedBase
+): RowShared<unknown> {
+  const { columns: shownColumns, pins, fixed, pinned, virtualized } = base
   const { actions } = context
   const selection = options.selectionMode !== "none"
   const handle = options.reorderableRows
@@ -245,18 +232,15 @@ function useRowShared({
     [options.pagination, server, options.pagination ? model : null, openOnPages]
   )
   return useStable<RowShared<unknown>>({
-    columns: shownColumns,
+    ...base,
     rowHeader: shownColumns.find((column) => column.id === rowHeader),
-    formatter,
     emptyValue,
     selection,
     handle,
-    order,
     size: options.size,
-    detail: detail ? detailStore : null,
-    levelled: options.tree || grouped || detail,
+    detail,
+    levelled: options.tree || base.grouped || detail !== null,
     tree: options.tree,
-    grouped,
     multiple: options.selectionMode === "multiple",
     columnsById,
     groupCells,
@@ -265,17 +249,9 @@ function useRowShared({
     linked: options.linked,
     disabledReasons: options.disabledReasons,
     wrap: !virtualized,
-    virtualized,
     columnCount: shownColumns.length + (selection ? 1 : 0) + (handle ? 1 : 0),
     rowIndexOf,
-    headerRows,
-    fixed,
-    pins,
     cells,
-    selectionPin,
-    handlePin,
-    pinned,
-    live,
     actions,
   })
 }
@@ -297,20 +273,14 @@ function useRowShared({
  * which drops focus to the page without the user moving it: what counts
  * is whether focus moved out of the table, not where it is now.
  */
-function useGroupFocusRestore({
-  context,
-  frame,
-  controller,
-  rows,
-  model,
-}: {
-  context: DataTableContextValue<unknown>
-  frame: React.RefObject<HTMLElement | null>
-  controller: { current: TableGridController | null }
+function useGroupFocusRestore(
+  context: DataTableContextValue<unknown>,
+  frame: React.RefObject<HTMLElement | null>,
+  controller: { current: TableGridController | null },
   /** The body's rows as rendered. */
-  rows: ReadonlyArray<Row>
+  rows: ReadonlyArray<Row>,
   model: DataTableRowModel<unknown>
-}) {
+) {
   const { actions, store } = context
   const closedGroups = useDataTableSelector(
     context,
@@ -401,25 +371,15 @@ function inFrame(node: EventTarget | null, frame: HTMLElement) {
  * hold. Its functions read the store when the grid asks: the same for the
  * table's life.
  */
-function useGridOptions({
-  context,
-  options,
-  shared,
-  rows,
-  controller,
-  restoreFocusTo,
-  virtualized,
-  detail,
-}: {
-  context: DataTableContextValue<unknown>
-  options: DataTableOptions
-  shared: RowShared<unknown>
-  rows: ReadonlyArray<Row>
-  controller: { current: TableGridController | null }
+function useGridOptions(
+  context: DataTableContextValue<unknown>,
+  options: DataTableOptions,
+  shared: RowShared<unknown>,
+  /** The body's rows. */
+  rows: ReadonlyArray<Row>,
+  controller: { current: TableGridController | null },
   restoreFocusTo: NonNullable<TableGridOptions["restoreFocusTo"]>
-  virtualized: boolean
-  detail: boolean
-}) {
+) {
   const { actions, store } = context
   const describeItem = React.useCallback(
     (row: Row) => describeRow(row, shared),
@@ -428,7 +388,7 @@ function useGridOptions({
   // Open detail rows take their row's fill; the other rows keep their
   // stripes. Only then a new function per set of rows: the grid's options
   // otherwise stay as they are.
-  const parity = options.striped && detail && virtualized
+  const parity = options.striped && !!shared.detail && shared.virtualized
   const rowParity = React.useMemo(
     () => (parity ? rowParityOf(rows) : undefined),
     [parity, rows]
@@ -500,8 +460,7 @@ function ariaRowCount({
   virtualized,
   headerRows,
   footerRows,
-  matched,
-  allRows,
+  model: { rowCount: matched, allRows },
   openOnPages,
   bodyRows,
   shown,
@@ -515,10 +474,8 @@ function ariaRowCount({
   headerRows: number
   /** The totals row. */
   footerRows: number
-  /** The rows the view matches (the model's `rowCount`). */
-  matched: number
-  /** Every page's rows, in client mode. */
-  allRows: number
+  /** The rows the view matches (`rowCount`), every page's rows in client mode. */
+  model: Pick<DataTableRowModel<unknown>, "rowCount" | "allRows">
   /** The open detail rows of every page. */
   openOnPages: number
   /** The body's rows, detail rows included. */
@@ -529,7 +486,7 @@ function ariaRowCount({
   if (failed) return undefined
   if (more && !(server && matched > shown)) return -1
   let counted: number | undefined
-  if (pagination && !server) counted = headerRows + allRows + openOnPages
+  if (pagination && !server) counted = headerRows + allRows.length + openOnPages
   else if (server && (pagination || virtualized)) {
     let extra = 0
     for (const row of bodyRows)
