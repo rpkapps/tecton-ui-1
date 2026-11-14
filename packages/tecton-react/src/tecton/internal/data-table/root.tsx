@@ -321,6 +321,8 @@ type Latest<T> = {
   onLoadMore: DataTableProps<T>["onLoadMore"]
   /** Live data's held rows (`highlightChanges`); `null` when off. */
   live: LiveControl | null
+  /** The values the owner controls. */
+  controlled: Partial<Record<PendingKey, boolean>>
   setClears: React.Dispatch<React.SetStateAction<number>>
   setView: (view: DataTablePartialView) => void
   setValue: (value: ReadonlyArray<string>) => void
@@ -372,18 +374,16 @@ function emit<TValue, TReason extends string>(
 }
 
 /** The pieces of state a change has set and the root has not rendered yet. */
-type Pending<T> = Partial<
-  Pick<
-    Latest<T>,
-    | "view"
-    | "value"
-    | "allMatching"
-    | "expanded"
-    | "closedGroups"
-    | "page"
-    | "pageSize"
-  >
->
+type Pending<T> = Partial<Pick<Latest<T>, PendingKey>>
+
+type PendingKey =
+  | "view"
+  | "value"
+  | "allMatching"
+  | "expanded"
+  | "closedGroups"
+  | "page"
+  | "pageSize"
 
 /**
  * What the actions only some parts call (`more-actions.ts`, kept out of a
@@ -430,9 +430,20 @@ function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
   let pending: Pending<T> = {}
   const now = (): Latest<T> => ({ ...latest.current, ...pending })
   // Kept until the root next commits: then the props and state hold the
-  // changes, or the owner's own controlled values in their place.
+  // changes. A controlled value is the owner's, who may not take it and
+  // not render at all: kept only until the handler that made it is done.
   const set = (patch: Pending<T>) => {
     pending = { ...pending, ...patch }
+    const { controlled } = latest.current
+    const owned = (Object.keys(patch) as Array<PendingKey>).filter(
+      (key) => controlled[key === "allMatching" ? "value" : key]
+    )
+    if (owned.length > 0)
+      queueMicrotask(() => {
+        const next = { ...pending }
+        for (const key of owned) if (next[key] === patch[key]) delete next[key]
+        pending = next
+      })
   }
   /** Views this table reported: their page reset is done already. */
   const reported = new WeakSet<DataTableView>()
@@ -1051,6 +1062,13 @@ function DataTable<T>({
     onRetry,
     onLoadMore,
     live: live ? liveControl : null,
+    controlled: {
+      view: viewProp !== undefined,
+      value: valueProp !== undefined,
+      expanded: expandedProp !== undefined,
+      page: pageProp !== undefined,
+      pageSize: pageSizeProp !== undefined,
+    },
     setClears,
     setView,
     setValue,

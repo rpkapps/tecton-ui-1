@@ -164,6 +164,33 @@ describe("Table virtualized", () => {
       expect(spacer).toHaveAttribute("aria-hidden", "true")
   })
 
+  it("counts no rows once its body is gone", () => {
+    const view = (body: boolean) => (
+      <div style={{ height: VIEW }}>
+        <Table aria-label="Wells" virtualized>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Well</TableHead>
+            </TableRow>
+          </TableHeader>
+          {body && (
+            <TableBody items={WELLS.slice(0, 50)}>
+              {(well) => (
+                <TableRow key={well.id}>
+                  <TableCell>{well.name}</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          )}
+        </Table>
+      </div>
+    )
+    const { rerender } = render(view(true))
+    expect(screen.getByRole("table")).toHaveAttribute("aria-rowcount", "51")
+    rerender(view(false))
+    expect(screen.getByRole("table")).not.toHaveAttribute("aria-rowcount")
+  })
+
   it("keeps the row holding focus when it scrolls out of view", () => {
     render(<Wells />)
     const link = screen.getByRole("link", { name: "Open Well 3" })

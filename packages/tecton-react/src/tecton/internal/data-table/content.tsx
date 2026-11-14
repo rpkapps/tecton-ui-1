@@ -362,7 +362,9 @@ function useShowMore({
       if (from === null) setAdded(null)
       return
     }
-    if (from === null || items === from) return
+    // The load is over (more items, or `loading` back to false): a press
+    // that brought none leaves nothing to say.
+    if (from === null) return
     asked.current = null
     setAdded(
       items > from
@@ -574,6 +576,7 @@ function useHeaderHeight(
     if (!active || !head) return
     const update = () => setHeight(head.offsetHeight)
     update()
+    if (typeof ResizeObserver === "undefined") return
     const observer = new ResizeObserver(update)
     observer.observe(head)
     return () => observer.disconnect()
@@ -606,19 +609,19 @@ function useResults({
 }) {
   const [results, setResults] = React.useState<number | null>(null)
   const lastKey = React.useRef(matchKey)
+  // A change of the search or filters not said yet: nothing before the
+  // first, and nothing again as the rows change after it was said.
   const awaiting = React.useRef(false)
   React.useEffect(() => {
-    const changed = lastKey.current !== matchKey
+    if (lastKey.current !== matchKey) awaiting.current = true
     lastKey.current = matchKey
-    if (server) {
-      if (changed) awaiting.current = true
-      return
-    }
-    // Nothing searched yet: nothing to say.
-    if (!changed && results === null) return
-    const timer = setTimeout(() => setResults(rowCount), RESULTS_DELAY)
+    if (server || !awaiting.current) return
+    const timer = setTimeout(() => {
+      awaiting.current = false
+      setResults(rowCount)
+    }, RESULTS_DELAY)
     return () => clearTimeout(timer)
-  }, [matchKey, server, rowCount, results])
+  }, [matchKey, server, rowCount])
   React.useEffect(() => {
     if (!server || !awaiting.current || loading) return
     awaiting.current = false
@@ -693,6 +696,7 @@ function DataTableContentImpl({
   "aria-label": ariaLabel,
   "aria-labelledby": ariaLabelledBy,
   "aria-describedby": ariaDescribedBy,
+  ref,
   ...props
 }: DataTableContentProps<unknown>) {
   const context = useDataTableContext<unknown>("DataTableContent")
@@ -1172,12 +1176,24 @@ function DataTableContentImpl({
     [options.striped, after, rows]
   )
   const refreshing = loading && !failed && rows.length > 0 && !more
+  // The frame, for the table's own use and the caller's `ref`.
   const setFrame = React.useCallback(
     (element: HTMLDivElement | null) => {
       frame.current = element
       actions.setFrame(element)
+      const cleanup =
+        typeof ref === "function"
+          ? ref(element)
+          : ref && (ref.current = element)
+      return () => {
+        frame.current = null
+        actions.setFrame(null)
+        if (typeof cleanup === "function") cleanup()
+        else if (typeof ref === "function") ref(null)
+        else if (ref) ref.current = null
+      }
     },
-    [actions]
+    [actions, ref]
   )
   const headerHeight = useHeaderHeight(frame, refreshing)
   useFullPageHeight(frame, options.pagination && !virtualized, model)
@@ -1246,8 +1262,10 @@ function DataTableContentImpl({
       )
     : 0
   const footerRows = totals && !failed && !firstLoad ? 1 : 0
-  const counted =
-    more && !(server && model.rowCount > rows.length)
+  // None in the error state, which shows no rows.
+  const counted = failed
+    ? undefined
+    : more && !(server && model.rowCount > rows.length)
       ? -1
       : options.pagination && !server
         ? headerRows + model.allRows.length + openOnPages.length

@@ -442,6 +442,35 @@ describe('DataTable load more with "Show more" (loadMore="button")', () => {
     ).toBeNull()
   })
 
+  it("says nothing of rows that come later after a press that brought none", async () => {
+    const user = userEvent.setup()
+    const props = { hasMore: true, onLoadMore: () => {} }
+    const { rerender } = render(<Wells {...props} loadMore="button" />)
+    await user.click(showMore())
+    rerender(<Wells {...props} loadMore="button" loading />)
+    // The load brought nothing.
+    rerender(<Wells {...props} loadMore="button" />)
+    expect(status()).not.toHaveTextContent("more rows")
+    // Rows coming later, not asked for by a press.
+    rerender(<Wells {...props} loadMore="button" items={WELLS.slice(0, 15)} />)
+    expect(status()).not.toHaveTextContent("more rows")
+  })
+
+  it("draws the bar under the header while it refreshes, without ResizeObserver", () => {
+    const saved = globalThis.ResizeObserver
+    // @ts-expect-error -- as in an environment without it
+    delete globalThis.ResizeObserver
+    try {
+      const { rerender } = render(<Wells />)
+      rerender(<Wells loading />)
+      expect(
+        document.querySelector('[data-slot="data-table-progress"]')
+      ).not.toBeNull()
+    } finally {
+      globalThis.ResizeObserver = saved
+    }
+  })
+
   it("is as tall as the rows: their padding and text, compact with size sm", () => {
     const { rerender } = render(
       <Wells hasMore loadMore="button" onLoadMore={() => {}} />

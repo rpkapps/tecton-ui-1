@@ -1226,6 +1226,46 @@ describe("DataTable column hiding rules", () => {
     await waitFor(() => expect(trigger).toHaveFocus())
     expect(announcer()?.textContent ?? "").not.toContain("Gas hidden")
   })
+
+  it("reports each hide while a controlled view does not take them", async () => {
+    const user = userEvent.setup()
+    const onViewChange = vi.fn()
+    function Ignoring() {
+      const [view] = React.useState<DataTablePartialView>({})
+      return <Fields hideableColumns view={view} onViewChange={onViewChange} />
+    }
+    render(<Ignoring />)
+    const trigger = screen.getByRole("button", { name: "Gas options" })
+    for (const times of [1, 2]) {
+      await user.click(trigger)
+      await user.click(
+        await screen.findByRole("menuitem", { name: "Hide column" })
+      )
+      await waitFor(() => expect(trigger).toHaveFocus())
+      expect(onViewChange).toHaveBeenCalledTimes(times)
+    }
+  })
+
+  it("keeps working with a ref of the caller's on the content", async () => {
+    const user = userEvent.setup()
+    const ref = React.createRef<HTMLDivElement>()
+    render(
+      <DataTable items={FIELDS} columns={columns} hideableColumns>
+        <DataTableContent ref={ref} aria-label="Fields" />
+      </DataTable>
+    )
+    expect(ref.current).toHaveAttribute("data-slot", "data-table-content")
+    await user.click(screen.getByRole("button", { name: "Operator options" }))
+    await user.click(
+      await screen.findByRole("menuitem", { name: "Hide column" })
+    )
+    // The table's own use of its frame: focus back in the table.
+    await waitFor(() =>
+      expect(screen.getByRole("grid")).toContainElement(
+        document.activeElement as HTMLElement
+      )
+    )
+  })
 })
 
 /** The shadow a pinned column casts past its inner edge (`cell.tsx`). */

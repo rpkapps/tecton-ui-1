@@ -119,6 +119,8 @@ spud:2015`) set the same column filters as the filter buttons and free words the
   mounted in the browser measures before its first paint, as before.
 - `Chip`: after its remove button is pressed, focus goes to the chip now in its place, as after
   Delete, instead of to the page.
+- `DataTableContent`: a `ref` given to it no longer takes the place of the table's own, which the
+  table sizes, focuses and measures itself through.
 
 ## [0.3.0] - 2026-11-02
 

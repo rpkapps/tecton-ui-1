@@ -407,6 +407,50 @@ describe("DataTableContent renderDetail", () => {
     )
   })
 
+  it("keeps watching a virtualized table's detail rows after its effects run again", () => {
+    // The elements each observer watches, until it is disconnected.
+    const watched = new Set<Element>()
+    const saved = globalThis.ResizeObserver
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        targets = new Set<Element>()
+        observe(target: Element) {
+          this.targets.add(target)
+          watched.add(target)
+        }
+        unobserve(target: Element) {
+          this.targets.delete(target)
+          watched.delete(target)
+        }
+        disconnect() {
+          for (const target of this.targets) watched.delete(target)
+          this.targets.clear()
+        }
+        takeRecords() {
+          return []
+        }
+      }
+    )
+    try {
+      // Strict mode runs every effect's cleanup and the effect again.
+      render(
+        <React.StrictMode>
+          <div style={{ height: 400 }}>
+            <Wells
+              defaultExpanded={["w2"]}
+              contentProps={{ virtualized: true }}
+            />
+          </div>
+        </React.StrictMode>
+      )
+      expect(detailRows()).toHaveLength(1)
+      expect(watched.has(detailRows()[0])).toBe(true)
+    } finally {
+      vi.stubGlobal("ResizeObserver", saved)
+    }
+  })
+
   it("measures a virtualized table's open detail rows on their own", () => {
     // Rows 40 px tall in a view of 400, but the detail row (index 1): 200.
     vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(400)

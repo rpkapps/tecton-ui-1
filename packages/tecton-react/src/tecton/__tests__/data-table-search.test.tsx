@@ -119,6 +119,18 @@ describe("DataTableSearch", () => {
     expect(names()).toHaveLength(8)
   })
 
+  it("says how many rows match once per search, not again as the rows change", () => {
+    vi.useFakeTimers()
+    const { rerender } = render(<Wells view={{ search: "" }} />)
+    rerender(<Wells view={{ search: "Well 0" }} />)
+    act(() => vi.advanceTimersByTime(500))
+    expect(status()).toHaveTextContent("8 results")
+    // More items match the same search: not a search of the user's.
+    rerender(<Wells view={{ search: "Well 0" }} items={WELLS.slice(0, 9)} />)
+    act(() => vi.advanceTimersByTime(1000))
+    expect(status()).not.toHaveTextContent("9 results")
+  })
+
   it("leaves Escape on an empty field to what is around it", () => {
     const onKeyDown = vi.fn()
     render(

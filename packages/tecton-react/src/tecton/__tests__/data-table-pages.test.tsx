@@ -595,6 +595,38 @@ describe("DataTable pages", () => {
     expect(info()).toBe("Page 2 of 3")
   })
 
+  it("reports each page asked for while a controlled page stays", async () => {
+    const user = userEvent.setup()
+    const onPageChange = vi.fn()
+    render(<Wells page={1} onPageChange={onPageChange} />)
+    await user.click(button("Next page"))
+    await user.click(button("Next page"))
+    expect(onPageChange).toHaveBeenCalledTimes(2)
+    expect(onPageChange).toHaveBeenLastCalledWith(2, expect.anything())
+  })
+
+  it("counts no rows in the error state", () => {
+    const { rerender } = render(<Wells error="The server is down" />)
+    expect(screen.getByRole("grid")).not.toHaveAttribute("aria-rowcount")
+    rerender(
+      <Wells dataMode="server" rowCount={240} error="The server is down" />
+    )
+    expect(screen.getByRole("grid")).not.toHaveAttribute("aria-rowcount")
+    // A virtualized body counts its own: the header row alone.
+    rerender(
+      <DataTable
+        items={WELLS}
+        columns={columns}
+        dataMode="server"
+        rowCount={240}
+        error="The server is down"
+      >
+        <DataTableContent aria-label="Wells" virtualized />
+      </DataTable>
+    )
+    expect(screen.getByRole("grid")).toHaveAttribute("aria-rowcount", "1")
+  })
+
   it("clamps a page past the last one", () => {
     render(<Wells defaultPage={9} />)
     expect(info()).toBe("Page 3 of 3")

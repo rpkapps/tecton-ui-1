@@ -723,7 +723,16 @@ function useVirtualRows<T>(
       }
     if (changed) setHeightsChanged((n) => n + 1)
   })
-  React.useEffect(() => () => sizeObserver.current?.disconnect(), [])
+  // Effects run again (strict mode, a hidden `Activity` shown) start over:
+  // every row is watched again, by a new observer.
+  React.useEffect(
+    () => () => {
+      sizeObserver.current?.disconnect()
+      sizeObserver.current = null
+      observed.current.clear()
+    },
+    []
+  )
 
   // A scrollbar drag scrolls in the browser's compositor, ahead of this
   // module: each frame of it is a jump to rows not mounted yet, and a frame
@@ -904,8 +913,11 @@ function useVirtualRows<T>(
 
   const setRowCount = context?.setRowCount
   React.useLayoutEffect(() => {
-    setRowCount?.(virtualized ? measures.headerRows + count : undefined)
-  }, [setRowCount, virtualized, measures.headerRows, count])
+    if (!setRowCount) return
+    setRowCount(measures.headerRows + count)
+    // A body that goes counts no rows.
+    return () => setRowCount(undefined)
+  }, [setRowCount, measures.headerRows, count])
 
   const bodyRef = React.useCallback(
     (element: HTMLTableSectionElement | null) => {
