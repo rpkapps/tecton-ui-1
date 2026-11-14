@@ -11,6 +11,7 @@ import {
   createColumns,
   createDefaultView,
   getColumnModel,
+  getFormatter,
   reconcileView,
   sameFilters,
   type ColumnModel,
@@ -29,6 +30,7 @@ import {
   type ParsedQuery,
   type QueryDiagnosticCode,
   type QuerySuggestion,
+  type QuerySuggestions,
 } from "../internal/data-table/engine/query"
 import { toDay } from "../internal/data-table/engine/query/dates"
 import {
@@ -37,8 +39,10 @@ import {
 } from "../internal/data-table/engine/query/parse"
 import { startOfDay } from "../internal/data-table/engine/values"
 import {
+  groupSuggestions,
   helpExamples,
   problemMessage,
+  typeLabel,
   type ColumnSample,
 } from "../internal/data-table/query-model"
 import { createTranslator } from "../internal/i18n/translations"
@@ -2060,5 +2064,291 @@ describe("readDateItem: the date item at the caret", () => {
     expect(read("spud:bad")?.range).toBeUndefined()
     expect(read("spud:2015", 4)).toBeUndefined()
     expect(read("td:>3")).toBeUndefined()
+  })
+})
+
+describe("the query model's words", () => {
+  const t = createTranslator("dataTableQuery", "en-US")
+  const td = createTranslator("dataTable", "en-US")
+  const untyped = model as unknown as ColumnModel<unknown>
+  const formatter = getFormatter(untyped, "en-US")
+
+  it("words every problem from its code and parameters", () => {
+    const say = (
+      code: QueryDiagnosticCode,
+      params: Record<string, string> = {}
+    ) =>
+      problemMessage(
+        { code, start: 0, end: 1, params },
+        en,
+        untyped,
+        t,
+        () => ({
+          number: 3000,
+        })
+      )
+    expect([
+      say("unknownColumn", { key: "stauts" }),
+      say("unknownColumn", { key: "stauts", suggestion: "status" }),
+      say("columnNotFilterable", { key: "notes", column: "notes" }),
+      say("unknownValue", { column: "status", value: "driling" }),
+      say("unknownValue", {
+        column: "status",
+        value: "shutin",
+        suggestion: "shut-in",
+      }),
+      say("unknownValue", { column: "gone", value: "x" }),
+      say("notANumber", { value: "abc" }),
+      say("badDate", { value: "x" }),
+      say("ambiguousDate", { value: "6/30", reason: "noYear" }),
+      say("ambiguousDate", { value: "6/30" }),
+      say("ambiguousDate", { value: "6/30/15", reason: "twoDigitYear" }),
+      say("ambiguousDate", { value: "ju", reason: "month" }),
+      say("backwardsRange", { from: "3", to: "1" }),
+      say("unsupportedOperator", { operator: "OR" }),
+      say("unsupportedOperator", { operator: "-" }),
+      say("unsupportedOperator", { operator: "NOT" }),
+      say("exclusiveComparison", { operator: ">" }),
+      say("notComparable", { column: "subsea", operator: ">" }),
+      say("duplicateColumn", { column: "td", reason: "noMatch" }),
+      say("duplicateColumn", { column: "name", reason: "notCombinable" }),
+    ]).toEqual([
+      "No column is called “stauts”.",
+      "No column is called “stauts”. Did you mean status?",
+      "Notes cannot be filtered.",
+      "Status has no value “driling”.",
+      'Status has no value “shutin”. Did you mean "shut in"?',
+      "gone has no value “x”.",
+      "“abc” is not a number.",
+      "“x” is not a date.",
+      "“6/30” needs a year, as in 2015-06-30.",
+      "“6/30” needs a year, as in 2015-06-30.",
+      "Write the year in full: “6/30/15” could be in more than one century.",
+      "“ju” could be more than one month: write more of its name.",
+      "This range starts after it ends: 3 is after 1.",
+      "OR isn't supported. Rows must match every term. To match one of several values of a column, list them with commas: status:drilling,producing",
+      "Excluding isn't supported, so this term is ignored. To search for the text itself, put it in quotes. To narrow the rows, filter for the values to keep instead: status:drilling,producing",
+      "Excluding isn't supported, so this term is ignored. To search for the text itself, put it in quotes. To narrow the rows, filter for the values to keep instead: status:drilling,producing",
+      "Use >= or <= with a date and time.",
+      "Subsea has no order: choose its values instead.",
+      "No row can match both terms on TD (m).",
+      "Well is filtered earlier in the search, and one filter can't require both texts. List them in one term to match any of them.",
+    ])
+  })
+
+  it("names the suggestions and their groups", () => {
+    const range = { from: day(2026, 11, 1), to: day(2026, 11, 12) }
+    const groupsOf = (
+      items: ReadonlyArray<QuerySuggestion>,
+      context: QuerySuggestions["context"],
+      column?: string,
+      calendar: "range" | "single" | null = null
+    ) =>
+      groupSuggestions(
+        { context, column, start: 0, end: 0, items },
+        en,
+        formatter,
+        calendar,
+        t,
+        td
+      ).map((group) => [
+        group.value,
+        group.label,
+        group.hint,
+        group.items.map((row) => row.label),
+      ])
+    const offer = { text: "x", caret: 1 }
+    expect(
+      groupsOf(
+        en.columns.map((column) => ({
+          kind: "column" as const,
+          column: column.id,
+          key: column.key ?? "",
+          type: column.type,
+          ...offer,
+        })),
+        "column"
+      )
+    ).toEqual([
+      [
+        "columns",
+        "Filter by column",
+        undefined,
+        [
+          "Well",
+          "Operator",
+          "Status",
+          "TD (m)",
+          "Spud date",
+          "Logged",
+          "Subsea",
+        ],
+      ],
+    ])
+    expect(
+      groupsOf(
+        [
+          { kind: "value", column: "status", value: "shut-in", ...offer },
+          { kind: "value", column: "subsea", value: true, ...offer },
+          { kind: "value", column: "subsea", value: false, ...offer },
+          { kind: "value", column: "name", value: "A-1", ...offer },
+        ],
+        "word"
+      )
+    ).toEqual([
+      [
+        "matching",
+        "Matching values",
+        undefined,
+        ["Shut in", "Yes", "No", "A-1"],
+      ],
+    ])
+    expect(
+      groupsOf(
+        [
+          { kind: "value", column: "status", value: "drilling", ...offer },
+          { kind: "empty", column: "status", ...offer },
+        ],
+        "value",
+        "status"
+      )
+    ).toEqual([["values", "Status", undefined, ["Drilling", "No value"]]])
+    const operators = ["=", ">", ">=", "<", "<=", ".."] as const
+    const comparisons = (column: string, min?: number, max?: number) =>
+      operators.map((operator) => ({
+        kind: "comparison" as const,
+        column,
+        operator,
+        ...(min === undefined ? {} : { min, max }),
+        ...offer,
+      }))
+    expect(
+      groupsOf(
+        [
+          ...comparisons("td", 1000, 4100),
+          { kind: "empty", column: "td", ...offer },
+        ],
+        "value",
+        "td"
+      )
+    ).toEqual([
+      [
+        "compare",
+        "Compare",
+        "1,000 to 4,100 here",
+        [
+          "Equal to",
+          "More than",
+          "At least",
+          "Less than",
+          "At most",
+          "Between",
+          "No value",
+        ],
+      ],
+    ])
+    const presets = [
+      "today",
+      "yesterday",
+      "thismonth",
+      "lastmonth",
+      "thisyear",
+      "lastyear",
+      "last1d",
+      "last30d",
+      "last1w",
+      "last2w",
+      "last1m",
+      "last3m",
+      "last1y",
+      "last5y",
+    ]
+    expect(
+      groupsOf(
+        [
+          ...presets.map((preset) => ({
+            kind: "preset" as const,
+            column: "spud",
+            preset,
+            ...range,
+            ...offer,
+          })),
+          { kind: "year", column: "spud", year: 2015, ...range, ...offer },
+          {
+            kind: "month",
+            column: "spud",
+            year: 2015,
+            month: 5,
+            ...range,
+            ...offer,
+          },
+          ...comparisons("spud").filter((one) =>
+            ["<", ">", ".."].includes(one.operator)
+          ),
+        ],
+        "value",
+        "spud",
+        "single"
+      )
+    ).toEqual([
+      ["calendar", "", undefined, ["Pick a day on the calendar"]],
+      [
+        "presets",
+        "Presets",
+        undefined,
+        [
+          "Today",
+          "Yesterday",
+          "This month",
+          "Last month",
+          "This year",
+          "Last year",
+          "Last 1 day",
+          "Last 30 days",
+          "Last 1 week",
+          "Last 2 weeks",
+          "Last 1 month",
+          "Last 3 months",
+          "Last 1 year",
+          "Last 5 years",
+        ],
+      ],
+      ["years", "Years", undefined, ["2015"]],
+      ["months", "Months", undefined, ["June 2015"]],
+      ["compare", "Compare", undefined, ["After", "Before", "Between"]],
+    ])
+    expect(groupsOf([], "value", "spud", "range")).toEqual([
+      ["calendar", "", undefined, ["Pick dates on the calendar"]],
+    ])
+  })
+
+  it("names the columns' types, and what each help example finds", () => {
+    expect(
+      (["text", "number", "date", "boolean", "options"] as const).map((type) =>
+        typeLabel(type, t)
+      )
+    ).toEqual(["Text", "Number", "Date", "Yes or no", "Options"])
+    expect(
+      helpExamples(en, () => ({ text: "gullfaks a-1", year: 2015 }), t).map(
+        (example) => [example.query, example.finds]
+      )
+    ).toEqual([
+      ["gullfaks", "Rows with this text in any column"],
+      [`"gullfaks a-1"`, "Quotes keep words together"],
+      [`well:"gullfaks a-1"`, "Well contains the text"],
+      [`operator:"gullfaks a-1"`, "Operator contains the text"],
+      ["status:drilling,producing", "Status is any of the values listed"],
+      ["tdm:>=100", "TD (m) compared with > >= < <=, or a range a..b"],
+      [
+        "spuddate:2015",
+        "Spud date in a year, a month or on a day, before < or after >, in a range a..b, or last30d, thismonth",
+      ],
+      [
+        "logged:2015",
+        "Logged in a year, a month or on a day, before < or after >, in a range a..b, or last30d, thismonth",
+      ],
+      ["subsea:yes", "Subsea is yes or no"],
+      ["well:none", "Well has no value"],
+    ])
   })
 })
