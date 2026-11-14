@@ -304,7 +304,7 @@ Counts apply the rest of the query, as the filter popovers' counts do.
 
 ## Empty values
 
-A value that is `null`, `undefined`, `""`, `NaN` or an invalid `Date` is empty. It shows as a muted em dash in the column's alignment, which screen readers read as "No value".
+A value that is `null`, `undefined`, `""`, `NaN` or an invalid `Date` is empty. It shows as a muted em dash in the column's alignment, which screen readers read as "No value". An options column with an option whose value is `""` treats `""` as that option everywhere: its label, its place in the sort, its own group and its counts.
 
 Return `null` from `accessor` for a missing value, never a placeholder such as "N/A". Some wells in the example above have no status, TD, spud date or subsea flag.
 
