@@ -76,7 +76,6 @@ import {
   colWidths,
   pinOffset,
   tableStyle,
-  useBelowBreakpoints,
   useColumnSizing,
 } from "./column-sizing"
 import {
@@ -106,10 +105,12 @@ import {
 } from "./lazy"
 import { DataTableHeader, shownHeaderRows, type HeaderShared } from "./header"
 import { useContentWarnings } from "./dev-warnings"
+import { focusFree, useFocusAway } from "./focus-continuity"
 import { createLiveBridge, LiveAnchor, type LiveMessage } from "./live-bridge"
 import { describeRow, renderRow } from "./row"
 import { createRowOrder, inItemOrder, type RowOrder } from "./row-order"
 import { scrollParentOf } from "./scroll-parent"
+import { useStable } from "./use-stable"
 import { DataTableTotals } from "./totals"
 import {
   DataTableEmptyState,
@@ -212,17 +213,9 @@ function hasFixedWidths<T>(layout: ColumnLayout<T>, resizable: boolean) {
   )
 }
 
-/** `next`, or the last array while it holds the same items. */
-function useSameItems<TItem>(next: ReadonlyArray<TItem>) {
-  const last = React.useRef(next)
-  const same =
-    last.current.length === next.length &&
-    last.current.every((item, index) => item === next[index])
-  const kept = same ? last.current : next
-  React.useLayoutEffect(() => {
-    last.current = kept
-  })
-  return kept
+/** Whether `node` is in the frame. */
+function inFrame(node: EventTarget | null, frame: HTMLElement) {
+  return node instanceof Node && frame.contains(node)
 }
 
 /** Each shown column's pin, by its place: the variable it sticks at. */
@@ -323,6 +316,17 @@ function useLoadMore(
 const MORE_SLOT = '[data-slot="data-table-loading-more"]'
 const CONTENT = '[data-slot="data-table-content"]'
 
+/** Whether `node` is in the place after the rows of this table's own. */
+function inMoreSlot(
+  node: EventTarget | null,
+  frame: HTMLElement
+): node is Element {
+  return (
+    node instanceof Element &&
+    node.closest(MORE_SLOT)?.closest(CONTENT) === frame
+  )
+}
+
 /**
  * "Show more" (`loadMore="button"`). A press loads the next rows
  * (`loadMore`); once more items came, `added` says how many, for the
@@ -386,32 +390,18 @@ function useShowMore({
   React.useEffect(() => {
     const element = frame.current
     if (!element) return
-    const inSlot = (node: EventTarget | null): node is Element =>
-      node instanceof Element &&
-      node.closest(MORE_SLOT)?.closest(CONTENT) === element
     const enter = (event: FocusEvent) => {
-      if (inSlot(event.target)) focused.current = event.target
+      if (inMoreSlot(event.target, element)) focused.current = event.target
       // Not where the grid puts the focus it lost as the element went:
       // that is the layout effect below's to move.
       else if (focused.current?.isConnected) focused.current = null
     }
-    const leave = (event: FocusEvent) => {
-      if (inSlot(event.relatedTarget)) return
-      // Chrome sends `focusout` as it removes a focused element, while the
-      // element is still in the document: told apart once the render that
-      // removes it is done, after the layout effect below.
-      const left = event.target as Node
-      queueMicrotask(() => {
-        if (left.isConnected && focused.current === left) focused.current = null
-      })
-    }
     element.addEventListener("focusin", enter)
-    element.addEventListener("focusout", leave)
-    return () => {
-      element.removeEventListener("focusin", enter)
-      element.removeEventListener("focusout", leave)
-    }
+    return () => element.removeEventListener("focusin", enter)
   }, [frame])
+  useFocusAway(frame, inMoreSlot, (left) => {
+    if (focused.current === left) focused.current = null
+  })
   // After the grid's own layout effects, which may have put the focus it
   // lost on the table's first stop.
   React.useLayoutEffect(() => {
@@ -419,11 +409,7 @@ function useShowMore({
     const was = focused.current
     if (!element || !was || was.isConnected) return
     focused.current = null
-    if (!on) return
-    const doc = element.ownerDocument
-    const active = doc.activeElement
-    // Elsewhere on the page: the user's, left as it is.
-    if (active && active !== doc.body && !element.contains(active)) return
+    if (!on || !focusFree(element)) return
     const slot = [...element.querySelectorAll(MORE_SLOT)].find(
       (candidate) => candidate.closest(CONTENT) === element
     )
@@ -810,9 +796,7 @@ function DataTableContentImpl({
   })
   const { sizing } = sizer
   // The header's rows but those of groups over hidden columns only.
-  const below = useBelowBreakpoints(
-    layout.columns.flatMap((column) => column.definition.hideBelow ?? [])
-  )
+  const { below } = sizer
   const headerLayout = React.useMemo(() => {
     const byId = new Map(layout.columns.map((column) => [column.id, column]))
     const headerRows = shownHeaderRows(layout.headerRows, (id) => {
@@ -823,7 +807,7 @@ function DataTableContentImpl({
   }, [layout, below])
   // The rows render with the columns, their pins and the selection's: a
   // new width alone (a resize) leaves them as they are.
-  const shownColumns = useSameItems(layout.columns)
+  const shownColumns = useStable(layout.columns)
   const pins = React.useMemo(
     () => pinsOf(layout.columns.length, layout.pinnedStart, layout.pinnedEnd),
     [layout.columns.length, layout.pinnedStart, layout.pinnedEnd]
@@ -911,35 +895,14 @@ function DataTableContentImpl({
   )
   const noValue = tTable("noValue")
   const emptyValue = React.useMemo(() => emptyValueContent(noValue), [noValue])
-  const shared = React.useMemo<RowShared<unknown>>(
-    () => ({
-      columns: shownColumns,
-      rowHeader,
-      formatter,
-      emptyValue,
-      selection,
-      handle,
-      order: rowOrder.order,
-      size: options.size,
-      detail: detail ? detailStore : null,
-      levelled: options.tree || grouped || detail,
-      tree: options.tree,
-      grouped,
-      multiple,
-      columnsById,
-      groupCells,
-      groupLabel,
-      disableRows: options.disabledBehavior === "all",
-      linked: options.linked,
-      disabledReasons: options.disabledReasons,
-      wrap: !virtualized,
-      virtualized,
-      columnCount: shownColumns.length + (selection ? 1 : 0) + (handle ? 1 : 0),
-      rowIndexOf: options.pagination
+  // On pages: a row's place among every page's rows, the engine's after
+  // the open detail rows before it; a server page's rows after the rows of
+  // the pages before it (see `rowCount` below). A new model on pages gives
+  // the rows new places.
+  const rowIndexOf = React.useMemo(
+    () =>
+      options.pagination
         ? (id: string) => {
-            // The engine's place, after the open detail rows before it; a
-            // server page's rows after the rows of the pages before it
-            // (see `rowCount` below).
             const at = model.indexOfRow(id)
             let before = 0
             for (const other of openOnPages)
@@ -949,53 +912,42 @@ function DataTableContentImpl({
             )
           }
         : null,
-      headerRows: headerLayout.headerRows.length,
-      fixed,
-      pins,
-      cells,
-      selectionPin,
-      handlePin,
-      pinned,
-      live: live ? liveBridge.flashes : null,
-      actions,
-    }),
-    [
-      shownColumns,
-      rowHeader,
-      formatter,
-      emptyValue,
-      selection,
-      handle,
-      rowOrder.order,
-      options.size,
-      detail,
-      detailStore,
-      openOnPages,
-      options.tree,
-      grouped,
-      multiple,
-      columnsById,
-      groupCells,
-      groupLabel,
-      options.disabledBehavior,
-      options.linked,
-      options.disabledReasons,
-      options.pagination,
-      server,
-      // On pages only: a new model gives the rows new places.
-      options.pagination ? model : null,
-      headerLayout.headerRows.length,
-      virtualized,
-      fixed,
-      pins,
-      cells,
-      selectionPin,
-      handlePin,
-      pinned,
-      live ? liveBridge : null,
-      actions,
-    ]
+    [options.pagination, server, options.pagination ? model : null, openOnPages]
   )
+  const shared = useStable<RowShared<unknown>>({
+    columns: shownColumns,
+    rowHeader,
+    formatter,
+    emptyValue,
+    selection,
+    handle,
+    order: rowOrder.order,
+    size: options.size,
+    detail: detail ? detailStore : null,
+    levelled: options.tree || grouped || detail,
+    tree: options.tree,
+    grouped,
+    multiple,
+    columnsById,
+    groupCells,
+    groupLabel,
+    disableRows: options.disabledBehavior === "all",
+    linked: options.linked,
+    disabledReasons: options.disabledReasons,
+    wrap: !virtualized,
+    virtualized,
+    columnCount: shownColumns.length + (selection ? 1 : 0) + (handle ? 1 : 0),
+    rowIndexOf,
+    headerRows: headerLayout.headerRows.length,
+    fixed,
+    pins,
+    cells,
+    selectionPin,
+    handlePin,
+    pinned,
+    live: live ? liveBridge.flashes : null,
+    actions,
+  })
   const render = React.useCallback(
     (row: Row) => renderRow(row, shared),
     [shared]
@@ -1030,28 +982,15 @@ function DataTableContentImpl({
     render: number
   } | null>(null)
   const renders = React.useRef(0)
-  React.useEffect(() => {
-    const element = frame.current
-    if (!element) return
-    const leave = (event: FocusEvent) => {
-      const to = event.relatedTarget as Node | null
-      if (to && element.contains(to)) return
-      // An element removed while focused is no move of the user's.
-      if ((event.target as Node).isConnected) pendingFocus.current = null
-    }
-    element.addEventListener("focusout", leave)
-    return () => element.removeEventListener("focusout", leave)
-  }, [])
+  useFocusAway(frame, inFrame, () => {
+    pendingFocus.current = null
+  })
   React.useLayoutEffect(() => {
     const pending = pendingFocus.current
     if (!pending || pending.render === renders.current) return
     pendingFocus.current = null
-    if (model.page !== pending.page) return
-    const doc = frame.current?.ownerDocument
-    const active = doc?.activeElement
-    // Elsewhere on the page: the user's, left as it is.
-    if (active && active !== doc.body && !frame.current?.contains(active))
-      return
+    const element = frame.current
+    if (model.page !== pending.page || !element || !focusFree(element)) return
     const at = rows.findIndex(
       (row) => row.key === pending.key && !("continued" in row && row.continued)
     )
@@ -1069,25 +1008,30 @@ function DataTableContentImpl({
       before.closedGroups !== closedGroups && before.page === model.page
     lastRender.current = { closedGroups, page: model.page }
   })
-  const grid = React.useMemo<TableGridOptions>(
-    () => ({
-      selectionMode: options.selectionMode,
-      disallowEmptySelection: options.disallowEmptySelection,
+  // What the grid asks of the table, read from the store when asked: the
+  // same functions for the table's life.
+  const [asked] = React.useState(
+    (): Pick<
+      TableGridOptions,
+      | "onValueChange"
+      | "controller"
+      | "getAllValues"
+      | "isDisabled"
+      | "isSelectable"
+      | "getSelectedCount"
+      | "restoreFocusTo"
+    > => ({
       onValueChange: actions.gridValueChange,
-      onActivate: options.activatable ? actions.activate : undefined,
-      describeItem,
-      tree: shared.levelled,
       controller: gridController,
-      rowParity,
       // Select all and the header read the engine, never the rows'
       // descriptions: no row is formatted or described for them.
       getAllValues: () => store.get().selectable(),
       // Disabled rows are disabled in the grid with "all"; with "selection"
       // they are only kept from being selected.
-      isDisabled:
-        options.disabledBehavior === "all"
-          ? (id) => store.get().model.isDisabled(id)
-          : () => false,
+      isDisabled: (id) => {
+        const { options: now, model: current } = store.get()
+        return now.disabledBehavior === "all" && current.isDisabled(id)
+      },
       isSelectable: (id) => !store.get().model.isDisabled(id),
       // In server "all matching", the rows the server matches but the
       // excepted ones.
@@ -1103,7 +1047,11 @@ function DataTableContentImpl({
       // own row (the outermost closed one), on the page that holds it. A
       // row gone with its page (a page change, rows clamped) is the grid's.
       restoreFocusTo: (id, focused) => {
-        const { model: current, closedGroups: closed } = store.get()
+        const {
+          model: current,
+          closedGroups: closed,
+          options: now,
+        } = store.get()
         const group =
           current.groupPath(id).find((key) => isGroupClosed(closed, key)) ??
           // A group's own row, gone as it closed.
@@ -1124,8 +1072,8 @@ function DataTableContentImpl({
           !focused ||
           !groupClosed.current ||
           index === -1 ||
-          server ||
-          !options.pagination
+          now.dataMode === "server" ||
+          !now.pagination
         )
           return null
         const page = Math.floor(index / current.pageSize) + 1
@@ -1133,21 +1081,17 @@ function DataTableContentImpl({
         actions.setPage(page, "group")
         return null
       },
-    }),
-    [
-      options.selectionMode,
-      options.disallowEmptySelection,
-      options.activatable,
-      options.disabledBehavior,
-      options.pagination,
-      server,
-      actions,
-      describeItem,
-      shared.levelled,
-      store,
-      rowParity,
-    ]
+    })
   )
+  const grid = useStable<TableGridOptions>({
+    selectionMode: options.selectionMode,
+    disallowEmptySelection: options.disallowEmptySelection,
+    onActivate: options.activatable ? actions.activate : undefined,
+    describeItem,
+    tree: shared.levelled,
+    rowParity,
+    ...asked,
+  })
 
   // More rows to come: loading rows after the last one, and no bar. Not
   // while a client table searches or filters: what matches among rows not

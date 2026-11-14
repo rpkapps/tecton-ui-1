@@ -1549,7 +1549,7 @@ describe("DataTable grouping: third review", () => {
     ).toHaveFocus()
   })
 
-  it("does not take focus back into the table once it was moved out", () => {
+  it("does not take focus back into the table once it was moved out", async () => {
     function Controlled() {
       const [page, setPage] = React.useState(2)
       return (
@@ -1574,8 +1574,9 @@ describe("DataTable grouping: third review", () => {
     render(<Controlled />)
     act(() => document.querySelector<HTMLElement>("tbody tr")!.focus())
     press("ArrowLeft")
-    // Focus out of the table to the page, then page 1 from a script.
-    act(() => (document.activeElement as HTMLElement).blur())
+    // Focus out of the table to the page (told from an element removed
+    // while focused once the task is done), then page 1 from a script.
+    await act(async () => (document.activeElement as HTMLElement).blur())
     expect(focused()).toBe(document.body)
     fireEvent.click(screen.getByRole("button", { name: "First" }))
     expect(api?.page).toBe(1)

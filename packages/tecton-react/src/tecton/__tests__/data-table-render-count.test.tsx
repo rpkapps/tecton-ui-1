@@ -4,12 +4,14 @@ import { describe, expect, it, vi } from "vitest"
 
 import { DataTable, DataTableContent } from "@tecton/react/data-table"
 
+import type * as TableGrid from "../internal/table-grid"
+import type * as TableVirtualizer from "../internal/table-virtualizer"
 import { checkbox, columns, row, WELLS } from "./data-table-fixtures"
 
 /** Each `TableRow` and `TableBody` render, counted through the hooks they call. */
 const renders = vi.hoisted(() => ({ rows: 0, bodies: 0 }))
 vi.mock("../internal/table-grid", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../internal/table-grid")>()
+  const actual = await importOriginal<typeof TableGrid>()
   return {
     ...actual,
     useTableRow: (props: React.ComponentProps<"tr">) => {
@@ -19,8 +21,7 @@ vi.mock("../internal/table-grid", async (importOriginal) => {
   }
 })
 vi.mock("../internal/table-virtualizer", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("../internal/table-virtualizer")>()
+  const actual = await importOriginal<typeof TableVirtualizer>()
   return {
     ...actual,
     useVirtualRows: (props: Parameters<typeof actual.useVirtualRows>[0]) => {

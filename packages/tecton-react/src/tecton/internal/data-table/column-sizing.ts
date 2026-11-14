@@ -28,7 +28,7 @@
  */
 import * as React from "react"
 
-import { cellsByColumn } from "../table-grid"
+import { atContentWidth, cellsByColumn } from "../table-grid"
 import {
   columnWidth,
   sizeColumns,
@@ -151,6 +151,8 @@ type ColumnSizer = {
   restore: () => void
   /** The width of a column's content: its widest cell rendered, or its header. */
   fit: (column: string) => number | null
+  /** The breakpoints the window is below now, of those the columns hide at. */
+  below: ReadonlySet<string>
 }
 
 function useColumnSizing({
@@ -256,14 +258,11 @@ function useColumnSizing({
       observer.observe(element)
       return () => observer.disconnect()
     }
-    // Every column at its content's width, none given the space left.
-    const width = table.style.width
-    table.style.width = "max-content"
-    try {
-      // Each column's own header: in the last row, or spanning down to it.
-      const last = head[head.length - 1]
-      const cells = cellsByColumn(last) ?? [...last.cells]
-      const next: Partial<Record<string, number>> = { ...measured.widths }
+    // Each column's own header: in the last row, or spanning down to it.
+    const last = head[head.length - 1]
+    const cells = cellsByColumn(last) ?? [...last.cells]
+    const next: Partial<Record<string, number>> = { ...measured.widths }
+    atContentWidth(table, () => {
       if (handle) next[HANDLE] = Math.ceil(widthOf(cells[0]))
       if (selection) next[SELECTION] = Math.ceil(widthOf(cells[handle ? 1 : 0]))
       layout.columns.forEach((column, index) => {
@@ -272,10 +271,8 @@ function useColumnSizing({
         // 0: not laid out (hidden below a breakpoint); it takes the default.
         next[column.id] = cell ? Math.ceil(headerWidthOf(cell)) : 0
       })
-      setMeasured({ widths: next, rows })
-    } finally {
-      table.style.width = width
-    }
+    })
+    setMeasured({ widths: next, rows })
   }, [mode, frame, layout, measured, selection, handle, lead, rows, shown])
 
   // A pinned end edge sits clear of a vertical scrollbar (a virtualized
@@ -368,29 +365,7 @@ function useColumnSizing({
       if (!cell) return null
       // Laid out at its content's width: the column is as wide as its
       // widest cell (rendered) or its header.
-      const { style } = table
-      const saved = {
-        tableLayout: style.tableLayout,
-        width: style.width,
-        minWidth: style.minWidth,
-        col: col?.style.width ?? "",
-      }
-      Object.assign(style, {
-        tableLayout: "auto",
-        width: "max-content",
-        minWidth: "0",
-      })
-      if (col) col.style.width = ""
-      try {
-        return Math.ceil(headerWidthOf(cell))
-      } finally {
-        Object.assign(style, {
-          tableLayout: saved.tableLayout,
-          width: saved.width,
-          minWidth: saved.minWidth,
-        })
-        if (col) col.style.width = saved.col
-      }
+      return atContentWidth(table, () => Math.ceil(headerWidthOf(cell)), col)
     },
   }))
 
@@ -403,8 +378,8 @@ function useColumnSizing({
   )
   // One object while none of it changes: the header renders with it.
   return React.useMemo(
-    () => ({ mode, sizing, controls, style, ...actions }),
-    [mode, sizing, controls, style, actions]
+    () => ({ mode, sizing, controls, style, below, ...actions }),
+    [mode, sizing, controls, style, below, actions]
   )
 }
 
@@ -479,11 +454,5 @@ function tableStyle(sizing: ColumnSizing) {
   }
 }
 
-export {
-  colWidths,
-  pinOffset,
-  tableStyle,
-  useBelowBreakpoints,
-  useColumnSizing,
-}
+export { colWidths, pinOffset, tableStyle, useColumnSizing }
 export type { ColumnSizer, SizingMode }

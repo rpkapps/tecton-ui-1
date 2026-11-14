@@ -54,8 +54,9 @@ import { flushSync } from "react-dom"
 
 import { useVirtualList } from "./primitives/virtual-list"
 import {
-  useTableGridOptions,
+  atContentWidth,
   useTableGridContext,
+  useTableGridOptions,
   type RowDescription,
   type TableGridBody,
 } from "./table-grid"
@@ -122,17 +123,6 @@ function signatureOf(row: HTMLTableRowElement) {
  * it spans, and whether the rows show only controls under it.
  */
 function measureColumns(table: HTMLTableElement, head: HTMLTableRowElement) {
-  // Every column at its content's width, none given the space left.
-  const width = table.style.width
-  table.style.width = "max-content"
-  try {
-    return contentWidths(table, head)
-  } finally {
-    table.style.width = width
-  }
-}
-
-function contentWidths(table: HTMLTableElement, head: HTMLTableRowElement) {
   const cells = [...head.cells]
   const total = cells.reduce((sum, cell) => sum + cell.colSpan, 0)
   const rows = [
@@ -245,7 +235,7 @@ function useTableVirtualizer(virtualized: boolean) {
     setColumns({
       state: "locked",
       signature: signatureOf(head),
-      columns: measureColumns(table, head),
+      columns: atContentWidth(table, () => measureColumns(table, head)),
     })
   })
 

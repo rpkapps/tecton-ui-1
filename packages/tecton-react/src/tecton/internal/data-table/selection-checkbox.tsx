@@ -8,6 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@tecton/react/tooltip"
 import { useTranslations } from "../i18n/translations"
 import { useStore } from "../store"
 import { useTableGridContext, useTableGridRow } from "../table-grid"
+import { useStable } from "./use-stable"
 
 type DataTableSelectionCheckboxProps = Omit<
   React.ComponentProps<typeof Checkbox>,
@@ -114,7 +115,7 @@ function DataTableSelectionCheckbox({
   const label = row ? t("select") : t("selectAll")
   const explained = !!row && off && hasContent(reason)
   const reasonId = reasonIdProp ?? `${id}-reason`
-  const own = useSameProps(props)
+  const own = useStable(props)
   const describedBy = explained
     ? [own["aria-describedby"], reasonId].filter(Boolean).join(" ")
     : own["aria-describedby"]
@@ -175,19 +176,6 @@ function DataTableSelectionCheckbox({
 /** A reason that shows something: not `undefined`, `null`, `false` or "". */
 function hasContent(node: React.ReactNode) {
   return node !== undefined && node !== null && node !== false && node !== ""
-}
-
-/** `props` as given last time while each of its values is the same. */
-function useSameProps<T extends object>(props: T): T {
-  const last = React.useRef(props)
-  const before = last.current as Record<string, unknown>
-  const now = props as Record<string, unknown>
-  const keys = Object.keys(now)
-  const same =
-    keys.length === Object.keys(before).length &&
-    keys.every((key) => Object.is(before[key], now[key]))
-  if (!same) last.current = props
-  return same ? last.current : props
 }
 
 export { DataTableSelectionCheckbox, hasContent }

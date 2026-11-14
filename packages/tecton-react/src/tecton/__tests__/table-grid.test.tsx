@@ -29,16 +29,29 @@ import {
   type TableRowGridProps,
 } from "../internal/table-grid"
 
-/** A `Table` in grid mode, as `DataTable` renders it. */
+type Options = Partial<TableGridOptions> & { value?: ReadonlyArray<string> }
+
+const NO_VALUES: ReadonlyArray<string> = []
+
+/**
+ * A `Table` in grid mode, as `DataTable` renders it: the rows "select all"
+ * stands for, which are disabled and how many are selected are given (none
+ * by default, but the rows rendered, by their size).
+ */
 function GridTable({
   options = {},
   ...props
-}: React.ComponentProps<typeof Table> & {
-  options?: TableGridOptions & { value?: ReadonlyArray<string> }
-}) {
+}: React.ComponentProps<typeof Table> & { options?: Options }) {
   const { value, ...rest } = options
   return (
-    <TableGridOptionsContext value={rest}>
+    <TableGridOptionsContext
+      value={{
+        getAllValues: () => NO_VALUES,
+        isDisabled: () => false,
+        getSelectedCount: (selected) => selected.size,
+        ...rest,
+      }}
+    >
       <TableGridValueContext value={value}>
         <Table {...props} />
       </TableGridValueContext>
@@ -71,13 +84,16 @@ const WELLS: Array<Well> = [
   { id: "c07", name: "Gullfaks C-07", status: "Producing" },
 ]
 
+const WELL_IDS = WELLS.map((well) => well.id)
+const isWellDisabled = (id: string) =>
+  !!WELLS.find((well) => well.id === id)?.disabled
+
 function Wells({
   checkboxes = false,
   link = false,
   grid = true,
   ...options
-}: TableGridOptions & {
-  value?: ReadonlyArray<string>
+}: Options & {
   checkboxes?: boolean
   link?: boolean
   grid?: boolean
@@ -118,7 +134,14 @@ function Wells({
     </>
   )
   return grid ? (
-    <GridTable aria-label="Wells" options={options}>
+    <GridTable
+      aria-label="Wells"
+      options={{
+        getAllValues: () => WELL_IDS,
+        isDisabled: isWellDisabled,
+        ...options,
+      }}
+    >
       {rows}
     </GridTable>
   ) : (
@@ -291,19 +314,12 @@ describe("Table grid", () => {
     expect(row("34/10-A-14")).toHaveAttribute("aria-selected", "false")
   })
 
-  it("starts from defaultValue when not controlled", () => {
-    render(<Wells selectionMode="multiple" defaultValue={["c07"]} />)
-    expect(row("Gullfaks C-07")).toHaveAttribute("aria-selected", "true")
-    fireEvent.click(cell("34/10-A-12"))
-    expect(row("34/10-A-12")).toHaveAttribute("aria-selected", "true")
-  })
-
   it("keeps a row selected with disallowEmptySelection", () => {
     const onValueChange = vi.fn()
     render(
       <Wells
         selectionMode="single"
-        defaultValue={["a12"]}
+        value={["a12"]}
         disallowEmptySelection
         onValueChange={onValueChange}
       />
@@ -329,33 +345,7 @@ describe("Table grid", () => {
     expect(onValueChange).toHaveBeenCalledTimes(2)
   })
 
-  it('selects one row on click and activates on double click with selectionBehavior="replace"', () => {
-    const onActivate = vi.fn()
-    render(
-      <Wells
-        selectionMode="multiple"
-        selectionBehavior="replace"
-        onActivate={onActivate}
-      />
-    )
-    fireEvent.click(cell("Shut in"))
-    fireEvent.click(cell("34/10-A-12"))
-    expect(row("34/10-A-12")).toHaveAttribute("aria-selected", "true")
-    expect(row("34/10-A-14")).toHaveAttribute("aria-selected", "false")
-    fireEvent.click(cell("Shut in"), { ctrlKey: true })
-    expect(row("34/10-A-14")).toHaveAttribute("aria-selected", "true")
-    fireEvent.doubleClick(cell("Shut in"))
-    expect(onActivate).toHaveBeenCalledWith("a14", expect.any(Event))
-    // From the keyboard, the selection follows focus; Enter activates.
-    act(() => row("34/10-A-12").focus())
-    press("ArrowDown")
-    expect(row("34/10-A-14")).toHaveAttribute("aria-selected", "true")
-    expect(row("34/10-A-12")).toHaveAttribute("aria-selected", "false")
-    press("Enter")
-    expect(onActivate).toHaveBeenLastCalledWith("a14", expect.any(Event))
-  })
-
-  it('toggles rows with "toggle" and activates a click only while none is selected', () => {
+  it("toggles rows and activates a click only while none is selected", () => {
     const onActivate = vi.fn()
     render(
       <Wells checkboxes selectionMode="multiple" onActivate={onActivate} />
@@ -791,6 +781,7 @@ describe("Table grid virtualized", () => {
   type Item = (typeof MANY)[number]
 
   const DISABLED = "w5000"
+  const MANY_IDS = MANY.map((well) => well.id)
 
   /** What a virtualized `DataTable` says of its items. */
   const describeWell = (well: Item): RowDescription => ({
@@ -804,7 +795,7 @@ describe("Table grid virtualized", () => {
     describeItem = describeWell,
     onRender,
     ...options
-  }: Omit<TableGridOptions, "describeItem"> & {
+  }: Omit<Options, "describeItem"> & {
     describeItem?: ((well: Item, index: number) => RowDescription) | null
     onRender?: (item: Item) => void
   }) {
@@ -816,6 +807,9 @@ describe("Table grid virtualized", () => {
           options={{
             selectionMode: "multiple",
             describeItem: describeItem ?? undefined,
+            // As DataTable gives them: from its items, not its rows.
+            getAllValues: () => MANY_IDS,
+            isDisabled: (value) => value === DISABLED,
             ...options,
           }}
         >
@@ -903,7 +897,7 @@ describe("Table grid virtualized", () => {
     expect(focused()).toHaveTextContent("Well 0")
   })
 
-  it("selects every row through describeItem, without rendering the rows out of view", () => {
+  it("selects every row getAllValues gives, without rendering the rows out of view", () => {
     layout()
     const onValueChange = vi.fn()
     const onRender = vi.fn()
@@ -912,7 +906,7 @@ describe("Table grid virtualized", () => {
     onRender.mockClear()
     press("a", { ctrlKey: true })
     const [value] = onValueChange.mock.lastCall as [Array<string>]
-    // The row describeItem disables is left out, out of view too.
+    // The row isDisabled disables is left out, out of view too.
     expect(value).toHaveLength(9_999)
     expect(value).not.toContain(DISABLED)
     expect(value[9_998]).toBe("w9999")
@@ -935,10 +929,6 @@ describe("Table grid virtualized", () => {
       ["Well 1"],
       expect.anything()
     )
-    act(() => row("Well 0").focus())
-    press("a", { ctrlKey: true })
-    const [value] = onValueChange.mock.lastCall as [Array<string>]
-    expect(value.at(-1)).toBe("Well 9999")
   })
 
   it("passes describeItem each item with its index", () => {
@@ -949,7 +939,8 @@ describe("Table grid virtualized", () => {
     render(<Many describeItem={describeItem} onValueChange={onValueChange} />)
     act(() => row("Well 0").focus())
     describeItem.mockClear()
-    press("a", { ctrlKey: true })
+    // Type-ahead reads every row.
+    press("W")
     // Compared by hand: a failing toHaveBeenCalledWith would print every call.
     const last = describeItem.mock.calls.find(([, index]) => index === 9_999)
     expect(last?.[0]).toBe(MANY[9_999])
@@ -976,17 +967,6 @@ describe("Table grid virtualized", () => {
     const [value] = onValueChange.mock.lastCall as [Array<string>]
     expect(value).toHaveLength(9_999)
     expect(value).not.toContain(DISABLED)
-  })
-
-  it("knows only the rows rendered without describeItem", () => {
-    layout()
-    const onValueChange = vi.fn()
-    render(<Many describeItem={null} onValueChange={onValueChange} />)
-    act(() => row("Well 0").focus())
-    press("a", { ctrlKey: true })
-    const [value] = onValueChange.mock.lastCall as [Array<string>]
-    expect(value.length).toBeGreaterThan(0)
-    expect(value.length).toBeLessThan(100)
   })
 
   it("goes to a row out of view by the text describeItem gives", () => {

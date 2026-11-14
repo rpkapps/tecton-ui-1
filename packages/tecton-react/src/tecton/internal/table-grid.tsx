@@ -30,14 +30,12 @@
  *   move through the row's controls, every cell's, and from the last (or
  *   first) one leave the table, as Tab does from the grid; focus coming
  *   back finds the cell.
- * - Space selects the focused row (Shift: the range to it; Ctrl / Cmd: adds
- *   or removes it), Shift with the arrows extends the selection, Ctrl /
- *   Cmd + A selects every row, Escape clears the selection. With the
- *   "toggle" behaviour (checkboxes) a click toggles a row and the arrows
- *   only move; with "replace" a click and the arrows select only the row.
+ * - Space or a click selects or clears the row, as its checkbox does
+ *   (Shift: the range to it), the arrows only move and Shift with them
+ *   extends the selection, Ctrl / Cmd + A selects every row, Escape clears
+ *   the selection.
  * - Enter calls `onActivate`, and so does a double click; a single click
- *   does when rows do not select, or (with "toggle") while none is
- *   selected. Enter on a row with `expanded` opens or closes it, and so do
+ *   does when rows do not select, or while none is selected. Enter on a row with `expanded` opens or closes it, and so do
  *   Right / Left on the row.
  * - Space on a row that selects other rows (`onToggleSelected`, a group's)
  *   selects or clears them.
@@ -65,7 +63,6 @@ import { announce } from "./primitives/live-announcer"
 import { useTypeahead } from "./primitives/navigation"
 import {
   useSelection,
-  type SelectionBehavior,
   type SelectionMode,
   type SelectionReason,
   type SelectOptions,
@@ -77,8 +74,6 @@ import { createStore, useStore, type Store } from "./store"
 type TableGridOptions = {
   /** Whether rows select, one at a time or several. */
   selectionMode?: SelectionMode
-  /** The rows selected at first, when not controlled. */
-  defaultValue?: ReadonlyArray<string>
   /**
    * Called with the new selection. `eventDetails.reason` is
    * `"item-press"`, `"keyboard"`, `"select-all"` or `"clear"`.
@@ -90,15 +85,9 @@ type TableGridOptions = {
   /** Keeps at least one row selected. */
   disallowEmptySelection?: boolean
   /**
-   * How a click, Space and the arrows select: `"toggle"` (default, as with
-   * checkboxes) adds or removes the row, and the arrows only move focus;
-   * `"replace"` selects only the row, and the arrows move the selection.
-   */
-  selectionBehavior?: SelectionBehavior
-  /**
    * Called with a row's `value` and the event when it is activated: Enter, a
-   * double click, or a click when rows do not select (with "toggle": while
-   * none is selected).
+   * double click, or a click when rows do not select (or while none is
+   * selected).
    */
   onActivate?: (value: string, event: Event) => void
   /**
@@ -108,22 +97,21 @@ type TableGridOptions = {
   describeItem?: (item: never, index: number) => RowDescription
   /**
    * Every row "select all" (Ctrl / Cmd + A, the header checkbox) stands for,
-   * rows on other pages included: the body's rows by default.
+   * rows on other pages included.
    */
-  getAllValues?: () => ReadonlyArray<string>
+  getAllValues: () => ReadonlyArray<string>
   /**
    * Whether a row that is not `disabled` can be selected; one that cannot is
    * still focused and activated.
    */
   isSelectable?: (value: string) => boolean
   /**
-   * Whether a row is disabled, rows out of view included: given with
-   * `getAllValues`, select all and the header read it instead of reading
-   * every row's description.
+   * Whether a row is disabled, rows out of view included: select all and
+   * the header read it, never the rows' descriptions.
    */
-  isDisabled?: (value: string) => boolean
-  /** The number of rows selected, for announcements: the selection's size by default. */
-  getSelectedCount?: (selected: ReadonlySet<string>) => number
+  isDisabled: (value: string) => boolean
+  /** The number of rows selected, for announcements. */
+  getSelectedCount: (selected: ReadonlySet<string>) => number
   /**
    * The rows have levels: a treegrid from the first render, before the rows
    * have registered theirs.
@@ -408,6 +396,33 @@ function cellsByColumn(
   return grid[rows.indexOf(row)] ?? null
 }
 
+/**
+ * `read`'s result with the table laid out at its content's width for the
+ * moment: every column as wide as its content, none given the space left,
+ * in the automatic layout (with `col` given, without that column's width).
+ */
+function atContentWidth<T>(
+  table: HTMLTableElement,
+  read: () => T,
+  col?: HTMLElement | null
+): T {
+  const { style } = table
+  const saved = [style.tableLayout, style.width, style.minWidth]
+  const width = col?.style.width ?? ""
+  Object.assign(style, {
+    tableLayout: "auto",
+    width: "max-content",
+    minWidth: "0",
+  })
+  if (col) col.style.width = ""
+  try {
+    return read()
+  } finally {
+    ;[style.tableLayout, style.width, style.minWidth] = saved
+    if (col) col.style.width = width
+  }
+}
+
 /** The first cell laid out from column `from` on, `step` 1 forwards or -1 backwards. */
 function shownAt(
   cells: ReadonlyArray<HTMLTableCellElement>,
@@ -417,6 +432,15 @@ function shownAt(
   for (let at = from; at >= 0 && at < cells.length; at += step)
     if (isShown(cells[at])) return cells[at]
   return null
+}
+
+/** Gives an element the tab index it had (`null`: none). */
+function putBackTabIndex(
+  element: HTMLElement,
+  original: string | null | undefined
+) {
+  if (original == null) element.removeAttribute("tabindex")
+  else element.setAttribute("tabindex", original)
 }
 
 /** A column resizer: never one of the grid's stops, nor its tab stop. */
@@ -442,6 +466,13 @@ function isFocusableControl(element: HTMLElement) {
 
 const NONE_SELECTED: ReadonlySet<string> = new Set()
 
+/** A plain table's: it selects nothing. */
+const NO_OPTIONS: TableGridOptions = {
+  getAllValues: () => [],
+  isDisabled: () => false,
+  getSelectedCount: () => 0,
+}
+
 /**
  * For `Table`: the `table`'s props (the caller's, with the grid's role,
  * handlers and ref when `TableGridOptionsContext` is around it) and the context
@@ -459,10 +490,8 @@ function useTableGrid(own: React.ComponentProps<"table">) {
   const outerRow = scope?.row ?? null
   const {
     selectionMode: selectionModeProp = "none",
-    defaultValue,
     onValueChange,
     disallowEmptySelection = false,
-    selectionBehavior = "toggle",
     onActivate,
     getAllValues,
     isSelectable: isSelectableProp,
@@ -471,11 +500,10 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     tree: treeProp = false,
     controller,
     restoreFocusTo,
-  } = config ?? {}
+  } = config ?? NO_OPTIONS
   const t = useTranslations("table")
   const rtl = useDirection() === "rtl"
   const selectionMode: SelectionMode = grid ? selectionModeProp : "none"
-  const behavior: SelectionBehavior = selectionBehavior
 
   const table = React.useRef<HTMLTableElement | null>(null)
   const infos = React.useRef(new WeakMap<Element, { current: RowInfo }>())
@@ -572,9 +600,7 @@ function useTableGrid(own: React.ComponentProps<"table">) {
 
   const isDisabled = (key: string) => {
     const row = byValue.current.get(key)
-    if (row) return !!infoOf(row)?.disabled
-    if (isDisabledProp) return isDisabledProp(key)
-    return !!describedRow(key)?.disabled
+    return row ? !!infoOf(row)?.disabled : isDisabledProp(key)
   }
 
   /** The row's text: `textValue`, else its row header's, else its first text. */
@@ -607,20 +633,14 @@ function useTableGrid(own: React.ComponentProps<"table">) {
   const isSelectable = (key: string) =>
     !isDisabled(key) && (isSelectableProp?.(key) ?? true)
 
-  /** The rows "select all" stands for: every one given, or the body's. */
-  const everyKey = (): Array<string> =>
-    getAllValues ? [...getAllValues()] : allKeys()
-
   const selection = useSelection({
     mode: selectionMode,
-    behavior,
     value,
-    defaultValue,
     onValueChange,
     disallowEmptySelection,
     isSelectable,
     getOrder: allKeys,
-    getAllKeys: everyKey,
+    getAllKeys: () => [...getAllValues()],
   })
 
   const [store] = React.useState(() =>
@@ -630,7 +650,7 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     store.set({ selected: grid ? selection.selected : NONE_SELECTED })
   }, [store, grid, selection.selected])
   React.useLayoutEffect(() => {
-    if (selectionMode !== "multiple" || !getAllValues) return
+    if (selectionMode !== "multiple") return
     const all = getAllValues()
     if (store.get().all !== all) store.set({ all })
   })
@@ -643,20 +663,11 @@ function useTableGrid(own: React.ComponentProps<"table">) {
   useSelectionAnnouncement({
     selected: selection.selected,
     mode: selectionMode,
-    behavior,
+    behavior: "toggle",
     hasFocus,
     getText: textOf,
-    getCount: getSelectedCount && (() => getSelectedCount(selection.selected)),
-    // "All items selected" once there are as many selected as rows: a
-    // virtualized table's rows are not read for it, as they are not rendered.
-    getAllKeys: () =>
-      getAllValues
-        ? getAllValues()
-        : selection.selected.size < bodyCount()
-          ? [""]
-          : body.current?.describe
-            ? [...selection.selected]
-            : allKeys().filter((key) => !isDisabled(key)),
+    getCount: () => getSelectedCount(selection.selected),
+    getAllKeys: getAllValues,
   })
 
   /**
@@ -685,46 +696,31 @@ function useTableGrid(own: React.ComponentProps<"table">) {
   const headerSelection = (): HeaderSelection => {
     const { selected } = store.get()
     if (selected.size === 0) return "none"
-    if (getAllValues) {
-      const { keys, set } = givenKeys(getAllValues())
-      const last = header.current
-      if (last?.keys === keys && last.selected === selected) return last.state
-      // Selected rows outside the ones given (filtered out) do not count.
-      // The smaller side is walked: a few selected rows of many, or every
-      // row given when as many are selected.
-      let state: HeaderSelection
-      if (selected.size < keys.length) {
-        state = "none"
-        for (const key of selected)
-          if (set.has(key)) {
-            state = "some"
-            break
-          }
-      } else {
-        let count = 0
-        for (const key of keys) if (selected.has(key)) count++
-        state = count === 0 ? "none" : count === keys.length ? "all" : "some"
-      }
-      header.current = { keys, selected, state }
-      return state
+    const { keys, set } = givenKeys(getAllValues())
+    const last = header.current
+    if (last?.keys === keys && last.selected === selected) return last.state
+    // Selected rows outside the ones given (filtered out) do not count.
+    // The smaller side is walked: a few selected rows of many, or every
+    // row given when as many are selected.
+    let state: HeaderSelection
+    if (selected.size < keys.length) {
+      state = "none"
+      for (const key of selected)
+        if (set.has(key)) {
+          state = "some"
+          break
+        }
+    } else {
+      let count = 0
+      for (const key of keys) if (selected.has(key)) count++
+      state = count === 0 ? "none" : count === keys.length ? "all" : "some"
     }
-    const keys = body.current?.describe
-      ? null
-      : bodyRows()
-          .map(infoOf)
-          .filter((info) => info?.value !== undefined && !info.disabled)
-          .map((info) => info!.value!)
-    if (keys === null) return selected.size >= bodyCount() ? "all" : "some"
-    return keys.length > 0 && keys.every((key) => selected.has(key))
-      ? "all"
-      : "some"
+    header.current = { keys, selected, state }
+    return state
   }
 
-  // Known only from the rows given: the body's rows register after they
-  // render, and a checkbox enabled then would flicker.
   const canSelectAll = () =>
-    selectionMode === "multiple" &&
-    (!getAllValues || givenKeys(getAllValues()).keys.length > 0)
+    selectionMode === "multiple" && givenKeys(getAllValues()).keys.length > 0
 
   // ---- tab stop -----------------------------------------------------------
 
@@ -738,11 +734,8 @@ function useTableGrid(own: React.ComponentProps<"table">) {
   /** Puts back the tab index an element had before the grid managed it. */
   const restoreTabIndex = (element: HTMLElement) => {
     if (!managed.current.has(element)) return
-    const original = managed.current.get(element)
+    putBackTabIndex(element, managed.current.get(element))
     managed.current.delete(element)
-    if (original === null || original === undefined)
-      element.removeAttribute("tabindex")
-    else element.setAttribute("tabindex", original)
   }
 
   /**
@@ -1136,37 +1129,36 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     element.scrollIntoView({ block: "nearest", inline: "nearest" })
     // A sticky header covers the rows scrolled under it, and so does a
     // sticky footer (a totals row) at the bottom.
-    const container = table.current?.parentElement
-    if (!container) return
-    const head = table.current?.tHead
-    if (
-      head &&
-      !head.contains(element) &&
-      getComputedStyle(head).position === "sticky"
-    ) {
-      const covered =
-        head.getBoundingClientRect().bottom -
-        element.getBoundingClientRect().top
-      if (covered > 0) return void (container.scrollTop -= covered)
+    const el = table.current
+    const container = el?.parentElement
+    if (!el || !container) return
+    /** How far a sticky section covers the element (its top's, or its bottom's). */
+    const covered = (section: HTMLElement | null, top: boolean) => {
+      if (
+        !section ||
+        section.contains(element) ||
+        getComputedStyle(section).position !== "sticky"
+      )
+        return 0
+      const box = element.getBoundingClientRect()
+      const over = section.getBoundingClientRect()
+      return top ? over.bottom - box.top : box.bottom - over.top
     }
-    const foot = table.current?.tFoot
-    if (
-      foot &&
-      !foot.contains(element) &&
-      getComputedStyle(foot).position === "sticky"
-    ) {
-      const covered =
-        element.getBoundingClientRect().bottom -
-        foot.getBoundingClientRect().top
-      if (covered > 0) container.scrollTop += covered
-    }
+    const under = covered(el.tHead, true)
+    const by = under > 0 ? -under : Math.max(0, covered(el.tFoot, false))
+    if (by) container.scrollTop += by
   }
 
-  const focusElement = (element: HTMLElement) => {
+  /** Makes `element` the tab stop, the last one out of the Tab order. */
+  const moveStop = (element: HTMLElement) => {
     const previous = tabStop.current
     if (previous && previous !== element) setTabIndex(previous, "-1")
     tabStop.current = element
     setTabIndex(element, "0")
+  }
+
+  const focusElement = (element: HTMLElement) => {
+    moveStop(element)
     element.focus({ preventScroll: true })
     scrollIntoView(element)
   }
@@ -1228,8 +1220,7 @@ function useTableGrid(own: React.ComponentProps<"table">) {
 
   /**
    * Focuses the row at `index` (or its cell in `column`); from the
-   * keyboard, the selection follows with the "replace" behaviour, and
-   * Shift extends it.
+   * keyboard, Shift extends the selection to it.
    */
   const moveTo = (
     index: number | null,
@@ -1241,17 +1232,12 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     whenRendered(index, (row) => {
       const cell = column === null ? null : cellAt(row, column)
       focusElement(cell ? stopsOf(cell)[0] : row)
-      if (!event || !isBody(index)) return
+      if (!extend || !event || !isBody(index)) return
       const info = infoOf(row)
-      if (!info || info.value === undefined || selectionMode === "none") return
-      const mod = isMac() ? event.metaKey : event.ctrlKey
-      if (extend && selectionMode === "multiple")
+      // A move that selects nothing leaves the anchor where the last
+      // selection put it.
+      if (info?.value !== undefined && selectionMode === "multiple")
         selection.select(info.value, { range: true, event, reason: "keyboard" })
-      // The arrows move the selection only with "replace"; with "toggle"
-      // (checkboxes) they only move focus, and Shift extends. A move that
-      // selects nothing leaves the anchor where the last selection put it.
-      else if (behavior === "replace" && !mod)
-        selection.select(info.value, { event, reason: "keyboard" })
     })
   }
 
@@ -1264,13 +1250,7 @@ function useTableGrid(own: React.ComponentProps<"table">) {
   }
 
   const typeahead = useTypeahead({
-    getKeys: () =>
-      body.current?.describe
-        ? allKeys()
-        : bodyRows().flatMap((row) => {
-            const key = infoOf(row)?.value
-            return key === undefined ? [] : [key]
-          }),
+    getKeys: allKeys,
     getText: textOf,
     isDisabled,
     getFocused: () => {
@@ -1372,20 +1352,13 @@ function useTableGrid(own: React.ComponentProps<"table">) {
 
     switch (event.key) {
       case "ArrowDown":
-      case "ArrowUp": {
-        handled()
-        const step = event.key === "ArrowDown" ? 1 : -1
-        const next =
-          column === null
-            ? walk(index, step, bodyStart, bodyEnd)
-            : walk(spanned(step), step, 0, total())
-        moveTo(next, column, event, { extend: event.shiftKey })
-        return
-      }
+      case "ArrowUp":
       case "PageDown":
       case "PageUp": {
         handled()
-        const step = (event.key === "PageDown" ? 1 : -1) * pageSize()
+        const step =
+          (event.key.endsWith("Down") ? 1 : -1) *
+          (event.key.startsWith("Page") ? pageSize() : 1)
         const next =
           column === null
             ? walk(index, step, bodyStart, bodyEnd)
@@ -1509,7 +1482,7 @@ function useTableGrid(own: React.ComponentProps<"table">) {
           return
         handled()
         selection.select(info.value, {
-          toggle: mod || behavior === "toggle",
+          toggle: true,
           range: event.shiftKey,
           event,
           reason: "keyboard",
@@ -1600,10 +1573,7 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     const activates =
       !!onActivate &&
       (selectionMode === "none" ||
-        (behavior === "toggle" &&
-          selection.selected.size === 0 &&
-          !mod &&
-          !event.shiftKey))
+        (selection.selected.size === 0 && !mod && !event.shiftKey))
     clickActivated.current = activates
     if (activates) {
       onActivate(pressed.value, event.nativeEvent)
@@ -1692,11 +1662,7 @@ function useTableGrid(own: React.ComponentProps<"table">) {
       actionable.current = row
     else if (actionable.current !== row || stop === row || stop === cell)
       actionable.current = null
-    if (tabStop.current !== target) {
-      if (tabStop.current) setTabIndex(tabStop.current, "-1")
-      tabStop.current = target
-      setTabIndex(target, "0")
-    }
+    if (tabStop.current !== target) moveStop(target)
     record(row, cell)
   }
 
@@ -1714,11 +1680,8 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     if (grid && leaving && actionable.current) {
       actionable.current = null
       const cell = owns(left) ? ownCellOf(left) : null
-      if (cell && tabStop.current === left && !stopsOf(cell).includes(left)) {
-        setTabIndex(left, "-1")
-        tabStop.current = cell
-        setTabIndex(cell, "0")
-      }
+      if (cell && tabStop.current === left && !stopsOf(cell).includes(left))
+        moveStop(cell)
     }
     queueMicrotask(() => {
       if (lastFocused.current === left && left.isConnected)
@@ -1803,10 +1766,8 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     return () => {
       observer.disconnect()
       // Off again: every element gets its own tabindex back.
-      for (const [element, original] of restore) {
-        if (original === null) element.removeAttribute("tabindex")
-        else element.setAttribute("tabindex", original)
-      }
+      for (const [element, original] of restore)
+        putBackTabIndex(element, original)
       restore.clear()
       tabStop.current = null
     }
@@ -2118,6 +2079,7 @@ function useTableContainer(own: React.Ref<HTMLDivElement> | undefined) {
 }
 
 export {
+  atContentWidth,
   cellsByColumn,
   TableContainerContext,
   TableGridOptionsContext,
