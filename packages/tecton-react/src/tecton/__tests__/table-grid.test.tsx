@@ -21,8 +21,9 @@ import { TectonProvider } from "@tecton/react/provider"
 
 import { DataTableSelectionCheckbox } from "../internal/data-table/selection-checkbox"
 import {
-  TableGridConfig,
-  TableRowConfig,
+  TableGridOptionsContext,
+  TableGridValueContext,
+  TableRowConfigContext,
   type RowDescription,
   type TableGridOptions,
   type TableRowGridProps,
@@ -32,11 +33,16 @@ import {
 function GridTable({
   options = {},
   ...props
-}: React.ComponentProps<typeof Table> & { options?: TableGridOptions }) {
+}: React.ComponentProps<typeof Table> & {
+  options?: TableGridOptions & { value?: ReadonlyArray<string> }
+}) {
+  const { value, ...rest } = options
   return (
-    <TableGridConfig value={options}>
-      <Table {...props} />
-    </TableGridConfig>
+    <TableGridOptionsContext value={rest}>
+      <TableGridValueContext value={value}>
+        <Table {...props} />
+      </TableGridValueContext>
+    </TableGridOptionsContext>
   )
 }
 
@@ -50,9 +56,9 @@ function GridRow({
   ...props
 }: React.ComponentProps<typeof TableRow> & { config: TableRowGridProps }) {
   return (
-    <TableRowConfig value={config}>
+    <TableRowConfigContext value={config}>
       <TableRow {...props} />
-    </TableRowConfig>
+    </TableRowConfigContext>
   )
 }
 
@@ -71,6 +77,7 @@ function Wells({
   grid = true,
   ...options
 }: TableGridOptions & {
+  value?: ReadonlyArray<string>
   checkboxes?: boolean
   link?: boolean
   grid?: boolean
@@ -526,7 +533,7 @@ describe("DataTableSelectionCheckbox", () => {
           </tbody>
         </table>
       )
-    ).toThrow(/inside a Table in a TableGridConfig/)
+    ).toThrow(/inside a Table in grid mode/)
   })
 })
 

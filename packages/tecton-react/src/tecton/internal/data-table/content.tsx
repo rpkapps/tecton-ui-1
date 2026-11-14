@@ -50,8 +50,9 @@ import { useDirection } from "@tecton/react/provider"
 import { useTranslations } from "../i18n/translations"
 import { createStore } from "../store"
 import {
-  TableContainerConfig,
-  TableGridConfig,
+  TableContainerContext,
+  TableGridOptionsContext,
+  TableGridValueContext,
   type TableGridController,
   type TableGridOptions,
 } from "../table-grid"
@@ -173,9 +174,10 @@ const LOADING_ROWS = 5
 const MORE_ROWS = 3
 
 /**
- * The grid's options with the selection: the one part that renders on a
- * selection change, re-rendering the `Table` (whose rows read their own
- * selection), not the elements inside it.
+ * The grid's options, and its selection apart: the one part that renders
+ * on a selection change, with the `Table`, which reads the selection; the
+ * rows read the options, which stay, and each its own selection from the
+ * grid, so only the rows selected or cleared render.
  */
 function DataTableGrid({
   context,
@@ -187,8 +189,11 @@ function DataTableGrid({
   children: React.ReactNode
 }) {
   const value = useDataTableSelector(context, (state) => state.value)
-  const config = React.useMemo(() => ({ ...options, value }), [options, value])
-  return <TableGridConfig value={config}>{children}</TableGridConfig>
+  return (
+    <TableGridOptionsContext value={options}>
+      <TableGridValueContext value={value}>{children}</TableGridValueContext>
+    </TableGridOptionsContext>
+  )
 }
 
 /** Whether the columns are laid out with fixed widths (see `column-sizing.ts`). */
@@ -817,7 +822,6 @@ function DataTableContentImpl({
     })
     return headerRows === layout.headerRows ? layout : { ...layout, headerRows }
   }, [layout, below])
-  const containerConfig = React.useMemo(() => ({ ref: container }), [])
   // The rows render with the columns, their pins and the selection's: a
   // new width alone (a resize) leaves them as they are.
   const shownColumns = useSameItems(layout.columns)
@@ -1335,7 +1339,7 @@ function DataTableContentImpl({
       }
     >
       <DataTableGrid context={context} options={grid}>
-        <TableContainerConfig value={containerConfig}>
+        <TableContainerContext value={container}>
           {/* Keeps the row the user is on still as items change (live data). */}
           <LiveAnchor itemsKey={model.ids} bridge={live ? liveBridge : null}>
             <Table
@@ -1444,7 +1448,7 @@ function DataTableContentImpl({
               )}
             </Table>
           </LiveAnchor>
-        </TableContainerConfig>
+        </TableContainerContext>
       </DataTableGrid>
       {refreshing && <DataTableProgress top={headerHeight} />}
       {ReorderColumns && order.order && <ReorderColumns order={order.order} />}

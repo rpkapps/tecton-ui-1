@@ -23,7 +23,7 @@ type DataTableSelectionCheckboxProps = Omit<
 }
 
 /**
- * The selection checkbox of a grid table (`TableGridConfig`), for the
+ * The selection checkbox of a grid table (`TableGridOptionsContext`), for the
  * selection column of `DataTable`. In a `TableRow`, it shows and
  * toggles that row (Shift + click: the range to it), named "Select" and
  * the row's header; in the header, it shows whether every row, some or
@@ -48,7 +48,7 @@ function DataTableSelectionCheckbox({
   const grid = useTableGridContext()
   if (!grid)
     throw new Error(
-      "DataTableSelectionCheckbox must be used inside a Table in a TableGridConfig"
+      "DataTableSelectionCheckbox must be used inside a Table in grid mode"
     )
   // The header row is a TableRow too, without a `value`.
   const context = useTableGridRow()

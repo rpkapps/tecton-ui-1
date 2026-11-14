@@ -2,8 +2,8 @@
 
 /**
  * Internal to `@tecton/react`: the grid mode of `Table`, which `DataTable`
- * turns on with `TableGridConfig` (and each body row's state with
- * `TableRowConfig`). The table becomes an ARIA
+ * turns on with `TableGridOptionsContext` (and each body row's state with
+ * `TableRowConfigContext`). The table becomes an ARIA
  * grid (a treegrid when its rows have a `level`) that is one tab stop and
  * is moved through with the keyboard, with rows that select:
  *
@@ -77,8 +77,6 @@ import { createStore, useStore, type Store } from "./store"
 type TableGridOptions = {
   /** Whether rows select, one at a time or several. */
   selectionMode?: SelectionMode
-  /** The selected rows' `value`s (controlled). */
-  value?: ReadonlyArray<string>
   /** The rows selected at first, when not controlled. */
   defaultValue?: ReadonlyArray<string>
   /**
@@ -161,7 +159,7 @@ type TableGridController = {
   scrollToIndex: (index: number) => void
 }
 
-/** A body row's grid state, given by `TableRowConfig`. */
+/** A body row's grid state, given by `TableRowConfigContext`. */
 type TableRowGridProps = {
   /** The row's identity in the table's `value` (and `onActivate`). */
   value?: string
@@ -236,69 +234,70 @@ type TableGridContextValue = {
 
 const TableGridContext = React.createContext<TableGridContextValue | null>(null)
 
-/** Turns a `Table` inside it into a grid. */
-const TableGridConfigContext = React.createContext<TableGridOptions | null>(
+/**
+ * Turns a `Table` inside it into a grid: its options, which stay the same
+ * as the selection changes (the rows and the body read them too).
+ */
+const TableGridOptionsContext = React.createContext<TableGridOptions | null>(
   null
 )
 
-/** The grid state of the body row inside it. */
+/** The grid's selection (`TableGridOptions` without it): read by the table only. */
+const TableGridValueContext = React.createContext<
+  ReadonlyArray<string> | undefined
+>(undefined)
+
+/** The grid state of the body row inside it; the props go to its `TableRow`. */
 const TableRowConfigContext = React.createContext<TableRowGridProps | null>(
   null
 )
 
-function TableGridConfig({
-  value,
-  children,
-}: {
-  value: TableGridOptions
-  children: React.ReactNode
-}) {
-  return (
-    <TableGridConfigContext.Provider value={value}>
-      {children}
-    </TableGridConfigContext.Provider>
-  )
-}
-
-function useTableGridConfig() {
-  return React.useContext(TableGridConfigContext)
-}
-
-/** A body row with its grid state; the props go to the `TableRow` it renders. */
-function TableRowConfig({
-  value,
-  children,
-}: {
-  value: TableRowGridProps
-  children: React.ReactNode
-}) {
-  return (
-    <TableRowConfigContext.Provider value={value}>
-      {children}
-    </TableRowConfigContext.Provider>
-  )
-}
+/**
+ * The scroll container of the `Table` inside it, handed back through this
+ * ref (`DataTable`'s). Internal, like grid mode: a plain `Table` never
+ * sees it.
+ */
+const TableContainerContext =
+  React.createContext<React.Ref<HTMLDivElement> | null>(null)
 
 /**
- * The row of an outer grid a table is nested in (a detail row's): the
- * nested grid's tab stop is out of the Tab order while focus is outside
- * that row, so the outer grid stays one Tab stop.
+ * What a row of a table with any of the contexts above hands the tables
+ * nested in its cells (a detail row's): the contexts as it read them, which
+ * are its table's, not theirs (`notOuter`); and, in a grid, the row itself, out
+ * of whose Tab order a nested grid's stop stays while focus is outside it,
+ * so the outer grid stays one Tab stop. Its `config` is also the row a
+ * `DataTableSelectionCheckbox` is in.
  */
-const TableOuterRowContext =
-  React.createContext<React.RefObject<HTMLTableRowElement | null> | null>(null)
+type TableScope = {
+  row: React.RefObject<HTMLTableRowElement | null> | null
+  options: TableGridOptions | null
+  config: TableRowGridProps | null
+  container: React.Ref<HTMLDivElement> | null
+}
 
-/** The row a `DataTableSelectionCheckbox` is in. */
-const TableGridRowContext = React.createContext<{
-  value: string | undefined
-  disabled: boolean
-} | null>(null)
+const TableScopeContext = React.createContext<TableScope | null>(null)
+
+/** A context's value, unless it is the one the row around reads (an outer table's). */
+function notOuter<TValue>(
+  value: TValue | null,
+  outer: TValue | null | undefined
+) {
+  return value === outer ? null : value
+}
+
+/** The grid's options, as the table inside them reads them. */
+function useTableGridOptions() {
+  const scope = React.useContext(TableScopeContext)
+  return notOuter(React.useContext(TableGridOptionsContext), scope?.options)
+}
 
 function useTableGridContext() {
   return React.useContext(TableGridContext)
 }
 
+/** The body row a `DataTableSelectionCheckbox` is in. */
 function useTableGridRow() {
-  return React.useContext(TableGridRowContext)
+  return React.useContext(TableScopeContext)?.config ?? null
 }
 
 /** Elements that take focus, besides the rows and cells the grid focuses. */
@@ -439,15 +438,21 @@ const NONE_SELECTED: ReadonlySet<string> = new Set()
 
 /**
  * For `Table`: the `table`'s props (the caller's, with the grid's role,
- * handlers and ref when a `TableGridConfig` is around it) and the context
+ * handlers and ref when `TableGridOptionsContext` is around it) and the context
  * its rows read.
  */
 function useTableGrid(own: React.ComponentProps<"table">) {
-  const config = React.useContext(TableGridConfigContext)
+  const scope = React.useContext(TableScopeContext)
+  const config = notOuter(
+    React.useContext(TableGridOptionsContext),
+    scope?.options
+  )
   const grid = config !== null
+  const selected = React.useContext(TableGridValueContext)
+  const value = grid ? selected : undefined
+  const outerRow = scope?.row ?? null
   const {
     selectionMode: selectionModeProp = "none",
-    value,
     defaultValue,
     onValueChange,
     disallowEmptySelection = false,
@@ -463,7 +468,6 @@ function useTableGrid(own: React.ComponentProps<"table">) {
   } = config ?? {}
   const t = useTranslations("table")
   const rtl = useDirection() === "rtl"
-  const outerRow = React.useContext(TableOuterRowContext)
   const selectionMode: SelectionMode = grid ? selectionModeProp : "none"
   const behavior: SelectionBehavior = selectionBehavior
 
@@ -999,6 +1003,19 @@ function useTableGrid(own: React.ComponentProps<"table">) {
   }
 
   /**
+   * Whether `stop` can stay the tab stop: in the table, not a disabled row,
+   * and (`layout`, which reads layout) in a cell still laid out.
+   */
+  const isStop = (stop: HTMLElement | null, layout: boolean) =>
+    !!stop &&
+    stop.isConnected &&
+    stop.closest("table") === table.current &&
+    !(stop.tagName === "TR" && infoOf(stop)?.disabled) &&
+    // In a cell no longer laid out (a breakpoint passed).
+    (!layout ||
+      isShown(stop.tagName === "TR" ? stop : (stop.closest("td, th") ?? stop)))
+
+  /**
    * Keeps exactly one tab stop in the table: the focused (or last focused)
    * element. `layout`: whether the stop may have stopped being laid out (a
    * render of the table, a breakpoint passed), which reads layout; rows
@@ -1015,17 +1032,7 @@ function useTableGrid(own: React.ComponentProps<"table">) {
       !lastFocused.current.isConnected &&
       (doc.activeElement === null || doc.activeElement === doc.body)
     let stop = tabStop.current
-    if (
-      !stop ||
-      !stop.isConnected ||
-      stop.closest("table") !== el ||
-      (stop.tagName === "TR" && infoOf(stop)?.disabled) ||
-      // In a cell no longer laid out (a breakpoint passed).
-      (layout &&
-        !isShown(
-          stop.tagName === "TR" ? stop : (stop.closest("td, th") ?? stop)
-        ))
-    ) {
+    if (!isStop(stop, layout)) {
       stop = defaultStop(lost)
       tabStop.current = stop
     }
@@ -1794,8 +1801,14 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     }
   }, [grid])
 
+  // A render of the table (a selection, new rows): the rows and controls it
+  // mounted are the observer's to take out of the Tab order. What the
+  // observer does not see is checked here: the stop gone, disabled or no
+  // longer laid out (a breakpoint passed), and the element focus was on.
   React.useLayoutEffect(() => {
-    if (grid) sync()
+    if (!grid) return
+    const lost = lastFocused.current && !lastFocused.current.isConnected
+    if (lost || !isStop(tabStop.current, true)) sync()
   })
 
   // The outer row gaining or losing focus wakes or puts to sleep the stop.
@@ -1952,17 +1965,29 @@ const IDLE_STORE = createStore<TableGridState>({
 
 /**
  * For `TableRow`: the `tr`'s props. In a grid table, a body row's
- * selected, disabled and tree state from its `TableRowConfig` (`aria-*`
- * and `data-selected` / `data-disabled`).
+ * selected, disabled and tree state from its `TableRowConfigContext`
+ * (`aria-*` and `data-selected` / `data-disabled`). A selection change
+ * renders only the rows it selects or clears: a row reads the options and
+ * the grid, which stay, and its own selection from the grid's store.
  */
 function useTableRow({
   ref,
   children,
   ...rest
 }: React.ComponentProps<"tr">): React.ComponentProps<"tr"> {
-  const config = React.useContext(TableRowConfigContext)
-  const gridConfig = React.useContext(TableGridConfigContext)
-  const containerConfig = React.useContext(TableContainerConfigContext)
+  const outer = React.useContext(TableScopeContext)
+  const config = notOuter(
+    React.useContext(TableRowConfigContext),
+    outer?.config
+  )
+  const options = notOuter(
+    React.useContext(TableGridOptionsContext),
+    outer?.options
+  )
+  const container = notOuter(
+    React.useContext(TableContainerContext),
+    outer?.container
+  )
   const {
     value,
     disabled = false,
@@ -2023,29 +2048,22 @@ function useTableRow({
     // The row registers again when it starts or stops being a tree row.
     [register, ref, value, levelled]
   )
-  const row = React.useMemo(() => ({ value, disabled }), [value, disabled])
   // A table nested in a cell is a table of its own: neither the grid's
-  // options, nor this row's state, nor the container's config reach it;
-  // a grid row tells it the row it is in.
-  const isolated =
-    gridConfig === null && config === null && containerConfig === null ? (
-      children
-    ) : (
-      <TableGridConfigContext.Provider value={null}>
-        <TableRowConfigContext.Provider value={null}>
-          <TableContainerConfigContext.Provider value={null}>
-            {grid ? (
-              <TableOuterRowContext.Provider value={element}>
-                {children}
-              </TableOuterRowContext.Provider>
-            ) : (
-              children
-            )}
-          </TableContainerConfigContext.Provider>
-        </TableRowConfigContext.Provider>
-      </TableGridConfigContext.Provider>
-    )
-  if (!grid) return { ...rest, ref, children: isolated }
+  // options, nor this row's state, nor the container's ref reach it; a
+  // grid row tells it the row it is in.
+  const scope = React.useMemo<TableScope | null>(
+    () =>
+      options === null && config === null && container === null
+        ? null
+        : { row: grid ? element : null, options, config, container },
+    [grid, options, config, container]
+  )
+  const scoped = scope ? (
+    <TableScopeContext value={scope}>{children}</TableScopeContext>
+  ) : (
+    children
+  )
+  if (grid === null) return { ...rest, ref, children: scoped }
   return {
     ...rest,
     ref: rowRef,
@@ -2060,51 +2078,22 @@ function useTableRow({
       "data-selected": selected ? "true" : undefined,
       "data-disabled": disabled ? "" : undefined,
     },
-    children: (
-      <TableGridRowContext.Provider value={row}>
-        {isolated}
-      </TableGridRowContext.Provider>
-    ),
+    children: scoped,
   }
 }
 
 /**
- * What a `Table`'s scroll container takes from the component around the
- * table (`DataTable`): classes and a style of its own (the fade at pinned
- * columns' edges), and its element, handed back through `ref`. Internal,
- * like grid mode: a plain `Table` never sees it.
- */
-type TableContainerOptions = {
-  className?: string
-  style?: React.CSSProperties
-  ref?: React.Ref<HTMLDivElement>
-}
-
-const TableContainerConfigContext =
-  React.createContext<TableContainerOptions | null>(null)
-
-/** Gives the scroll container of the `Table` inside it `value`. */
-function TableContainerConfig({
-  value,
-  children,
-}: {
-  value: TableContainerOptions
-  children: React.ReactNode
-}) {
-  return (
-    <TableContainerConfigContext.Provider value={value}>
-      {children}
-    </TableContainerConfigContext.Provider>
-  )
-}
-
-/**
- * For `Table`: its container's extra classes and style, and one ref for
- * the table's own (`own`, the virtualizer's) and the config's.
+ * For `Table`: one ref for its container, the table's own (`own`, the
+ * virtualizer's) and the one given (`TableContainerContext`). No classes
+ * or style of the component around's (`className` and `style` stay for
+ * `Table`, which reads them).
  */
 function useTableContainer(own: React.Ref<HTMLDivElement> | undefined) {
-  const config = React.useContext(TableContainerConfigContext)
-  const theirs = config?.ref
+  const scope = React.useContext(TableScopeContext)
+  const theirs = notOuter(
+    React.useContext(TableContainerContext),
+    scope?.container
+  )
   const ref = React.useCallback(
     (element: HTMLDivElement | null) => {
       for (const target of [own, theirs]) {
@@ -2114,19 +2103,20 @@ function useTableContainer(own: React.Ref<HTMLDivElement> | undefined) {
     },
     [own, theirs]
   )
-  return { ref, className: config?.className, style: config?.style }
+  return { ref, className: undefined, style: undefined }
 }
 
 export {
   cellsByColumn,
-  TableContainerConfig,
-  TableGridConfig,
+  TableContainerContext,
+  TableGridOptionsContext,
   TableGridProvider,
-  TableRowConfig,
+  TableGridValueContext,
+  TableRowConfigContext,
   useTableContainer,
   useTableGrid,
-  useTableGridConfig,
   useTableGridContext,
+  useTableGridOptions,
   useTableGridRow,
   useTableRow,
 }
@@ -2134,7 +2124,6 @@ export type {
   HeaderSelection,
   RowDescription,
   TableGridBody,
-  TableContainerOptions,
   TableGridController,
   TableGridOptions,
   TableRowGridProps,

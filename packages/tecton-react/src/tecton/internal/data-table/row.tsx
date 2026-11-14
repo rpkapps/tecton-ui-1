@@ -5,12 +5,13 @@
  * memoized on the engine's row object and the table's shared row state.
  * The engine keeps a row's object while nothing about the row changes, so
  * a sort, a page or another row opening renders only the rows that change;
- * a row's selection is read by its `TableRow` from the grid, so selecting a
- * row renders that row's `tr` and checkbox, not its cells.
+ * a row's selection is read by its `TableRow` from the grid's store, so
+ * selecting a row renders that row's `TableRow` and checkbox alone: not its
+ * cells, nor the other rows.
  *
  * Each row passes the props a virtualized body gives it (`aria-rowindex`,
- * `data-index`) on to its `TableRow`, inside the `TableRowConfig` that tells
- * the grid its id, text, level and expanded state.
+ * `data-index`) on to its `TableRow`, inside the `TableRowConfigContext`
+ * that tells the grid its id, text, level and expanded state.
  *
  * With `highlightChanges`, item and group rows render their key and, while
  * highlighted, their highlight's state (`useLiveRowProps`: waiting to be
@@ -50,7 +51,7 @@ import { TableCell, TableHead, TableRow } from "@tecton/react/table"
 import { useTranslations } from "../i18n/translations"
 import { createStore, useStore } from "../store"
 import {
-  TableRowConfig,
+  TableRowConfigContext,
   type RowDescription,
   type TableRowGridProps,
 } from "../table-grid"
@@ -165,7 +166,7 @@ function ItemRowComponent<T>({
   const reasonId = React.useId()
   const live = useLiveRowProps(shared.live, row.key)
   return (
-    <TableRowConfig value={config}>
+    <TableRowConfigContext value={config}>
       <TableRow
         {...props}
         {...live}
@@ -215,7 +216,7 @@ function ItemRowComponent<T>({
           renderCell(column, index, row, shared)
         )}
       </TableRow>
-    </TableRowConfig>
+    </TableRowConfigContext>
   )
 }
 
@@ -477,7 +478,7 @@ function GroupRowComponent<T>({
     )
   })
   return (
-    <TableRowConfig value={config}>
+    <TableRowConfigContext value={config}>
       <TableRow
         {...props}
         {...live}
@@ -511,7 +512,7 @@ function GroupRowComponent<T>({
           )}
         {cells}
       </TableRow>
-    </TableRowConfig>
+    </TableRowConfigContext>
   )
 }
 
@@ -591,7 +592,7 @@ function DetailRowComponent<T>({
     ? shared.headerRows + shared.rowIndexOf(row.id) + 2
     : props["aria-rowindex"]
   return (
-    <TableRowConfig value={config}>
+    <TableRowConfigContext value={config}>
       <TableRow
         {...props}
         aria-rowindex={index}
@@ -623,7 +624,7 @@ function DetailRowComponent<T>({
           </div>
         </TableCell>
       </TableRow>
-    </TableRowConfig>
+    </TableRowConfigContext>
   )
 }
 

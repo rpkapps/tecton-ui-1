@@ -54,7 +54,7 @@ import { flushSync } from "react-dom"
 
 import { useVirtualList } from "./primitives/virtual-list"
 import {
-  useTableGridConfig,
+  useTableGridOptions,
   useTableGridContext,
   type RowDescription,
   type TableGridBody,
@@ -493,7 +493,7 @@ function useVirtualRows<T>(
   } = props
   const context = React.useContext(TableVirtualContext)
   const grid = useTableGridContext()
-  const gridConfig = useTableGridConfig()
+  const gridConfig = useTableGridOptions()
   const describeItem = gridConfig?.describeItem
   const rowParity = gridConfig?.rowParity
   const virtualized = context !== null
