@@ -70,6 +70,8 @@ import {
   isKeyText,
   isQuote,
   itemsOf,
+  KEYWORDS,
+  OPERATOR,
   unquote,
   type Chunk,
   type Item,
@@ -80,6 +82,7 @@ import type {
   QueryDiagnosticCode,
   QueryDiagnosticParams,
   QueryFilterTerm,
+  QueryKeywordTerm,
   QuerySpan,
   QuerySpanKind,
   QueryTerm,
@@ -102,7 +105,6 @@ type FilterReading = Reading & {
   incomplete: boolean
 }
 
-const OPERATOR = /^(>=|<=|≥|≤|>|<|=)/
 const COMPARISON: Record<string, ">=" | "<=" | ">" | "<" | "="> = {
   ">=": ">=",
   "≥": ">=",
@@ -674,7 +676,7 @@ function readFilter(
 function continuesDate(text: string, chunk: Chunk) {
   const raw = text.slice(chunk.start, chunk.end)
   if (isQuote(raw[0]) || raw.startsWith("-")) return false
-  if (raw === "AND" || raw === "OR" || raw === "NOT") return false
+  if (KEYWORDS.has(raw)) return false
   const colon = indexOutsideQuotes(text, ":", chunk.start, chunk.end)
   return colon === -1 || !isKeyText(text.slice(chunk.start, colon))
 }
@@ -715,13 +717,13 @@ function parseQuery(
   for (let index = 0; index < chunks.length; index++) {
     const chunk = chunks[index]
     const raw = text.slice(chunk.start, chunk.end)
-    if (raw === "AND" || raw === "OR" || raw === "NOT") {
+    if (KEYWORDS.has(raw)) {
       // A keyword after `NOT` leaves it with no term to take out.
       notAlone()
       spans.push({ start: chunk.start, end: chunk.end, kind: "keyword" })
       terms.push({
         kind: "keyword",
-        keyword: raw,
+        keyword: raw as QueryKeywordTerm["keyword"],
         start: chunk.start,
         end: chunk.end,
         applied: raw === "AND",

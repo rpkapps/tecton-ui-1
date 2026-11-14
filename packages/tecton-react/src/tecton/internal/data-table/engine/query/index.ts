@@ -40,5 +40,4 @@ export type {
   QuerySuggestions,
   SuggestOptions,
 } from "./suggest"
-export { PRESETS as DATE_PRESETS } from "./dates"
 export type * from "./types"

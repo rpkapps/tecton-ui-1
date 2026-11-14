@@ -268,7 +268,8 @@ function QuerySearchField({
           <InputGroupAddon>
             <SearchIcon aria-hidden />
           </InputGroupAddon>
-          {/* Where the query field's list button would be: none, as here. */}
+          {/* The combobox's own addon, empty in the query field (it shows
+              no trigger): the same parts, so the same size. */}
           <InputGroupAddon align="inline-end" />
           <InputGroupAddon align="inline-end">
             <InputGroupButton

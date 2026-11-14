@@ -36,7 +36,6 @@ function QueryHelp({
   onExample,
   finalFocus,
   popupRef,
-  onButtonPointerDown,
   t,
   title,
 }: {
@@ -50,7 +49,6 @@ function QueryHelp({
   finalFocus: () => HTMLElement | boolean | null
   /** The popover's element: focus in it is still the field's. */
   popupRef: React.Ref<HTMLDivElement>
-  onButtonPointerDown?: (event: React.PointerEvent) => void
   t: Translator<"dataTableQuery">
   /** The button's name and the popover's title. */
   title: string
@@ -67,7 +65,6 @@ function QueryHelp({
                   size="icon-xs"
                   aria-label={title}
                   data-slot="data-table-query-help"
-                  onPointerDown={onButtonPointerDown}
                 />
               }
             />

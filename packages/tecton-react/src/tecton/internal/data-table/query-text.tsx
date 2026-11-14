@@ -2,7 +2,7 @@
 
 /**
  * A query drawn in the syntax colours: the mirror over the query field's
- * input (`QueryMirror`), whose text is transparent so the caret and the
+ * input (`MirrorText`), whose text is transparent so the caret and the
  * selection stay the input's own, and the examples of the help
  * (`QueryText`). Only colour and decoration change between the spans,
  * never a glyph's width, so the mirror's letters stay over the input's.
@@ -195,5 +195,5 @@ function ProblemRun({
   )
 }
 
-export { MirrorText, QueryText, SPAN_CLASS }
+export { MirrorText, QueryText }
 export type { QueryProblem }

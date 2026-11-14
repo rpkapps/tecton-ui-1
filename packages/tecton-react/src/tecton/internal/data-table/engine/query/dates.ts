@@ -191,7 +191,7 @@ function monthOf(word: string, locale: DateLocale) {
   return monthIn(word, locale.months) ?? monthIn(word, locale.english)
 }
 
-/** Whether `word` (folded) begins a month name of `locale`, for suggestions. */
+/** The months (from 0) a name of which in `locale` `word` (folded) begins, for suggestions. */
 function monthsStartingWith(word: string, locale: DateLocale): Array<number> {
   if (!word) return []
   const found: Array<number> = []

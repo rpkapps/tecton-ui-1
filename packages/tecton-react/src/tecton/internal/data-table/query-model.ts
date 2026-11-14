@@ -2,7 +2,8 @@
  * What `DataTableSearch syntax="query"` says about a query, in words: a
  * problem's message from its code and parameters, the field's summary for
  * screen readers, what a date term was understood as, the suggestions in
- * groups, the list's line when it has none, and the help's examples, made from the table's own columns.
+ * groups, the list's line when it has none, and the help's examples, made
+ * from the table's own columns.
  * Loaded with the query field (`lazy.ts`, the `query` feature).
  */
 import type { Translator } from "../i18n/translations"
@@ -18,16 +19,19 @@ import type {
   QuerySuggestions,
   QueryTerm,
 } from "./engine/query/index"
-import { formatDay, toDay } from "./engine/query/dates"
+import { formatDay, RELATIVE, toDay } from "./engine/query/dates"
 import { plainSearch } from "./engine/query/serialize"
-import { quote, valueToken } from "./engine/query/syntax"
+import { EMPTY_WORDS, quote, valueToken } from "./engine/query/syntax"
 import type { DataTableColumnType, DataTableFilterValue } from "./engine/types"
 import { filterText } from "./filter-text"
 
 type QueryT = Translator<"dataTableQuery">
 type TableT = Translator<"dataTable">
 
-/** Values of a column's data to write examples with: its numbers and years, its most frequent text. */
+/**
+ * Values of a column's data to write examples with: its numbers and years,
+ * its most frequent text.
+ */
 type ColumnSample = (column: QueryColumn) => {
   text?: string
   number?: number
@@ -271,7 +275,6 @@ type SuggestionRow =
       readonly kind: "calendar"
       readonly id: string
       readonly label: string
-      readonly single: boolean
     }
 
 type SuggestionGroup = {
@@ -284,7 +287,7 @@ type SuggestionGroup = {
 
 /** A preset's name in words: "Last 30 days". */
 function presetLabel(name: string, t: QueryT) {
-  const relative = /^last(\d+)([dwmy])$/.exec(name)
+  const relative = RELATIVE.exec(name)
   if (relative) {
     const count = Number(relative[1])
     const key = (
@@ -416,7 +419,6 @@ function groupSuggestions(
       kind: "calendar",
       id: "calendar",
       label: calendar === "single" ? t("pickDay") : t("pickDates"),
-      single: calendar === "single",
     })
   for (const [index, suggestion] of suggestions.items.entries()) {
     const row: SuggestionRow = {
@@ -572,7 +574,7 @@ function helpExamples(
   const first = language.columns.find((column) => column.key !== null)
   if (first)
     examples.push({
-      query: `${first.key}:none`,
+      query: `${first.key}:${EMPTY_WORDS[0]}`,
       finds: t("findsNoValue", { column: first.header }),
     })
   return examples
@@ -582,7 +584,6 @@ export {
   dayText,
   groupSuggestions,
   helpExamples,
-  headerOf,
   problemMessage,
   statusOf,
   summaryOf,

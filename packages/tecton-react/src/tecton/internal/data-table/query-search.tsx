@@ -84,6 +84,7 @@ import {
   type QuerySuggestion,
 } from "./engine/query/index"
 import { dayOfDate, partsOf, type Day } from "./engine/query/dates"
+import { EMPTY_WORDS } from "./engine/query/syntax"
 import type { SearchParts } from "./engine/engine"
 import type { DataTableDateRange } from "./engine/types"
 import { DATE_INPUT, type DateInputModule } from "./date-input"
@@ -1157,7 +1158,7 @@ function SuggestionView({
     case "empty":
       return (
         <>
-          {code("none", "text-saffron-830")}
+          {code(EMPTY_WORDS[0], "text-saffron-830")}
           <span className="min-w-0 truncate text-muted-foreground">
             {row.label}
           </span>

@@ -129,11 +129,18 @@ const KEY = /^[\p{L}\p{N}_][\p{L}\p{M}\p{N}_\-.()]*$/u
 const LETTER = /\p{L}/u
 const isKeyText = (text: string) => KEY.test(text) && LETTER.test(text)
 
-/** `none` and `empty`: a filter's "No value", written unquoted. */
-const isEmptyWord = (raw: string) => {
-  const word = raw.trim().toLowerCase()
-  return word === "none" || word === "empty"
-}
+/** A comparison at the start of a value: `>=`, `≥`, `<=`, `≤`, `>`, `<`, `=`. */
+const OPERATOR = /^(>=|<=|≥|≤|>|<|=)/
+
+/** `AND`, `OR` and `NOT`, in capitals: the query's keywords. */
+const KEYWORDS: ReadonlySet<string> = new Set(["AND", "OR", "NOT"])
+
+/** A filter's "No value", written unquoted: the first is how the query writes it. */
+const EMPTY_WORDS = ["none", "empty"] as const
+
+/** Whether `raw` is a "No value" word (`EMPTY_WORDS`), in any case. */
+const isEmptyWord = (raw: string) =>
+  (EMPTY_WORDS as ReadonlyArray<string>).includes(raw.trim().toLowerCase())
 
 /**
  * Whether `text` stands for itself as a value, unquoted: not empty, no
@@ -152,6 +159,9 @@ function isPlainValue(text: string) {
 const valueToken = (text: string) => (isPlainValue(text) ? text : quote(text))
 
 export {
+  EMPTY_WORDS,
+  KEYWORDS,
+  OPERATOR,
   chunksOf,
   hasQuote,
   indexOutsideQuotes,

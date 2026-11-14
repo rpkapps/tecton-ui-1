@@ -45,7 +45,15 @@ import {
 import type { QueryColumn, QueryLanguage } from "./language"
 import { valueItems } from "./parse"
 import type { QuerySource } from "./source"
-import { isEmptyWord, keyForm, unquote, valueToken, type Item } from "./syntax"
+import {
+  EMPTY_WORDS,
+  isEmptyWord,
+  keyForm,
+  OPERATOR,
+  unquote,
+  valueToken,
+  type Item,
+} from "./syntax"
 import type {
   ParsedQuery,
   QueryFilterTerm,
@@ -115,7 +123,10 @@ type QuerySuggestion = Offer &
   )
 
 type QuerySuggestions = {
-  /** What the caret is in: a key (or between terms), a free word, a column's value. */
+  /**
+   * What the caret is in: a key (or between terms), a free word, a column's
+   * value; `none` where nothing is offered (a keyword, a term left out).
+   */
   readonly context: "column" | "word" | "value" | "none"
   /** The column of a value. */
   readonly column?: string
@@ -332,7 +343,7 @@ function suggestQuery(
     complete: boolean
   ): Array<QuerySuggestion> {
     const typing =
-      typed !== "" && ("none".startsWith(typed) || "empty".startsWith(typed))
+      typed !== "" && EMPTY_WORDS.some((word) => word.startsWith(typed))
     if (typed !== "" && !typing) return []
     if (!typing && count === 0) return []
     return [
@@ -340,7 +351,7 @@ function suggestQuery(
         kind: "empty",
         column: column.id,
         ...(count === undefined ? {} : { count }),
-        ...(complete ? completing("none", end) : open("none")),
+        ...(complete ? completing(EMPTY_WORDS[0], end) : open(EMPTY_WORDS[0])),
       },
     ]
   }
@@ -513,7 +524,7 @@ function suggestQuery(
     const { items, item } = currentItem(filter, column)
     const segment = text.slice(item.start, item.end)
     const lead = /^\s*/.exec(segment)?.[0].length ?? 0
-    const operator = /^(>=|<=|≥|≤|>|<|=)/.exec(segment.slice(lead))?.[1] ?? ""
+    const operator = OPERATOR.exec(segment.slice(lead))?.[1] ?? ""
     let start = item.start + lead + operator.length
     let end = item.end
     const dots = text.indexOf("..", start)

@@ -41,7 +41,7 @@ import { boundText, daysInMonth, formatDay, partsOf } from "./dates"
 import type { QueryColumn, QueryLanguage } from "./language"
 import { formatNumber, joinsNumber } from "./numbers"
 import { parseQuery } from "./parse"
-import { isQuote, quote, valueToken } from "./syntax"
+import { EMPTY_WORDS, isQuote, KEYWORDS, quote, valueToken } from "./syntax"
 import type { ParsedQuery, QueryView } from "./types"
 
 type SerializeOptions = {
@@ -139,7 +139,7 @@ function filterValue(
   column: QueryColumn,
   value: Exclude<DataTableFilterValue, { type: "custom" }>
 ): string {
-  const none = value.empty ? "none" : null
+  const none = value.empty ? EMPTY_WORDS[0] : null
   let text: string | null
   switch (value.type) {
     case "text":
@@ -226,9 +226,7 @@ function plainSearch(search: string) {
         !/[\s:\\]/.test(word) &&
         ![...word].some(isQuote) &&
         !word.startsWith("-") &&
-        word !== "AND" &&
-        word !== "OR" &&
-        word !== "NOT"
+        !KEYWORDS.has(word)
     )
 }
 
