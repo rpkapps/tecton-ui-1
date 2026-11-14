@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   addedIds,
   aggregate,
+  allMatchingAfterSelection,
   allMatchingAfterViewChange,
   allMatchingValue,
   buildHeaderRows,
@@ -32,7 +33,6 @@ import {
   setFilter,
   setGrouping,
   setSearch,
-  setSelectedInAllMatching,
   setSorting,
   sameFilterValue,
   sameView,
@@ -2269,34 +2269,22 @@ describe("selection", () => {
       value: ["A-2", "B-1", "a-1"],
       allMatching: { except: [] },
     })
-    const deselected = setSelectedInAllMatching(
-      entered.value,
+    // A row deselected (the grid, a group's checkbox) is excepted.
+    const value = ["A-2", "a-1"]
+    const deselected = allMatchingAfterSelection(
       entered.allMatching,
-      "B-1",
-      false
+      entered.value,
+      value
     )
-    expect(deselected).toEqual({
-      value: ["A-2", "a-1"],
-      allMatching: { except: ["B-1"] },
-    })
+    expect(deselected).toEqual({ except: ["B-1"] })
+    expect(selectedCount(value, deselected, result.rowCount)).toBe(999)
+    // Selected again, it is no longer; others deselected at once are.
     expect(
-      selectedCount(deselected.value, deselected.allMatching, result.rowCount)
-    ).toBe(999)
-    const reselected = setSelectedInAllMatching(
-      deselected.value,
-      deselected.allMatching,
-      "B-1",
-      true
-    )
-    expect(reselected).toEqual({
-      value: ["A-2", "a-1", "B-1"],
-      allMatching: { except: [] },
-    })
-    expect(allMatchingValue(result, deselected.allMatching)).toEqual([
-      "A-2",
-      "a-1",
-    ])
+      allMatchingAfterSelection(deselected, value, ["a-1", "B-1"])
+    ).toEqual({ except: ["A-2"] })
+    expect(allMatchingValue(result, deselected)).toEqual(["A-2", "a-1"])
     expect(selectedCount(["a", "b"], null, 1000)).toBe(2)
+    expect(selectedCount(new Set(["a", "b"]), null, 1000)).toBe(2)
   })
 
   it("leaves all matching when search or filters change", () => {

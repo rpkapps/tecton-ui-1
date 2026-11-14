@@ -250,6 +250,7 @@ type DataTableEngine<T> = {
 const EMPTY_SET: ReadonlySet<string> = new Set()
 const NO_IDS: ReadonlyArray<string> = []
 
+/** An item's id when the table has no `itemToId`: `String(item.id)`. */
 function defaultItemToId(item: unknown) {
   return String((item as { id?: unknown } | null)?.id)
 }
@@ -925,7 +926,7 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
   }
 }
 
-export { createDataTableEngine }
+export { createDataTableEngine, defaultItemToId }
 export type {
   DataTableDataMode,
   DataTableEngine,

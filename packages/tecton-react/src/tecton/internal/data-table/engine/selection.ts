@@ -11,8 +11,10 @@
  *   (`DataTableRowModel.groupSelectableIds`, `toggleIds`).
  * - Server mode "Select all N" enters all-matching (`enterAllMatching`):
  *   `value` is the loaded items, `allMatching.except` the rows deselected
- *   since; rows loaded later come selected (`allMatchingValue`), and a
- *   change of search or filters leaves it (`allMatchingAfterViewChange`).
+ *   since (`allMatchingAfterSelection`); rows loaded later come selected
+ *   (`allMatchingValue`), a change of search or filters leaves it
+ *   (`allMatchingAfterViewChange`), and the rows selected are the server's
+ *   count but the excepted (`selectedCount`).
  *
  * Values are arrays of ids in the order rows were selected; the functions
  * take a `Set` too, for large selections.
@@ -69,23 +71,21 @@ function enterAllMatching<T>(model: DataTableRowModel<T>): {
   return { value: [...selectAllIds(model)], allMatching: { except: [] } }
 }
 
-/** Selects or deselects one row while in all-matching: a deselected row is excepted. */
-function setSelectedInAllMatching(
-  value: ReadonlyArray<string>,
+/**
+ * All-matching after the selection changed from `before` to `next` (the
+ * grid, a group's checkbox): the rows deselected are excepted, and those
+ * selected again no longer are.
+ */
+function allMatchingAfterSelection(
   allMatching: DataTableAllMatching,
-  id: string,
-  selected: boolean
-): { value: Array<string>; allMatching: DataTableAllMatching } {
-  const except = allMatching.except.filter((other) => other !== id)
-  if (selected)
-    return {
-      value: value.includes(id) ? [...value] : [...value, id],
-      allMatching: { except },
-    }
-  return {
-    value: value.filter((other) => other !== id),
-    allMatching: { except: [...except, id] },
-  }
+  before: Ids,
+  next: ReadonlyArray<string>
+): DataTableAllMatching {
+  const after = new Set(next)
+  const except = new Set(allMatching.except)
+  for (const id of before) if (!after.has(id)) except.add(id)
+  for (const id of next) except.delete(id)
+  return { except: [...except] }
 }
 
 /** The selection while in all-matching: every loaded, selectable item but the excepted. */
@@ -123,13 +123,13 @@ function selectedCount(
 }
 
 export {
+  allMatchingAfterSelection,
   allMatchingAfterViewChange,
   allMatchingValue,
   enterAllMatching,
   selectAllIds,
   selectedCount,
   selectionState,
-  setSelectedInAllMatching,
   toggleIds,
 }
 export type { DataTableAllMatching }

@@ -44,7 +44,7 @@ export type {
 } from "./columns"
 export { addedIds } from "./changes"
 export type { CsvOptions } from "./csv"
-export { createDataTableEngine } from "./engine"
+export { createDataTableEngine, defaultItemToId } from "./engine"
 export type {
   DataTableDataMode,
   DataTableEngine,
@@ -99,13 +99,13 @@ export type {
 } from "./rows"
 export type { IdIssues } from "./core"
 export {
+  allMatchingAfterSelection,
   allMatchingAfterViewChange,
   allMatchingValue,
   enterAllMatching,
   selectAllIds,
   selectedCount,
   selectionState,
-  setSelectedInAllMatching,
   toggleIds,
 } from "./selection"
 export type { DataTableAllMatching } from "./selection"

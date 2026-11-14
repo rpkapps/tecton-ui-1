@@ -31,7 +31,11 @@
  */
 import * as React from "react"
 
-import { addedIds, type DataTableRowModel } from "./engine/index"
+import {
+  addedIds,
+  defaultItemToId,
+  type DataTableRowModel,
+} from "./engine/index"
 
 /**
  * `DataTable`'s `highlightChanges`: `true` for added rows, highlighted
@@ -101,10 +105,6 @@ type LiveControl = {
 const NO_IDS: ReadonlySet<string> = new Set()
 const SAME = { batch: null, changed: false }
 const CHANGED = { batch: null, changed: true }
-
-function defaultItemToId(item: unknown) {
-  return String((item as { id?: unknown } | null)?.id)
-}
 
 /**
  * The items and children the engine gets: `items` but the held rows. With

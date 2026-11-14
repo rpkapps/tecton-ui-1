@@ -31,6 +31,7 @@ import {
   useNumberFormat,
   type DataTableState,
 } from "./context"
+import { selectedCount } from "./engine/index"
 import { clearSelection, selectAllMatching } from "./more-actions"
 
 type DataTableActionBarProps = Omit<ActionBarProps, "open">
@@ -81,9 +82,7 @@ function DataTableActionBar({
     (state) => state.options.selectionMode
   )
   const count = useDataTableSelector(context, (state) =>
-    state.allMatching
-      ? Math.max(0, state.model.rowCount - state.allMatching.except.length)
-      : state.value.length
+    selectedCount(state.selected, state.allMatching, state.model.rowCount)
   )
   const total = useDataTableSelector(context, (state) => state.model.rowCount)
   const allMatching = useDataTableSelector(
