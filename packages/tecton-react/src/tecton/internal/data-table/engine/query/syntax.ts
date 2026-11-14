@@ -143,15 +143,21 @@ const isEmptyWord = (raw: string) =>
   (EMPTY_WORDS as ReadonlyArray<string>).includes(raw.trim().toLowerCase())
 
 /**
- * Whether `text` stands for itself as a value, unquoted: not empty, no
- * space, quote, backslash or comma, and not a "No value" word.
+ * Whether `text` stands for itself unquoted: not empty, no space, quote,
+ * backslash or `special` character, and not a `reserved` word. By default,
+ * as a value: no comma, not a "No value" word.
  */
-function isPlainValue(text: string) {
+function isPlainValue(
+  text: string,
+  special = ",",
+  reserved: (word: string) => boolean = isEmptyWord
+) {
   return (
     text !== "" &&
-    !/[\s,\\]/.test(text) &&
+    !/[\s\\]/.test(text) &&
+    !text.includes(special) &&
     ![...text].some(isQuote) &&
-    !isEmptyWord(text)
+    !reserved(text)
   )
 }
 

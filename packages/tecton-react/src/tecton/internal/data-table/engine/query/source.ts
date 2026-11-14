@@ -89,8 +89,31 @@ type QuerySourceParts<T> = {
   hidden?: ReadonlyArray<string>
 }
 
-/** How many previous rests' predicates are kept. */
+/** How many previous rests' predicates and numbers are kept. */
 const KEPT = 4
+
+/**
+ * The value `cache` keeps for `rest` and `key` (a column or the one left
+ * out), else `make`'s, kept in its place (the last of `KEPT` goes).
+ */
+function kept<TKey, TValue>(
+  cache: Array<{ rest: QueryView; key: TKey; value: TValue }>,
+  rest: QueryView,
+  key: TKey,
+  make: () => TValue
+): TValue {
+  const found = cache.find(
+    (entry) =>
+      entry.key === key &&
+      entry.rest.search === rest.search &&
+      sameFilters(entry.rest.filters, rest.filters)
+  )
+  if (found) return found.value
+  const value = make()
+  cache.unshift({ rest, key, value })
+  if (cache.length > KEPT) cache.pop()
+  return value
+}
 
 function createQuerySource<T>({
   model,
@@ -104,76 +127,57 @@ function createQuerySource<T>({
   const searched = model.leaves.filter(
     (column) => column.searchable && !hiddenIds.has(column.id)
   )
-  const kept: Array<{
+  const predicates: Array<{
     rest: QueryView
-    exclude: string
-    predicate: RowPredicate<T> | null
+    key: string
+    value: RowPredicate<T> | null
   }> = []
   const masks = new Map<string, Uint8Array | null>()
-  const predicateOf = (rest: QueryView, exclude: string) => {
-    const found = kept.find(
-      (entry) =>
-        entry.exclude === exclude &&
-        entry.rest.search === rest.search &&
-        sameFilters(entry.rest.filters, rest.filters)
-    )
-    if (found) return found.predicate
-    const query = rest.search.trim()
-    let mask = masks.get(query)
-    if (mask === undefined) {
-      mask = searchMask(index, searched, query, items.length)
-      if (masks.size >= KEPT) masks.clear()
-      masks.set(query, mask)
-    }
-    const predicate = compileFilter(
-      model.byId,
-      rest.filters,
-      index,
-      mask,
-      items.length,
-      exclude
-    )
-    kept.unshift({ rest, exclude, predicate })
-    if (kept.length > KEPT) kept.pop()
-    return predicate
-  }
+  const predicateOf = (rest: QueryView, exclude: string) =>
+    kept(predicates, rest, exclude, () => {
+      const query = rest.search.trim()
+      let mask = masks.get(query)
+      if (mask === undefined) {
+        mask = searchMask(index, searched, query, items.length)
+        if (masks.size >= KEPT) masks.clear()
+        masks.set(query, mask)
+      }
+      return compileFilter(
+        model.byId,
+        rest.filters,
+        index,
+        mask,
+        items.length,
+        exclude
+      )
+    })
   const columnOf = (id: string): EngineColumn<T> | undefined =>
     model.byId.get(id)
-  const sortedKept: Array<{
+  const sorted: Array<{
     rest: QueryView
-    column: EngineColumn<T>
-    numbers: Float64Array
-    missing: number
+    key: EngineColumn<T>
+    value: { numbers: Float64Array; missing: number }
   }> = []
   /**
    * The matching rows' numbers (dates' times) in `column`, sorted, and how
    * many have no value: one pass over the rows for every question about
    * the column (its range, its presets, years and months).
    */
-  const numbersOf = (column: EngineColumn<T>, rest: QueryView) => {
-    const found = sortedKept.find(
-      (entry) =>
-        entry.column === column &&
-        entry.rest.search === rest.search &&
-        sameFilters(entry.rest.filters, rest.filters)
-    )
-    if (found) return found
-    const predicate = predicateOf(rest, column.id)
-    const all = new Float64Array(items.length)
-    let count = 0
-    let missing = 0
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i]
-      if (predicate && !predicate(i, item)) continue
-      const n = column.sortValue(item)
-      if (typeof n === "number") all[count++] = n
-      else if (hasNoValue(column, column.getValue(item))) missing++
-    }
-    const entry = { rest, column, numbers: all.slice(0, count).sort(), missing }
-    sortedKept.unshift(entry)
-    if (sortedKept.length > KEPT) sortedKept.pop()
-    return entry
-  }
+  const numbersOf = (column: EngineColumn<T>, rest: QueryView) =>
+    kept(sorted, rest, column, () => {
+      const predicate = predicateOf(rest, column.id)
+      const all = new Float64Array(items.length)
+      let count = 0
+      let missing = 0
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        if (predicate && !predicate(i, item)) continue
+        const n = column.sortValue(item)
+        if (typeof n === "number") all[count++] = n
+        else if (hasNoValue(column, column.getValue(item))) missing++
+      }
+      return { numbers: all.slice(0, count).sort(), missing }
+    })
   const ordered = (column: EngineColumn<T>) =>
     column.type === "number" || column.type === "date"
   /** How many of `sorted` are below `n`. */

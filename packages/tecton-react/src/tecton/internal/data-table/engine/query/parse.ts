@@ -165,15 +165,20 @@ class TermReader {
   /**
    * The value's items, the same way for every type: the commas between
    * them drawn, blank ones skipped, `none` taken as "No value" (`empty`),
-   * each other item read by `read` (`undefined` when it has a problem,
-   * which `read` reported, or says nothing yet), its values kept once.
+   * each other item read by `item` (`undefined` when it has a problem,
+   * which it reported, or says nothing yet), its values kept once; the
+   * filter they make, with no problem.
    */
-  list<TItem>(
-    items: ReadonlyArray<Item>,
-    read: (item: Item, raw: string) => TItem | undefined,
-    same: (a: TItem, b: TItem) => boolean = Object.is
-  ): { values: Array<TItem>; empty: boolean } {
-    const values: Array<TItem> = []
+  list(items: ReadonlyArray<Item>): FilterReading {
+    const { type } = this.column
+    const same = (
+      type === "number"
+        ? sameNumberRange
+        : type === "date"
+          ? sameDateRange
+          : Object.is
+    ) as (a: unknown, b: unknown) => boolean
+    const values: Array<unknown> = []
     let empty = false
     for (const [index, item] of items.entries()) {
       if (index > 0) this.span(item.start - 1, item.start, "separator")
@@ -184,11 +189,26 @@ class TermReader {
         this.span(item.start, item.end, "empty")
         continue
       }
-      const value = read(item, raw)
+      const value = this.item(item, raw)
       if (value !== undefined && !values.some((other) => same(other, value)))
         values.push(value)
     }
-    return { values, empty }
+    const problem = this.diagnostics.length > 0
+    const value =
+      !problem && (values.length || empty)
+        ? ({
+            type,
+            [type === "number" || type === "date" ? "ranges" : "values"]:
+              values,
+            ...(empty ? { empty } : {}),
+          } as DataTableFilterValue)
+        : undefined
+    return {
+      spans: this.spans,
+      diagnostics: this.diagnostics,
+      value,
+      incomplete: !problem && !value,
+    }
   }
 
   /**
@@ -204,70 +224,31 @@ class TermReader {
     return true
   }
 
-  options(items: ReadonlyArray<Item>): FilterReading {
-    const { values, empty } = this.list(items, (item, raw) => {
-      this.span(item.start, item.end, "value")
-      if (this.notComparable(item, raw)) return undefined
-      const value = unquote(raw).trim()
-      const option = this.language.option(this.column, value)
-      if (!option) {
-        this.problem("unknownValue", item.start, item.end, {
-          value,
-          ...suggestion(this.language.closestOption(this.column, value)?.value),
-        })
-        return undefined
-      }
-      return option.value
-    })
-    return this.result(
-      values.length || empty
-        ? { type: "options", values, ...emptyFlag(empty) }
-        : undefined
-    )
-  }
-
-  boolean(items: ReadonlyArray<Item>): FilterReading {
-    const { values, empty } = this.list(items, (item, raw) => {
-      this.span(item.start, item.end, "value")
-      const value = unquote(raw).trim()
-      const wanted = this.language.boolean(value)
+  /** One item of the value, by the column's type (see `list`). */
+  item(item: Item, raw: string) {
+    const { column, language } = this
+    if (column.type === "number") return this.numberRange(item)
+    if (column.type === "date") return this.dateRange(item)
+    this.span(item.start, item.end, "value")
+    const value = unquote(raw)
+    // A text as it is typed: spaces are its own only in quotes, where
+    // they keep the chunk together, but blank texts find every row.
+    if (column.type === "text") return value.trim() === "" ? undefined : value
+    const name = value.trim()
+    if (column.type === "boolean") {
+      const wanted = language.boolean(name)
       if (wanted === undefined && !this.notComparable(item, raw))
-        this.problem("unknownValue", item.start, item.end, { value })
+        this.problem("unknownValue", item.start, item.end, { value: name })
       return wanted
-    })
-    return this.result(
-      values.length || empty
-        ? { type: "boolean", values, ...emptyFlag(empty) }
-        : undefined
-    )
-  }
-
-  textFilter(items: ReadonlyArray<Item>): FilterReading {
-    const { values, empty } = this.list(items, (item, raw) => {
-      this.span(item.start, item.end, "value")
-      // As it is typed: spaces are a text's own only in quotes, where they
-      // keep the chunk together, but blank texts find every row.
-      const value = unquote(raw)
-      return value.trim() === "" ? undefined : value
-    })
-    return this.result(
-      values.length || empty
-        ? { type: "text", values, ...emptyFlag(empty) }
-        : undefined
-    )
-  }
-
-  number(items: ReadonlyArray<Item>): FilterReading {
-    const { values, empty } = this.list(
-      items,
-      (item) => this.numberRange(item),
-      sameNumberRange
-    )
-    return this.result(
-      values.length || empty
-        ? { type: "number", ranges: values, ...emptyFlag(empty) }
-        : undefined
-    )
+    }
+    if (this.notComparable(item, raw)) return undefined
+    const option = language.option(column, name)
+    if (!option)
+      this.problem("unknownValue", item.start, item.end, {
+        value: name,
+        ...suggestion(language.closestOption(column, name)?.value),
+      })
+    return option?.value
   }
 
   /** A number item's range: a comparison or `a..b`. */
@@ -336,19 +317,6 @@ class TermReader {
       joined.push(item)
     }
     return joined
-  }
-
-  date(items: ReadonlyArray<Item>): FilterReading {
-    const { values, empty } = this.list(
-      items,
-      (item) => this.dateRange(item),
-      sameDateRange
-    )
-    return this.result(
-      values.length || empty
-        ? { type: "date", ranges: values, ...emptyFlag(empty) }
-        : undefined
-    )
   }
 
   /** A date item's comparison or range, its dates read (`expression`). */
@@ -481,15 +449,6 @@ class TermReader {
     if (value.empty || value.value === undefined) return null
     return { kind: "compare", op: "=", literal: value.value }
   }
-
-  result(value: DataTableFilterValue | undefined): FilterReading {
-    return {
-      spans: this.spans,
-      diagnostics: this.diagnostics,
-      value: this.diagnostics.length ? undefined : value,
-      incomplete: !this.diagnostics.length && value === undefined,
-    }
-  }
 }
 
 /** The first `..` of `text[start, end)` outside quotes, or -1. */
@@ -500,8 +459,6 @@ function rangeAt(text: string, start: number, end: number) {
     if (text[at + 1] === ".") return at
   }
 }
-
-const emptyFlag = (empty: boolean) => (empty ? { empty: true as const } : {})
 
 const suggestion = (value: string | undefined) =>
   value === undefined ? {} : { suggestion: value }
@@ -623,25 +580,19 @@ function readFilter(
   const resolved = language.resolveKey(key)
   if (!resolved || "unfilterable" in resolved) {
     if (end > colon + 1) spans.push({ start: colon + 1, end, kind: "value" })
-    const closest = resolved ? undefined : language.closestKey(key)
     return {
       column: undefined,
       reading: {
         spans,
         diagnostics: [
-          resolved
-            ? {
-                code: "columnNotFilterable",
-                start,
-                end,
-                params: { key, column: resolved.unfilterable.id },
-              }
-            : {
-                code: "unknownColumn",
-                start,
-                end,
-                params: { key, ...suggestion(closest?.id) },
-              },
+          {
+            code: resolved ? "columnNotFilterable" : "unknownColumn",
+            start,
+            end,
+            params: resolved
+              ? { key, column: resolved.unfilterable.id }
+              : { key, ...suggestion(language.closestKey(key)?.id) },
+          },
         ],
         value: undefined,
         incomplete: false,
@@ -651,25 +602,7 @@ function readFilter(
   const { column } = resolved
   const reader = new TermReader(text, language, column, today)
   reader.spans.push(...spans)
-  const items = itemsIn(reader, colon + 1, end)
-  let reading: FilterReading
-  switch (column.type) {
-    case "options":
-      reading = reader.options(items)
-      break
-    case "boolean":
-      reading = reader.boolean(items)
-      break
-    case "number":
-      reading = reader.number(items)
-      break
-    case "date":
-      reading = reader.date(items)
-      break
-    case "text":
-      reading = reader.textFilter(items)
-  }
-  return { column, reading }
+  return { column, reading: reader.list(itemsIn(reader, colon + 1, end)) }
 }
 
 /** Whether a date's value may run on into `chunk`: a plain word, not a term. */

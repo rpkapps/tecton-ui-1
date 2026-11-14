@@ -265,32 +265,19 @@ const INSTANT =
   /^(\d{4})-(\d{2})-(\d{2})t(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?(z|[+-]\d{2}:?\d{2})$/
 
 function readInstant(match: RegExpExecArray): DateLiteral | DateProblem {
-  const [year, month, day, hour, minute, second = "0", ms = "0"] = match.slice(
-    1,
-    8
+  const [, year, month, day, hour, minute, second = "00", ms = "", zone] = match
+  // In the one format `Date.parse` reads alike everywhere. It would move a
+  // day past its month's end (February 30) or hour 24 on: not dates.
+  const time = Date.parse(
+    `${year}-${month}-${day}T${hour}:${minute}:${second}.${ms.padEnd(3, "0")}${
+      zone === "z" ? "Z" : `${zone.slice(0, 3)}:${zone.slice(-2)}`
+    }`
   )
-  const zone = match[8]
-  const y = Number(year)
-  const m = Number(month) - 1
-  const d = Number(day)
-  if (!validDay(y, m, d) || Number(hour) > 23 || Number(minute) > 59)
-    return { error: "badDate" }
-  if (Number(second) > 59) return { error: "badDate" }
-  const date = new Date(0)
-  date.setUTCFullYear(y, m, d)
-  date.setUTCHours(
-    Number(hour),
-    Number(minute),
-    Number(second),
-    Number(ms.padEnd(3, "0"))
-  )
-  let offset = 0
-  if (zone !== "z") {
-    const sign = zone[0] === "-" ? -1 : 1
-    const digits = zone.slice(1).replace(":", "")
-    offset = sign * (Number(digits.slice(0, 2)) * 60 + Number(digits.slice(2)))
-  }
-  return { kind: "instant", time: date.getTime() - offset * 60_000 }
+  return Number(hour) < 24 &&
+    validDay(Number(year), Number(month) - 1, Number(day)) &&
+    !Number.isNaN(time)
+    ? { kind: "instant", time }
+    : { error: "badDate" }
 }
 
 const validDay = (year: number, month: number, day: number) =>

@@ -41,7 +41,13 @@ import { boundText, daysInMonth, formatDay, partsOf } from "./dates"
 import type { QueryColumn, QueryLanguage } from "./language"
 import { formatNumber, joinsNumber } from "./numbers"
 import { parseQuery } from "./parse"
-import { EMPTY_WORDS, isQuote, KEYWORDS, quote, valueToken } from "./syntax"
+import {
+  EMPTY_WORDS,
+  isPlainValue,
+  KEYWORDS,
+  quote,
+  valueToken,
+} from "./syntax"
 import type { ParsedQuery, QueryView } from "./types"
 
 type SerializeOptions = {
@@ -216,19 +222,20 @@ function keptPreset(
   return undefined
 }
 
-/** Whether search words written as they are read back as `search`. */
-function plainSearch(search: string) {
-  return search
+/**
+ * Whether search words written as they are read back as `search`: plain,
+ * no colon, not a keyword, no minus before a word.
+ */
+const plainSearch = (search: string) =>
+  search
     .split(" ")
-    .every(
-      (word) =>
-        word !== "" &&
-        !/[\s:\\]/.test(word) &&
-        ![...word].some(isQuote) &&
-        !word.startsWith("-") &&
-        !KEYWORDS.has(word)
+    .every((word) =>
+      isPlainValue(
+        word,
+        ":",
+        (plain) => KEYWORDS.has(plain) || /^-./.test(plain)
+      )
     )
-}
 
 /** The canonical query of `view`'s filters and search (see the module comment). */
 function serializeQuery(
