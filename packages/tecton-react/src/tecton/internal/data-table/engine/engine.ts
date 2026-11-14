@@ -46,7 +46,7 @@
  * tree's totals sum its result leaf rows only (rows without children), so
  * a parent and its children are not counted twice.
  */
-import { aggregateColumns } from "./aggregate"
+import { aggregateColumns, summarize, type Summary } from "./aggregate"
 import { getColumnModel, type ColumnModel, type EngineColumn } from "./columns"
 import {
   buildCore,
@@ -342,7 +342,7 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
       disabled: Uint8Array | null
       aggregates: ReadonlyArray<EngineColumn<T>>
       ids: Map<string, ReadonlyArray<string>>
-      values: Map<string, Readonly<Record<string, DataTableValue>>>
+      summaries: Map<number, Summary>
     }
   >()
   /** The positions a filtered set keeps, as flags, by the set. */
@@ -646,10 +646,35 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
       // closing: a group's checkbox and subtotals are not worked out again.
       let kept = groupCache.get(groups ?? set)
       if (kept?.disabled !== disabled || kept.aggregates !== aggregates) {
-        kept = { disabled, aggregates, ids: new Map(), values: new Map() }
+        kept = { disabled, aggregates, ids: new Map(), summaries: new Map() }
         groupCache.set(groups ?? set, kept)
       }
       const known = kept
+      // A group's subtotals: a group of groups adds up theirs (`summarize`).
+      const summaryOf = (ordered: OrderedGroups<T>, group: number): Summary => {
+        let summary = known.summaries.get(group)
+        if (!summary) {
+          const { order, start, end, childStart, childEnd } = ordered
+          // The next level's groups; none past the last.
+          const inner = order.at(ordered.grouping.level[group] + 1)
+          summary = summarize(
+            aggregates,
+            () =>
+              Array.from(
+                ordered.rows.subarray(start[group], end[group]),
+                (position) => items[position]
+              ),
+            inner
+              ? Array.from(
+                  inner.subarray(childStart[group], childEnd[group]),
+                  (child) => summaryOf(ordered, child)
+                )
+              : null
+          )
+          known.summaries.set(group, summary)
+        }
+        return summary
+      }
       const parts = lazy((): SearchParts<T> => ({
         model: columns,
         core: rows,
@@ -762,16 +787,10 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
           return selectable
         },
         groupAggregates: (key) => {
-          let values = known.values.get(key)
-          if (!values) {
-            const range = groupRange(key)
-            values = aggregateColumns(
-              aggregates,
-              range ? Array.from(range, (position) => items[position]) : []
-            )
-            known.values.set(key, values)
-          }
-          return values
+          const group = groupIndex().get(key)
+          return group === undefined || !groups
+            ? aggregateColumns(aggregates, [])
+            : summaryOf(groups, group).values
         },
         totals: lazy(() => {
           // A tree sums its leaves: a parent's figures are usually its children's.

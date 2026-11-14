@@ -42,6 +42,7 @@ import {
   toggleSorting,
   viewMatchesChanged,
   type BodyRow,
+  type DataTableAggregate,
   type DataTableColumn,
   type DataTableEngineInput,
   type DataTablePartialView,
@@ -1784,6 +1785,56 @@ describe("engine: grouping", () => {
       oil: null,
       active: 0,
     })
+  })
+
+  it("adds up nested groups' subtotals as one pass over their rows would", () => {
+    const every = (
+      aggregate: DataTableAggregate<Well>
+    ): Array<DataTableColumn<Well>> => [
+      { id: "name", header: "Well" },
+      { id: "operator", header: "Operator" },
+      { id: "status", header: "Status", type: "options", options: STATUS },
+      { id: "oil", header: "Oil", type: "number", aggregate },
+      { id: "spud", header: "Spud", type: "date", aggregate },
+      { id: "active", header: "Active", type: "boolean", aggregate },
+    ]
+    const fleetWithDates = fleet.map((w, i) => ({
+      ...w,
+      spud: i === 2 ? null : new Date(2020, i, 1),
+    }))
+    for (const fn of [
+      "sum",
+      "avg",
+      "min",
+      "max",
+      "count",
+      "countDistinct",
+      (values: ReadonlyArray<unknown>) => values.length,
+    ] as const) {
+      const own = createColumns<Well>(every(fn))
+      const result = createDataTableEngine<Well>().run({
+        items: fleetWithDates,
+        columns: own,
+        view: reconcileView(
+          own,
+          { grouping: ["status", "operator"] },
+          createDefaultView(own, undefined, ALL),
+          ALL
+        ),
+      })
+      const model = getColumnModel(own)
+      for (const key of result.groupKeys()) {
+        const list = result.groupItems(key)
+        expect(result.groupAggregates(key), `${String(fn)} ${key}`).toEqual(
+          Object.fromEntries(
+            ["oil", "spud", "active"].map((id) => [
+              id,
+              aggregate(model.byId.get(id)!, list),
+            ])
+          )
+        )
+      }
+    }
   })
 
   it("keeps closed groups' rows out, and lists every key for collapse all", () => {
