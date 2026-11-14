@@ -41,6 +41,7 @@ import {
   startOf,
   toDay,
   todayIn,
+  type Day,
 } from "./dates"
 import type { QueryColumn, QueryLanguage } from "./language"
 import { valueItems } from "./parse"
@@ -263,12 +264,28 @@ function suggestQuery(
   switch (column.type) {
     case "options":
     case "boolean":
-      return listValue(filter, column, rest)
+      return listedValue(
+        filter,
+        column,
+        rest,
+        (raw) => optionKey(column, raw),
+        (typed, others) => optionValues(column, rest, typed, others)
+      )
     case "text":
-      return textValue(filter, column, rest)
+      return listedValue(filter, column, rest, foldText, (typed, others) =>
+        textValues(column, rest, typed, others)
+      )
     case "number":
     case "date":
       return orderedValue(filter, column, rest)
+  }
+
+  /** An option or yes / no item's value (`true` as `"true"`), to leave out. */
+  function optionKey(column: QueryColumn, raw: string) {
+    const value = raw.trim()
+    if (column.type !== "boolean") return language.option(column, value)?.value
+    const wanted = language.boolean(value)
+    return wanted === undefined ? undefined : String(wanted)
   }
 
   function word(term: QueryTextTerm): QuerySuggestions {
@@ -384,37 +401,78 @@ function suggestQuery(
     return { items, item }
   }
 
-  function listValue(
+  /**
+   * An options, yes / no or text column's value: for the item of its list
+   * at the caret, the `values` that fit what is typed (folded), but those
+   * the other items list (`keyOf` their unquoted text), then "No value".
+   */
+  function listedValue(
     filter: QueryFilterTerm,
     column: QueryColumn,
-    rest: QueryView
+    rest: QueryView,
+    keyOf: (raw: string) => string | undefined,
+    values: (
+      typed: string,
+      others: ReadonlySet<string>
+    ) => Array<{ value: string | boolean; count?: number; token: string }>
   ): QuerySuggestions {
     const { items, item } = currentItem(filter, column)
-    const typed = foldText(unquote(text.slice(item.start, caret)).trim())
-    const complete = item.end === filter.end
-    const listed = new Set(
-      items
-        .filter((other) => other !== item)
-        .map((other) => unquote(text.slice(other.start, other.end)).trim())
-        .flatMap((value) => {
-          if (column.type === "boolean") {
-            const wanted = language.boolean(value)
-            return wanted === undefined ? [] : [String(wanted)]
-          }
-          return language.option(column, value)?.value ?? []
-        })
+    const typed = foldText(
+      unquote(text.slice(item.start, Math.max(item.start, caret))).trim()
     )
+    const complete = item.end === filter.end
+    const others = new Set(
+      items.flatMap((other) =>
+        other === item
+          ? []
+          : (keyOf(unquote(text.slice(other.start, other.end))) ?? [])
+      )
+    )
+    return {
+      context: "value",
+      column: column.id,
+      start: item.start,
+      end: item.end,
+      items: [
+        ...values(typed, others)
+          .slice(0, limit)
+          .map(({ value, count, token }): QuerySuggestion => ({
+            kind: "value",
+            group: "values",
+            column: column.id,
+            value,
+            ...(count === undefined ? {} : { count }),
+            ...(complete ? completing(token, filter.end) : open(token)),
+          })),
+        ...(listsEmpty(items, item)
+          ? []
+          : emptyOffer(
+              column,
+              typed,
+              source?.facets(column.id, rest).empty,
+              filter.end,
+              complete
+            )),
+      ],
+    }
+  }
+
+  /** An options or yes / no column's values that fit what is typed, best first. */
+  function optionValues(
+    column: QueryColumn,
+    rest: QueryView,
+    typed: string,
+    others: ReadonlySet<string>
+  ) {
     const facets = source?.facets(column.id, rest)
     const candidates: Array<{
       value: string | boolean
-      key: string
       names: Array<string>
       count: number | undefined
     }> =
       column.type === "boolean"
         ? [true, false].map((value) => ({
             value,
-            key: String(value),
             names: [
               value ? language.labels.yes : language.labels.no,
               value ? "yes" : "no",
@@ -424,15 +482,14 @@ function suggestQuery(
           }))
         : column.column.options.map((option) => ({
             value: option.value,
-            key: option.value,
             names: [option.label, option.value],
             count: facets
               ? (facets.counts.get(option.value) ?? 0)
               : option.count,
           }))
-    const values = candidates
+    return candidates
       .flatMap((candidate, order) => {
-        if (listed.has(candidate.key)) return []
+        if (others.has(String(candidate.value))) return []
         const scores = candidate.names
           .map((name) => fit(name, typed))
           .filter((score) => score >= 0)
@@ -440,30 +497,42 @@ function suggestQuery(
         return [{ candidate, score: Math.min(...scores), order }]
       })
       .sort((a, b) => a.score - b.score || a.order - b.order)
-      .slice(0, limit)
-      .map(({ candidate }): QuerySuggestion => {
-        const token = language.valueToken(column, candidate.value)
-        return {
-          kind: "value",
-          group: "values",
-          column: column.id,
-          value: candidate.value,
-          ...(candidate.count === undefined ? {} : { count: candidate.count }),
-          ...(complete ? completing(token, filter.end) : open(token)),
-        }
-      })
-    return {
-      context: "value",
-      column: column.id,
-      start: item.start,
-      end: item.end,
-      items: [
-        ...values,
-        ...(listsEmpty(items, item)
-          ? []
-          : emptyOffer(column, typed, facets?.empty, filter.end, complete)),
-      ],
-    }
+      .map(({ candidate: { value, count } }) => ({
+        value,
+        count,
+        token: language.valueToken(column, value),
+      }))
+  }
+
+  /**
+   * A text column's values that contain what is typed (the most frequent
+   * ones while nothing is), but those the other items list.
+   */
+  function textValues(
+    column: QueryColumn,
+    rest: QueryView,
+    typed: string,
+    others: ReadonlySet<string>
+  ) {
+    const facets = source?.facets(column.id, rest)
+    const found =
+      source && typed
+        ? source.textMatches(column.id, rest, typed, limit + others.size)
+        : facets
+          ? [...facets.counts]
+              .sort(
+                (a, b) =>
+                  b[1] - a[1] || a[0].localeCompare(b[0], language.locale)
+              )
+              .map(([value, count]) => ({ text: value, count }))
+          : []
+    return found
+      .filter((value) => !others.has(foldText(value.text)))
+      .map((value) => ({
+        value: value.text,
+        count: value.count,
+        token: valueToken(value.text),
+      }))
   }
 
   /** Whether an item of the list but `item` is "No value". */
@@ -472,63 +541,6 @@ function suggestQuery(
       (other) =>
         other !== item && isEmptyWord(text.slice(other.start, other.end))
     )
-  }
-
-  function textValue(
-    filter: QueryFilterTerm,
-    column: QueryColumn,
-    rest: QueryView
-  ): QuerySuggestions {
-    const { items, item } = currentItem(filter, column)
-    const typed = unquote(text.slice(item.start, Math.max(item.start, caret)))
-    const folded = foldText(typed.trim())
-    const complete = item.end === filter.end
-    // The texts listed in the other items, not offered again.
-    const listed = new Set(
-      items
-        .filter((other) => other !== item)
-        .map((other) => foldText(unquote(text.slice(other.start, other.end))))
-    )
-    const facets = source?.facets(column.id, rest)
-    let values: Array<{ text: string; count: number }> = []
-    if (source && folded)
-      values = source.textMatches(
-        column.id,
-        rest,
-        typed.trim(),
-        limit + listed.size
-      )
-    else if (facets)
-      values = [...facets.counts]
-        .sort(
-          (a, b) => b[1] - a[1] || a[0].localeCompare(b[0], language.locale)
-        )
-        .map(([value, count]) => ({ text: value, count }))
-    values = values
-      .filter((value) => !listed.has(foldText(value.text)))
-      .slice(0, limit)
-    return {
-      context: "value",
-      column: column.id,
-      start: item.start,
-      end: item.end,
-      items: [
-        ...values.map((value): QuerySuggestion => {
-          const token = valueToken(value.text)
-          return {
-            kind: "value",
-            group: "values",
-            column: column.id,
-            value: value.text,
-            count: value.count,
-            ...(complete ? completing(token, filter.end) : open(token)),
-          }
-        }),
-        ...(listsEmpty(items, item)
-          ? []
-          : emptyOffer(column, folded, facets?.empty, filter.end, complete)),
-      ],
-    }
   }
 
   function orderedValue(
@@ -601,11 +613,6 @@ function suggestQuery(
   ): Array<QuerySuggestion> {
     const zone = column.timeZone
     const today = todayIn(now, zone)
-    const range = (first: number, last: number) => ({
-      from: startOf(first, zone),
-      to: startOf(last, zone),
-      end: startOf(last + 1, zone).getTime(),
-    })
     // The rest's rows by month, over the years the data spans.
     let months: { first: number; counts: Uint32Array } | null | undefined
     const byMonth = () => {
@@ -650,56 +657,62 @@ function suggestQuery(
         if (yearCount(year)) found.push(year)
       return found
     }
-    const countIn = (r: { from: Date; end: number }) =>
-      source
-        ? source.histogram(column.id, rest, [r.from.getTime(), r.end])[0]
-        : undefined
+    /** The rows of `rest` over the days from `first` to `last`. */
+    const countIn = (first: Day, last: Day) =>
+      source?.histogram(column.id, rest, [
+        startOf(first, zone).getTime(),
+        startOf(last + 1, zone).getTime(),
+      ])[0]
     const out: Array<QuerySuggestion> = []
+    /** A preset's, a year's or a month's offer: its days and their rows. */
+    const dayOffer = (
+      what:
+        | { kind: "preset"; preset: string }
+        | { kind: "year"; year: number }
+        | { kind: "month"; year: number; month: number },
+      first: Day,
+      last: Day,
+      written: string,
+      count: number | undefined
+    ) =>
+      out.push({
+        ...what,
+        group: `${what.kind}s`,
+        column: column.id,
+        from: startOf(first, zone),
+        to: startOf(last, zone),
+        ...(count === undefined ? {} : { count }),
+        ...offer(written),
+      })
     const preset = (name: string) => {
       const days = resolvePreset(name, today)
-      if (!days) return
-      const r = range(days.first, days.last)
-      const count = countIn(r)
-      out.push({
-        kind: "preset",
-        group: "presets",
-        column: column.id,
-        preset: name,
-        from: r.from,
-        to: r.to,
-        ...(count === undefined ? {} : { count }),
-        ...offer(name),
-      })
+      if (days)
+        dayOffer(
+          { kind: "preset", preset: name },
+          days.first,
+          days.last,
+          name,
+          countIn(days.first, days.last)
+        )
     }
-    const year = (y: number) => {
-      const r = range(toDay(y, 0, 1), toDay(y, 11, 31))
-      const count = yearCount(y)
-      out.push({
-        kind: "year",
-        group: "years",
-        column: column.id,
-        year: y,
-        from: r.from,
-        to: r.to,
-        ...(count === undefined ? {} : { count }),
-        ...offer(String(y)),
-      })
-    }
+    const year = (y: number) =>
+      dayOffer(
+        { kind: "year", year: y },
+        toDay(y, 0, 1),
+        toDay(y, 11, 31),
+        String(y),
+        yearCount(y)
+      )
     const month = (y: number, m: number) => {
       const count = monthCount(y, m)
-      if (count === 0) return
-      const r = range(toDay(y, m, 1), toDay(y, m + 1, 0))
-      out.push({
-        kind: "month",
-        group: "months",
-        column: column.id,
-        year: y,
-        month: m,
-        from: r.from,
-        to: r.to,
-        ...(count === undefined ? {} : { count }),
-        ...offer(formatDay(toDay(y, m, 1), "month")),
-      })
+      if (count !== 0)
+        dayOffer(
+          { kind: "month", year: y, month: m },
+          toDay(y, m, 1),
+          toDay(y, m + 1, 0),
+          formatDay(toDay(y, m, 1), "month"),
+          count
+        )
     }
 
     const relative = /^last(\d{1,4})$/.exec(typed)
