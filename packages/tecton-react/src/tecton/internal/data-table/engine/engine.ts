@@ -662,11 +662,8 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
           const inner = order.at(ordered.grouping.level[group] + 1)
           summary = summarize(
             aggregates,
-            () =>
-              Array.from(
-                ordered.rows.subarray(start[group], end[group]),
-                (position) => items[position]
-              ),
+            items,
+            ordered.rows.subarray(start[group], end[group]),
             inner
               ? Array.from(
                   inner.subarray(childStart[group], childEnd[group]),

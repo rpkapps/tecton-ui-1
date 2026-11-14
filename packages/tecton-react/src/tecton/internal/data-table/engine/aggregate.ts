@@ -40,18 +40,21 @@ function add(
     run.best = best
 }
 
+/** `fn` over `items`, or over those at `rows` (positions in `items`). */
 function running<T>(
   column: EngineColumn<T>,
   fn: Additive,
-  items: ReadonlyArray<T>
+  items: ReadonlyArray<T>,
+  rows: Uint32Array | null = null
 ): Running {
   const run: Running = { sum: 0, count: 0, best: undefined }
   // A boolean column counts its trues, read as its cells read them; a
   // date column's least and greatest stay dates (`result`).
   const booleans = column.type === "boolean"
   const dates = column.type === "date" && (fn === "min" || fn === "max")
-  for (const item of items) {
-    const value = column.getValue(item)
+  const n = rows ? rows.length : items.length
+  for (let i = 0; i < n; i++) {
+    const value = column.getValue(items[rows ? rows[i] : i])
     if (fn === "count") {
       if (
         booleans
@@ -117,38 +120,42 @@ function aggregate<T>(
 type Summary = {
   /** Every aggregate column's aggregate, by column id. */
   readonly values: Readonly<Record<string, DataTableValue>>
-  /** The additive built-ins' running results, by column id. */
-  readonly running: ReadonlyMap<string, Running>
+  /** The additive built-ins' running results, by the columns' order. */
+  readonly running: ReadonlyArray<Running | undefined>
 }
 
 /**
- * Every aggregate column's aggregate over a group's items, by column id:
- * the additive built-ins from `children`'s summaries when it holds groups,
- * the others over `items()` (asked for only then).
+ * Every aggregate column's aggregate over a group's items (`items`, or
+ * those at `rows`), by column id: the additive built-ins from `children`'s
+ * summaries when it holds groups, the others over its items.
  */
 function summarize<T>(
   columns: ReadonlyArray<EngineColumn<T>>,
-  items: () => ReadonlyArray<T>,
+  items: ReadonlyArray<T>,
+  rows: Uint32Array | null,
   children: ReadonlyArray<Summary> | null
 ): Summary {
   const values: Record<string, DataTableValue> = {}
-  const runs = new Map<string, Running>()
-  let list: ReadonlyArray<T> | undefined
-  const all = () => (list ??= items())
-  for (const column of columns) {
+  const runs: Array<Running | undefined> = []
+  columns.forEach((column, at) => {
     const fn = column.aggregate
-    if (!fn) continue
+    if (!fn) return
     if (isAdditive(fn)) {
       const run = children
         ? combine(
             fn,
-            children.map((child) => child.running.get(column.id)!)
+            children.map((child) => child.running[at]!)
           )
-        : running(column, fn, all())
-      runs.set(column.id, run)
+        : running(column, fn, items, rows)
+      runs[at] = run
       values[column.id] = result(column, fn, run)
-    } else values[column.id] = aggregate(column, all(), fn)
-  }
+    } else
+      values[column.id] = aggregate(
+        column,
+        rows ? Array.from(rows, (position) => items[position]) : items,
+        fn
+      )
+  })
   return { values, running: runs }
 }
 
@@ -157,7 +164,7 @@ function aggregateColumns<T>(
   columns: ReadonlyArray<EngineColumn<T>>,
   items: ReadonlyArray<T>
 ): Readonly<Record<string, DataTableValue>> {
-  return summarize(columns, () => items, null).values
+  return summarize(columns, items, null, null).values
 }
 
 export { aggregate, aggregateColumns, summarize }

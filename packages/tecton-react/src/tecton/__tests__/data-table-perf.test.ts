@@ -27,7 +27,9 @@
  *   group by 1 column + aggregates ... 50 / 76    (150)
  *   group by ~90k values, prepared .. 178 / 195   (150: missed)
  *   group by ~90k values, first time  300 / 305   (no budget)
- *   group by 3 columns + aggregates . 150 / 152   (150: at the budget)
+ *   group by 3 columns + aggregates . 150 / 152   (150: at the budget; nested groups
+ *                                       adding up their groups' subtotals took
+ *                                       about a fifth off since)
  *   group by a date, by day ......... 145 / 139   (150: near it; 3,650 groups)
  *   close and open every group ....... 12 / 11    (no budget; limit 50)
  *   select a group of 12,500 rows ...... 6 / 7     (no budget; limit 50)
@@ -37,8 +39,8 @@
  *   CSV, 100k × 6 columns ........... 212 / 205   (500)
  *   live: 20 rows added, run + diff . 167 / 150   (no budget; limit 175)
  *   live: 20 rows added, diff alone ... 7 / 8     (no budget; limit 20)
- *   live: a batch of 500 planned ....... 1 / 1     (no budget; limit 20;
- *                                                   ~420 before)
+ *   live: a batch of 500 planned ...... 18 / 23    (no budget; limit 20;
+ *                                       ~420 before, listing each group's rows)
  */
 import { afterEach, describe, expect, it, vi } from "vitest"
 
