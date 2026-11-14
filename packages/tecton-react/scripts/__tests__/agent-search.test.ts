@@ -133,7 +133,36 @@ describe("tecton search", () => {
     ["scroll area", "scroll-area"],
     ["SelectItem", "select"],
     ["toast", "toast"],
+    ["DataTable", "data-table"],
   ])("ranks %s's component first", (query, id) => {
+    expect(top(query, 1)).toEqual([id])
+  })
+
+  // Records tables go to DataTable; Table stays the static, read-only one.
+  it.each([
+    ["data grid", "data-table"],
+    ["datagrid", "data-table"],
+    ["spreadsheet", "data-table"],
+    ["sortable table of wells", "data-table"],
+    ["table with paging and row selection", "data-table"],
+    ["tree table with columns", "data-table"],
+    ["static spec table in a dialog", "table"],
+  ])("routes %s to %s", (query, id) => {
+    expect(top(query, 1)).toEqual([id])
+  })
+
+  // A number goes to NumberField; free text stays with Input.
+  it.each([
+    ["number input", "number-field"],
+    ["NumberField", "number-field"],
+    ["number field", "number-field"],
+    ["numeric input", "number-field"],
+    ["spinbutton", "number-field"],
+    ["stepper", "number-field"],
+    ["input type number with min and max", "number-field"],
+    ["text input", "input"],
+    ["password field", "input"],
+  ])("routes %s to %s", (query, id) => {
     expect(top(query, 1)).toEqual([id])
   })
 

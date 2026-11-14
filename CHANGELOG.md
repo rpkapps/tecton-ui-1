@@ -7,6 +7,131 @@ write entries and cut a release.
 
 ## [Unreleased]
 
+### Added
+
+- `DataTable` (`@tecton/react/data-table`): the data table for records in an application, built
+  on `Table`. Columns are typed with `createColumns` (text, number, date, yes / no and options,
+  formatted with `Intl` in the provider locale, empty values drawn as a muted dash). The parts add
+  sorting by one or several columns, search, a filter per column with "No value" and the active
+  filters as chips (`DataTableToolbar`, `DataTableSearch`, `DataTableFilter`,
+  `DataTableActiveFilters`), column resizing, reordering, hiding and pinning
+  (`DataTableColumnsMenu`), row selection with `DataTableActionBar` and `itemToDisabledReason`,
+  row actions (`DataTableRowActions`), row reordering, grouping with subtotals
+  (`DataTableGroupBy`), totals, trees and detail rows, virtualized rows, load more on scroll or
+  from a "Show more" row after the last row (as tall as a row, with the rows shown of the
+  total), pages in a spreadsheet-style footer strip (`DataTableFooter`,
+  `DataTablePagination`, with a page field), `size="sm"` and `striped`, loading, error, empty and
+  no-results states, server mode (`dataMode="server"`), CSV export, keyboard navigation as a grid
+  and the whole view (sort, filters, columns, page) as one controlled or uncontrolled value.
+  Every filter value in the view is a list a row matches any item of, with `empty: true` for "No
+  value": `values` for text (several texts in its popover, as removable chips; a quoted text keeps
+  its comma, `"Smith, John"`), options and yes / no (checkboxes, which keep chosen values the
+  options do not list), and `ranges` for numbers (`{ min?, max?, minExclusive?, maxExclusive? }`)
+  and dates (`{ from?, to? }`), whose popover edits the first range and says how many more there
+  are.
+  A date-only string in a saved view's date filter (`"2024-03-01"`) is the start of that day in the
+  column's `format.timeZone` (else the local zone), so the view keeps the same days in every zone.
+  `useDataTable()` reads the table from custom parts. Its text is translated into the 34 locales.
+- `DataTable` group rows have the stripes' surface, and a grouped table draws no stripes (they come
+  back once the rows are not grouped). In a table of bounded height, virtualized or not, the rows
+  scroll under the stuck header, and a group's row sticks under it while its rows scroll past,
+  pushed up by the next group's row; nested groups stack under the groups above them, the pinned
+  cells stick sideways too, and a row reached with the keyboard comes to rest below them.
+- `DataTableSearch syntax="query"`: a power search. Typed terms (`status:drilling td:>3000
+spud:2015`) set the same column filters as the filter buttons and free words the search: a comma
+  means "any of" for every column type (`well:a-12,b-3`, `td:<1000,>3000`, `spud:2015,last30d`;
+  a number or date keeps its own comma, `1,234.5`, `jun 30, 2015`; a range's `..` may follow a
+  space, `spud:2015 ..2016`), a typed term replaces its column's filter (also one the query cannot
+  write), and a filter button, chip or controlled view writes the query again. The field draws the query in
+  colours, suggests columns, values with their row counts, comparisons with the data's range and a
+  date's presets, years, months and calendar in a list that stays open while the field has focus
+  (with nothing to suggest, a line says what the term at the caret does, or its problem, read
+  out politely), explains a term it cannot apply (`OR`, `NOT`, a leading `-`, an unknown column
+  or value; a `-` alone is text) instead of applying it otherwise (in a list, only the item with
+  the problem is left out: `status:legacy,producing` applies `producing`, `legacy` underlined),
+  with what to type instead in the table's own terms (`status:drilling,producing` for one of
+  several values), lists the table's columns with examples in its "?" help, and works in server
+  mode, RTL and the 34 locales. Its code loads on demand: a table with the plain search
+  (`syntax="text"`, the default) never loads it. What was typed, the focus and the caret carry
+  over when it arrives, after the view's filters, also for a field focused before a
+  server-rendered page hydrated.
+- `DataTable`'s number filter ranges take `minExclusive?: true` and `maxExclusive?: true`: the
+  bound's own number does not match (more than `min`, less than `max`). Its filter button and chip
+  read "> 3,000" or "> 1,000 and ≤ 3,000", and editing that bound in the filter includes it again.
+  Server-mode applications that read the filter value should apply both flags.
+- `DataTable` takes `highlightChanges` for live data (`true`, or `{ duration }` in ms): a row added
+  to `items` after the first render goes straight to its sorted place with a neutral tint across
+  the whole row (pinned columns too, over its stripe, hover or selection), which stays until the
+  row is seen (half of it in view, on the page shown) and then fades over 1.5 s. Rows not seen yet
+  are counted in one button per edge of the table, shaped and animated as the message scroller's:
+  "↑ 3 new rows" above the view, "↓ 2 new rows" below it, else "3 new rows on other pages"; it
+  goes to the topmost row above, the nearest below, or the first one's page. The row the user is
+  on never moves: the one with an open menu, else focus, else the pointer, else the first in view
+  once scrolled stays at its place on screen as rows land or go above it. With `pagination`, rows
+  that would land on an earlier page while the user works in the rows come once they are done.
+  Rows of the first render, of a load (`loading`, `onLoadMore`) or of a new server view are not
+  additions, nor rows a search shows again. Screen readers hear "3 rows added", at most once a
+  second; with reduced motion the button jumps instead of scrolling. `onPageChange` has the
+  reason `"new-rows"` for the page that button turns to. Its strings are in the 34 locales.
+- `DatePicker` and `DateRangePicker` (`@tecton/react/date-picker`): a date or a range picked on a
+  `Calendar` in a popover, from a button or a typed date (`variant="input"`), with `minDate` /
+  `maxDate`, range presets (bounded by `minDate` / `maxDate`), a Clear button, `name` for forms,
+  and dates written in the provider locale.
+- `Table` takes `size` (`"default"` or `"sm"`, compact) and `striped` (every even body row on an
+  alternate surface; hovered and selected rows keep their own fill, a virtualized table keeps each
+  row on its stripe as it scrolls, and a row that sorting moves takes its new stripe at once).
+  `TableBody` takes `empty`, shown in one row across every column when there are no rows.
+- `TableColumnResizer` takes `edge="start"`, for a column that grows toward its start (one pinned
+  to the table's end).
+- `Progress` with `value={null}` is indeterminate: a segment sweeps across the track (right to left
+  in RTL), and the bar pulses slowly instead with reduced motion.
+- Opaque surfaces (`Card`, `Sheet`, `Drawer`, `Dialog`, `Popover`, the menus, `Select`, `Sidebar`,
+  `Panel`, the `AppShell` parts, `ActionBar` and others) set the `--surface` CSS variable to their
+  fill. A custom surface sets it too.
+
+### Changed
+
+- `Table`: the body has Tecton's table cell surface as its fill (white in light mode) whatever the
+  table sits on, so the stripes show in light mode too, and a row hovers with Tecton's table hover
+  surface. Two theme tokens come with them: `table-cell` (`bg-table-cell`) and `table-hover`.
+- **BREAKING:** `DropdownMenu` is no longer modal by default: the page keeps scrolling while it is
+  open, and a press outside closes the menu and still reaches what it pressed. Pass `modal` to get
+  the previous behaviour.
+- **BREAKING:** `Select` is no longer modal by default, and `SelectContent` opens its list below
+  the trigger, aligned to its start (`alignItemWithTrigger` now defaults to `false` and `align` to
+  `"start"`), instead of over it with the selected item on the value. Pass `modal` on `Select` and
+  `alignItemWithTrigger` on `SelectContent` to get the previous behaviour; either one locks the
+  page's scroll while the list is open.
+- `ActionBar`: its text ("2 of 9 wells selected", Clear, the clear button's and the toolbar's names)
+  is translated and its numbers are formatted in the provider locale; an inline bar takes its place
+  at once, and only the floating bar fades in.
+- `Field`: a field's label, control and description sit `gap-2` apart instead of `gap-3`, so a
+  form is a little tighter.
+- `NumberField`: the minus and plus buttons are named in the provider locale ("Increase" and
+  "Decrease" in English). `Overflow`'s default "More actions" is translated too.
+- `TableColumnResizer`: the line is in the drop line's colour with no tint behind it on hover, the
+  width shows on the tooltip's surface, and the drag guide stops above the table's horizontal
+  scrollbar.
+- `Reorderable`: a keyboard drag starts at the item's own place, announced between its
+  neighbours (a drop there moves nothing), and each arrow key moves it one place.
+
+### Fixed
+
+- `Checkbox`: a disabled checkbox looks disabled outside a `Field` too.
+- `Overflow`: a hidden item whose content changed (a renamed label, a summary cleared from
+  outside) is measured again, so the same width always gives the same layout.
+- `Overflow` and `Toolbar` (and so `DataTableToolbar`) rendered on the server no longer show every
+  item, without the More button, until the page hydrates. Until the row has measured itself in the
+  browser (`data-measured`), it keeps to one line and what may still move keeps its place unseen:
+  the items that can go into the menu, the dividers and whatever follows them. The fixed and
+  elastic items before them (a table's search) show. Once measured, the items that fit and the
+  More button appear in the same frame, and a row that fits never shows a More button. A row
+  mounted in the browser measures before its first paint, as before.
+- `Chip`: after its remove button is pressed, focus goes to the chip now in its place, as after
+  Delete, instead of to the page.
+- `DataTableContent`: a `ref` given to it no longer takes the place of the table's own, which the
+  table sizes, focuses and measures itself through.
+
 ## [0.3.0] - 2026-11-02
 
 ### Added

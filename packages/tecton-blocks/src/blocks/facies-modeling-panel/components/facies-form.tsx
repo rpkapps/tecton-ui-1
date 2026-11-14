@@ -27,6 +27,13 @@ import {
 } from "@tecton/react/select"
 import { Separator } from "@tecton/react/separator"
 import { ColorSwatch } from "@tecton/react/color-swatch"
+import {
+  NumberField,
+  NumberFieldDecrement,
+  NumberFieldGroup,
+  NumberFieldIncrement,
+  NumberFieldInput,
+} from "@tecton/react/number-field"
 
 import {
   densityLabel,
@@ -122,21 +129,24 @@ function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
             onValueChange={(next) => set("methodId", next)}
             items={toItems(methods)}
           />
-          <Field className="w-24">
+          <Field className="w-28">
             <FieldLabel htmlFor={`${id}-realizations`}>Realizations</FieldLabel>
-            <Input
+            <NumberField
               id={`${id}-realizations`}
-              variant="filled"
-              type="number"
-              className="font-mono tabular-nums"
-              value={String(value.realizations)}
-              onChange={(event) =>
-                set(
-                  "realizations",
-                  Math.max(1, Number(event.target.value) || 1)
-                )
-              }
-            />
+              min={1}
+              format={{ maximumFractionDigits: 0 }}
+              value={value.realizations}
+              onValueChange={(next) => {
+                // A whole number of runs; emptied, the last one stays.
+                if (next !== null) set("realizations", Math.round(next))
+              }}
+            >
+              <NumberFieldGroup variant="filled">
+                <NumberFieldDecrement />
+                <NumberFieldInput className="font-mono" />
+                <NumberFieldIncrement />
+              </NumberFieldGroup>
+            </NumberField>
           </Field>
         </div>
         <div className="grid grid-cols-[1fr_auto] items-end gap-2">

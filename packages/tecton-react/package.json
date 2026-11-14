@@ -461,6 +461,16 @@
       "import": "./dist/tecton/count-badge.js",
       "default": "./dist/tecton/count-badge.js"
     },
+    "./data-table": {
+      "types": "./dist/tecton/data-table.d.ts",
+      "import": "./dist/tecton/data-table.js",
+      "default": "./dist/tecton/data-table.js"
+    },
+    "./date-picker": {
+      "types": "./dist/tecton/date-picker.d.ts",
+      "import": "./dist/tecton/date-picker.js",
+      "default": "./dist/tecton/date-picker.js"
+    },
     "./document-tabs": {
       "types": "./dist/tecton/document-tabs.d.ts",
       "import": "./dist/tecton/document-tabs.js",

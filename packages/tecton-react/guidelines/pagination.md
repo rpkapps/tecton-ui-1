@@ -5,7 +5,7 @@ family: navigation
 exports: [Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationPrevious, PaginationNext, PaginationEllipsis]
 notFor:
   - need: paging driven by a table's own sorting and filtering state
-    use: TanStack Table
+    use: DataTable
   - need: switching between sibling sections of one page
     use: Tabs
   - need: the rows-per-page picker beside the controls

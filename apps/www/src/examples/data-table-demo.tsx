@@ -1,332 +1,145 @@
-// Synced from shadcn/ui (apps/v4/examples/base/data-table-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
-import {
-  columnFilteringFeature,
-  columnVisibilityFeature,
-  createColumnHelper,
-  createFilteredRowModel,
-  createPaginatedRowModel,
-  createSortedRowModel,
-  filterFn_includesString,
-  rowPaginationFeature,
-  rowSelectionFeature,
-  rowSortingFeature,
-  sortFn_alphanumeric,
-  sortFn_text,
-  tableFeatures,
-  useTable,
-  type ColumnFiltersState,
-  type ColumnVisibilityState,
-  type SortingState,
-} from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
 
 import { Button } from "@tecton/react/button"
-import { Checkbox } from "@tecton/react/checkbox"
 import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@tecton/react/dropdown-menu"
-import { Input } from "@tecton/react/input"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@tecton/react/table"
+  createColumns,
+  DataTable,
+  DataTableActiveFilters,
+  DataTableContent,
+  DataTableFilter,
+  DataTableActionBar,
+  DataTableFooter,
+  DataTablePagination,
+  DataTableSearch,
+  DataTableToolbar,
+  useDataTable,
+} from "@tecton/react/data-table"
 
-// New in v9: declare the features this table uses — anything you don't
-// register is tree-shaken out of the bundle.
-const features = tableFeatures({
-  columnFilteringFeature,
-  columnVisibilityFeature,
-  rowPaginationFeature,
-  rowSelectionFeature,
-  rowSortingFeature,
-  filteredRowModel: createFilteredRowModel(),
-  paginatedRowModel: createPaginatedRowModel(),
-  sortedRowModel: createSortedRowModel(),
-  filterFns: { includesString: filterFn_includesString },
-  sortFns: { alphanumeric: sortFn_alphanumeric, text: sortFn_text },
-})
-
-const columnHelper = createColumnHelper<typeof features, Payment>()
-
-const data: Payment[] = [
-  {
-    id: "m5gr84i9",
-    amount: 316,
-    status: "success",
-    email: "ken99@example.com",
-  },
-  {
-    id: "3u1reuv4",
-    amount: 242,
-    status: "success",
-    email: "Abe45@example.com",
-  },
-  {
-    id: "derv1ws0",
-    amount: 837,
-    status: "processing",
-    email: "Monserrat44@example.com",
-  },
-  {
-    id: "5kma53ae",
-    amount: 874,
-    status: "success",
-    email: "Silas22@example.com",
-  },
-  {
-    id: "bhqecj4p",
-    amount: 721,
-    status: "failed",
-    email: "carmella@example.com",
-  },
-]
-
-export type Payment = {
+type Well = {
   id: string
-  amount: number
-  status: "pending" | "processing" | "success" | "failed"
-  email: string
+  name: string
+  field: string
+  status: "producing" | "injecting" | "shut-in" | "drilling"
+  depth: number
+  spud: Date
 }
 
-export const columns = columnHelper.columns([
-  columnHelper.display({
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected()}
-        indeterminate={
-          table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
+const FIELDS = [
+  { field: "Gullfaks", block: "34/10" },
+  { field: "Snorre", block: "34/7" },
+  { field: "Valhall", block: "2/8" },
+  { field: "Balder", block: "25/11" },
+  { field: "Ekofisk", block: "2/4" },
+] as const
+const STATUSES: Array<Well["status"]> = [
+  "producing",
+  "producing",
+  "injecting",
+  "shut-in",
+  "drilling",
+]
+
+/** 48 wells, the same on every render. */
+const WELLS: Array<Well> = Array.from({ length: 48 }, (_, i) => {
+  const { field, block } = FIELDS[i % FIELDS.length]
+  return {
+    id: `w${i + 1}`,
+    name: `${block}-${String.fromCharCode(65 + (i % 4))}-${Math.floor(i / 5) + 1}`,
+    field,
+    status: STATUSES[(i * 7) % STATUSES.length],
+    depth: 1850 + ((i * 433) % 3200),
+    spud: new Date(
+      Date.UTC(2008 + (i % 15), (i * 5) % 12, 1 + ((i * 11) % 27))
     ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  }),
-  columnHelper.accessor("status", {
+  }
+})
+
+const columns = createColumns<Well>([
+  { id: "name", header: "Well" },
+  { id: "field", header: "Field" },
+  {
+    id: "status",
     header: "Status",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("status")}</div>
-    ),
-  }),
-  columnHelper.accessor("email", {
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Email
-          <ArrowUpDown />
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
-  }),
-  columnHelper.accessor("amount", {
-    header: () => <div className="text-right">Amount</div>,
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"))
-
-      // Format the amount as a dollar amount.
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(amount)
-
-      return <div className="text-right font-medium">{formatted}</div>
-    },
-  }),
-  columnHelper.display({
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const payment = row.original
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={<Button variant="ghost" size="icon-xs" />}
-          >
-            <span className="sr-only">Open menu</span>
-            <MoreHorizontal />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-44">
-            <DropdownMenuGroup>
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(payment.id)}
-              >
-                Copy payment ID
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>View customer</DropdownMenuItem>
-              <DropdownMenuItem>View payment details</DropdownMenuItem>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
-  }),
+    type: "options",
+    options: [
+      { value: "producing", label: "Producing", variant: "success" },
+      { value: "injecting", label: "Injecting", variant: "info" },
+      { value: "shut-in", label: "Shut in", variant: "warning" },
+      { value: "drilling", label: "Drilling", variant: "secondary" },
+    ],
+  },
+  {
+    id: "depth",
+    header: "TD (m)",
+    type: "number",
+  },
+  {
+    id: "spud",
+    header: "Spud date",
+    type: "date",
+    format: { dateStyle: "medium", timeZone: "UTC" },
+    hideBelow: "sm",
+  },
 ])
 
-export function DataTableDemo() {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+/** An action on the selected rows, then clears the selection. */
+function ShutInButton({
+  onShutIn,
+}: {
+  onShutIn: (ids: ReadonlyArray<string>) => void
+}) {
+  const { value, clearSelection } = useDataTable<Well>()
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={() => {
+        onShutIn(value)
+        clearSelection()
+      }}
+    >
+      Shut in
+    </Button>
   )
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<ColumnVisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
+}
 
-  const table = useTable({
-    features,
-    data,
-    columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-    },
-  })
+export default function DataTableDemo() {
+  const [wells, setWells] = React.useState(WELLS)
 
   return (
-    <div className="w-full">
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter emails..."
-          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("email")?.setFilterValue(event.target.value)
+    <DataTable
+      items={wells}
+      columns={columns}
+      selectionMode="multiple"
+      pagination
+      filterable
+      className="w-full"
+    >
+      <span id="data-table-demo-title" className="font-medium">
+        North Sea wells
+      </span>
+      <DataTableToolbar>
+        <DataTableSearch />
+        <DataTableFilter column="status" />
+      </DataTableToolbar>
+      <DataTableActiveFilters />
+      <DataTableActionBar>
+        <ShutInButton
+          onShutIn={(ids) =>
+            setWells((current) =>
+              current.map((well) =>
+                ids.includes(well.id) ? { ...well, status: "shut-in" } : well
+              )
+            )
           }
-          className="max-w-sm"
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={<Button variant="outline" className="ml-auto" />}
-          >
-            Columns <ChevronDown />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-44">
-            <DropdownMenuGroup>
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  )
-                })}
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <div className="overflow-hidden rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder ? null : (
-                        <table.FlexRender header={header} />
-                      )}
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      <table.FlexRender cell={cell} />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
-    </div>
+      </DataTableActionBar>
+      <DataTableContent aria-labelledby="data-table-demo-title" />
+      <DataTableFooter>
+        <DataTablePagination pageSizes={[10, 25, 50]} />
+      </DataTableFooter>
+    </DataTable>
   )
 }

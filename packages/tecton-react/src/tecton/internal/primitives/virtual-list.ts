@@ -5,6 +5,12 @@
  * list of thousands renders only the rows in view. The scroll container is
  * the element `ref` is set on: it needs a bounded height. Rows are placed by
  * their owner with `offset(index)`; `size` is the height of the whole list.
+ *
+ * A few rows may have a height of their own (`sizes`, measured by the
+ * owner: a table's detail rows): the rows' offsets then add up the
+ * difference of each one above, found by binary search over those rows
+ * only, so the rest stay one stride each and a list of 100,000 rows with a
+ * handful of them costs no more to window.
  */
 import * as React from "react"
 import { flushSync } from "react-dom"
@@ -16,11 +22,10 @@ type VirtualListOptions = {
   /** Rows rendered beyond each edge of the view. */
   overscan?: number
   /**
-   * Px rendered beyond each edge of the view, when more than `overscan`
-   * rows: a fast flick then finds rows already in place.
+   * Heights of the view rendered beyond each edge of it (1: a screenful
+   * each way), when more than `overscan` rows: a fast flick then finds
+   * rows already in place.
    */
-  overscanPx?: number
-  /** Like `overscanPx`, in heights of the view (1: a screenful each way). */
   overscanViews?: number
   /**
    * Applies a scroll before the browser paints it (`flushSync`), so the
@@ -28,14 +33,22 @@ type VirtualListOptions = {
    */
   sync?: boolean
   /**
-   * With `overscanPx`: a scroll that jumps past the rows already prepared
-   * (the scrollbar dragged, End) renders only `overscan` rows beyond the
-   * view, so each frame of the jump mounts about a screenful; `overscanPx`
-   * comes back this many ms after the scrolling stops.
+   * With `overscanViews`: a scroll that jumps past the rows already
+   * prepared (the scrollbar dragged, End) renders only `overscan` rows
+   * beyond the view, so each frame of the jump mounts about a screenful;
+   * `overscanViews` comes back this many ms after the scrolling stops.
    */
   settleMs?: number
   /** Indices that stay rendered wherever the scroll is (the focused row). */
   keep?: ReadonlyArray<number>
+  /**
+   * Indices that stay rendered while the row at `index` is the first under
+   * the top of the view (`start` below it): a table's group rows, which
+   * stick there while their rows scroll past.
+   */
+  keepFor?: (index: number) => ReadonlyArray<number>
+  /** The rows whose height is not `stride`: index → px. */
+  sizes?: ReadonlyMap<number, number>
   /**
    * Px of content above the first row inside the scroll container (a
    * sticky table header). Default 0.
@@ -46,28 +59,107 @@ type VirtualListOptions = {
 
 type VirtualList = {
   ref: (element: HTMLElement | null) => void
-  /** The indices to render, in order. */
-  indices: Array<number>
+  /** The indices to render, in order (none while not `enabled`). */
+  indices: ReadonlyArray<number>
   offset: (index: number) => number
   size: number
   /** Scrolls the least needed to bring row `index` into view. */
   scrollToIndex: (index: number) => void
   /** The scroll container's height, as last measured (0 before layout). */
   viewHeight: number
+  /** Its scroll position the indices are for. */
+  viewTop: number
+  /**
+   * A jump is under way (`settleMs`): the scroll went past the rows
+   * prepared, and has not stopped for `settleMs` since.
+   */
+  jumping: boolean
 }
+
+const NO_INDICES: ReadonlyArray<number> = []
 
 /** The view height before any layout (and on the server): ten rows. */
 const FALLBACK_ROWS = 10
+
+/** Where rows are: one stride each, but the rows of `sizes`. */
+type RowLayout = {
+  offset: (index: number) => number
+  sizeOf: (index: number) => number
+  /** The row at `px` from the top (the last one past the end). */
+  indexAt: (px: number) => number
+  /** The first row that starts at or below `px`. */
+  endAt: (px: number) => number
+  total: number
+}
+
+function rowLayout(
+  count: number,
+  stride: number,
+  sizes: ReadonlyMap<number, number> | undefined
+): RowLayout {
+  const own = sizes
+    ? [...sizes].filter(([index]) => index >= 0 && index < count)
+    : []
+  if (own.length === 0)
+    return {
+      offset: (index) => index * stride,
+      sizeOf: () => stride,
+      indexAt: (px) =>
+        Math.min(Math.max(0, count - 1), Math.max(0, Math.floor(px / stride))),
+      endAt: (px) => Math.ceil(px / stride),
+      total: count * stride,
+    }
+  own.sort((a, b) => a[0] - b[0])
+  const indices = own.map(([index]) => index)
+  // The extra height of the rows of their own before each one.
+  const before = [0]
+  for (const [, size] of own)
+    before.push(before[before.length - 1] + size - stride)
+  /** How many rows of their own come before `index`. */
+  const rank = (index: number) => {
+    let low = 0
+    let high = indices.length
+    while (low < high) {
+      const mid = (low + high) >> 1
+      if (indices[mid] < index) low = mid + 1
+      else high = mid
+    }
+    return low
+  }
+  const offset = (index: number) => index * stride + before[rank(index)]
+  const heights = new Map(own)
+  const indexAt = (px: number) => {
+    let low = 0
+    let high = Math.max(0, count - 1)
+    while (low < high) {
+      const mid = (low + high + 1) >> 1
+      if (offset(mid) <= px) low = mid
+      else high = mid - 1
+    }
+    return low
+  }
+  return {
+    offset,
+    sizeOf: (index) => heights.get(index) ?? stride,
+    indexAt,
+    endAt: (px) => {
+      const at = indexAt(px)
+      return offset(at) >= px ? at : at + 1
+    },
+    total: count * stride + before[before.length - 1],
+  }
+}
 
 function useVirtualList({
   count,
   stride,
   overscan = 4,
-  overscanPx: overscanPxOption = 0,
   overscanViews = 0,
   sync = false,
   settleMs = 0,
   keep = [],
+  keepFor,
+  sizes,
   start = 0,
   enabled = true,
 }: VirtualListOptions): VirtualList {
@@ -79,7 +171,7 @@ function useVirtualList({
     jumping: false,
   })
   const cleanup = React.useRef<(() => void) | null>(null)
-  const overscanPx = overscanPxOption + overscanViews * view.height
+  const overscanPx = overscanViews * view.height
   const latest = React.useRef({ sync, settleMs, overscanPx })
   React.useInsertionEffect(() => {
     latest.current = { sync, settleMs, overscanPx }
@@ -147,16 +239,22 @@ function useVirtualList({
     [enabled, measure, onScroll]
   )
 
+  const layout = React.useMemo(
+    () => rowLayout(count, stride, sizes),
+    [count, stride, sizes]
+  )
   const height = view.height || stride * FALLBACK_ROWS
   const top = Math.max(0, view.top - start)
   const extra = view.jumping
     ? overscan
     : Math.max(overscan, Math.ceil(overscanPx / stride))
-  const first = Math.max(0, Math.floor(top / stride) - extra)
-  const last = Math.min(count - 1, Math.ceil((top + height) / stride) + extra)
-  const keepKey = keep.join(",")
+  const first = Math.max(0, layout.indexAt(top) - extra)
+  const last = Math.min(count - 1, layout.endAt(top + height) + extra)
+  const held =
+    enabled && keepFor && count > 0 ? keepFor(layout.indexAt(top)) : NO_INDICES
+  const keepKey = [...keep, ...held].join(",")
   const indices = React.useMemo(() => {
-    if (!enabled) return Array.from({ length: count }, (_, i) => i)
+    if (!enabled) return NO_INDICES
     const set = new Set<number>()
     for (let i = first; i <= last; i++) set.add(i)
     for (const i of keepKey ? keepKey.split(",").map(Number) : [])
@@ -169,23 +267,25 @@ function useVirtualList({
       const el = element.current
       if (!el || index < 0) return
       // A sticky header covers `start` px at the top of the view.
-      const top = start + index * stride
-      const bottom = top + stride
+      const top = start + layout.offset(index)
+      const bottom = top + layout.sizeOf(index)
       if (top - start < el.scrollTop) el.scrollTop = top - start
       else if (bottom > el.scrollTop + el.clientHeight)
         el.scrollTop = bottom - el.clientHeight
       measure()
     },
-    [stride, start, measure]
+    [layout, start, measure]
   )
 
   return {
     ref,
     indices,
-    offset: (index) => index * stride,
-    size: count * stride,
+    offset: layout.offset,
+    size: layout.total,
     scrollToIndex,
     viewHeight: view.height,
+    viewTop: view.top,
+    jumping: view.jumping,
   }
 }
 

@@ -1,0 +1,34 @@
+/**
+ * The look of `TableColumnResizer`'s grip, kept apart so DataTable's header
+ * can draw the same grip, unchanged, before the resizer's code has loaded.
+ */
+import { cn } from "cn"
+
+const columnResizerClassName = cn(
+  // A 12 px grip centred on the column's end edge.
+  "absolute inset-y-0 end-0 z-10 -me-1.5 w-3 cursor-col-resize touch-none outline-none select-none",
+  // The line: short and quiet at rest, the header's full height while
+  // the pointer is over the header, 2 px in the drag-and-drop line's
+  // colour (`primary-active`) on the grip.
+  "after:pointer-events-none after:absolute after:start-[calc(50%-0.5px)] after:top-1/3 after:bottom-1/3 after:w-px after:bg-border",
+  "in-[thead:hover]:after:inset-y-0",
+  "hover:after:inset-y-0 hover:after:start-[calc(50%-1px)] hover:after:w-0.5 hover:after:bg-primary-active",
+  "focus-visible:after:inset-y-0 focus-visible:after:start-[calc(50%-1px)] focus-visible:after:w-0.5 focus-visible:after:bg-primary-active",
+  "data-dragging:after:inset-y-0 data-dragging:after:start-[calc(50%-1px)] data-dragging:after:w-0.5 data-dragging:after:bg-primary-active",
+  // Behind the line, centred on it: the focus ring on keyboard focus (on
+  // hover the line alone shows the grip).
+  "before:pointer-events-none before:absolute before:inset-y-1 before:start-0.5 before:end-0.5 before:rounded-sm",
+  "focus-visible:before:ring-2 focus-visible:before:ring-ring",
+  // The table's end edge is no divider: the last column shows its
+  // line only when it is reached for.
+  "[th:last-child>&]:after:opacity-0 [th:last-child>&]:hover:after:opacity-100 [th:last-child>&]:focus-visible:after:opacity-100 [th:last-child>&]:data-dragging:after:opacity-100",
+  "data-disabled:pointer-events-none data-disabled:after:hidden"
+)
+
+/**
+ * The grip on the column's start edge instead (`edge="start"`): for a
+ * column pinned to the table's end, whose inner edge is its start.
+ */
+const columnResizerStartClassName = "start-0 end-auto -ms-1.5 me-0"
+
+export { columnResizerClassName, columnResizerStartClassName }

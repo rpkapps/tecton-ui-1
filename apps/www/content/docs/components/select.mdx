@@ -64,7 +64,7 @@ Select
 
 ## Align Item With Trigger
 
-Use `alignItemWithTrigger` on `SelectContent` to control whether the selected item aligns with the trigger. When `true` (default), the popup positions so the selected item appears over the trigger. When `false`, the popup aligns to the trigger edge.
+Use `alignItemWithTrigger` on `SelectContent` to control whether the selected item aligns with the trigger. When `true`, the popup positions so the selected item appears over the trigger, and the page's scroll is locked while it is open (see [Modal](#modal)). When `false` (default), the popup opens below the trigger, aligned to its start edge.
 
 <ComponentPreview name="select-align-item" />
 
@@ -111,6 +111,21 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 <ComponentPreview name="select-variants" />
 
+## Modal
+
+A `Select` is not modal by default, and its list opens below the trigger (above it where there is no room below), so it opens and closes fast even on a large page and locks nothing on it: the page still scrolls, and a press outside the list closes it and still reaches what it pressed. Escape and choosing an item return focus to the trigger.
+
+Pass `modal` for a Select whose outside presses must only close the list, and `alignItemWithTrigger` on `SelectContent` to open the list over the trigger with the selected item on the value. Either one locks the page's scroll while the list is open.
+
+```tsx
+<Select modal items={datums} defaultValue="msl">
+  <SelectTrigger>
+    <SelectValue />
+  </SelectTrigger>
+  <SelectContent alignItemWithTrigger>…</SelectContent>
+</Select>
+```
+
 {/* guidelines:start */}
 
 ## Usage guidelines
@@ -152,7 +167,7 @@ In a `Field`, put the `id` on `SelectTrigger` and point `FieldLabel htmlFor` at 
 
 <Do>
 
-Choose the surface with `SelectTrigger`'s `variant`, the height with its `size="sm" | "default"`; place the list with `side` / `align` on `SelectContent`, which apply once `alignItemWithTrigger={false}` (by default a mouse-opened list overlaps the trigger so the selected item lines up with the value).
+Choose the surface with `SelectTrigger`'s `variant`, the height with its `size="sm" | "default"`; leave the list non-modal and below the trigger (the defaults: the page keeps scrolling and an outside press closes the list and still acts), placed with `side` / `align` on `SelectContent` — `modal` on `Select` and `alignItemWithTrigger` on `SelectContent` (the list over the trigger) each lock page scroll.
 
 </Do>
 

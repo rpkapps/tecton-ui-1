@@ -1,174 +1,158 @@
 "use client"
 
 import * as React from "react"
-import {
-  createColumnHelper,
-  rowSelectionFeature,
-  tableFeatures,
-  useTable,
-} from "@tanstack/react-table"
-import type { RowSelectionState } from "@tanstack/react-table"
 
-import { Badge } from "@tecton/react/badge"
-import { Checkbox } from "@tecton/react/checkbox"
+import { Field, FieldLabel } from "@tecton/react/field"
+import { Switch } from "@tecton/react/switch"
+import { ToggleGroup, ToggleGroupItem } from "@tecton/react/toggle-group"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@tecton/react/table"
+  createColumns,
+  DataTable,
+  DataTableActionBar,
+  DataTableContent,
+  DataTableToolbar,
+  type DataTableSelectionMode,
+} from "@tecton/react/data-table"
 
 type Well = {
   id: string
   name: string
   field: string
-  status: "Producing" | "Shut in" | "Drilling"
+  status: "producing" | "shut-in" | "plugged"
   depth: number
-  operator: string
 }
 
-const wells: Well[] = [
+const wells: Array<Well> = [
   {
     id: "a12",
     name: "34/10-A-12",
     field: "Gullfaks",
-    status: "Producing",
+    status: "producing",
     depth: 3250,
-    operator: "Equinor",
+  },
+  {
+    id: "a3",
+    name: "34/10-A-3",
+    field: "Gullfaks",
+    status: "plugged",
+    depth: 2210,
   },
   {
     id: "b3",
     name: "34/10-B-3",
     field: "Gullfaks",
-    status: "Shut in",
+    status: "shut-in",
     depth: 2980,
-    operator: "Equinor",
-  },
-  {
-    id: "c7",
-    name: "33/9-C-7",
-    field: "Statfjord",
-    status: "Drilling",
-    depth: 1420,
-    operator: "Equinor",
   },
   {
     id: "d2",
     name: "34/7-D-2",
     field: "Snorre",
-    status: "Producing",
+    status: "producing",
     depth: 2735,
-    operator: "Equinor",
+  },
+  {
+    id: "d9",
+    name: "34/7-D-9",
+    field: "Snorre",
+    status: "plugged",
+    depth: 3390,
+  },
+  {
+    id: "e5",
+    name: "30/9-E-5",
+    field: "Oseberg",
+    status: "producing",
+    depth: 3105,
   },
 ]
 
-const statusVariant = {
-  Producing: "success",
-  "Shut in": "warning",
-  Drilling: "info",
-} as const
-
-const features = tableFeatures({ rowSelectionFeature })
-const columnHelper = createColumnHelper<typeof features, Well>()
-
-const columns = columnHelper.columns([
-  // The selection column: the header checkbox selects every row (and shows
-  // a dash while only some are), each cell checkbox its own row.
-  columnHelper.display({
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        aria-label="Select all wells"
-        checked={table.getIsAllRowsSelected()}
-        indeterminate={
-          table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
-        }
-        onCheckedChange={(checked) => table.toggleAllRowsSelected(checked)}
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        aria-label={`Select ${row.original.name}`}
-        checked={row.getIsSelected()}
-        onCheckedChange={(checked) => row.toggleSelected(checked)}
-      />
-    ),
-  }),
-  columnHelper.accessor("name", { header: "Well" }),
-  columnHelper.accessor("field", { header: "Field" }),
-  columnHelper.accessor("status", {
+const columns = createColumns<Well>([
+  { id: "name", header: "Well" },
+  { id: "field", header: "Field" },
+  {
+    id: "status",
     header: "Status",
-    cell: ({ getValue }) => (
-      <Badge variant={statusVariant[getValue()]} appearance="outline">
-        {getValue()}
-      </Badge>
-    ),
-  }),
-  columnHelper.accessor("depth", {
-    header: () => <div className="text-end">TD (m)</div>,
-    cell: ({ getValue }) => (
-      <div className="text-end font-mono tabular-nums">
-        {getValue().toLocaleString("en-US")}
-      </div>
-    ),
-  }),
-  columnHelper.accessor("operator", { header: "Operator" }),
+    type: "options",
+    options: [
+      { value: "producing", label: "Producing", variant: "success" },
+      { value: "shut-in", label: "Shut in", variant: "warning" },
+      { value: "plugged", label: "Plugged", variant: "secondary" },
+    ],
+  },
+  { id: "depth", header: "TD (m)", type: "number" },
 ])
 
+const MODES: Array<DataTableSelectionMode> = ["none", "single", "multiple"]
+
+const isPlugged = (well: Well) => well.status === "plugged"
+const pluggedReason = (well: Well) =>
+  isPlugged(well) ? "Plugged wells can't be added to a project" : undefined
+
 export default function DataTableSelection() {
-  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
-  const table = useTable({
-    features,
-    data: wells,
-    columns,
-    getRowId: (row) => row.id,
-    state: { rowSelection },
-    onRowSelectionChange: setRowSelection,
-  })
+  const [mode, setMode] = React.useState<DataTableSelectionMode>("multiple")
+  const [selectPlugged, setSelectPlugged] = React.useState(false)
+  const [value, setValue] = React.useState<ReadonlyArray<string>>(["a12"])
+  const [opened, setOpened] = React.useState<string | null>(null)
 
   return (
-    <div className="flex w-full max-w-3xl flex-col gap-3">
-      <div className="overflow-hidden rounded-md border">
-        <Table aria-label="Wells">
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className={
-                      header.column.id === "select" ? "w-10" : undefined
-                    }
-                  >
-                    {header.isPlaceholder ? null : (
-                      <table.FlexRender header={header} />
-                    )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() ? "selected" : undefined}
-              >
-                {row.getAllCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    <table.FlexRender cell={cell} />
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-      <p className="text-sm text-muted-foreground tabular-nums">
-        {table.getSelectedRowModel().rows.length} of{" "}
-        {table.getRowModel().rows.length} row(s) selected.
+    <div className="flex w-full max-w-2xl flex-col gap-3">
+      <DataTable
+        items={wells}
+        columns={columns}
+        selectionMode={mode}
+        value={value}
+        onValueChange={setValue}
+        // Plugged wells cannot be selected unless the switch is on; they
+        // can still be focused and opened ("selection").
+        isItemDisabled={selectPlugged ? undefined : isPlugged}
+        disabledBehavior="selection"
+        // Shown on a plugged well's checkbox while it cannot be selected.
+        itemToDisabledReason={pluggedReason}
+        onActivate={(_, well) => setOpened(well.name)}
+      >
+        <DataTableToolbar className="gap-4">
+          <ToggleGroup
+            variant="outline"
+            size="sm"
+            aria-label="Selection mode"
+            value={[mode]}
+            onValueChange={(next) => {
+              const picked = MODES.find((candidate) => candidate === next[0])
+              if (picked) setMode(picked)
+            }}
+          >
+            <ToggleGroupItem value="none">None</ToggleGroupItem>
+            <ToggleGroupItem value="single">Single</ToggleGroupItem>
+            <ToggleGroupItem value="multiple">Multiple</ToggleGroupItem>
+          </ToggleGroup>
+          <Field orientation="horizontal" className="w-auto">
+            <Switch
+              id="data-table-select-plugged"
+              checked={selectPlugged}
+              onCheckedChange={(checked) => {
+                setSelectPlugged(checked)
+                // Disabled again: the plugged wells leave the selection.
+                if (!checked)
+                  setValue((ids) =>
+                    ids.filter((id) => {
+                      const well = wells.find((item) => item.id === id)
+                      return !well || !isPlugged(well)
+                    })
+                  )
+              }}
+            />
+            <FieldLabel htmlFor="data-table-select-plugged">
+              Plugged wells can be selected
+            </FieldLabel>
+          </Field>
+        </DataTableToolbar>
+        {mode !== "none" && <DataTableActionBar />}
+        <DataTableContent aria-label="Wells" />
+      </DataTable>
+      <p className="text-sm text-muted-foreground">
+        Selected: {value.length > 0 ? value.join(", ") : "none"}. Opened:{" "}
+        {opened ?? "none"}.
       </p>
     </div>
   )

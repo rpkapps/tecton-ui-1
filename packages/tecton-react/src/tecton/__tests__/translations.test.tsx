@@ -97,6 +97,102 @@ describe("translations", () => {
     expect(partial("removeDescription")).toBe("Press Delete to remove tag.")
   })
 
+  it("chooses the plural form of a count by the locale's rules", async () => {
+    const tables = Object.fromEntries(await locales())
+    const results = (locale: string, count: number) =>
+      createTranslator(
+        "dataTable",
+        locale,
+        tables[`${locale}.ts`] as never
+      )("resultsCount", { count, total: count })
+    expect(results("en-US", 5)).toBe("5 results")
+    expect(results("de-DE", 5)).toBe("5 Ergebnisse")
+    expect(results("ru-RU", 5)).toBe("5 результатов")
+    expect(results("ru-RU", 3)).toBe("3 результата")
+    expect(results("pl-PL", 5)).toBe("5 wyników")
+    expect(results("ar-AE", 5)).toBe("5 نتائج")
+  })
+
+  it("names the pagination's arrows, page field and rows in every locale", async () => {
+    const tables = Object.fromEntries(await locales())
+    for (const [file, table] of Object.entries(tables)) {
+      const strings = table.dataTable
+      // The page picker and the page buttons are gone.
+      for (const key of [
+        "pagePicker",
+        "pagePickerHint",
+        "pagePickerGo",
+        "pagePickerInvalid",
+        "goToPage",
+        "previous",
+        "next",
+      ])
+        expect([file, key, strings[key]]).toEqual([file, key, undefined])
+      for (const key of [
+        "firstPage",
+        "previousPage",
+        "nextPage",
+        "lastPage",
+        "page",
+        "pageOf",
+        "rows",
+        "rowsPerPage",
+      ])
+        expect([file, key, typeof strings[key]]).toEqual([file, key, "string"])
+    }
+    const de = createTranslator(
+      "dataTable",
+      "de-DE",
+      tables["de-DE.ts"] as never
+    )
+    expect(de("firstPage")).toBe("Erste Seite")
+    expect(de("pageOf", { page: "3", pageCount: "1.240" })).toBe(
+      "Seite 3 von 1.240"
+    )
+  })
+
+  it("names NumberField's minus and plus buttons in every locale", async () => {
+    const tables = Object.fromEntries(await locales())
+    for (const [file, table] of Object.entries(tables))
+      for (const key of ["increase", "decrease"] as const)
+        expect([file, key, typeof table.numberField[key]]).toEqual([
+          file,
+          key,
+          "string",
+        ])
+    expect(
+      createTranslator(
+        "numberField",
+        "fr-FR",
+        tables["fr-FR.ts"] as never
+      )("increase")
+    ).toBe("Augmenter")
+  })
+
+  it("counts a number filter's matches in every locale", async () => {
+    const tables = Object.fromEntries(await locales())
+    for (const [file, table] of Object.entries(tables))
+      expect([file, typeof table.dataTable.filterMatches]).toEqual([
+        file,
+        "object",
+      ])
+    const values = (count: number) => ({
+      count,
+      matches: String(count),
+      total: "120",
+    })
+    const en = createTranslator("dataTable", "en-US")
+    expect(en("filterMatches", values(1))).toBe("1 of 120 matches")
+    expect(en("filterMatches", values(12))).toBe("12 of 120 match")
+    const ru = createTranslator(
+      "dataTable",
+      "ru-RU",
+      tables["ru-RU.ts"] as never
+    )
+    expect(ru("filterMatches", values(1))).toBe("Совпадает 1 из 120")
+    expect(ru("filterMatches", values(5))).toBe("Совпадают 5 из 120")
+  })
+
   it("renders en-US first, then the provider's locale once it has loaded", async () => {
     function Label() {
       const t = useTranslations("tree")
@@ -117,6 +213,103 @@ describe("translations", () => {
       </TectonProvider>
     )
     expect(screen.getAllByText("Développer")).toHaveLength(2)
+  })
+
+  it("carries the power search's strings in every locale, each key translated", async () => {
+    const english = (enUS as unknown as Table).dataTableQuery
+    expect(Object.keys(english).length).toBeGreaterThan(0)
+    for (const [file, table] of await locales()) {
+      expect([file, "dataTableQuery" in table]).toEqual([file, true])
+      const strings = table.dataTableQuery
+      expect([file, Object.keys(strings).sort()]).toEqual([
+        file,
+        Object.keys(english).sort(),
+      ])
+      // Plural maps where en-US has them; the shared test checks placeholders.
+      for (const [key, translation] of Object.entries(strings))
+        if (typeof translation !== "string")
+          expect([file, key, translation.other]).toEqual([
+            file,
+            key,
+            expect.any(String),
+          ])
+    }
+  })
+
+  it("carries live data's and the filters' plural strings in every locale, a form for each of its plural categories", async () => {
+    const keys = [
+      "rowsAdded",
+      "newRows",
+      "newRowsAbove",
+      "newRowsBelow",
+      "newRowsOnOtherPages",
+      "filterMoreRanges",
+    ]
+    for (const [file, table] of await locales()) {
+      const categories = new Intl.PluralRules(
+        file.replace(/\.ts$/, "")
+      ).resolvedOptions().pluralCategories
+      for (const key of keys) {
+        const translation = table.dataTable[key]
+        expect([file, key, typeof translation]).toEqual([file, key, "object"])
+        const forms = translation as Record<string, string>
+        // Spanish, French, Italian and Portuguese's "many" (a million rows)
+        // reads as "other".
+        for (const category of categories)
+          if (category !== "many" || !/^(es|fr|it|pt)-/.test(file))
+            expect([file, key, category, typeof forms[category]]).toEqual([
+              file,
+              key,
+              category,
+              "string",
+            ])
+      }
+    }
+  })
+
+  it('carries "Show more"\'s strings in every locale, a form for each plural category of its counts', async () => {
+    for (const [file, table] of await locales()) {
+      const strings = table.dataTable
+      for (const key of ["shownOf", "loadingMore"])
+        expect([file, key, typeof strings[key]]).toEqual([file, key, "string"])
+      const categories = new Intl.PluralRules(
+        file.replace(/\.ts$/, "")
+      ).resolvedOptions().pluralCategories
+      for (const key of ["shownRows", "showMoreOfTotal", "showMoreShown"]) {
+        const forms = strings[key] as Record<string, string>
+        expect([file, key, typeof forms]).toEqual([file, key, "object"])
+        // Spanish, French, Italian and Portuguese's "many" (a million rows)
+        // reads as "other".
+        for (const category of categories)
+          if (category !== "many" || !/^(es|fr|it|pt)-/.test(file))
+            expect([file, key, category, typeof forms[category]]).toEqual([
+              file,
+              key,
+              category,
+              "string",
+            ])
+      }
+    }
+  })
+
+  it("renders the power search's strings in the provider's locale", async () => {
+    function Label() {
+      const t = useTranslations("dataTableQuery")
+      return <span>{t("presetLastDays", { count: 30 })}</span>
+    }
+    render(
+      <TectonProvider locale="de-DE">
+        <Label />
+      </TectonProvider>
+    )
+    expect(screen.getByText("Last 30 days")).toBeInTheDocument()
+    expect(await screen.findByText("Letzte 30 Tage")).toBeInTheDocument()
+    expect(
+      createTranslator("dataTableQuery", "en-US")("summaryProblems", {
+        count: 1,
+        problems: "x",
+      })
+    ).toBe("1 problem: x")
   })
 
   it("translates memoized tree rows once the locale arrives", async () => {

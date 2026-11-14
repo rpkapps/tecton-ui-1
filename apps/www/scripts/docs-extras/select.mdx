@@ -3,3 +3,18 @@
 `SelectTrigger` accepts `variant="outline" | "filled" | "text"`, the same surface styles as [Input](/docs/components/input). Label, description and error message come from `Field` (see [Forms](/docs/forms)).
 
 <ComponentPreview name="select-variants" />
+
+## Modal
+
+A `Select` is not modal by default, and its list opens below the trigger (above it where there is no room below), so it opens and closes fast even on a large page and locks nothing on it: the page still scrolls, and a press outside the list closes it and still reaches what it pressed. Escape and choosing an item return focus to the trigger.
+
+Pass `modal` for a Select whose outside presses must only close the list, and `alignItemWithTrigger` on `SelectContent` to open the list over the trigger with the selected item on the value. Either one locks the page's scroll while the list is open.
+
+```tsx
+<Select modal items={datums} defaultValue="msl">
+  <SelectTrigger>
+    <SelectValue />
+  </SelectTrigger>
+  <SelectContent alignItemWithTrigger>…</SelectContent>
+</Select>
+```

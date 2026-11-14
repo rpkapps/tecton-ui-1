@@ -70,7 +70,7 @@
     "accent": {
       "dark": "--tecton-color-action-tertiary-bg-hover",
       "confidence": "approximated",
-      "note": "shadcn uses accent for hover/selected rows and ghost hover; Tecton's tertiary hover surface (same as the table hover row) plays that role."
+      "note": "shadcn uses accent for hover/selected items and ghost hover; Tecton's tertiary hover surface plays that role (table rows hover with `table-hover`)."
     },
     "accent-foreground": {
       "dark": "--tecton-color-text-primary",
@@ -474,10 +474,20 @@
       "confidence": "exact",
       "note": "Table header row surface (Tecton draws the header as a filled band)."
     },
+    "table-cell": {
+      "dark": "--tecton-color-table-cell-bg",
+      "confidence": "exact",
+      "note": "Table body cell surface: the body rows' fill (white in light mode), under the stripes (`surface-alt`), hover and selection."
+    },
+    "table-hover": {
+      "dark": "--tecton-color-table-cell-bg-hover",
+      "confidence": "exact",
+      "note": "Hovered table row surface."
+    },
     "table-active": {
       "dark": "--tecton-color-table-cell-bg-active",
       "confidence": "exact",
-      "note": "Selected table row surface; the hovered row uses accent."
+      "note": "Selected table row surface."
     },
     "slider": {
       "dark": "--tecton-color-accent-lilac-main",

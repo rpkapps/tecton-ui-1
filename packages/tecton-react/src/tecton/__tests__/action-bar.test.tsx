@@ -8,6 +8,9 @@ import {
   ActionBarMessage,
   ActionBarSelection,
 } from "@tecton/react/action-bar"
+import { TectonProvider } from "@tecton/react/provider"
+
+import { loadTranslations } from "../internal/i18n/translations"
 
 describe("ActionBar", () => {
   it("renders a region in the toolbar placement by default", () => {
@@ -199,6 +202,68 @@ describe("ActionBarMessage and ActionBarActions", () => {
     expect(screen.getByRole("toolbar", { name: "Bulk" })).toHaveClass(
       "x",
       "ms-auto"
+    )
+  })
+})
+
+describe("ActionBar in the provider's locale", () => {
+  const announced = (container: HTMLElement) =>
+    container.querySelector('[aria-live="polite"]')
+
+  it("translates the summary with the plural form of the count, and formats the numbers", async () => {
+    await act(() => loadTranslations("ru-RU"))
+    const ui = (count: number) => (
+      <TectonProvider locale="ru-RU">
+        <ActionBarSelection count={count} total={1234} onClear={() => {}} />
+        <ActionBarActions />
+      </TectonProvider>
+    )
+    const { container, rerender } = render(ui(1))
+    // Russian groups thousands with a no-break space.
+    await waitFor(() =>
+      expect(announced(container)?.textContent).toBe("Выбран 1 из 1 234")
+    )
+    rerender(ui(5))
+    await waitFor(() =>
+      expect(announced(container)?.textContent).toBe("Выбрано 5 из 1 234")
+    )
+    // The compact forms, the clear buttons and the toolbar's name.
+    expect(container.querySelector('[aria-hidden="true"]')).toHaveTextContent(
+      "Выбрано 5"
+    )
+    expect(screen.getByRole("button", { name: "Очистить" })).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: "Снять выделение" })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("toolbar", { name: "Действия" })
+    ).toBeInTheDocument()
+  })
+
+  it("places the noun where the language puts it", async () => {
+    await act(() => loadTranslations("ja-JP"))
+    const { container } = render(
+      <TectonProvider locale="ja-JP">
+        <ActionBarSelection count={2} total={9} label="坑井" />
+      </TectonProvider>
+    )
+    await waitFor(() =>
+      expect(announced(container)).toHaveTextContent(
+        "坑井：9 件中 2 件を選択済み"
+      )
+    )
+  })
+
+  it("formats the numbers in English too", async () => {
+    const { container } = render(
+      <TectonProvider locale="en-US">
+        <ActionBarSelection count={1200} total={34000} label="wells" />
+      </TectonProvider>
+    )
+    await waitFor(() =>
+      expect(announced(container)).toHaveTextContent(
+        "1,200 of 34,000 wells selected"
+      )
     )
   })
 })

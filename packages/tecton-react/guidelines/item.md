@@ -7,7 +7,7 @@ notFor:
   - need: a standalone block with its own title, body and footer
     use: Card
   - need: rows with columns, sorting, paging and selection
-    use: TanStack Table
+    use: DataTable
   - need: the trailing actions of a panel header
     use: PanelActions
 related: [Card, Panel, Separator]

@@ -107,10 +107,17 @@ actions apply to, and it is better to hide a third-tier action than to turn
 ### Width accounting
 
 6. Each item's inline size is measured once, when it is first laid out in
-   the row, and cached. An item is measured again only when its own box
+   the row, and cached. An item is measured again when its own box
    resizes while visible (its label collapsed, its text changed).
-7. Hidden items are `display: none`. They are not measured while hidden;
-   their cached width is used to decide whether they can come back.
+7. Hidden items are `display: none`, and their cached width decides whether
+   they can come back. That width must be the one the item would have now,
+   never the one it had when it left: a hidden item whose content changes
+   (a filter's summary cleared from outside the row, a renamed label), and
+   every hidden item once web fonts finish loading, is measured again at
+   the next pass. It is put back in the row for the read and hidden again
+   in the same task, before any paint. A width cached too wide would keep
+   the item in the menu at a width where it fits, and an elastic item would
+   fill the space it leaves.
 8. Gaps count. The row's `gap` is read once from computed style and added
    per visible item. So do margins: a child's inline margins (a divider's
    spacing) are read once and added to its measured width. A fixed child
@@ -126,7 +133,11 @@ actions apply to, and it is better to hide a third-tier action than to turn
 11. Every pass recomputes the hidden set from scratch out of the cached
     widths, so an item returns exactly when its cached width plus its gap
     fits with the trigger still reserved, or when it is the last hidden item
-    and the trigger's width counts as freed.
+    and the trigger's width counts as freed. There is no hysteresis: the
+    layout is a function of the available size and the items' current
+    sizes (an elastic item at its `min`, rule 3.4), so a width gives the
+    same layout whatever widths came before it. Only an open popup
+    (rule 17) can change that, and only while it is open.
 12. Items return in the reverse order they left: highest priority first, and
     on a tie the one nearest the logical start.
 13. Returning is evaluated in the same pass as leaving, from the same
@@ -149,10 +160,13 @@ actions apply to, and it is better to hide a third-tier action than to turn
 
 ### Deferral
 
-17. An item whose own popover, menu or select listbox is open is not hidden
-    while it is open. The next lower-priority candidate leaves instead. The
-    deferred item leaves at the next recomputation after it closes, if still
-    needed.
+17. An item in the row whose own popover, menu or select listbox is open is
+    not hidden while it is open. The next lower-priority candidate leaves
+    instead. Closing the popup runs a pass, so the deferred item leaves
+    then, if still needed, and the row is laid out as it would be for that
+    width. An item already in the menu whose popup was opened from there
+    is not brought back by it: it returns only when the row has room for
+    it.
 18. An item that currently holds focus is hidden like any other, and focus
     moves to the overflow trigger. The trigger takes focus, not the menu:
     opening a menu on resize is disruptive.
@@ -322,10 +336,14 @@ on it for behaviour.
 14.1. One `ResizeObserver` per row, observing the row's content box. Never
 `window.resize`. A `MutationObserver` on the row's own child list (not its
 subtree) catches fixed children that a descendant adds or removes without
-re-rendering the row.
+re-rendering the row. A second `MutationObserver` watches the subtree of
+each hidden item (to measure it again, rule 5.7) and `aria-expanded` in
+the row (a popup closing, rule 5.17); it is moved only when the hidden set
+changes.
 
 14.2. Item widths are cached (rule 5.6). A resize does one pass over the
-cache in priority order; no DOM reads in that pass.
+cache in priority order; no DOM reads in that pass, except one read of
+the hidden items whose content changed since the last pass (rule 5.7).
 
 14.3. The visible set is held in a store outside React. Each `OverflowItem`
 subscribes to its own id with `useSyncExternalStore` and rerenders only
@@ -343,9 +361,24 @@ new item only. Existing widths are kept. This includes an item mounted by
 its own parent's state rather than the row's render: it is measured when it
 registers.
 
-14.7. First paint: every item renders visible with its label, one
-measurement runs in a layout effect before paint and collapses what does
-not fit. There is no flash of overflow.
+14.7. First paint: every item renders with its label, one measurement
+runs in a layout effect before paint and collapses what does not fit.
+There is no flash of overflow. Rendered on the server, the row has no
+width to measure until it hydrates, and must not show a layout it will
+not keep. Until its first pass it has no `data-measured`; it keeps to one
+line, every child at its own size (only elastic items shrink), and clips
+what runs past its end, so there is no second line or scrollbar for the
+pass to take away. What may still move is `visibility: hidden` (laid out,
+so nothing shifts and the pass measures it, but neither drawn, focusable
+nor announced): each item that can go into the menu or lose its label
+(neither fixed nor elastic), each divider, and every child after the
+first such item, whose place depends on it. The fixed and elastic
+children before it show. The pass sets `data-measured` in the same commit
+that hides what does not fit and renders the trigger, so the row goes
+from unseen items to its real layout in one frame and never shows a More
+button it then removes. The row re-renders this once; a pass after it
+notifies only what changed. A row outside a live document, which never
+measures, is marked measured at once and shows every item.
 
 14.8. No transition on hide or show. Items appear and disappear in one
 frame. Only the host's own enter and exit (the `ActionBar` slide) animates.

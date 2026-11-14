@@ -81,6 +81,48 @@ describe("TableColumnResizer", () => {
     fireEvent.pointerUp(document, { pointerId: 1, clientX: 170, clientY: 10 })
   })
 
+  it('sits on the start edge with edge="start", where the arrow and the drag toward the start widen', async () => {
+    const user = userEvent.setup()
+    render(<Resizer edge="start" />)
+    expect(separator()).toHaveAttribute("data-edge", "start")
+    expect(separator()).toHaveClass("start-0", "-ms-1.5")
+    act(() => separator().focus())
+    await user.keyboard("{ArrowLeft}")
+    expect(separator()).toHaveAttribute("aria-valuenow", "168")
+    await user.keyboard("{ArrowRight}{ArrowRight}")
+    expect(separator()).toHaveAttribute("aria-valuenow", "152")
+    fireEvent.pointerDown(separator(), {
+      button: 0,
+      pointerId: 1,
+      clientX: 200,
+      clientY: 10,
+    })
+    fireEvent.pointerMove(document, { pointerId: 1, clientX: 170, clientY: 10 })
+    expect(separator()).toHaveAttribute("aria-valuenow", "182")
+    fireEvent.pointerUp(document, { pointerId: 1, clientX: 170, clientY: 10 })
+  })
+
+  it("mirrors a start-edge grip in right-to-left text", async () => {
+    const user = userEvent.setup()
+    render(
+      <TectonProvider direction="rtl">
+        <Resizer edge="start" />
+      </TectonProvider>
+    )
+    act(() => separator().focus())
+    await user.keyboard("{ArrowRight}")
+    expect(separator()).toHaveAttribute("aria-valuenow", "168")
+    fireEvent.pointerDown(separator(), {
+      button: 0,
+      pointerId: 1,
+      clientX: 200,
+      clientY: 10,
+    })
+    fireEvent.pointerMove(document, { pointerId: 1, clientX: 230, clientY: 10 })
+    expect(separator()).toHaveAttribute("aria-valuenow", "198")
+    fireEvent.pointerUp(document, { pointerId: 1, clientX: 230, clientY: 10 })
+  })
+
   it("follows a drag, clamped, and commits on release", () => {
     const onValueChange = vi.fn()
     const onValueCommitted = vi.fn()

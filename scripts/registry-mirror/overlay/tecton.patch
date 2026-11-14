@@ -676,7 +676,7 @@ index bebe3a91..1a632390 100644
            )}
            {...props}
 diff --git a/apps/v4/registry/bases/base/ui/dropdown-menu.tsx b/apps/v4/registry/bases/base/ui/dropdown-menu.tsx
-index 4c4543e2..74e2002d 100644
+index 4c4543e2..b5cc4068 100644
 --- a/apps/v4/registry/bases/base/ui/dropdown-menu.tsx
 +++ b/apps/v4/registry/bases/base/ui/dropdown-menu.tsx
 @@ -2,6 +2,7 @@
@@ -687,8 +687,13 @@ index 4c4543e2..74e2002d 100644
  import { cn } from "cn"
  
  import { IconPlaceholder } from "@/app/(create)/components/icon-placeholder"
-@@ -10,8 +11,19 @@ function DropdownMenu({ ...props }: MenuPrimitive.Root.Props) {
-   return <MenuPrimitive.Root data-slot="dropdown-menu" {...props} />
+@@ -9,9 +10,22 @@ import { IconPlaceholder } from "@/app/(create)/components/icon-placeholder"
+-function DropdownMenu({ ...props }: MenuPrimitive.Root.Props) {
+-  return <MenuPrimitive.Root data-slot="dropdown-menu" {...props} />
++function DropdownMenu({ modal = false, ...props }: MenuPrimitive.Root.Props) {
++  return (
++    <MenuPrimitive.Root data-slot="dropdown-menu" modal={modal} {...props} />
++  )
  }
  
 -function DropdownMenuPortal({ ...props }: MenuPrimitive.Portal.Props) {
@@ -709,9 +714,11 @@ index 4c4543e2..74e2002d 100644
  }
  
  function DropdownMenuTrigger({ ...props }: MenuPrimitive.Trigger.Props) {
-@@ -24,14 +36,18 @@ function DropdownMenuContent({
+@@ -23,21 +37,27 @@ function DropdownMenuContent({
+   alignOffset = 0,
    side = "bottom",
    sideOffset = 4,
++  anchor,
    className,
 +  container,
    ...props
@@ -719,7 +726,8 @@ index 4c4543e2..74e2002d 100644
 +  Pick<MenuPrimitive.Portal.Props, "container"> &
    Pick<
      MenuPrimitive.Positioner.Props,
-     "align" | "alignOffset" | "side" | "sideOffset"
+-    "align" | "alignOffset" | "side" | "sideOffset"
++    "align" | "alignOffset" | "side" | "sideOffset" | "anchor"
    >) {
 +  const portalTarget = usePortalTarget()
 +
@@ -729,6 +737,13 @@ index 4c4543e2..74e2002d 100644
        <MenuPrimitive.Positioner
          className="isolate z-50 outline-none"
          align={align}
+         alignOffset={alignOffset}
+         side={side}
+         sideOffset={sideOffset}
++        anchor={anchor}
+       >
+         <MenuPrimitive.Popup
+           data-slot="dropdown-menu-content"
 diff --git a/apps/v4/registry/bases/base/ui/hover-card.tsx b/apps/v4/registry/bases/base/ui/hover-card.tsx
 index f76bbaa2..17940b96 100644
 --- a/apps/v4/registry/bases/base/ui/hover-card.tsx
@@ -896,7 +911,7 @@ index b1f8b1df..4880c73b 100644
    )
  }
 diff --git a/apps/v4/registry/bases/base/ui/popover.tsx b/apps/v4/registry/bases/base/ui/popover.tsx
-index 808aa62d..bf903bda 100644
+index 808aa62d..c8aebb7b 100644
 --- a/apps/v4/registry/bases/base/ui/popover.tsx
 +++ b/apps/v4/registry/bases/base/ui/popover.tsx
 @@ -2,6 +2,7 @@
@@ -907,17 +922,19 @@ index 808aa62d..bf903bda 100644
  import { cn } from "cn"
  
  function Popover({ ...props }: PopoverPrimitive.Root.Props) {
-@@ -18,14 +19,18 @@ function PopoverContent({
+@@ -18,19 +19,25 @@ function PopoverContent({
    alignOffset = 0,
    side = "bottom",
    sideOffset = 4,
++  anchor,
 +  container,
    ...props
  }: PopoverPrimitive.Popup.Props &
 +  Pick<PopoverPrimitive.Portal.Props, "container"> &
    Pick<
      PopoverPrimitive.Positioner.Props,
-     "align" | "alignOffset" | "side" | "sideOffset"
+-    "align" | "alignOffset" | "side" | "sideOffset"
++    "align" | "alignOffset" | "side" | "sideOffset" | "anchor"
    >) {
 +  const portalTarget = usePortalTarget()
 +
@@ -927,11 +944,17 @@ index 808aa62d..bf903bda 100644
        <PopoverPrimitive.Positioner
          align={align}
          alignOffset={alignOffset}
+         side={side}
+         sideOffset={sideOffset}
++        anchor={anchor}
+         className="isolate z-50"
+       >
+         <PopoverPrimitive.Popup
 diff --git a/apps/v4/registry/bases/base/ui/select.tsx b/apps/v4/registry/bases/base/ui/select.tsx
 index 2cb76c11..80927f4f 100644
 --- a/apps/v4/registry/bases/base/ui/select.tsx
 +++ b/apps/v4/registry/bases/base/ui/select.tsx
-@@ -2,6 +2,8 @@
+@@ -2,11 +2,18 @@
  
  import * as React from "react"
  import { Select as SelectPrimitive } from "@base-ui/react/select"
@@ -940,7 +963,18 @@ index 2cb76c11..80927f4f 100644
  import { cn } from "cn"
  
  import { IconPlaceholder } from "@/app/(create)/components/icon-placeholder"
-@@ -28,22 +30,38 @@ function SelectValue({ className, ...props }: SelectPrimitive.Value.Props) {
+ 
+-const Select = SelectPrimitive.Root
++function Select<Value, Multiple extends boolean | undefined = false>({
++  modal = false,
++  ...props
++}: SelectPrimitive.Root.Props<Value, Multiple>) {
++  return <SelectPrimitive.Root modal={modal} {...props} />
++}
+ 
+ function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
+   return (
+@@ -28,22 +35,38 @@
    )
  }
  
@@ -986,10 +1020,15 @@ index 2cb76c11..80927f4f 100644
        {...props}
      >
        {children}
-@@ -71,14 +89,18 @@ function SelectContent({
-   align = "center",
+@@ -68,17 +91,21 @@
+   children,
+   side = "bottom",
+   sideOffset = 4,
+-  align = "center",
++  align = "start",
    alignOffset = 0,
-   alignItemWithTrigger = true,
+-  alignItemWithTrigger = true,
++  alignItemWithTrigger = false,
 +  container,
    ...props
  }: SelectPrimitive.Popup.Props &
@@ -1006,7 +1045,7 @@ index 2cb76c11..80927f4f 100644
        <SelectPrimitive.Positioner
          side={side}
          sideOffset={sideOffset}
-@@ -217,4 +239,5 @@ export {
+@@ -217,4 +244,5 @@
    SelectSeparator,
    SelectTrigger,
    SelectValue,
@@ -1296,14 +1335,20 @@ index 2e55a9a0..5789a0fe 100644
          ))}
        </SliderPrimitive.Control>
 diff --git a/apps/v4/registry/bases/base/ui/table.tsx b/apps/v4/registry/bases/base/ui/table.tsx
-index 160cf7aa..bdf8d2f1 100644
+index 160cf7aa..064dc94e 100644
 --- a/apps/v4/registry/bases/base/ui/table.tsx
 +++ b/apps/v4/registry/bases/base/ui/table.tsx
-@@ -3,34 +3,74 @@
+@@ -3,34 +3,97 @@
  import * as React from "react"
  import { cn } from "cn"
  
 -function Table({ className, ...props }: React.ComponentProps<"table">) {
++import {
++  TableGridProvider,
++  useTableContainer,
++  useTableGrid,
++  useTableRow,
++} from "../tecton/internal/table-grid"
 +import {
 +  TableVirtualProvider,
 +  useTableVirtualized,
@@ -1314,9 +1359,15 @@ index 160cf7aa..bdf8d2f1 100644
 +
 +function Table({
 +  className,
++  size = "default",
++  striped = false,
 +  virtualized = false,
 +  ...props
 +}: React.ComponentProps<"table"> & {
++  /** `sm` is compact: shorter header and rows, smaller text. */
++  size?: "default" | "sm"
++  /** Every even body row on an alternate surface. */
++  striped?: boolean
 +  /**
 +   * Renders only the rows in view. The table fills and scrolls in its
 +   * parent, which needs a bounded height; rows are one height and the
@@ -1325,25 +1376,37 @@ index 160cf7aa..bdf8d2f1 100644
 +  virtualized?: boolean
 +}) {
 +  const virtual = useTableVirtualizer(virtualized)
++  const grid = useTableGrid(props)
++  const container = useTableContainer(virtual.containerRef)
    return (
 -    <div data-slot="table-container" className="cn-table-container">
 +    <div
 +      data-slot="table-container"
-+      ref={virtual.containerRef}
-+      className={cn("cn-table-container", virtualized && "h-full overflow-auto")}
++      ref={container.ref}
++      style={container.style}
++      className={cn(
++        "cn-table-container",
++        virtualized && "h-full overflow-auto",
++        container.className
++      )}
 +    >
        <table
          data-slot="table"
 -        className={cn("cn-table", className)}
+-        {...props}
+-      />
++        data-size={size}
++        data-striped={striped ? "" : undefined}
 +        aria-rowcount={virtual.rowCount}
 +        className={cn("cn-table", virtual.tableClassName, className)}
-         {...props}
--      />
++        {...grid.props}
 +      >
 +        {virtual.colgroup}
-+        <TableVirtualProvider value={virtual.context}>
-+          {props.children}
-+        </TableVirtualProvider>
++        <TableGridProvider value={grid.context}>
++          <TableVirtualProvider value={virtual.context}>
++            {props.children}
++          </TableVirtualProvider>
++        </TableGridProvider>
 +      </table>
      </div>
    )
@@ -1378,6 +1441,15 @@ index 160cf7aa..bdf8d2f1 100644
        className={cn("cn-table-body", className)}
 -      {...props}
 +      {...useVirtualRows(props)}
+     />
+   )
+ }
+@@ -50,7 +113,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
+     <tr
+       data-slot="table-row"
+       className={cn("cn-table-row has-aria-expanded:bg-muted/50", className)}
+-      {...props}
++      {...useTableRow(props)}
      />
    )
  }

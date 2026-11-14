@@ -4,6 +4,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router"
 import { Spinner } from "@tecton/react/spinner"
 
 import { getBlock, loadBlock } from "@/lib/blocks"
+import { preloadMarker } from "@/lib/preload"
 
 /** Chrome-less block render, used by the block viewer iframes and screenshots. */
 export const Route = createFileRoute("/view/$name")({
@@ -26,7 +27,10 @@ function Block({ name }: { name: string }) {
 function ViewPage() {
   const { name } = Route.useLoaderData()
   return (
-    <div className="min-h-svh bg-background text-foreground">
+    <div
+      className="min-h-svh bg-background text-foreground"
+      {...preloadMarker("block", name)}
+    >
       <React.Suspense
         fallback={
           <div className="flex h-svh items-center justify-center">

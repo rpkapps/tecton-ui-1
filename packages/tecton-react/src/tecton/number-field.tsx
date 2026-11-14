@@ -8,6 +8,8 @@ import { MinusIcon, MoveHorizontalIcon, PlusIcon } from "lucide-react"
 
 import { useDirection, useLocale } from "@tecton/react/provider"
 
+import { useTranslations } from "./internal/i18n/translations"
+
 /**
  * Tecton NumberField — a numeric input with minus / plus buttons, min / max /
  * step, locale-aware formatting, a unit suffix and drag-to-scrub. Compose
@@ -282,15 +284,17 @@ const stepperButtonClass =
 
 type NumberFieldIncrementProps = NumberFieldPrimitive.Increment.Props
 
-/** The plus button. Place it after the input. */
+/** The plus button, named "Increase" in the locale. Place it after the input. */
 function NumberFieldIncrement({
   className,
   children,
   ...props
 }: NumberFieldIncrementProps) {
+  const t = useTranslations("numberField")
   return (
     <NumberFieldPrimitive.Increment
       data-slot="number-field-increment"
+      aria-label={t("increase")}
       className={cn(stepperButtonClass, className)}
       {...props}
     >
@@ -301,15 +305,17 @@ function NumberFieldIncrement({
 
 type NumberFieldDecrementProps = NumberFieldPrimitive.Decrement.Props
 
-/** The minus button. Place it before the input. */
+/** The minus button, named "Decrease" in the locale. Place it before the input. */
 function NumberFieldDecrement({
   className,
   children,
   ...props
 }: NumberFieldDecrementProps) {
+  const t = useTranslations("numberField")
   return (
     <NumberFieldPrimitive.Decrement
       data-slot="number-field-decrement"
+      aria-label={t("decrease")}
       className={cn(stepperButtonClass, className)}
       {...props}
     >

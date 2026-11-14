@@ -137,6 +137,8 @@
     --color-number-field-fill: var(--number-field-fill);
     --color-input-filled: var(--input-filled);
     --color-input-filled-focus: var(--input-filled-focus);
+    --color-table-cell: var(--table-cell);
+    --color-table-hover: var(--table-hover);
 }
 
 :root {
@@ -251,6 +253,8 @@
     --number-field-fill: var(--tecton-color-accent-lilac-muted);
     --input-filled: var(--tecton-color-input-filled-bg);
     --input-filled-focus: var(--tecton-color-input-filled-bg-focus);
+    --table-cell: var(--tecton-color-table-cell-bg);
+    --table-hover: var(--tecton-color-table-cell-bg-hover);
 }
 
 .dark {
@@ -364,6 +368,8 @@
     --number-field-fill: var(--tecton-color-action-secondary-bg-focus);
     --input-filled: var(--tecton-color-input-filled-bg);
     --input-filled-focus: var(--tecton-color-input-filled-bg-focus);
+    --table-cell: var(--tecton-color-table-cell-bg);
+    --table-hover: var(--tecton-color-table-cell-bg-hover);
 }
 
 .light, [data-theme="light"] {
@@ -478,6 +484,8 @@
     --number-field-fill: var(--tecton-color-accent-lilac-muted);
     --input-filled: var(--tecton-color-input-filled-bg);
     --input-filled-focus: var(--tecton-color-input-filled-bg-focus);
+    --table-cell: var(--tecton-color-table-cell-bg);
+    --table-hover: var(--tecton-color-table-cell-bg-hover);
 }
 
 @layer base {

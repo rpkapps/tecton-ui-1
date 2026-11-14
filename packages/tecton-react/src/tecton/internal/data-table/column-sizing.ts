@@ -1,0 +1,437 @@
+"use client"
+
+/**
+ * Column widths for `DataTableContent`. A table that resizes or pins
+ * columns, or whose columns have a `width`, `minWidth` or `maxWidth`, is
+ * laid out with fixed widths: a `colgroup` of px widths, `table-fixed`, as
+ * wide as their sum and at least as wide as its frame (the filler column,
+ * `engine/sizing.ts`, takes the rest). Any other table keeps the browser's
+ * automatic layout.
+ *
+ * - A column with no width of its own starts at the width of its content:
+ *   the table is laid out once without fixed widths, measured before it
+ *   is painted (again when such a column is shown, and once rows are there
+ *   after a table that had none or was loading), then fixed.
+ * - A column hidden below a breakpoint (`hideBelow`) takes no width and
+ *   moves no pinned column: the breakpoints the columns use are followed
+ *   with `matchMedia` (none on the server, where every column counts).
+ * - A column resized by dragging is redrawn by setting its `col`'s width,
+ *   the table's, and where pinned columns stick (variables on the frame,
+ *   which the pinned cells read) directly (`preview`), with no render of
+ *   the table; the view takes the width when the drag ends.
+ * - Fit to content (`column-resizer.tsx`, with the resizer) lays the table
+ *   out at its content's width for a moment to read a column's: its widest
+ *   cell rendered, or its header (`headerWidthOf`).
+ * - The columns of controls before the data columns (the rows' drag
+ *   handles, then the selection checkboxes) are measured too, and size as
+ *   one: the engine's selection column, which sticks at the start while a
+ *   column is pinned there.
+ */
+import * as React from "react"
+
+import { atContentWidth, cellsByColumn } from "../grid-dom"
+import {
+  columnWidth,
+  sizeColumns,
+  type ColumnLayout,
+  type ColumnSizing,
+  type EngineColumn,
+} from "./engine/index"
+
+type SizingMode = "auto" | "measure" | "fixed"
+
+type Breakpoint = "sm" | "md" | "lg"
+
+/**
+ * The breakpoints `hideBelow` names, as its classes use them (`hidden
+ * md:table-cell`): Tailwind's `--breakpoint-sm` / `-md` / `-lg`, which
+ * Tecton keeps at Tailwind's defaults (`src/styles/` sets none). Change
+ * these with them.
+ */
+const BREAKPOINTS: Record<Breakpoint, string> = {
+  sm: "(min-width: 40rem)",
+  md: "(min-width: 48rem)",
+  lg: "(min-width: 64rem)",
+}
+
+/** One media query list per breakpoint (and `matchMedia`), made when first asked for. */
+const queries = new Map<
+  Breakpoint,
+  { source: typeof matchMedia; list: MediaQueryList }
+>()
+
+function queryOf(name: Breakpoint) {
+  let query = queries.get(name)
+  if (query?.source !== matchMedia) {
+    query = { source: matchMedia, list: matchMedia(BREAKPOINTS[name]) }
+    queries.set(name, query)
+  }
+  return query.list
+}
+
+/**
+ * The breakpoints of `used` the window is below now (as a key, `"sm md"`):
+ * the columns hidden below them take no width. Nothing on the server.
+ */
+function useBelowBreakpoints(used: ReadonlyArray<Breakpoint>) {
+  const key = [...new Set(used)].sort().join(" ")
+  const supported = typeof matchMedia === "function"
+  const subscribe = React.useCallback(
+    (listener: () => void) => {
+      if (!key || !supported) return () => undefined
+      const lists = key.split(" ").map((name) => queryOf(name as Breakpoint))
+      for (const list of lists) list.addEventListener("change", listener)
+      return () => {
+        for (const list of lists) list.removeEventListener("change", listener)
+      }
+    },
+    [key, supported]
+  )
+  const below = React.useSyncExternalStore(
+    subscribe,
+    () =>
+      !key || !supported
+        ? ""
+        : key
+            .split(" ")
+            .filter((name) => !queryOf(name as Breakpoint).matches)
+            .join(" "),
+    () => ""
+  )
+  return React.useMemo(() => new Set(below.split(" ")), [below])
+}
+
+/** The key of the selection column's measured width. */
+const SELECTION = "\u0000selection"
+/** The key of the drag handle column's measured width. */
+const HANDLE = "\u0000handle"
+/** The selection column before it is measured: a checkbox and the cell's start padding. */
+const SELECTION_WIDTH = 32
+/** The handle column before it is measured: a small icon button and the cell's padding. */
+const HANDLE_WIDTH = 56
+
+/** The frame's variables for `sizing`, the scrollbar's width included at the end. */
+function sizingVariables(
+  sizing: ColumnSizing,
+  scrollbar: number
+): Record<string, string> {
+  const variables: Record<string, string> = {
+    "--data-table-pinned-start": `${sizing.start}px`,
+    "--data-table-pinned-end": `${sizing.end > 0 ? sizing.end + scrollbar : 0}px`,
+  }
+  sizing.offsets.forEach((offset, index) => {
+    if (offset !== undefined)
+      variables[`--data-table-pin-${index}`] = `${offset}px`
+  })
+  return variables
+}
+
+/** Where a pinned cell sticks: its variable, so a resize moves it unrendered. */
+function pinOffset(index: number) {
+  return `var(--data-table-pin-${index})`
+}
+
+/** A table's `col` widths: none for the filler, which takes the space left. */
+function colWidths(sizing: ColumnSizing) {
+  return sizing.widths.map((width, index) =>
+    index === sizing.filler ? undefined : width
+  )
+}
+
+type ColumnSizer = {
+  mode: SizingMode
+  /** The widths, while they are fixed (or measured). */
+  sizing: ColumnSizing | null
+  /** The widths of the columns of controls, in px, while fixed. */
+  controls: { handle: number; selection: number }
+  /** The frame's variables for `sizing`. */
+  style: React.CSSProperties | undefined
+  /** Draws `column` at `width` until the next render, without rendering. */
+  preview: (column: string, width: number) => void
+  /** Draws the widths the table has, after a preview the view did not take. */
+  restore: () => void
+  /** The breakpoints the window is below now, of those the columns hide at. */
+  below: ReadonlySet<string>
+}
+
+function useColumnSizing({
+  frame,
+  container,
+  layout,
+  widths,
+  selection,
+  handle = false,
+  fixed,
+  ready,
+  rows,
+  rtl,
+}: {
+  frame: React.RefObject<HTMLElement | null>
+  /** The table's scroll container. */
+  container: React.RefObject<HTMLElement | null>
+  layout: ColumnLayout<unknown>
+  /** The widths the user set (`view.columns.widths`): such a column never stretches. */
+  widths: Readonly<Record<string, number>>
+  /** A selection column comes before the data columns. */
+  selection: boolean
+  /** A drag handle column comes first. */
+  handle?: boolean
+  /** The table is laid out with fixed widths. */
+  fixed: boolean
+  /** The table can be measured (not the first load's skeleton). */
+  ready: boolean
+  /** Rows are shown and not loading: their content is what is measured. */
+  rows: boolean
+  rtl: boolean
+}): ColumnSizer {
+  const [measured, setMeasured] = React.useState<{
+    widths: Readonly<Partial<Record<string, number>>>
+    /** Measured with rows: no need to measure again when rows come. */
+    rows: boolean
+  }>({ widths: {}, rows: false })
+  const [scrollbar, setScrollbar] = React.useState(0)
+  // A table hidden while it was to be measured (in a closed tab) is
+  // measured once it is shown.
+  const [shown, setShown] = React.useState(0)
+  const below = useBelowBreakpoints(
+    layout.columns.flatMap((column) => column.definition.hideBelow ?? [])
+  )
+  const hidden = React.useCallback(
+    (column: EngineColumn<unknown>) => {
+      const { hideBelow } = column.definition
+      return hideBelow !== undefined && below.has(hideBelow)
+    },
+    [below]
+  )
+
+  const unsized = layout.columns.filter(
+    (column) => layout.width(column.id) === undefined
+  )
+  const missing =
+    fixed &&
+    ((selection && measured.widths[SELECTION] === undefined) ||
+      (handle && measured.widths[HANDLE] === undefined) ||
+      unsized.some((column) => measured.widths[column.id] === undefined) ||
+      (rows && !measured.rows && unsized.length > 0))
+  const mode: SizingMode = !fixed
+    ? "auto"
+    : missing && ready
+      ? "measure"
+      : "fixed"
+  const controls = React.useMemo(
+    () => ({
+      handle: handle ? measured.widths[HANDLE] || HANDLE_WIDTH : 0,
+      selection: selection ? measured.widths[SELECTION] || SELECTION_WIDTH : 0,
+    }),
+    [handle, selection, measured]
+  )
+  const sizing = React.useMemo(
+    () =>
+      fixed
+        ? sizeColumns(layout, {
+            widthOf: (column) => columnWidth(column, layout, measured.widths),
+            // The columns of controls size as one.
+            selection:
+              selection || handle
+                ? controls.handle + controls.selection
+                : undefined,
+            hidden,
+            stretches: (column) => !Object.hasOwn(widths, column.id),
+          })
+        : null,
+    [fixed, layout, measured, selection, handle, controls, hidden, widths]
+  )
+  const lead = (handle ? 1 : 0) + (selection ? 1 : 0)
+
+  React.useLayoutEffect(() => {
+    if (mode !== "measure") return
+    const element = frame.current
+    const table = element?.querySelector("table")
+    const head = table?.tHead?.rows
+    if (!element || !table || !head?.length) return
+    if (table.getBoundingClientRect().width <= 0) {
+      if (typeof ResizeObserver === "undefined") return
+      const observer = new ResizeObserver(() => {
+        if (element.getBoundingClientRect().width > 0) setShown((n) => n + 1)
+      })
+      observer.observe(element)
+      return () => observer.disconnect()
+    }
+    // Each column's own header: in the last row, or spanning down to it.
+    const last = head[head.length - 1]
+    const cells = cellsByColumn(last) ?? [...last.cells]
+    const next: Partial<Record<string, number>> = { ...measured.widths }
+    atContentWidth(table, () => {
+      if (handle) next[HANDLE] = Math.ceil(widthOf(cells[0]))
+      if (selection) next[SELECTION] = Math.ceil(widthOf(cells[handle ? 1 : 0]))
+      layout.columns.forEach((column, index) => {
+        if (layout.width(column.id) !== undefined) return
+        const cell = cells[index + lead] as Element | undefined
+        // 0: not laid out (hidden below a breakpoint); it takes the default.
+        next[column.id] = cell ? Math.ceil(headerWidthOf(cell)) : 0
+      })
+    })
+    setMeasured({ widths: next, rows })
+  }, [mode, frame, layout, measured, selection, handle, lead, rows, shown])
+
+  // A pinned end edge sits clear of a vertical scrollbar (a virtualized
+  // body), which the fade must leave alone too.
+  const pinnedEnd = layout.pinnedEnd > 0
+  React.useLayoutEffect(() => {
+    if (pinnedEnd) setScrollbar(scrollbarOf(container.current))
+  })
+
+  const latest = React.useRef({
+    layout,
+    measured: measured.widths,
+    widths,
+    hidden,
+    lead,
+    sizing,
+    rtl,
+  })
+  React.useInsertionEffect(() => {
+    latest.current = {
+      layout,
+      measured: measured.widths,
+      widths,
+      hidden,
+      lead,
+      sizing,
+      rtl,
+    }
+  })
+
+  /** Sets the frame's variables and the `col` widths for `next`. */
+  const draw = (next: ColumnSizing) => {
+    const element = frame.current
+    if (!element) return
+    // Only what changed: a variable of the frame's restyles every cell.
+    for (const [name, value] of Object.entries(
+      sizingVariables(next, scrollbarOf(container.current))
+    ))
+      if (element.style.getPropertyValue(name) !== value)
+        element.style.setProperty(name, value)
+    const table = element.querySelector("table")
+    if (table) Object.assign(table.style, tableStyle(next))
+    const cols = element.querySelectorAll<HTMLElement>(
+      'colgroup[data-slot="data-table-columns"] > col'
+    )
+    const offset = latest.current.lead
+    colWidths(next).forEach((value, index) => {
+      const col = cols[index + offset] as HTMLElement | undefined
+      if (col) col.style.width = value === undefined ? "" : `${value}px`
+    })
+  }
+
+  const [actions] = React.useState(() => ({
+    preview(id: string, width: number) {
+      const current = latest.current
+      if (!current.sizing) return
+      // The column takes the width it is given, stretching or not.
+      draw(
+        sizeColumns(current.layout, {
+          widthOf: (column) =>
+            column.id === id
+              ? width
+              : columnWidth(column, current.layout, current.measured),
+          selection: current.sizing.selection,
+          hidden: current.hidden,
+          stretches: (column) =>
+            column.id !== id && !Object.hasOwn(current.widths, column.id),
+        })
+      )
+    },
+    restore() {
+      const { sizing: current } = latest.current
+      if (current) draw(current)
+    },
+  }))
+
+  const style = React.useMemo(
+    () =>
+      sizing
+        ? (sizingVariables(sizing, scrollbar) as React.CSSProperties)
+        : undefined,
+    [sizing, scrollbar]
+  )
+  // One object while none of it changes: the header renders with it.
+  return React.useMemo(
+    () => ({ mode, sizing, controls, style, below, ...actions }),
+    [mode, sizing, controls, style, below, actions]
+  )
+}
+
+function widthOf(element: Element) {
+  return element.getBoundingClientRect().width
+}
+
+/**
+ * The width a column needs for its header cell: the cell, or, where its
+ * menu button floats beside its label (absolutely placed, taking no room,
+ * with a fine pointer; `MENU_BUTTON` in `header.tsx`), whichever is wider
+ * of that and the cell's padding, the label at its own width, and the room
+ * the button needs past the padding on its side: the button, right
+ * against the label, and `MENU_EDGE` (twice over for a centred label, which keeps as much
+ * room on its other side).
+ *
+ * The side is the label's alignment (`data-align`), which places the
+ * button: before the label in a column aligned to the end, after it
+ * otherwise. Never the button's computed insets: a positioned element's
+ * are resolved to px, `auto` ones too, so they say nothing of the side.
+ */
+function headerWidthOf(cell: Element) {
+  const width = widthOf(cell)
+  const button = cell.querySelector<HTMLElement>(
+    '[data-slot="data-table-column-menu"]'
+  )
+  const label = cell.querySelector<HTMLElement>(
+    '[data-slot="data-table-header-label"]'
+  )
+  const view = cell.ownerDocument.defaultView
+  if (!button || !label || !view) return width
+  if (view.getComputedStyle(button).position !== "absolute") return width
+  const box = view.getComputedStyle(cell)
+  const start = parseFloat(box.paddingInlineStart) || 0
+  const end = parseFloat(box.paddingInlineEnd) || 0
+  const align = label.dataset.align
+  // The padding the button sits in: the start's before an end-aligned
+  // label, the end's after any other.
+  const padding = align === "end" ? start : end
+  const past = Math.max(0, widthOf(button) + MENU_EDGE - padding)
+  // The label at its own width, not narrowed by the room it leaves the
+  // button while that shows (the menu is open as it fits the column).
+  const saved = label.style.maxWidth
+  label.style.maxWidth = "none"
+  try {
+    const room =
+      start + end + widthOf(label) + (align === "center" ? 2 * past : past)
+    return Math.max(width, room)
+  } finally {
+    label.style.maxWidth = saved
+  }
+}
+
+/** Between a header's menu button and the cell's edge, in px (`MENU_ROOM` in `header.tsx`). */
+const MENU_EDGE = 2
+
+/** The width of the vertical scrollbar of the table's container. */
+function scrollbarOf(container: HTMLElement | null) {
+  return container
+    ? Math.max(0, container.offsetWidth - container.clientWidth)
+    : 0
+}
+
+/**
+ * The table's width: the columns' sum, and at least its frame's while a
+ * column stretches to fill it.
+ */
+function tableStyle(sizing: ColumnSizing) {
+  return {
+    width: `${sizing.total}px`,
+    minWidth: sizing.filler >= 0 ? "100%" : "",
+  }
+}
+
+export { colWidths, headerWidthOf, pinOffset, tableStyle, useColumnSizing }
+export type { ColumnSizer, SizingMode }

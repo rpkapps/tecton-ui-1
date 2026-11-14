@@ -26,7 +26,7 @@
   }
 
   .cn-alert-dialog-content {
-    @apply data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 bg-popover text-popover-foreground ring-foreground/10 gap-6 rounded-xl p-6 ring-1 duration-100 data-[size=default]:max-w-xs data-[size=sm]:max-w-xs data-[size=default]:sm:max-w-lg;
+    @apply [--surface:var(--color-popover)] data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 bg-popover text-popover-foreground ring-foreground/10 gap-6 rounded-xl p-6 ring-1 duration-100 data-[size=default]:max-w-xs data-[size=sm]:max-w-xs data-[size=default]:sm:max-w-lg;
   }
 
   .cn-alert-dialog-header {
@@ -292,7 +292,7 @@
 
   /* MARK: Card */
   .cn-card {
-    @apply ring-foreground/10 bg-card text-card-foreground gap-(--card-spacing) overflow-hidden rounded-xl py-(--card-spacing) text-sm ring-1 [--card-spacing:--spacing(6)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(4)] *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl;
+    @apply [--surface:var(--color-card)] ring-foreground/10 bg-card text-card-foreground gap-(--card-spacing) overflow-hidden rounded-xl py-(--card-spacing) text-sm ring-1 [--card-spacing:--spacing(6)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(4)] *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl;
   }
 
   .cn-card-header {
@@ -335,7 +335,7 @@
 
   /* MARK: Checkbox */
   .cn-checkbox {
-    @apply border-ghost-foreground text-ghost-foreground hover:border-ghost-hover-foreground data-checked:border-filled-active data-checked:hover:border-filled-hover data-checked:active:border-filled-pressed data-checked:bg-filled-active data-checked:hover:bg-filled-hover data-checked:active:bg-filled-pressed data-checked:text-background aria-invalid:aria-checked:border-destructive aria-invalid:border-destructive focus-visible:border-ring focus-visible:ring-ring aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 flex size-4 items-center justify-center rounded-[2px] border transition-[color,box-shadow] group-has-disabled/field:opacity-50 focus-visible:ring-2 aria-invalid:ring-2 group-has-[:focus-visible]/field-label:ring-0 group-has-[:focus-visible]/field-label:not-data-checked:border-ghost-foreground group-has-[:focus-visible]/field-label:data-checked:border-filled-active;
+    @apply border-ghost-foreground text-ghost-foreground hover:border-ghost-hover-foreground data-checked:border-filled-active data-checked:hover:border-filled-hover data-checked:active:border-filled-pressed data-checked:bg-filled-active data-checked:hover:bg-filled-hover data-checked:active:bg-filled-pressed data-checked:text-background aria-invalid:aria-checked:border-destructive aria-invalid:border-destructive focus-visible:border-ring focus-visible:ring-ring aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 flex size-4 items-center justify-center rounded-[2px] border transition-[color,box-shadow] group-has-disabled/field:opacity-50 data-disabled:cursor-not-allowed data-disabled:opacity-50 focus-visible:ring-2 aria-invalid:ring-2 group-has-[:focus-visible]/field-label:ring-0 group-has-[:focus-visible]/field-label:not-data-checked:border-ghost-foreground group-has-[:focus-visible]/field-label:data-checked:border-filled-active;
   }
 
   .cn-checkbox-aria {
@@ -348,7 +348,7 @@
 
   /* MARK: Combobox */
   .cn-combobox-content {
-    @apply bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 *:data-[slot=input-group]:bg-muted *:data-[slot=input-group]:border-transparent max-h-72 min-w-36 overflow-hidden rounded-md shadow-md ring-1 duration-100 *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none;
+    @apply [--surface:var(--color-popover)] bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 *:data-[slot=input-group]:bg-muted *:data-[slot=input-group]:border-transparent max-h-72 min-w-36 overflow-hidden rounded-md shadow-md ring-1 duration-100 *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none;
   }
 
   .cn-combobox-content-logical {
@@ -409,7 +409,7 @@
 
   /* MARK: Command */
   .cn-command {
-    @apply bg-popover text-popover-foreground rounded-xl! p-1;
+    @apply [--surface:var(--color-popover)] bg-popover text-popover-foreground rounded-xl! p-1;
   }
 
   .cn-command-dialog {
@@ -466,7 +466,7 @@
 
   /* MARK: Context Menu */
   .cn-context-menu-content {
-    @apply data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 bg-popover text-popover-foreground min-w-36 rounded-md p-1 shadow-md ring-1 duration-100;
+    @apply [--surface:var(--color-popover)] data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 bg-popover text-popover-foreground min-w-36 rounded-md p-1 shadow-md ring-1 duration-100;
   }
 
   .cn-context-menu-content-logical {
@@ -519,7 +519,7 @@
   }
 
   .cn-dialog-content {
-    @apply bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 ring-foreground/10 grid max-w-[calc(100%-2rem)] gap-6 rounded-xl p-6 text-sm ring-1 duration-100 sm:max-w-md;
+    @apply [--surface:var(--color-popover)] bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 ring-foreground/10 grid max-w-[calc(100%-2rem)] gap-6 rounded-xl p-6 text-sm ring-1 duration-100 sm:max-w-md;
   }
 
   .cn-dialog-close {
@@ -548,11 +548,11 @@
   }
 
   .cn-drawer-content {
-    @apply bg-card text-card-foreground flex h-auto flex-col text-sm data-[vaul-drawer-direction=bottom]:rounded-t-xl data-[vaul-drawer-direction=bottom]:border-t data-[vaul-drawer-direction=left]:rounded-r-xl data-[vaul-drawer-direction=left]:border-r data-[vaul-drawer-direction=right]:rounded-l-xl data-[vaul-drawer-direction=right]:border-l data-[vaul-drawer-direction=top]:rounded-b-xl data-[vaul-drawer-direction=top]:border-b;
+    @apply [--surface:var(--color-card)] bg-card text-card-foreground flex h-auto flex-col text-sm data-[vaul-drawer-direction=bottom]:rounded-t-xl data-[vaul-drawer-direction=bottom]:border-t data-[vaul-drawer-direction=left]:rounded-r-xl data-[vaul-drawer-direction=left]:border-r data-[vaul-drawer-direction=right]:rounded-l-xl data-[vaul-drawer-direction=right]:border-l data-[vaul-drawer-direction=top]:rounded-b-xl data-[vaul-drawer-direction=top]:border-b;
   }
 
   .cn-drawer-popup {
-    @apply bg-popover text-popover-foreground text-sm data-[swipe-direction=down]:rounded-t-xl data-[swipe-direction=down]:border-t ltr:data-[swipe-direction=left]:rounded-r-xl rtl:data-[swipe-direction=left]:rounded-r-xl ltr:data-[swipe-direction=left]:border-r rtl:data-[swipe-direction=left]:border-r ltr:data-[swipe-direction=right]:rounded-l-xl rtl:data-[swipe-direction=right]:rounded-l-xl ltr:data-[swipe-direction=right]:border-l rtl:data-[swipe-direction=right]:border-l data-[swipe-direction=up]:rounded-b-xl data-[swipe-direction=up]:border-b;
+    @apply [--surface:var(--color-popover)] bg-popover text-popover-foreground text-sm data-[swipe-direction=down]:rounded-t-xl data-[swipe-direction=down]:border-t ltr:data-[swipe-direction=left]:rounded-r-xl rtl:data-[swipe-direction=left]:rounded-r-xl ltr:data-[swipe-direction=left]:border-r rtl:data-[swipe-direction=left]:border-r ltr:data-[swipe-direction=right]:rounded-l-xl rtl:data-[swipe-direction=right]:rounded-l-xl ltr:data-[swipe-direction=right]:border-l rtl:data-[swipe-direction=right]:border-l data-[swipe-direction=up]:rounded-b-xl data-[swipe-direction=up]:border-b;
   }
 
   .cn-drawer-handle {
@@ -589,7 +589,7 @@
 
   /* MARK: Dropdown Menu */
   .cn-dropdown-menu-content {
-    @apply data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 bg-popover text-popover-foreground min-w-32 rounded-md p-1 shadow-md ring-1 duration-100;
+    @apply [--surface:var(--color-popover)] data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 bg-popover text-popover-foreground min-w-32 rounded-md p-1 shadow-md ring-1 duration-100;
   }
 
   .cn-dropdown-menu-content-logical {
@@ -683,7 +683,7 @@
   }
 
   .cn-field {
-    @apply data-[invalid=true]:text-destructive gap-3;
+    @apply data-[invalid=true]:text-destructive gap-2;
   }
 
   .cn-field-content {
@@ -720,7 +720,7 @@
 
   /* MARK: Hover Card */
   .cn-hover-card-content {
-    @apply data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 bg-popover text-popover-foreground w-64 rounded-lg p-4 text-sm shadow-md ring-1 duration-100;
+    @apply [--surface:var(--color-popover)] data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 bg-popover text-popover-foreground w-64 rounded-lg p-4 text-sm shadow-md ring-1 duration-100;
   }
 
   .cn-hover-card-content-logical {
@@ -990,7 +990,7 @@
 
   /* MARK: Popover */
   .cn-popover-content {
-    @apply bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 flex flex-col gap-4 rounded-md p-4 text-sm shadow-md ring-1 duration-100;
+    @apply [--surface:var(--color-popover)] bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 flex flex-col gap-4 rounded-md p-4 text-sm shadow-md ring-1 duration-100;
   }
 
   .cn-popover-content-logical {
@@ -1018,8 +1018,14 @@
     @apply bg-progress-track h-1 rounded-none;
   }
 
+  /* Indeterminate (`value={null}`): the indicator spans the track and a
+     segment of 40% of it sweeps across, entering at the start and leaving at
+     the end, eased in and out. The segment is a background image 240% wide
+     (the track, the segment and the track again), moved by the vendored
+     `tw-shimmer` keyframes (background-position 100% → 0); RTL runs them in
+     reverse. With reduced motion the whole bar pulses instead. */
   .cn-progress-indicator {
-    @apply bg-progress;
+    @apply bg-progress data-indeterminate:w-full data-indeterminate:bg-transparent data-indeterminate:bg-[linear-gradient(to_right,transparent_41.667%,var(--color-progress)_41.667%,var(--color-progress)_58.333%,transparent_58.333%)] data-indeterminate:bg-size-[240%_100%] data-indeterminate:bg-no-repeat data-indeterminate:motion-safe:animate-[tw-shimmer_1.6s_cubic-bezier(0.4,0,0.6,1)_infinite] rtl:data-indeterminate:motion-safe:[animation-direction:reverse] data-indeterminate:motion-reduce:bg-progress data-indeterminate:motion-reduce:bg-none data-indeterminate:motion-reduce:animate-pulse;
   }
 
   .cn-progress-label {
@@ -1095,7 +1101,7 @@
   }
 
   .cn-select-content {
-    @apply bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 min-w-36 rounded-md shadow-md ring-1 duration-100;
+    @apply [--surface:var(--color-popover)] bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 min-w-36 rounded-md shadow-md ring-1 duration-100;
   }
 
   .cn-select-content-logical {
@@ -1173,7 +1179,7 @@
   }
 
   .cn-sheet-content {
-    @apply bg-card text-card-foreground fixed z-50 flex flex-col gap-4 bg-clip-padding text-sm shadow-lg transition duration-200 ease-in-out data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 ltr:data-[side=left]:border-r rtl:data-[side=left]:border-r data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 ltr:data-[side=right]:border-l rtl:data-[side=right]:border-l data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=left]:sm:max-w-sm data-[side=right]:sm:max-w-sm;
+    @apply [--surface:var(--color-card)] bg-card text-card-foreground fixed z-50 flex flex-col gap-4 bg-clip-padding text-sm shadow-lg transition duration-200 ease-in-out data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 ltr:data-[side=left]:border-r rtl:data-[side=left]:border-r data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 ltr:data-[side=right]:border-l rtl:data-[side=right]:border-l data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=left]:sm:max-w-sm data-[side=right]:sm:max-w-sm;
   }
 
   .cn-sheet-close {
@@ -1202,7 +1208,7 @@
   }
 
   .cn-sidebar-inner {
-    @apply bg-sidebar group-data-[variant=floating]:ring-sidebar-border group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow-sm group-data-[variant=floating]:ring-1;
+    @apply [--surface:var(--color-sidebar)] bg-sidebar group-data-[variant=floating]:ring-sidebar-border group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow-sm group-data-[variant=floating]:ring-1;
   }
 
   .cn-sidebar-rail {
@@ -1210,7 +1216,7 @@
   }
 
   .cn-sidebar-inset {
-    @apply bg-background md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2;
+    @apply [--surface:var(--color-background)] bg-background md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2;
   }
 
   .cn-sidebar-input {
@@ -1359,31 +1365,42 @@
   }
 
   .cn-table {
-    @apply w-full caption-bottom text-sm;
+    @apply w-full caption-bottom text-sm data-[size=sm]:text-xs;
   }
 
   .cn-table-header {
     @apply [&_tr]:border-b-0;
   }
 
+  /* The body's own fill (Tecton's table cell surface: white in light mode),
+     under the stripes, hover and selection, whatever the table sits on. */
   .cn-table-body {
-    @apply [&_tr:last-child]:border-0;
+    @apply bg-table-cell [&_tr:last-child]:border-0;
   }
 
   .cn-table-footer {
     @apply bg-muted text-muted-foreground border-t-0 font-normal [&>tr]:last:border-b-0;
   }
 
+  /* The size and stripe conditions are in a :where(), so they weigh no more
+     than the part's own class: hover and expanded fills win over the stripe.
+     A selected row is left out of the stripe: `data-selected:` is itself a
+     :where() and would tie with it, so a selected even row would keep its
+     stripe. The direct-child chains reach only the table's own rows and
+     cells, never a nested table's (nor, for the stripe, the footer's). */
   .cn-table-row {
-    @apply hover:bg-accent data-[state=selected]:bg-table-active border-border-subtle border-b transition-colors;
+    @apply hover:bg-table-hover data-[state=selected]:bg-table-active data-selected:bg-table-active data-disabled:text-muted-foreground focus-visible:outline-ring border-border-subtle border-b transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 [&:where([data-striped]>tbody>:nth-child(even):not([data-selected=true],[data-state=selected]))]:bg-surface-alt [&:where([data-striped]>tbody>*)]:transition-[color,border-color,outline-color];
   }
 
   .cn-table-row-aria {
     @apply data-selected:bg-table-active;
   }
 
+  /* A row header (`scope="row"`) in the body reads as one of its row's
+     cells: their padding, weight, colour and background, at either size.
+     The attribute weighs one class more than the header's own rules. */
   .cn-table-head {
-    @apply bg-table-header text-muted-foreground h-12 px-4 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0;
+    @apply bg-table-header text-muted-foreground focus-visible:outline-ring h-12 px-4 text-left align-middle font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:-outline-offset-2 [:where([data-size=sm]>*>tr)>&]:h-8 [&:has([role=checkbox])]:pr-0 [&[scope=row]]:h-auto [&[scope=row]]:bg-transparent [&[scope=row]]:py-3 [&[scope=row]]:font-normal [&[scope=row]]:text-inherit [:where([data-size=sm]>*>tr)>&[scope=row]]:py-1;
   }
 
   .cn-table-head-aria {
@@ -1391,7 +1408,7 @@
   }
 
   .cn-table-cell {
-    @apply px-4 py-3 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0;
+    @apply focus-visible:outline-ring px-4 py-3 align-middle whitespace-nowrap focus-visible:outline-2 focus-visible:-outline-offset-2 [:where([data-size=sm]>*>tr)>&]:py-1 [&:has([role=checkbox])]:pr-0;
   }
 
   .cn-table-cell-aria {

@@ -308,7 +308,6 @@
         "lists"
       ],
       "dependencies": [
-        "@tanstack/react-table",
         "@tecton/react",
         "cn",
         "lucide-react"
@@ -412,7 +411,6 @@
         "lists"
       ],
       "dependencies": [
-        "@tanstack/react-table",
         "@tecton/react",
         "cn",
         "lucide-react"

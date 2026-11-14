@@ -7,6 +7,9 @@ import {
   waitFor,
 } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import { flushSync } from "react-dom"
+import { createRoot, hydrateRoot } from "react-dom/client"
+import { renderToString } from "react-dom/server"
 import {
   afterEach,
   beforeEach,
@@ -221,6 +224,31 @@ describe("Overflow", () => {
     const items = await screen.findAllByRole("menuitem")
     // Menu keeps source order, not priority order.
     expect(items.map((i) => i.textContent)).toEqual(["b", "c"])
+  })
+
+  it("names the More button in the provider's locale; `label` overrides it", async () => {
+    const { unmount } = render(
+      <TectonProvider locale="de-DE">
+        <Row width={150} labels="always">
+          <Item id="a" />
+          <Item id="b" />
+        </Row>
+      </TectonProvider>
+    )
+    expect(
+      await screen.findByRole("button", { name: "Weitere Aktionen" })
+    ).toBeInTheDocument()
+    unmount()
+    render(
+      <TectonProvider locale="de-DE">
+        <Row width={150} labels="always" menu={false}>
+          <Item id="a" />
+          <Item id="b" />
+          <OverflowMenu label="Mehr" />
+        </Row>
+      </TectonProvider>
+    )
+    expect(screen.getByRole("button", { name: "Mehr" })).toBeInTheDocument()
   })
 
   it("breaks priority ties from the logical end", () => {
@@ -857,6 +885,143 @@ describe("Overflow label stage", () => {
   })
 })
 
+describe("Overflow layout depends only on the width", () => {
+  /** Which items are in the More menu, in source order. */
+  const layout = () =>
+    [
+      ...document.querySelectorAll<HTMLElement>('[data-slot="overflow-item"]'),
+    ].map((item) => `${item.dataset.id}${item.dataset.overflowing ?? "+"}`)
+
+  /** A search box grown to its 256 px maximum; it costs its 128 px minimum. */
+  function Items() {
+    return (
+      <>
+        <Item
+          id="search"
+          w={256}
+          priority={10}
+          labelBehavior="keep"
+          elastic={{ min: "8rem", max: "16rem" }}
+          style={{ minWidth: "128px" }}
+        />
+        <Item id="a" />
+        <Item id="b" />
+        <Item id="c" />
+      </>
+    )
+  }
+
+  const WIDTHS = [160, 240, 300, 340, 428, 500]
+
+  function fresh(width: number) {
+    const { unmount } = render(
+      <Row width={width} labels="always">
+        <Items />
+      </Row>
+    )
+    const result = layout()
+    unmount()
+    return result
+  }
+
+  it("gives the same width the same layout, whatever the widths before it", () => {
+    const expected = new Map(WIDTHS.map((width) => [width, fresh(width)]))
+    render(
+      <Row width={WIDTHS[0]} labels="always">
+        <Items />
+      </Row>
+    )
+    // Narrow to wide and back, then wide to narrow and back.
+    const path = [...WIDTHS, ...[...WIDTHS].reverse(), ...WIDTHS]
+    for (const width of path) {
+      resize(rowEl(), width)
+      expect(layout(), `at ${width}px`).toEqual(expected.get(width))
+    }
+  })
+
+  it("never moves an item into the menu while it fits beside the elastic item at its minimum", () => {
+    // 128 + 3 × 100 = 428: everything fits with the search at its minimum,
+    // though it is 256 px wide now.
+    render(
+      <Row width={428} labels="always">
+        <Items />
+      </Row>
+    )
+    expect(layout()).toEqual(["search+", "a+", "b+", "c+"])
+    resize(rowEl(), 200)
+    resize(rowEl(), 428)
+    expect(layout()).toEqual(["search+", "a+", "b+", "c+"])
+    // One pixel less and the last item goes.
+    resize(rowEl(), 427)
+    expect(layout()).toEqual(["search+", "a+", "b+", "c"])
+  })
+
+  it("measures an item again when its content changes in the menu, and brings it back", async () => {
+    // A filter whose summary made it wide went into the menu; the summary is
+    // then cleared from outside the row (a "Clear all" under the toolbar).
+    const row = (summary: boolean) => (
+      <Row width={300} labels="always">
+        <Item id="a" />
+        <Item id="b" />
+        <Item
+          id="c"
+          w={summary ? 200 : 100}
+          label={summary ? "c: Producing" : "c"}
+        />
+      </Row>
+    )
+    const { rerender } = render(row(true))
+    expect(layout()).toEqual(["a+", "b+", "c"])
+    rerender(row(false))
+    // No resize: the row hears of the change in the hidden item itself.
+    await waitFor(() => expect(layout()).toEqual(["a+", "b+", "c+"]))
+    expect(itemEl("c")).toBeVisible()
+  })
+
+  it("lets an item kept in the row by its open popup leave once the popup closes", async () => {
+    const row = (open: boolean) => (
+      <Row width={250} labels="always">
+        <Item id="a" />
+        <OverflowItem value="b" data-id="b" data-w={100} label="b">
+          <Button aria-expanded={open}>b</Button>
+        </OverflowItem>
+      </Row>
+    )
+    const { rerender } = render(row(false))
+    expect(layout()).toEqual(["a+", "b+"])
+    // Its popup open, b grows (a filter's summary): a leaves instead of b.
+    rerender(row(true))
+    itemEl("b")!.dataset.w = "200"
+    act(() => {
+      for (const observer of [...observers])
+        if (observer.targets.has(itemEl("b")!))
+          observer.report(itemEl("b")!, 200)
+    })
+    // Let the row hear of its own changes (the More menu mounting) first.
+    await act(async () => {})
+    expect(layout()).toEqual(["a", "b+"])
+    // Closed, the row is laid out as a fresh one at this width would be.
+    rerender(row(false))
+    await waitFor(() => expect(layout()).toEqual(["a+", "b"]))
+  })
+
+  it("keeps an item in the menu while the popup opened from there is open", () => {
+    const row = (open: boolean) => (
+      <Row width={150} labels="always">
+        <Item id="a" />
+        <OverflowItem value="b" data-id="b" data-w={100} label="b">
+          <Button aria-expanded={open}>b</Button>
+        </OverflowItem>
+      </Row>
+    )
+    const { rerender } = render(row(false))
+    expect(layout()).toEqual(["a+", "b"])
+    rerender(row(true))
+    resize(rowEl(), 151)
+    expect(layout()).toEqual(["a+", "b"])
+  })
+})
+
 describe("Overflow last resort", () => {
   const lastResortWarnings = () =>
     warn.mock.calls.filter(([message]) => String(message).includes("stage 5"))
@@ -927,6 +1092,160 @@ describe("Overflow badge", () => {
     expect(
       document.querySelector('[data-slot="overflow-menu-badge"]')
     ).toBeNull()
+  })
+})
+
+describe("Overflow before it has measured", () => {
+  /**
+   * Whether a browser draws a child of a row invisible: one of the row's
+   * `[&…]:invisible` classes matches it, read as the selector Tailwind
+   * writes for it (jsdom has no Tailwind).
+   */
+  const unseen = (element: Element | null) => {
+    const row = element?.parentElement
+    if (!element || !row) return false
+    return [...row.classList]
+      .filter((name) => name.startsWith("[&") && name.endsWith("]:invisible"))
+      .map((name) =>
+        name
+          .slice(1, -"]:invisible".length)
+          .replace("&", "[data-overflow-root]")
+      )
+      .some((selector) => element.matches(selector))
+  }
+  const menuEl = () => document.querySelector('[data-slot="overflow-menu"]')
+
+  function Tools({ width }: { width: number }) {
+    return (
+      <Toolbar aria-label="Tools" data-w={width} labels="always">
+        <Item id="search" elastic={{ min: "8rem" }} priority={9} />
+        <Item id="pinned" overflow="never" />
+        <span data-id="lead" data-w={40}>
+          lead
+        </span>
+        <Item id="a" priority={2} />
+        <OverflowDivider data-id="divider" />
+        <Item id="b" />
+        <span data-id="trail" data-w={40}>
+          trail
+        </span>
+      </Toolbar>
+    )
+  }
+
+  function serverRendered(width: number) {
+    const container = document.createElement("div")
+    container.innerHTML = renderToString(<Tools width={width} />)
+    document.body.append(container)
+    return container
+  }
+
+  const child = (id: string) =>
+    document.querySelector(`[data-overflow-root] > [data-id="${id}"]`)
+
+  it("renders on the server unmeasured: what may move is unseen, the fixed and elastic children before it show, no More", () => {
+    const container = serverRendered(420)
+    const root = rowEl()
+    expect(root).not.toHaveAttribute("data-measured")
+    // One line, clipped: no second line or scrollbar the measured row removes.
+    expect(root).toHaveClass(
+      "not-data-measured:flex-nowrap",
+      "not-data-measured:overflow-x-clip"
+    )
+    expect(menuEl()).toBeNull()
+    // The items that may go into the menu, a divider, and what follows them.
+    for (const id of ["a", "divider", "b", "trail"]) {
+      expect(unseen(child(id))).toBe(true)
+      expect(child(id)).not.toHaveAttribute("data-overflowing")
+    }
+    // A fixed item and an unwrapped child before them never move; an
+    // elastic item only shrinks.
+    for (const id of ["search", "pinned", "lead"]) {
+      expect(unseen(child(id))).toBe(false)
+    }
+    container.remove()
+  })
+
+  it("hydrates into its measured layout: the items that fit, then More", async () => {
+    const container = serverRendered(420)
+    const recoverable = vi.fn()
+    const root = await act(async () =>
+      hydrateRoot(container, <Tools width={420} />, {
+        onRecoverableError: recoverable,
+      })
+    )
+    expect(recoverable).not.toHaveBeenCalled()
+    expect(rowEl()).toHaveAttribute("data-measured")
+    // search, pinned, lead, a, trail and More take 412 of 420: b leaves.
+    expect(itemEl("a")).not.toHaveAttribute("data-overflowing")
+    expect(itemEl("b")).toHaveAttribute("data-overflowing")
+    expect(menuEl()).toBeInTheDocument()
+    for (const id of ["search", "pinned", "lead", "a", "divider", "trail"]) {
+      expect(unseen(child(id))).toBe(false)
+    }
+    act(() => root.unmount())
+    container.remove()
+  })
+
+  it("never shows a More on a wide row: hydrated, every item is in the row", async () => {
+    const container = serverRendered(1000)
+    const added: Node[] = []
+    const observer = new MutationObserver((records) =>
+      records.forEach((record) => added.push(...record.addedNodes))
+    )
+    observer.observe(container, { childList: true, subtree: true })
+    const root = await act(async () =>
+      hydrateRoot(container, <Tools width={1000} />)
+    )
+    observer.disconnect()
+    expect(rowEl()).toHaveAttribute("data-measured")
+    expect(menuEl()).toBeNull()
+    expect(
+      added.some(
+        (node) =>
+          node instanceof HTMLElement &&
+          node.matches('[data-slot="overflow-menu"]')
+      )
+    ).toBe(false)
+    expect(itemEl("a")).not.toHaveAttribute("data-overflowing")
+    expect(itemEl("b")).not.toHaveAttribute("data-overflowing")
+    act(() => root.unmount())
+    container.remove()
+  })
+
+  describe("mounted in the browser", () => {
+    // `flushSync` outside `act`, as a browser runs it: what the DOM holds
+    // when it returns is what the first frame paints.
+    beforeEach(() => {
+      vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", false)
+    })
+    afterEach(() => {
+      vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true)
+    })
+
+    it("is measured before its first paint", () => {
+      const container = document.createElement("div")
+      document.body.append(container)
+      const root = createRoot(container)
+      flushSync(() => root.render(<Tools width={420} />))
+      expect(rowEl()).toHaveAttribute("data-measured")
+      expect(itemEl("b")).toHaveAttribute("data-overflowing")
+      expect(menuEl()).toBeInTheDocument()
+      expect(unseen(child("a"))).toBe(false)
+      expect(unseen(child("trail"))).toBe(false)
+      flushSync(() => root.unmount())
+      container.remove()
+    })
+
+    it("shows every item when it is not in a live document and cannot measure", () => {
+      const container = document.createElement("div")
+      const root = createRoot(container)
+      flushSync(() => root.render(<Tools width={420} />))
+      const row = container.querySelector("[data-overflow-root]")
+      expect(row).toHaveAttribute("data-measured")
+      expect(container.querySelector('[data-slot="overflow-menu"]')).toBeNull()
+      flushSync(() => root.unmount())
+    })
   })
 })
 

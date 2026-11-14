@@ -4,28 +4,27 @@ module: "@tecton/react/table"
 family: data
 exports: [Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption]
 notFor:
-  - need: sorting, filtering, paging or column visibility over the rows
-    use: TanStack Table
+  - need: records in an application, or rows that are sorted, searched, filtered, selected or paged
+    use: DataTable
   - need: a list of rows with media, a title and actions rather than columns
     use: Item
   - need: rows or columns the user drags into another order
     use: Reorderable
-related: [Item, TreeView, Reorderable, TableColumnResizer, "TanStack Table"]
+related: [DataTable, Item, TreeView, Reorderable, TableColumnResizer]
 ---
 
 ## Use it when
 
-- Records of the same shape have to line up in columns: invoices, wells, run results.
-- A footer totals the columns, or a caption names the table.
-- The rows are read, compared or opened; interaction beyond that (sorting, paging) comes from TanStack Table on these parts.
+- A short, static table is read rather than worked with: a spec sheet, a legend, the figures of a report or a dialog, a comparison in documentation.
+- The layout is free-form: cells of your own, spans, a footer that totals the columns, a caption that names the table.
 
 ## Do
 
-- Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`.
-- Select rows with a `Checkbox` per row (and one in the header for all) driven by your own state, and mark a selected row with `data-state="selected"` for the `bg-table-active` fill.
-- Open a record from a link in its identifying cell, not from a handler on the row.
+- Keep `Table` for content that is only read; records in an application go in a `DataTable`, so every records table looks and behaves the same.
+- Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`; open a record from a link in its identifying cell.
+- Set `size="sm"` for a compact table of dense data, and `striped` to put every even body row on an alternate surface; hover and selected rows keep their fill over the stripe.
 - For hundreds of rows or more, set `virtualized`, give the parent a bounded height (`h-96`, with the border) and pass `items` with a render function to `TableBody`; rows are one height within the table.
-- Show an empty result as `Empty` in place of the table, or inside one `TableCell colSpan={n}` when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`).
+- Show an empty value as a muted em dash, with "No value" for screen readers, as `DataTable` draws it: `<TableCell><span aria-hidden className="text-muted-foreground">—</span><span className="sr-only">No value</span></TableCell>` (aligned as the column, never "N/A" or "-"); show an empty result as `Empty` in place of the table, or as `TableBody empty={…}` (one row across every column) when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`).
 
 ## Don't
 
@@ -57,27 +56,21 @@ Correct:
 
 The grid emits no table semantics, so assistive technology reads a stream of unassociated cells with no row or column count, and `bg-zinc-100` is stock Tailwind the reset palette emits no CSS for — the header band is `bg-table-header` on `TableHead`.
 
-### HIGH selectionMode and selectedKeys on the table
+### HIGH Density and stripes from classes
 
 Wrong:
 
 ```tsx
-<Table aria-label="Wells" selectionMode="multiple" selectedKeys={selected} onSelectionChange={setSelected}>
-  <TableHeader><TableHead isRowHeader>Well</TableHead></TableHeader>
-  <TableBody renderEmptyState={() => "No wells"}>{rows}</TableBody>
-</Table>
+<Table className="text-xs [&_td]:py-1 [&_tbody_tr:nth-child(even)]:bg-surface-alt">{rows}</Table>
 ```
 
 Correct:
 
 ```tsx
-<Table>
-  <TableHeader><TableRow><TableHead>Well</TableHead></TableRow></TableHeader>
-  <TableBody>{rows.length ? rows : <TableRow><TableCell><Empty>No wells</Empty></TableCell></TableRow>}</TableBody>
-</Table>
+<Table size="sm" striped>{rows}</Table>
 ```
 
-`Table` is a plain `table`: `selectionMode`, `selectedKeys`, `isRowHeader` and `renderEmptyState` land on the DOM as unknown attributes, so nothing is selectable and an empty body renders nothing.
+Hand-written classes miss the header's height, paint the stripe over the hover and selected fill, and shift as a virtualized table mounts and unmounts rows, so the stripes flicker while it scrolls. `size` and `striped` set every part and keep each row on its stripe.
 
 ### HIGH Activating a row with onClick
 
@@ -97,4 +90,4 @@ Correct:
 </TableRow>
 ```
 
-A `tr` has no role, no tab stop and no Enter key, so the row opens with a mouse only; a link in the identifying cell is reachable, announced and middle-clickable.
+A `tr` has no role, no tab stop and no Enter key, so the row opens with a mouse only. A link in the identifying cell is reachable, announced and middle-clickable.

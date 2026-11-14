@@ -1,0 +1,700 @@
+"use client"
+
+/**
+ * A body row's cells, as plain function calls rather than a component per
+ * cell: a page of rows renders as few components as rows. A column's
+ * `cell` draws its own content; otherwise the type decides (§4.1): text
+ * and dates as their display text, numbers at the end in tabular digits,
+ * options as an outline `Badge` with the option's label, booleans as a
+ * check (with Yes / No for screen readers). A cell without a value shows
+ * the column's `emptyValue`, by default a muted em dash that screen
+ * readers read as "No value" (`emptyValueContent`).
+ *
+ * The row header column (`rowHeader`, the first column by default) is a
+ * `th scope="row"` that names the row, carries the tree's chevron and
+ * indent (or the chevron of a row with a detail row), and is the row's
+ * link with `itemToHref`.
+ *
+ * A pinned column's cells stick to their edge (`position: sticky`, at a
+ * variable of the frame's, `column-sizing.ts`) with their row's
+ * background: the row is then opaque (the table's cell surface), and its
+ * cells inherit its fill, so
+ * stripes, hover and selection show on them too. A stuck cell would be
+ * painted over the row's collapsed border (unevenly, by browser), so a
+ * table with pinned columns draws each cell's border itself, in separate
+ * borders.
+ */
+import * as React from "react"
+import { cn } from "cn"
+import { CheckIcon, ChevronRightIcon } from "lucide-react"
+
+import { Badge } from "@tecton/react/badge"
+import { Button } from "@tecton/react/button"
+import { Spinner } from "@tecton/react/spinner"
+import { TableCell, TableHead } from "@tecton/react/table"
+import { Link } from "@tecton/react/link"
+
+import type { Store } from "../store"
+import type { DataTableActions } from "./context"
+import type { EngineColumn, Formatter, GroupRow, ItemRow } from "./engine/index"
+import type { FlashStore } from "./live-bridge"
+import type { RowOrder } from "./row-order"
+
+/** What detail rows draw: `renderDetail`, kept apart so a new one renders only them. */
+type DetailStore = Store<{ render: ((item: never) => React.ReactNode) | null }>
+
+/** What every row of a table renders with; one object while none of it changes. */
+type RowShared<T> = {
+  /** The columns shown, in order. */
+  columns: ReadonlyArray<EngineColumn<T>>
+  /** The column that names the row. */
+  rowHeader: EngineColumn<T> | undefined
+  formatter: Formatter<T>
+  /** What a cell without a value shows, unless its column says (`emptyValueContent`). */
+  emptyValue: React.ReactNode
+  /** A selection checkbox column comes before the data columns. */
+  selection: boolean
+  /** A drag handle column comes first (`reorderableRows`). */
+  handle: boolean
+  /** The rows' order, while they can be moved; `null` hides the handles. */
+  order: RowOrder | null
+  size: "default" | "sm"
+  /** Rows open to show a detail row (`renderDetail`). */
+  detail: DetailStore | null
+  /** Rows have a level: a tree, or groups. */
+  levelled: boolean
+  tree: boolean
+  /** Rows are in groups: their row headers are indented under them. */
+  grouped: boolean
+  /** Multiple selection: a group row's checkbox selects its rows. */
+  multiple: boolean
+  /** Every column, shown or not, by id: a group row names its column. */
+  columnsById: ReadonlyMap<string, EngineColumn<T>>
+  /** Where a group row's label goes (`groupCellsOf`). */
+  groupCells: GroupCells
+  /**
+   * A group row's name ("Field: Gullfaks"): whole, and in parts, the
+   * value apart from the column's name around it.
+   */
+  groupLabel: (row: GroupRow) => GroupLabel
+  /** `disabledBehavior="all"`: a disabled row is disabled in the grid too. */
+  disableRows: boolean
+  /** Row headers are links (`itemToHref`). */
+  linked: boolean
+  /** A disabled row's checkbox may say why (`itemToDisabledReason`). */
+  disabledReasons: boolean
+  /** Columns may wrap: not in a virtualized table, whose rows are one height. */
+  wrap: boolean
+  /** Only the rows in view are rendered. */
+  virtualized: boolean
+  /** Every column, the handle and selection columns included. */
+  columnCount: number
+  /**
+   * On pages: a row's place among every page's rows (the engine's), for its
+   * `aria-rowindex`; a parent repeated at the top of a page keeps its own.
+   */
+  rowIndexOf: ((id: string) => number) | null
+  /** The header's rows, which `aria-rowindex` counts first. */
+  headerRows: number
+  /** Columns have fixed widths: what does not fit a cell is cut with an ellipsis. */
+  fixed: boolean
+  /** Each column's pin, by its place in `columns`. */
+  pins: ReadonlyArray<CellPin | undefined>
+  /** Each column's body cells' class and style, by its place (`bodyCellsOf`). */
+  cells: ReadonlyArray<CellLook>
+  /** The selection column's pin: at the start while a column is pinned there. */
+  selectionPin: CellPin | undefined
+  /** The handle column's pin, likewise. */
+  handlePin: CellPin | undefined
+  /**
+   * Cells stick (pinned columns, or group rows): the row is opaque, each
+   * cell draws its border.
+   */
+  pinned: boolean
+  /**
+   * Group rows stick (`sticky-groups.ts`): measures them again, for a
+   * group row that mounts or takes another's place in a virtualized body.
+   */
+  stickyGroups: (() => void) | null
+  /** Live data's highlights (`highlightChanges`); `null` when off. */
+  live: FlashStore | null
+  actions: DataTableActions<T>
+}
+
+/** A group row's name, and its parts: the column's name before and after the value. */
+type GroupLabel = {
+  text: string
+  before: string
+  value: string
+  after: string
+}
+
+/** The widths a table can differ at: below `sm`, then from each breakpoint on. */
+type Tier = "base" | "sm" | "md" | "lg"
+
+/**
+ * A cell of a group row: the label's, from a column (`column`) over the
+ * `span` columns shown from it, or a column's own (its subtotal). `shown`
+ * is whether it is laid out at each of `GroupCells.tiers`.
+ *
+ * - `subtotal`: every column shown sums something, so the label is in the
+ *   first one, with that column's subtotal after it.
+ * - `reach`: the label, in the first column pinned to the start, may go on
+ *   over the empty columns that scroll after it (`GroupCells.reach`).
+ */
+type GroupCell =
+  | {
+      kind: "label"
+      column: number
+      span: number
+      subtotal: boolean
+      reach: boolean
+      shown: ReadonlyArray<boolean>
+    }
+  | { kind: "column"; column: number; shown: ReadonlyArray<boolean> }
+
+/**
+ * A group row's cells (`groupCellsOf`), in order. At each width, the label
+ * is in the first column shown that sums nothing, over the columns shown
+ * after it that sum nothing and are pinned as it is; the columns before
+ * it and after those have their own cells, with their subtotals. A column
+ * hidden below a breakpoint moves the label where it is hidden: a label
+ * cell per place, each laid out only at its widths (`shownClassName`).
+ *
+ * Pinned to the start, the label in the first column may go on over the
+ * empty columns that scroll after it, on its row's fill: it stays in view
+ * with the pinned columns, cut only where a column sums something.
+ * `reach` is the number of columns it may cover (0 when it keeps to its
+ * cell); their width is the frame's `--data-table-group-label`
+ * (`groupLabelWidth`), so a resize renders no row. Scrolled sideways, the
+ * label keeps to its cell (`content.tsx`).
+ */
+type GroupCells = {
+  tiers: ReadonlyArray<Tier>
+  cells: ReadonlyArray<GroupCell>
+  reach: number
+}
+
+/**
+ * Where a pinned column's cells stick: the edge, and how far from it (a
+ * CSS length); `edge` for the column next to the scrolled ones (the last
+ * pinned at the start, the first at the end), which draws the divider and
+ * shadow between them (`pinEdgeClassName`).
+ */
+type CellPin = { side: "start" | "end"; offset: string; edge?: boolean }
+
+function pinStyle(pin: CellPin): React.CSSProperties {
+  return pin.side === "start"
+    ? { insetInlineStart: pin.offset }
+    : { insetInlineEnd: pin.offset }
+}
+
+/**
+ * A pinned body cell: over the cells scrolled under it, in its row's fill
+ * (a row header's own transparent fill too). It covers its part of the
+ * focused row's outline, so it draws that part: the ring along its top and
+ * bottom, and on the row's first and last cell its outer side. A cell
+ * holding the keyboard focus goes over the other pinned cells, for its
+ * control's focus ring to show past its edge (the selection column has no
+ * end padding).
+ */
+const pinnedCellClassName = cn(
+  "sticky z-[1] bg-inherit has-[:focus-visible]:z-[2] [&[scope=row]]:bg-inherit",
+  "[tr:focus-visible>&]:shadow-[inset_0_2px_0_var(--color-ring),inset_0_-2px_0_var(--color-ring)]",
+  "[tr:focus-visible>&:first-child]:shadow-[inset_0_2px_0_var(--color-ring),inset_0_-2px_0_var(--color-ring),inset_2px_0_0_var(--color-ring)]",
+  "rtl:[tr:focus-visible>&:first-child]:shadow-[inset_0_2px_0_var(--color-ring),inset_0_-2px_0_var(--color-ring),inset_-2px_0_0_var(--color-ring)]",
+  "[tr:focus-visible>&:last-child]:shadow-[inset_0_2px_0_var(--color-ring),inset_0_-2px_0_var(--color-ring),inset_-2px_0_0_var(--color-ring)]",
+  "rtl:[tr:focus-visible>&:last-child]:shadow-[inset_0_2px_0_var(--color-ring),inset_0_-2px_0_var(--color-ring),inset_2px_0_0_var(--color-ring)]"
+)
+
+/**
+ * Where the pinned columns end: the column next to the scrolled ones (its
+ * `CellPin.edge`) draws a divider along its inner side, in the border
+ * colour of the header's group dividers, in every row (header, body,
+ * totals, group and loading rows; a detail row draws it itself), whether
+ * or not anything is scrolled under it.
+ *
+ * Past the divider, over the scrolled columns, a shadow shows while there
+ * is content under that side: the start's once the table is scrolled from
+ * its start, the end's while there is more to scroll to. It is Tecton's
+ * scroll fade (`scroll-fade-x`) run by the table's scroll position: its
+ * reveal keyframes grow the shadow to its width (`--scroll-fade-size`)
+ * over the first `--scroll-fade-reveal` of scrolling. The shadow is a
+ * band of black, the elevation shadows' colour, that clears away from the
+ * edge; a band per cell, so the rows' meet without a seam. Without
+ * scroll-driven animations there is the divider alone. RTL mirrors it.
+ *
+ * A cell that clips its content (fixed widths) clips it but for the
+ * shadow (a length: Chrome computes a `calc()` in `overflow-clip-margin`
+ * as 0); a group row's label cell does not clip (`pinEdgeClassName`).
+ */
+const PIN_SHADOW = cn(
+  "after:pointer-events-none after:absolute after:top-0 after:-bottom-[var(--pin-edge-under,0px)] after:content-[''] after:[--scroll-fade-size:--spacing(3)]",
+  "after:from-black/6 after:via-black/2 after:via-40% after:to-transparent dark:after:from-black/30 dark:after:via-black/10",
+  "after:[animation-duration:1ms] after:[animation-fill-mode:both] after:[animation-timeline:scroll(nearest_inline)] after:[animation-timing-function:ease-in-out]",
+  "not-supports-[animation-timeline:scroll()]:after:hidden"
+)
+
+const PIN_EDGE = {
+  start: cn(
+    "border-e border-e-border",
+    PIN_SHADOW,
+    "after:start-[calc(100%+1px)] after:w-(--scroll-fade-s) after:bg-linear-to-r rtl:after:bg-linear-to-l",
+    "after:[animation-name:scroll-fade-reveal-s] after:[animation-range:0_var(--scroll-fade-reveal,--spacing(24))]"
+  ),
+  end: cn(
+    "border-s border-s-border",
+    PIN_SHADOW,
+    "after:end-[calc(100%+1px)] after:w-(--scroll-fade-e) after:bg-linear-to-l rtl:after:bg-linear-to-r",
+    "after:[animation-name:scroll-fade-reveal-e] after:[animation-range:calc(100%-var(--scroll-fade-reveal,--spacing(24)))_100%]"
+  ),
+} as const
+
+/** A cell that clips its content, but for the shadow past it. */
+const PIN_EDGE_CLIP = "overflow-clip [overflow-clip-margin:1.25rem]"
+
+/**
+ * The divider and shadow a pinned cell draws when it is at the inner edge
+ * (`clip: false` for a cell whose content may run past it).
+ */
+function pinEdgeClassName(pin: CellPin | undefined, clip = true) {
+  return pin?.edge ? cn(clip && PIN_EDGE_CLIP, PIN_EDGE[pin.side]) : undefined
+}
+
+/** A pinned header cell: over the other header cells and their resizers. */
+const pinnedHeadClassName = "sticky z-20 has-[:focus-visible]:z-[21]"
+
+/**
+ * A row with pinned cells is opaque, for its cells to take its fill: the
+ * table's cell surface, as the body's (`TableBody`), under its stripe,
+ * hover and selection.
+ */
+const pinnedRowClassName = "bg-table-cell"
+
+/**
+ * Every body cell of a table with pinned columns: the row's border, drawn
+ * by the cell (but on the last row) in the table's separate borders; the
+ * pinned edge's shadow goes on over it (`--pin-edge-under`).
+ */
+const cellBorderClassName =
+  "border-b border-border-subtle [--pin-edge-under:1px] [tr:last-child>&]:border-b-0 [tr:last-child>&]:[--pin-edge-under:0px]"
+
+/** Each tree level is indented by the width of a chevron and its gap. */
+const INDENT = 1.25
+
+const ALIGN = {
+  start: undefined,
+  center: "text-center",
+  end: "text-end",
+} as const
+
+/** Written out whole, so Tailwind finds them. */
+const HIDE_BELOW = {
+  sm: "hidden sm:table-cell",
+  md: "hidden md:table-cell",
+  lg: "hidden lg:table-cell",
+} as const
+
+function sameSide(a: CellPin | undefined, b: CellPin | undefined) {
+  return a?.side === b?.side
+}
+
+const RANK = { base: 0, sm: 1, md: 2, lg: 3 } as const
+
+/** Written out whole, so Tailwind finds them: a cell's display from a breakpoint on. */
+const DISPLAY = {
+  sm: { shown: "sm:table-cell", hidden: "sm:hidden" },
+  md: { shown: "md:table-cell", hidden: "md:hidden" },
+  lg: { shown: "lg:table-cell", hidden: "lg:hidden" },
+} as const
+
+/** The classes that lay a cell out only at the tiers it is `shown` at. */
+function shownClassName(
+  tiers: ReadonlyArray<Tier>,
+  shown: ReadonlyArray<boolean>
+) {
+  if (shown.every(Boolean)) return undefined
+  return cn(
+    !shown[0] && "hidden",
+    tiers.map((tier, index) =>
+      tier === "base" || shown[index] === shown[index - 1]
+        ? undefined
+        : DISPLAY[tier][shown[index] ? "shown" : "hidden"]
+    )
+  )
+}
+
+/** Where the group rows of these columns put their label (`GroupCells`). */
+function groupCellsOf<T>(
+  columns: ReadonlyArray<EngineColumn<T>>,
+  pins: ReadonlyArray<CellPin | undefined>
+): GroupCells {
+  const tiers: Array<Tier> = ["base"]
+  for (const tier of ["sm", "md", "lg"] as const)
+    if (columns.some((column) => column.definition.hideBelow === tier))
+      tiers.push(tier)
+  const visible = (index: number, tier: Tier) => {
+    const below = columns[index].definition.hideBelow
+    return !below || RANK[below] <= RANK[tier]
+  }
+  const sums = (index: number) => columns[index].aggregate !== null
+  // At each tier: where the label is, and the columns it covers.
+  const labels: Array<{ column: number; span: number; subtotal: boolean }> = []
+  const covered = tiers.map((tier) => {
+    const shown = columns.flatMap((_, index) =>
+      visible(index, tier) ? [index] : []
+    )
+    const start = shown.find((index) => !sums(index))
+    const label =
+      start === undefined
+        ? { column: shown[0] ?? 0, span: 1, subtotal: true }
+        : { column: start, span: 1, subtotal: false }
+    const cover = [label.column]
+    if (!label.subtotal)
+      for (const index of shown.slice(shown.indexOf(label.column) + 1)) {
+        if (sums(index) || !sameSide(pins[index], pins[label.column])) break
+        cover.push(index)
+      }
+    label.span = cover.length
+    labels.push(label)
+    return new Set(cover)
+  })
+  // The label in the first column may run on over the empty columns that
+  // scroll after it (pinned columns stay, hidden ones take no room).
+  let reach = 0
+  if (pins[0]?.side === "start" && columns.length > 0 && !sums(0)) {
+    let end = 1
+    while (
+      end < columns.length &&
+      !sums(end) &&
+      (pins[end] === undefined || pins[end]?.side === "start")
+    )
+      end++
+    // Only past the pinned columns: within them, the label's own cell.
+    for (let index = 1; index < end; index++)
+      if (pins[index] === undefined) reach = end
+  }
+  const cells: Array<GroupCell> = []
+  columns.forEach((_, index) => {
+    // The label cells that start here, one per place it takes.
+    const here = new Map<string, Array<boolean>>()
+    labels.forEach((label, tier) => {
+      if (label.column !== index) return
+      const key = `${label.span}:${label.subtotal}`
+      const shown = here.get(key) ?? tiers.map(() => false)
+      shown[tier] = true
+      here.set(key, shown)
+    })
+    for (const shown of here.values()) {
+      const label = labels[shown.indexOf(true)]
+      cells.push({
+        kind: "label",
+        ...label,
+        reach: reach > 0 && index === 0 && !label.subtotal,
+        shown,
+      })
+    }
+    const own = tiers.map(
+      (tier, at) => visible(index, tier) && !covered[at].has(index)
+    )
+    if (own.some(Boolean))
+      cells.push({ kind: "column", column: index, shown: own })
+  })
+  return { tiers, cells, reach }
+}
+
+/**
+ * The frame's variables for the group rows' label: the width of the
+ * columns it may cover (`GroupCells.reach`), from the columns' fixed
+ * widths (none for a column hidden at this width); none when it keeps to
+ * its cell.
+ */
+function groupLabelWidth(
+  cells: GroupCells,
+  widths: ReadonlyArray<number> | undefined
+): Record<string, string> | undefined {
+  if (cells.reach === 0 || !widths) return undefined
+  const width = widths.slice(0, cells.reach).reduce((sum, at) => sum + at, 0)
+  return { "--data-table-group-label": `${width}px` }
+}
+
+/** A column's alignment and breakpoint, for its header and its cells. */
+function columnClassName<T>(column: EngineColumn<T>) {
+  const { hideBelow } = column.definition
+  return cn(ALIGN[column.align], hideBelow && HIDE_BELOW[hideBelow])
+}
+
+/**
+ * Numbers and dates are numeric readouts: IBM Plex Mono with tabular
+ * figures, as Tecton sets them, so a column's values line up digit for
+ * digit and a changing value keeps its width.
+ */
+function numericClassName<T>(column: EngineColumn<T>) {
+  return (
+    (column.type === "number" || column.type === "date") &&
+    "font-mono tabular-nums"
+  )
+}
+
+/** A body cell's class and style. */
+type CellLook = {
+  className: string
+  style: React.CSSProperties | undefined
+}
+
+/**
+ * Each shown column's body cells' class and style, by its place
+ * (`RowShared.cells`): worked out once for the rows, not per cell.
+ */
+function bodyCellsOf<T>(
+  columns: ReadonlyArray<EngineColumn<T>>,
+  pins: ReadonlyArray<CellPin | undefined>,
+  { fixed, pinned, wrap }: Pick<RowShared<T>, "fixed" | "pinned" | "wrap">
+): Array<CellLook> {
+  return columns.map((column, index) => {
+    const pin = pins[index]
+    return {
+      className: cn(
+        columnClassName(column),
+        numericClassName(column),
+        fixed && "overflow-hidden text-ellipsis",
+        pinned && cellBorderClassName,
+        wrap && column.definition.wrap && "whitespace-normal",
+        pin && pinnedCellClassName,
+        pinEdgeClassName(pin)
+      ),
+      style: pin && pinStyle(pin),
+    }
+  })
+}
+
+/**
+ * The table's empty value: a muted em dash, aligned as the column's text,
+ * hidden from screen readers, which read `label` ("No value") instead.
+ */
+function emptyValueContent(label: string): React.ReactNode {
+  return (
+    <>
+      <span
+        aria-hidden
+        data-slot="data-table-empty-value"
+        className="text-muted-foreground"
+      >
+        —
+      </span>
+      <span className="sr-only">{label}</span>
+    </>
+  )
+}
+
+/** The cell's content: the column's `cell`, or its type's display. */
+function cellContent<T>(
+  column: EngineColumn<T>,
+  row: ItemRow<T>,
+  shared: RowShared<T>
+): React.ReactNode {
+  const { formatter } = shared
+  const value = column.getValue(row.item)
+  const text = formatter.format(column, value)
+  const { cell, emptyValue = shared.emptyValue } = column.definition
+  if (cell)
+    return cell(row.item, {
+      id: row.id,
+      column: column.id,
+      value,
+      text,
+      depth: row.depth,
+      emptyValue,
+    })
+  if (text === "") return emptyValue
+  switch (column.type) {
+    case "boolean":
+      // `true`, or a value that reads as it ("true", 1).
+      return text === formatter.format(column, true) ? (
+        <>
+          <CheckIcon aria-hidden className="inline size-4" />
+          <span className="sr-only">{text}</span>
+        </>
+      ) : (
+        <span className="sr-only">{text}</span>
+      )
+    case "options": {
+      const index = column.optionIndex.get(String(value))
+      const option = index === undefined ? undefined : column.options[index]
+      return (
+        <Badge variant={option?.variant ?? "outline"} appearance="outline">
+          {text}
+        </Badge>
+      )
+    }
+    default:
+      return text
+  }
+}
+
+/**
+ * The chevron (or its space) and indent before a tree row's header, the
+ * chevron of a row with a detail row (`indent` off), or the indent of a
+ * row in groups.
+ */
+function TreeIndent<T>({
+  row,
+  actions,
+  indent,
+  spacer,
+  children,
+}: {
+  row: ItemRow<T>
+  actions: DataTableActions<T>
+  indent: boolean
+  /** A row without a chevron keeps its space (a tree's leaf, beside its siblings). */
+  spacer: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <div
+      className="flex items-center gap-1"
+      style={
+        indent ? { paddingInlineStart: `${row.depth * INDENT}rem` } : undefined
+      }
+    >
+      {row.loading ? (
+        <span
+          aria-hidden
+          className="flex size-6 shrink-0 items-center justify-center text-muted-foreground"
+        >
+          <Spinner />
+        </span>
+      ) : row.expandable ? (
+        // For the pointer: the row says whether it is expanded, and the
+        // keyboard opens it with Right / Left.
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          tabIndex={-1}
+          aria-hidden
+          data-slot="data-table-chevron"
+          // Not focused by a press: its row is, and becomes the tab stop.
+          // Nor does a press select text: each click of a quick series
+          // opens or closes the row.
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={(event) => {
+            event.currentTarget.closest("tr")?.focus({ preventScroll: true })
+            actions.setRowExpanded(
+              row.id,
+              !row.expanded,
+              "item-press",
+              event.nativeEvent
+            )
+          }}
+        >
+          <ChevronRightIcon
+            className={cn(
+              "size-4 transition-transform rtl:-scale-x-100",
+              row.expanded && "rotate-90 rtl:-rotate-90"
+            )}
+          />
+        </Button>
+      ) : spacer ? (
+        <span aria-hidden className="size-6 shrink-0" />
+      ) : null}
+      <span className="min-w-0 truncate">{children}</span>
+    </div>
+  )
+}
+
+/** A row's plain text, for type-ahead and announcements: its row header's. */
+function rowText<T>(item: T, shared: RowShared<T>) {
+  return shared.rowHeader ? shared.formatter.text(shared.rowHeader, item) : ""
+}
+
+/**
+ * A body cell of an item row; `index` is the column's place in
+ * `shared.columns`, `headerId` the row header's id.
+ */
+function renderCell<T>(
+  column: EngineColumn<T>,
+  index: number,
+  row: ItemRow<T>,
+  shared: RowShared<T>,
+  headerId: string
+): React.ReactNode {
+  let content = cellContent(column, row, shared)
+  const { className, style } = shared.cells[index]
+  if (column !== shared.rowHeader)
+    return (
+      <TableCell key={column.id} className={className} style={style}>
+        {content}
+      </TableCell>
+    )
+  const href = shared.linked ? shared.actions.hrefOf(row.item) : undefined
+  // A row disabled for everything is not followed either.
+  if (href !== undefined)
+    content = (
+      // The link colour, and underlined: the colour alone is under 3:1
+      // against the row's text in both themes, so the line tells it apart
+      // without a hover (WCAG 1.4.1).
+      <Link
+        href={href}
+        variant="primary"
+        className="underline"
+        data-slot="data-table-row-link"
+        disabled={shared.disableRows && row.disabled}
+      >
+        {content}
+      </Link>
+    )
+  if (shared.tree || shared.detail || shared.grouped)
+    content = (
+      <TreeIndent
+        row={row}
+        actions={shared.actions}
+        indent={shared.tree || shared.grouped}
+        // In groups, a row has no chevron of its own (nor its siblings):
+        // only its level's indent, the name's room kept.
+        spacer={shared.tree}
+      >
+        {content}
+      </TreeIndent>
+    )
+  // A row header takes the look of its row's cells (the table's own).
+  return (
+    <TableHead
+      key={column.id}
+      id={headerId}
+      scope="row"
+      className={className}
+      style={style}
+    >
+      {content}
+    </TableHead>
+  )
+}
+
+export {
+  ALIGN,
+  bodyCellsOf,
+  cellBorderClassName,
+  columnClassName,
+  emptyValueContent,
+  groupCellsOf,
+  groupLabelWidth,
+  INDENT,
+  numericClassName,
+  pinnedCellClassName,
+  pinnedHeadClassName,
+  pinnedRowClassName,
+  pinEdgeClassName,
+  pinStyle,
+  renderCell,
+  rowText,
+  shownClassName,
+}
+export type {
+  CellPin,
+  DetailStore,
+  GroupCell,
+  GroupCells,
+  GroupLabel,
+  RowShared,
+}

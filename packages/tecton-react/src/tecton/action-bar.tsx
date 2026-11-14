@@ -7,6 +7,9 @@ import { XIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/button"
 import { Toolbar, type ToolbarProps } from "@tecton/react/overflow"
+import { useLocale } from "@tecton/react/provider"
+
+import { useTranslations } from "./internal/i18n/translations"
 
 /**
  * Tecton ActionBar — a transient bar that appears while there is something
@@ -19,7 +22,10 @@ import { Toolbar, type ToolbarProps } from "@tecton/react/overflow"
  * have overflowed.
  */
 const actionBarVariants = cva(
-  "@container/action-bar flex min-w-0 animate-in flex-wrap items-center gap-x-3 gap-y-1.5 text-sm duration-150 fade-in-0",
+  // In a toolbar row the bar swaps in at once: a fade would end with the
+  // text's smoothing switching (Chrome draws fading text greyscale), which
+  // reads as the text shifting. Floating, it slides in.
+  "@container/action-bar flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5 text-sm",
   {
     variants: {
       placement: {
@@ -29,7 +35,7 @@ const actionBarVariants = cva(
         // no room. The card takes the width of its scroll container instead;
         // pass `mx-auto max-w-*` to centre a narrower one.
         floating:
-          "sticky bottom-4 z-20 mx-4 rounded-lg border bg-popover px-3 py-2 text-popover-foreground shadow-lg slide-in-from-bottom-2",
+          "sticky bottom-4 z-20 mx-4 animate-in rounded-lg border bg-popover px-3 py-2 text-popover-foreground shadow-lg duration-150 fade-in-0 [--surface:var(--color-popover)] slide-in-from-bottom-2",
       },
     },
     defaultVariants: {
@@ -106,9 +112,10 @@ function useDeferredAnnouncement(text: string) {
 type ActionBarSelectionProps = Omit<React.ComponentProps<"div">, "children"> & {
   count: number
   total?: number
-  /** Noun for the live announcement, e.g. "wells". Default "selected". */
+  /** Noun for the items, e.g. "wells": "2 of 9 wells selected". */
   label?: string
   onClear?: () => void
+  /** Name of the icon-only clear button. Default "Clear selection" (translated). */
   clearLabel?: string
 }
 
@@ -118,14 +125,30 @@ function ActionBarSelection({
   total,
   label,
   onClear,
-  clearLabel = "Clear selection",
+  clearLabel,
   ...props
 }: ActionBarSelectionProps) {
-  const noun = label ? ` ${label}` : ""
+  const t = useTranslations("actionBar")
+  const { locale } = useLocale()
+  const numbers = React.useMemo(() => new Intl.NumberFormat(locale), [locale])
+  const selected = numbers.format(count)
   const full =
     total !== undefined
-      ? `${count} of ${total}${noun} selected`
-      : `${count}${noun} selected`
+      ? label
+        ? t("selectedOfTotalLabelled", {
+            count,
+            selected,
+            total: numbers.format(total),
+            label,
+          })
+        : t("selectedOfTotal", {
+            count,
+            selected,
+            total: numbers.format(total),
+          })
+      : label
+        ? t("selectedLabelled", { count, selected, label })
+        : t("selected", { count, selected })
   const announcement = useDeferredAnnouncement(full)
   return (
     <div
@@ -139,11 +162,11 @@ function ActionBarSelection({
       <span aria-hidden className="font-medium whitespace-nowrap">
         <span className="@max-lg/action-bar:hidden">{full}</span>
         <span className="hidden @max-lg/action-bar:inline @max-sm/action-bar:hidden">
-          {count} selected
+          {t("selected", { count, selected })}
         </span>
         <span className="hidden @max-sm/action-bar:inline">
           <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
-            {count}
+            {selected}
           </span>
         </span>
       </span>
@@ -155,12 +178,12 @@ function ActionBarSelection({
             onClick={onClear}
             className="@max-sm/action-bar:hidden"
           >
-            Clear
+            {t("clear")}
           </Button>
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label={clearLabel}
+            aria-label={clearLabel ?? t("clearSelection")}
             onClick={onClear}
             className="hidden @max-sm/action-bar:inline-flex"
           >
@@ -189,13 +212,14 @@ function ActionBarMessage({ className, ...props }: React.ComponentProps<"p">) {
  */
 function ActionBarActions({
   className,
-  "aria-label": ariaLabel = "Actions",
+  "aria-label": ariaLabel,
   ...props
 }: ToolbarProps) {
+  const t = useTranslations("actionBar")
   return (
     <Toolbar
       data-slot="action-bar-actions"
-      aria-label={ariaLabel}
+      aria-label={ariaLabel ?? t("actions")}
       className={cn("ms-auto min-w-0 flex-1 justify-end", className)}
       {...props}
     />

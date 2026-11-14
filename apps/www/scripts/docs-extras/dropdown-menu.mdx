@@ -1,0 +1,14 @@
+## Modal
+
+A `DropdownMenu` is not modal by default, so it opens and closes fast even on a large page and locks nothing on it: the page still scrolls, and a press outside the menu closes it and still reaches what it pressed (another menu's button opens that menu, a field takes focus). Escape and choosing an item return focus to the trigger.
+
+Pass `modal` for a menu whose outside presses must only close it, for example one over destructive controls. A modal menu also locks the page's scroll while it is open.
+
+```tsx
+<DropdownMenu modal>
+  <DropdownMenuTrigger render={<Button variant="outline" />}>
+    Well actions
+  </DropdownMenuTrigger>
+  <DropdownMenuContent>…</DropdownMenuContent>
+</DropdownMenu>
+```

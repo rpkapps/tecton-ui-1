@@ -123,6 +123,6 @@ describe("table rows are named by a row header", () => {
     render(<WellsListRoute />)
     const header = screen.getByRole("rowheader", { name: "16/2-D-12 H" })
     expect(header.tagName).toBe("TH")
-    expect(header).toHaveAttribute("data-label", "Well")
+    expect(header).toHaveAttribute("scope", "row")
   })
 })

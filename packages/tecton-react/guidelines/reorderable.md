@@ -9,14 +9,14 @@ notFor:
   - need: moving rows between folders of a hierarchy
     use: TreeView
   - need: sorting rows by a column's values
-    use: TanStack Table
-related: [Table, TableColumnResizer, Item, "TanStack Table"]
+    use: DataTable
+related: [Table, DataTable, TableColumnResizer, Item]
 ---
 
 ## Use it when
 
 - The user puts rows of a table in their own order: a drilling queue, a run sequence, a playlist of logs.
-- The user moves the columns of a data table into the order they read them in.
+- The user moves the columns of a plain `Table` into the order they read them in (a `DataTable` does it with `reorderableColumns`).
 - A short stack of items (steps, tracks, layers) has an order the user decides.
 - The user arranges a grid of cards: equal cards put in order (`orientation="grid"`), or tiles of several sizes swapped between the fixed slots of a bento grid (`mode="swap"`).
 

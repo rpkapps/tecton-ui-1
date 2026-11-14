@@ -99,6 +99,16 @@ type DragAndDropOptions<TPlace> = {
   direction?: "ltr" | "rtl"
   /** Where the pointer preview goes (the portal target); the body otherwise. */
   getPreviewContainer?: () => HTMLElement | null
+  /**
+   * The pointer preview: moving along `axis` only, level with its item
+   * (`locked`); cut to an element's box (`clip`, a table's frame); opaque
+   * (`solid`). Free, whole and see-through by default.
+   */
+  preview?: {
+    locked?: boolean
+    clip?: () => HTMLElement | null
+    solid?: boolean
+  }
   onDragStart?: (keys: ReadonlyArray<string>, mode: DragMode) => void
   /**
    * Drops `keys` on `place`. `from`: where the pointer preview was let go,
@@ -237,7 +247,13 @@ function useDragAndDrop<TPlace>(
           // From the item: the collection's scroll container may sit inside
           // the collection element (a table's container inside Reorderable).
           autoScroll: item,
-          preview: { item, container: options.getPreviewContainer?.() },
+          preview: {
+            item,
+            container: options.getPreviewContainer?.(),
+            axis: options.preview?.locked ? (options.axis ?? "y") : undefined,
+            clip: options.preview?.clip?.(),
+            solid: options.preview?.solid,
+          },
           onStart: () => {
             begin(key, "pointer")
           },

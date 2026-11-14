@@ -1,970 +1,1196 @@
 ---
 title: Data Table
-description: Powerful table and datagrids built using TanStack Table.
-links:
-  doc: https://tanstack.com/table/latest/docs/overview
-upstream: apps/v4/content/docs/components/base/data-table.mdx
+description: "Records in columns: typed columns, sorting, search and filters, grouping with subtotals, row selection, pages, trees, detail rows, totals, rows loaded as the user scrolls and virtualized rows, in the browser or from a server."
 ---
 
-<ComponentPreview
-  name="data-table-demo"
-  align="start"
-  previewClassName="items-start h-auto px-4 md:px-8"
-  hideCode
-/>
+<ComponentPreview name="data-table-demo" align="start" />
 
-## Introduction
+## Usage
 
-Every data table or datagrid I've created has been unique. They all behave differently, have specific sorting and filtering requirements, and work with different data sources.
+```tsx
+import {
+  createColumns,
+  DataTable,
+  DataTableActionBar,
+  DataTableContent,
+  DataTableFilter,
+  DataTableFooter,
+  DataTablePagination,
+  DataTableSearch,
+  DataTableToolbar,
+} from "@tecton/react/data-table"
+```
 
-It doesn't make sense to combine all of these variations into a single component. If we do that, we'll lose the flexibility that [headless UI](https://tanstack.com/table/latest/docs/overview#what-is-headless-ui) provides.
+```tsx
+const columns = createColumns<Well>([
+  { id: "name", header: "Well" },
+  { id: "status", header: "Status", type: "options", options: STATUSES },
+  { id: "depth", header: "TD (m)", type: "number" },
+  { id: "spud", header: "Spud date", type: "date" },
+])
 
-So instead of a data-table component, I thought it would be more helpful to provide a guide on how to build your own.
+<DataTable items={wells} columns={columns} selectionMode="multiple" filterable pagination>
+  <DataTableToolbar>
+    <DataTableSearch />
+    <DataTableFilter column="status" />
+  </DataTableToolbar>
+  <DataTableActionBar>
+    <Button size="sm" onClick={shutIn}>Shut in</Button>
+  </DataTableActionBar>
+  <DataTableContent aria-label="Wells" />
+  <DataTableFooter>
+    <DataTablePagination pageSizes={[10, 25, 50]} />
+  </DataTableFooter>
+</DataTable>
+```
 
-We'll start with the basic `<Table />` component and build a complex data table from scratch.
+- Each item needs an `id`, or pass `itemToId`.
+- Make the columns once, at module level or in a `React.useMemo`.
+- For a short table that is read, not worked with, use [Table](/docs/components/table).
 
-<Callout className="mt-4">
+## Composition
 
-**Tip:** If you find yourself using the same table in multiple places in your app, you can always extract it into a reusable component.
+```text
+DataTable
+├── DataTableToolbar
+│   ├── DataTableSearch
+│   ├── DataTableFilter
+│   ├── DataTableGroupBy
+│   └── DataTableColumnsMenu
+├── DataTableActionBar
+├── DataTableActiveFilters
+├── DataTableContent
+│   └── DataTableRowActions (in a column's cell)
+└── DataTableFooter
+    └── DataTablePagination
+```
 
-</Callout>
+The root holds the state and turns features on: `selectionMode`, `pagination`, `filterable`, `groupable` and the `…Columns` props. A part whose feature is off renders nothing and warns in development.
 
-## Table of Contents
+Put `DataTablePagination` in a `DataTableFooter` right after `DataTableContent`. That footer is the table's last band: inside its border, below the totals row, and fixed while a virtualized table's rows scroll. A second footer, or one placed elsewhere, is a plain row under the table.
 
-This guide will show you how to use [TanStack Table](https://tanstack.com/table) and the `<Table />` component to build your own custom data table. We'll cover the following topics:
+## Columns
 
-- [Set up Table Features](#set-up-table-features)
-- [Basic Table](#basic-table)
-- [Row Actions](#row-actions)
-- [Pagination](#pagination)
-- [Sorting](#sorting)
-- [Filtering](#filtering)
-- [Visibility](#visibility)
-- [Row Selection](#row-selection)
-- [Reusable Components](#reusable-components)
+A column's `type` sets how its values are shown, aligned and sorted. A `cell` draws your own content ([Custom cells](#custom-cells)), and a column with `columns` is a group.
 
-## Prerequisites
+This example has `reorderableColumns`: drag a header to move its column. A line shows where it will drop.
 
-We are going to build a table to show recent payments. Here's what our data looks like:
+<ComponentPreview name="data-table-columns" align="start" />
 
-```tsx lineNumbers
-type Payment = {
-  id: string
-  amount: number
-  status: "pending" | "processing" | "success" | "failed"
-  email: string
-}
+| `type`             | Align  | Shown as                                     | Sorted                    |
+| ------------------ | ------ | -------------------------------------------- | ------------------------- |
+| `"text"` (default) | start  | the text                                     | natural, case-insensitive |
+| `"number"`         | end    | `Intl.NumberFormat` with `format`            | numerically               |
+| `"date"`           | start  | `Intl.DateTimeFormat` with `format`          | chronologically           |
+| `"boolean"`        | center | a check for `true`                           | `false` first             |
+| `"options"`        | start  | a [Badge](/docs/components/badge) per option | in `options` order        |
 
-export const payments: Payment[] = [
+- Return raw numbers and `Date`s from `accessor`, not formatted text.
+- Numbers and dates use IBM Plex Mono with tabular figures. A column's values line up, and a changing value keeps its width.
+- Empty values sort last and show a muted dash ([Empty values](#empty-values)).
+- A column in a group moves only among its group's columns. A group moves with all its columns.
+
+### Sorting by several columns
+
+Click a header to sort by that column alone. <Kbd>Shift</Kbd> + click adds it as the next sort.
+
+- <Kbd>Shift</Kbd> + click, or <Kbd>Shift</Kbd> + <Kbd>Enter</Kbd>, adds a
+  column to the sort. On a column already in the sort, it reverses the
+  direction.
+- While two or more columns sort, each sorted header shows its place beside the arrow. Screen readers hear it with the direction: "2 of 2 in sort order".
+- The table above starts sorted by Field, then MD.
+
+Column menus do the same without the keyboard. A column has a menu when `resizableColumns`, `hideableColumns`, `pinnableColumns` or `groupable` is on.
+
+| Menu item                                     | Does                                                                |
+| --------------------------------------------- | ------------------------------------------------------------------- |
+| **Sort ascending**, **Sort descending**       | Sorts by this column alone.                                         |
+| **Add to sort**, then Ascending or Descending | Appends the column to the sort. Shown while another column sorts.   |
+| **Sort order: 2 of 3**                        | On a column in the sort: shows its place and changes its direction. |
+| **Remove from sort**                          | Takes the column out of the sort.                                   |
+| **Clear sort**                                | Removes every sort.                                                 |
+
+```tsx
+<DataTable
+  items={wells}
+  columns={columns}
+  defaultView={{
+    sorting: [
+      { column: "field", direction: "ascending" },
+      { column: "md", direction: "descending" },
+    ],
+  }}
+>
+```
+
+- `view.sorting` lists the sorts in order, first one first.
+- In [server mode](#server-data), the server gets the whole list from `onViewChange`.
+- `multiSort={false}` keeps the table to one sort. <Kbd>Shift</Kbd> + click then sorts alone, the menus have no **Add to sort**, and a view keeps only its first sort.
+
+### Custom cells
+
+`cell(item, details)` draws a column's cell. It changes only how the value looks: sorting, filters, search, power search, grouping, totals and the CSV export still use the `accessor` value and the column's `type`.
+
+In this example, each well links to its page, with its field below. The engineer has an [Avatar](/docs/components/avatar), the water cut has a [Meter](/docs/tecton/meter), and the oil rate shows how it moved. The table is sorted by oil rate, and every header still sorts by the column's value.
+
+<ComponentPreview name="data-table-custom-cells" align="start" />
+
+| `details` field | Holds                                                                                |
+| --------------- | ------------------------------------------------------------------------------------ |
+| `value`         | The raw value, from `accessor`.                                                      |
+| `text`          | The value formatted as the column formats it, with `format` and the provider locale. |
+| `emptyValue`    | What a missing value shows: the muted dash, read as "No value".                      |
+| `id`            | The row's id.                                                                        |
+| `column`        | The column.                                                                          |
+| `depth`         | The row's depth in a tree or in groups.                                              |
+
+- Draw `text` rather than formatting the value again.
+- For a missing value, return `emptyValue`, so the cell keeps the table's convention.
+- Controls in a cell, such as a link, a button or an input, are reached with <Kbd>Enter</Kbd> or <Kbd>F2</Kbd> from the cell ([Keyboard](#keyboard)).
+- Give a graphic a name, like the meter's `aria-label` here.
+- Put into words what a colour or an icon says, like the trend's "since last month".
+
+`renderHeader` draws a header's content, while `header` stays the plain text that menus and screen readers use. `renderAggregate` draws a totals or subtotal cell.
+
+## Resizing
+
+`resizableColumns` adds a resizer to each header, and Resize, Fit to content and Reset width to the column menus.
+
+<ComponentPreview name="data-table-column-resizing" align="start" />
+
+For a plain [Table](/docs/components/table), put a `TableColumnResizer` last in each `TableHead` and keep the widths yourself.
+
+```tsx
+<TableHead className="relative" style={{ width: widths.field }}>
+  Field
+  <TableColumnResizer
+    label="Field"
+    value={widths.field}
+    min={80}
+    onValueChange={(width) => setWidths((w) => ({ ...w, field: width }))}
+  />
+</TableHead>
+```
+
+## Hiding, pinning and reordering
+
+`DataTableColumnsMenu` lists the columns to show, hide or pin. Each header's menu has the same actions.
+
+<ComponentPreview name="data-table-column-pinning" align="start" />
+
+| Root prop            | The user                          | View field       | Column opt-out       |
+| -------------------- | --------------------------------- | ---------------- | -------------------- |
+| `resizableColumns`   | drags or fits a column's width    | `columns.widths` | `resizable: false`   |
+| `reorderableColumns` | drags a header to a new place     | `columns.order`  | `reorderable: false` |
+| `hideableColumns`    | hides a column                    | `columns.hidden` | `hideable: false`    |
+| `pinnableColumns`    | pins a column to the start or end | `columns.pinned` | `pinnable: false`    |
+
+Pinned cells are opaque, in the rows' own fill: the table's cell surface, whatever the table sits on, with its stripes, hover and selection.
+
+## Search and filters
+
+`filterable` turns on `DataTableSearch`, a `DataTableFilter` per column and `DataTableActiveFilters`. When the toolbar runs out of room, it moves its items into an overflow menu.
+
+<ComponentPreview name="data-table-filters" align="start" />
+
+| `type`    | Filter                                              | Value in the view                                                            |
+| --------- | --------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `text`    | contains any of the texts, added as chips           | `{ type: "text", values }`                                                   |
+| `number`  | Min and Max side by side, with the column's unit    | `{ type: "number", ranges: [{ min?, max?, minExclusive?, maxExclusive? }] }` |
+| `date`    | a [date range picker](/docs/components/date-picker) | `{ type: "date", ranges: [{ from?, to? }] }`                                 |
+| `boolean` | Yes and No, checkboxes with counts                  | `{ type: "boolean", values }`                                                |
+| `options` | a checkbox per option, with counts                  | `{ type: "options", values }`                                                |
+
+- Every filter value is a list. A row matches when it matches any item: a text it contains, a value, or a range it is in.
+- Search matches the shown columns' display text, ignoring case and accents.
+- Each filter offers "No value" (`empty: true`) when the column has empty values ([Empty values](#empty-values)).
+- A column's own `filter(item, value)` replaces its type's filter.
+- A yes / no filter is laid out like an options filter. With neither chosen it keeps every row, and Clear goes back to that.
+
+Text filters:
+
+- Type a text and press <Kbd>Enter</Kbd> or a comma to add it as a chip. Each chip has a remove button.
+- Quote a text to keep its comma: `"Smith, John"` is one chip, as in a [power search](#power-search).
+- <Kbd>Backspace</Kbd> in the empty field removes the last chip.
+- What you type applies as you type, beside the chips. Under the field, the filter shows how many rows match.
+
+Number filters:
+
+- Min and Max are [number fields](/docs/tecton/number-field). Step them with their minus and plus buttons or the arrow keys.
+- The unit sits on the side where the column writes it: a unit, a percent sign or a currency, from the column's `format`.
+- Type a percent as the column shows it: 12.5 for 0.125.
+- Under the fields, the filter shows how many rows match as you type ("12 of 120 match"). It counts the rows the search and the other filters keep. In server mode there is no count, since the table holds only the loaded rows.
+- Both bounds are included. `minExclusive: true` or `maxExclusive: true` leaves out the bound itself, as `>` and `<` do in a [power search](#power-search).
+- An exclusive bound reads "> 3,000 m" or "> 1,000 and ≤ 3,000" on the button and chip. Editing that bound in the filter includes it again.
+- In server mode, apply exclusive bounds yourself: `minExclusive` means `value > min`, otherwise `value >= min`.
+
+Number and date filters with several ranges:
+
+- A [power search](#power-search) can set several ranges (`td:<1000,>3000`). The button and chip show them all: "< 1,000, > 3,000".
+- The popover edits the first range. A muted line under it says how many more there are. Editing keeps them, and Clear removes the whole filter.
+
+## Power search
+
+`<DataTableSearch syntax="query" />` turns the search into a query field, for people who filter all day. Typed terms set the same column filters as the filter buttons, and free words are the search.
+
+<ComponentPreview name="data-table-power-search" align="start" />
+
+### Syntax
+
+| Term                                                                                             | Filter                                                                                    |
+| ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `gullfaks`, `"aker bp"`                                                                          | the search: text in any shown column                                                      |
+| `status:drilling,producing`                                                                      | an options column: any of the values, by value or label                                   |
+| `subsea:yes`                                                                                     | yes / no                                                                                  |
+| `well:a-12`, `well:a-12,b-3`                                                                     | a text column contains any of the texts                                                   |
+| `td:3000`, `td:>=3000`, `td:>3000`, `td:<3000`, `td:1000..3000`                                  | a number column; `..` includes both ends, `>` and `<` are `minExclusive` / `maxExclusive` |
+| `td:<1000,>3000`                                                                                 | a number in any of the ranges                                                             |
+| `spud:2015`, `spud:2015-06`, `spud:jun 2015`, `spud:2015-06-30`, `spud:<2015`, `spud:2015..2016` | a date column, by whole days in the column's time zone                                    |
+| `spud:last30d`, `spud:thismonth`, `spud:today`                                                   | a relative date (`last<N>d`, `w`, `m`, `y`; kept as such in the field)                    |
+| `spud:2015,last30d`                                                                              | a date in any of the ranges                                                               |
+| `td:none`, `td:>=3000,none`                                                                      | "No value", alone or beside the rest                                                      |
+
+- A comma always means "any of". Each column type says what one item is: a text, a value, or a number or date range.
+- A comma in quotes belongs to the text: `well:"a,b"`.
+- A number or date keeps its own comma: `td:1,234.5`, `spud:jun 30, 2015`. In a locale that writes decimals with a comma, quote a number that follows another: `td:3,"5"`.
+- A column's key is its header or its id. Case, accents, spaces and punctuation don't matter, so `spuddate` and `spud_date` both match "Spud date".
+- Numbers and dates are read in the provider's locale. Quotes keep spaces together.
+- Terms side by side all apply.
+- Filters the query cannot write stay in the view: a column's own `filter`, a column with no key, or a number range with both ends and one of them exclusive beside other ranges.
+- A filter button, a chip or a controlled `view` rewrites the query from the view, keeping the free words.
+
+### Problems
+
+A term with a problem is not applied. Examples are an unknown column or value, or a backwards range.
+
+- Once typing pauses, the term is underlined. Its message shows at the top of the suggestions, and in a tooltip on the underline.
+- `OR`, `NOT` and a leading `-` are not supported. They show as problems and are never applied another way. The term after `-` or `NOT` is left out with them.
+- The message says what to type instead, using the table's own columns. For one of several values, it lists the first options column's values with commas (`status:drilling,producing`). For an exclusion, it suggests listing the values to keep.
+
+In a list, a problem belongs to its item:
+
+- The other items apply, and the item with the problem is underlined on its own and stays in the field.
+- A list with no item left, such as `status:legacy`, is not applied. "No value" (`none`) counts as an item.
+- A text item is never a problem: any text is one.
+- A filter button, a chip or a controlled `view` rewrites the query from the view, which holds only the items that apply. The underlined items are dropped, as a term with a problem is.
+
+| Term                      | Applies            | Underlined                      |
+| ------------------------- | ------------------ | ------------------------------- |
+| `status:legacy,producing` | `status:producing` | `legacy`, an unknown value      |
+| `subsea:yes,maybe`        | `subsea:yes`       | `maybe`                         |
+| `td:3000,abc`             | `td:3000`          | `abc`, not a number             |
+| `spud:2015,2016..2015`    | `spud:2015`        | `2016..2015`, a backwards range |
+| `status:legacy,none`      | `status:none`      | `legacy`                        |
+| `status:legacy`           | nothing            | `legacy`                        |
+
+### Suggestions
+
+The suggestion list opens when the field gets focus and stays open the whole time it has focus. Typing, picking, moving the caret and pressing the field's buttons never close it.
+
+- It closes when focus leaves the field. <Kbd>Escape</Kbd> closes it until you type, click in the field or press <Kbd>↓</Kbd>.
+- A pick that completes a term keeps it open with the next term's columns. A comma typed right after it adds another value to the term instead.
+- With nothing to suggest, it shows one muted line about the term at the caret: "Searching all columns for “pump”", the filter in its chip's words ("TD: ≥ 1,500 m"), or "No suggestions". Screen readers hear it politely.
+- The clear button (✕) empties the field and keeps focus in it, with the list open.
+- The "?" button lists the table's own columns, with examples, in the list's place. A press anywhere in an example's row adds it to the query and returns to the field.
+
+The suggestions follow the caret:
+
+- columns, with their type
+- an options column's values, and a text column's, with their row counts
+- after a comma, the next item of the same column, without the values already listed
+- "No value"
+- a number column's comparisons, with the data's range
+- a date column's presets with the days they cover, the data's years and months, and the date filter's calendar, which writes the days it picks
+
+Counts apply the rest of the query, as the filter popovers' counts do.
+
+| Key                         | Does                                                                          |
+| --------------------------- | ----------------------------------------------------------------------------- |
+| <Kbd>↑</Kbd> / <Kbd>↓</Kbd> | Moves through the suggestions                                                 |
+| <Kbd>Enter</Kbd>            | Picks the highlighted suggestion, else applies the query; the list stays open |
+| <Kbd>Tab</Kbd>              | Completes what is typed; with nothing to complete, moves focus on             |
+| <Kbd>Escape</Kbd>           | Closes the list; pressed again, clears the field                              |
+
+### Server mode and loading
+
+- In server mode, the field sends the filters and search through `onViewChange`, as the filter buttons do. The counts are the options' own `count`.
+- The query field loads on demand. A plain field of the same size renders at once.
+- The query code arrives in idle time, or when the field is pointed at or focused. Anything typed before then is kept and read once it arrives.
+- A table with the plain search never loads it.
+
+## Empty values
+
+A value that is `null`, `undefined`, `""`, `NaN` or an invalid `Date` is empty. It shows as a muted em dash in the column's alignment, which screen readers read as "No value". An options column with an option whose value is `""` treats `""` as that option everywhere: its label, its place in the sort, its own group and its counts.
+
+Return `null` from `accessor` for a missing value, never a placeholder such as "N/A". Some wells in the example above have no status, TD, spud date or subsea flag.
+
+| Where         | An empty value                                                                                        |
+| ------------- | ----------------------------------------------------------------------------------------------------- |
+| Cell          | A muted "—", read as "No value". The column's `emptyValue` replaces it; `null` leaves the cell blank. |
+| Custom `cell` | Gets the column's `emptyValue` in its details, to return when `text` is `""`.                         |
+| Search, CSV   | Empty text: never matched, an empty field.                                                            |
+| Sorting       | Last, ascending and descending.                                                                       |
+| Grouping      | One group, "No value", last.                                                                          |
+| Totals        | Left out of the built-in aggregates.                                                                  |
+
+```tsx
+const columns = createColumns<Well>([
+  { id: "operator", header: "Operator", emptyValue: "Unassigned" },
   {
-    id: "728ed52f",
-    amount: 100,
-    status: "pending",
-    email: "m@example.com",
+    id: "report",
+    header: "Report",
+    cell: (well, { text, emptyValue }) =>
+      text === "" ? emptyValue : <Link href={well.reportUrl}>{text}</Link>,
   },
-  {
-    id: "489e1d42",
-    amount: 125,
-    status: "processing",
-    email: "example@gmail.com",
-  },
-  // ...
-]
-```
-
-## Project Structure
-
-Start by creating the following file structure:
-
-```txt
-app
-└── payments
-    ├── columns.tsx
-    ├── data-table-features.ts
-    ├── data-table.tsx
-    └── page.tsx
-```
-
-I'm using a Next.js example here but this works for any other React framework.
-
-- `columns.tsx` (client component) will contain our column definitions.
-- `data-table-features.ts` will contain the shared `features` object that tells TanStack Table which behavior to enable.
-- `data-table.tsx` (client component) will contain our `<DataTable />` component.
-- `page.tsx` (server component) is where we'll fetch data and render our table.
-
-## Set up Table Features
-
-TanStack Table v9 is feature-based: you opt into the behavior you want — sorting, filtering, pagination, and so on — by declaring it with `tableFeatures()`. Anything you don't list is tree-shaken out of your bundle. That includes the built-in filter and sort functions: register the ones your columns rely on under `filterFns` and `sortFns` (our email filter uses `includesString`, and string columns sort with `text` / `alphanumeric`).
-
-```tsx lineNumbers title="app/payments/data-table-features.ts"
-import {
-  columnFilteringFeature,
-  columnVisibilityFeature,
-  createFilteredRowModel,
-  createPaginatedRowModel,
-  createSortedRowModel,
-  filterFn_includesString,
-  rowPaginationFeature,
-  rowSelectionFeature,
-  rowSortingFeature,
-  sortFn_alphanumeric,
-  sortFn_text,
-  tableFeatures,
-} from "@tanstack/react-table"
-
-// New in v9: declare the features this table uses — anything you don't
-// register is tree-shaken out of the bundle.
-export const features = tableFeatures({
-  columnFilteringFeature,
-  columnVisibilityFeature,
-  rowPaginationFeature,
-  rowSelectionFeature,
-  rowSortingFeature,
-  filteredRowModel: createFilteredRowModel(),
-  paginatedRowModel: createPaginatedRowModel(),
-  sortedRowModel: createSortedRowModel(),
-  filterFns: { includesString: filterFn_includesString },
-  sortFns: { alphanumeric: sortFn_alphanumeric, text: sortFn_text },
-})
-
-// Pass this as the first generic argument to `ColumnDef`, `Column`, `Table`,
-// and `Row` so each type knows which feature APIs are available.
-export type DataTableFeatures = typeof features
-```
-
-<Callout className="mt-4">
-
-**Note:** The core row model is always included, so you never register it yourself. Row models for optional features are created with `create*RowModel()` and registered on the features object — there are no more `get*RowModel` table options.
-
-</Callout>
-
-## Basic Table
-
-Let's start by building a basic table.
-
-<Steps className="mb-0 pt-2">
-
-### Column Definitions
-
-First, we'll define our columns.
-
-```tsx lineNumbers title="app/payments/columns.tsx" {3,5,16-17,19-29}
-"use client"
-
-import { createColumnHelper } from "@tanstack/react-table"
-
-import { type DataTableFeatures } from "./data-table-features"
-
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
-export type Payment = {
-  id: string
-  amount: number
-  status: "pending" | "processing" | "success" | "failed"
-  email: string
-}
-
-// Use `accessor` for data columns and `display` for columns without one.
-const columnHelper = createColumnHelper<DataTableFeatures, Payment>()
-
-export const columns = columnHelper.columns([
-  columnHelper.accessor("status", {
-    header: "Status",
-  }),
-  columnHelper.accessor("email", {
-    header: "Email",
-  }),
-  columnHelper.accessor("amount", {
-    header: "Amount",
-  }),
 ])
 ```
 
-<Callout className="mt-4">
+While any row has no value in a column, that column's filter offers "No value":
 
-**Note:** Columns are where you define the core of what your table
-will look like. They define the data that will be displayed, how it will be
-formatted, sorted and filtered.
+| Filter       | "No value" is                                          | Chip                              |
+| ------------ | ------------------------------------------------------ | --------------------------------- |
+| Options      | the last option, set apart, with its count             | "Status: Producing, No value"     |
+| Text, number | a checkbox under the fields                            | "TD: 1,000 m–2,000 m or no value" |
+| Date         | a checkbox beside Clear                                |                                   |
+| Yes / no     | a checkbox after Yes and No, set apart, with its count | "Subsea: Yes or no value"         |
 
-</Callout>
+- It keeps the rows without a value, as well as those the rest of the filter keeps. When the rest is unset, it keeps only the rows without a value.
+- In the view it is `empty: true` on the filter's value, beside its list. A value without it matches as before, so saved views keep working.
+- In server mode the table sees only the loaded rows, so "No value" is always offered. It reaches `onViewChange` for the server to apply (`OR depth IS NULL`).
 
-### `<DataTable />` component
-
-Next, we'll create a `<DataTable />` component to render our table.
-
-```tsx lineNumbers title="app/payments/data-table.tsx"
-"use client"
-
-import { useTable, type ColumnDef, type RowData } from "@tanstack/react-table"
-
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@tecton/react/table"
-
-import { features, type DataTableFeatures } from "./data-table-features"
-
-interface DataTableProps<TData extends RowData> {
-  columns: ColumnDef<DataTableFeatures, TData>[]
-  data: TData[]
-}
-
-export function DataTable<TData extends RowData>({
-  columns,
-  data,
-}: DataTableProps<TData>) {
-  const table = useTable({
-    features,
-    data,
-    columns,
-  })
-
-  return (
-    <div className="overflow-hidden rounded-md border">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : (
-                      <table.FlexRender header={header} />
-                    )}
-                  </TableHead>
-                )
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    <table.FlexRender cell={cell} />
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </div>
-  )
-}
+```ts
+{ type: "number", ranges: [{ min: 1000, max: 2000 }], empty: true } // 1,000 to 2,000, or no value
+{ type: "options", values: [], empty: true } // no value only
+{ type: "text", values: [], empty: true } // no value only
+{ type: "boolean", values: [true], empty: true } // yes, or no value
+{ type: "boolean", values: [], empty: true } // no value only
 ```
 
-<Callout>
+## Selection
 
-**Tip**: If you find yourself using `<DataTable />` in multiple places, this is the component you could make reusable by extracting it to a `components/data-table.tsx` file in your application.
-
-`<DataTable columns={columns} data={data} />`
-
-</Callout>
-
-<Callout className="mt-4">
-
-**`<table.FlexRender />` vs `flexRender`:** This guide uses v9's `<table.FlexRender header={header} />` and `<table.FlexRender cell={cell} />` component, available right on the table instance — no extra import needed. The classic `flexRender(component, context)` helper from v8 still works too, if you prefer the function form (or need to render outside the component that owns `table`, where you can also import the standalone `<FlexRender />`).
-
-</Callout>
-
-### Render the table
-
-Finally, we'll render our table in our page component.
-
-```tsx lineNumbers title="app/payments/page.tsx" {22}
-import { columns, Payment } from "./columns"
-import { DataTable } from "./data-table"
-
-async function getData(): Promise<Payment[]> {
-  // Fetch data from your API here.
-  return [
-    {
-      id: "728ed52f",
-      amount: 100,
-      status: "pending",
-      email: "m@example.com",
-    },
-    // ...
-  ]
-}
-
-export default async function DemoPage() {
-  const data = await getData()
-
-  return (
-    <div className="container mx-auto py-10">
-      <DataTable columns={columns} data={data} />
-    </div>
-  )
-}
-```
-
-</Steps>
-
-## Cell Formatting
-
-Let's format the amount cell to display the dollar amount. We'll also align the cell to the right.
-
-<Steps className="mb-0 pt-2">
-
-### Update columns definition
-
-Update the `header` and `cell` definitions for amount as follows:
-
-```tsx lineNumbers title="app/payments/columns.tsx" {3-13}
-export const columns = columnHelper.columns([
-  columnHelper.accessor("amount", {
-    header: () => <div className="text-right">Amount</div>,
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"))
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(amount)
-
-      return <div className="text-right font-medium">{formatted}</div>
-    },
-  }),
-])
-```
-
-You can use the same approach to format other cells and headers.
-
-</Steps>
-
-## Row Actions
-
-Let's add row actions to our table. We'll use a `<DropdownMenu />` component for this.
-
-<Steps className="mb-0 pt-2">
-
-### Update columns definition
-
-Update our columns definition to add a new `actions` column. The `actions` cell returns a `<DropdownMenu />` component.
-
-```tsx lineNumbers title="app/payments/columns.tsx" {4,6-14,18-45}
-"use client"
-
-import { createColumnHelper } from "@tanstack/react-table"
-import { MoreHorizontal } from "lucide-react"
-
-import { Button } from "@tecton/react/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@tecton/react/dropdown-menu"
-
-export const columns = columnHelper.columns([
-  // ...
-  columnHelper.display({
-    id: "actions",
-    cell: ({ row }) => {
-      const payment = row.original
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={<Button variant="ghost" className="h-8 w-8 p-0" />}
-          >
-            <span className="sr-only">Open menu</span>
-            <MoreHorizontal className="h-4 w-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
-            >
-              Copy payment ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
-  }),
-  // ...
-])
-```
-
-You can access the row data using `row.original` in the `cell` function. Use this to handle actions for your row eg. use the `id` to make a DELETE call to your API.
-
-</Steps>
-
-## Pagination
-
-Next, we'll add pagination to our table.
-
-<Steps className="mb-0 pt-2">
-
-### Pagination is already enabled
-
-Because our features object includes `rowPaginationFeature` and `createPaginatedRowModel()`, the table automatically paginates rows into pages of 10 — there's nothing to add to `useTable`. See the [pagination docs](https://tanstack.com/table/latest/docs/framework/react/guide/pagination) for more information on customizing page size and implementing manual pagination.
-
-### Add pagination controls
-
-We can add pagination controls to our table using the `<Button />` component and the `table.previousPage()`, `table.nextPage()` API methods.
-
-```tsx lineNumbers title="app/payments/data-table.tsx" {1,20-37}
-import { Button } from "@tecton/react/button"
-
-export function DataTable<TData extends RowData>({
-  columns,
-  data,
-}: DataTableProps<TData>) {
-  const table = useTable({
-    features,
-    data,
-    columns,
-  })
-
-  return (
-    <div>
-      <div className="overflow-hidden rounded-md border">
-        <Table>
-          { // .... }
-        </Table>
-      </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Next
-        </Button>
-      </div>
-    </div>
-  )
-}
-```
-
-See [Reusable Components](#reusable-components) section for a more advanced pagination component.
-
-</Steps>
-
-## Sorting
-
-Let's make the email column sortable.
-
-The `rowSortingFeature` and sorted row model are already registered in our features object, so all that's left is wiring up the sorting state.
-
-<Steps className="mb-0 pt-2">
-
-### Update `<DataTable>`
-
-```tsx lineNumbers title="app/payments/data-table.tsx" {3,8,15,21-24}
-"use client"
-
-import * as React from "react"
-import {
-  useTable,
-  type ColumnDef,
-  type RowData,
-  type SortingState,
-} from "@tanstack/react-table"
-
-export function DataTable<TData extends RowData>({
-  columns,
-  data,
-}: DataTableProps<TData>) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-
-  const table = useTable({
-    features,
-    data,
-    columns,
-    onSortingChange: setSorting,
-    state: {
-      sorting,
-    },
-  })
-
-  return (
-    <div>
-      <div className="overflow-hidden rounded-md border">
-        <Table>{ ... }</Table>
-      </div>
-    </div>
-  )
-}
-```
-
-### Make header cell sortable
-
-We can now update the `email` header cell to add sorting controls.
-
-```tsx lineNumbers title="app/payments/columns.tsx" {4,8-18}
-"use client"
-
-import { createColumnHelper } from "@tanstack/react-table"
-import { ArrowUpDown } from "lucide-react"
-
-export const columns = columnHelper.columns([
-  columnHelper.accessor("email", {
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Email
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-  }),
-])
-```
-
-This will automatically sort the table (asc and desc) when the user toggles on the header cell.
-
-</Steps>
-
-## Filtering
-
-Let's add a search input to filter emails in our table.
-
-The `columnFilteringFeature` and filtered row model are already part of our features object, so we only need to wire up the filter state and render an input.
-
-<Steps className="mb-0 pt-2">
-
-### Update `<DataTable>`
-
-```tsx lineNumbers title="app/payments/data-table.tsx" {7,13,20-22,29,32,38-46}
-"use client"
-
-import * as React from "react"
-import {
-  useTable,
-  type ColumnDef,
-  type ColumnFiltersState,
-  type RowData,
-  type SortingState,
-} from "@tanstack/react-table"
-
-import { Button } from "@tecton/react/button"
-import { Input } from "@tecton/react/input"
-
-export function DataTable<TData extends RowData>({
-  columns,
-  data,
-}: DataTableProps<TData>) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
-
-  const table = useTable({
-    features,
-    data,
-    columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    state: {
-      sorting,
-      columnFilters,
-    },
-  })
-
-  return (
-    <div>
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter emails..."
-          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("email")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-      </div>
-      <div className="overflow-hidden rounded-md border">
-        <Table>{ ... }</Table>
-      </div>
-    </div>
-  )
-}
-```
-
-Filtering is now enabled for the `email` column. You can add filters to other columns as well. See the [filtering docs](https://tanstack.com/table/latest/docs/framework/react/guide/column-filtering) for more information on customizing filters.
-
-</Steps>
-
-## Visibility
-
-Adding column visibility is fairly simple using `@tanstack/react-table` visibility API.
-
-<Steps className="mb-0 pt-2">
-
-### Update `<DataTable>`
-
-```tsx lineNumbers title="app/payments/data-table.tsx" {8,14-19,29-30,38,42,57-84}
-"use client"
-
-import * as React from "react"
-import {
-  useTable,
-  type ColumnDef,
-  type ColumnFiltersState,
-  type ColumnVisibilityState,
-  type RowData,
-  type SortingState,
-} from "@tanstack/react-table"
-
-import { Button } from "@tecton/react/button"
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@tecton/react/dropdown-menu"
-
-export function DataTable<TData extends RowData>({
-  columns,
-  data,
-}: DataTableProps<TData>) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<ColumnVisibilityState>({})
-
-  const table = useTable({
-    features,
-    data,
-    columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-    },
-  })
-
-  return (
-    <div>
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter emails..."
-          value={table.getColumn("email")?.getFilterValue() as string}
-          onChange={(event) =>
-            table.getColumn("email")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-        <DropdownMenu>
-          <DropdownMenuTrigger render={<Button variant="outline" className="ml-auto" />}>
-            Columns
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter(
-                (column) => column.getCanHide()
-              )
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                )
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <div className="overflow-hidden rounded-md border">
-        <Table>{ ... }</Table>
-      </div>
-    </div>
-  )
-}
-```
-
-This adds a dropdown menu that you can use to toggle column visibility.
-
-</Steps>
-
-## Row Selection
-
-Next, we're going to add row selection to our table.
-
-<Steps className="mb-0 pt-2">
-
-### Update column definitions
-
-```tsx lineNumbers title="app/payments/columns.tsx" {6,9-30}
-"use client"
-
-import { createColumnHelper } from "@tanstack/react-table"
-
-import { Badge } from "@tecton/react/badge"
-import { Checkbox } from "@tecton/react/checkbox"
-
-export const columns = columnHelper.columns([
-  columnHelper.display({
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected()}
-        indeterminate={
-          table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  }),
-])
-```
-
-### Update `<DataTable>`
-
-```tsx lineNumbers title="app/payments/data-table.tsx" {11,20,25}
-export function DataTable<TData extends RowData>({
-  columns,
-  data,
-}: DataTableProps<TData>) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<ColumnVisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
-
-  const table = useTable({
-    features,
-    data,
-    columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-    },
-  })
-
-  return (
-    <div>
-      <div className="overflow-hidden rounded-md border">
-        <Table />
-      </div>
-    </div>
-  )
-}
-```
-
-This adds a checkbox to each row and a checkbox in the header to select all rows.
-
-### Show selected rows
-
-You can show the number of selected rows using the `table.getFilteredSelectedRowModel()` API.
-
-```tsx
-<div className="flex-1 text-sm text-muted-foreground">
-  {table.getFilteredSelectedRowModel().rows.length} of{" "}
-  {table.getFilteredRowModel().rows.length} row(s) selected.
-</div>
-```
-
-</Steps>
-
-## Reusable Components
-
-Here are some components you can use to build your data tables. This is from the [Tasks](https://ui.shadcn.com/examples/tasks) demo, which shares its features object (and the matching `TasksTableFeatures` type) across every component via a `data-table-features.ts` module — the same pattern we set up in [Set up Table Features](#set-up-table-features).
-
-### Column header
-
-Make any column header sortable and hideable.
-
-<Callout variant="info">The source of this file lives in the upstream shadcn/ui repository: [data-table-column-header.tsx](https://github.com/shadcn-ui/ui/blob/c2477f311c19982ef6e246085438e6cfec3e35ea/apps/v4/app/(app)/examples/tasks/components/data-table-column-header.tsx).</Callout>
-
-```tsx lineNumbers {4}
-export const columns = columnHelper.columns([
-  columnHelper.accessor("email", {
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Email" />
-    ),
-  }),
-])
-```
-
-### Pagination
-
-Add pagination controls to your table including page size and selection count.
-
-<Callout variant="info">The source of this file lives in the upstream shadcn/ui repository: [data-table-pagination.tsx](https://github.com/shadcn-ui/ui/blob/c2477f311c19982ef6e246085438e6cfec3e35ea/apps/v4/app/(app)/examples/tasks/components/data-table-pagination.tsx).</Callout>
-
-```tsx
-<DataTablePagination table={table} />
-```
-
-### Column toggle
-
-A component to toggle column visibility.
-
-<Callout variant="info">The source of this file lives in the upstream shadcn/ui repository: [data-table-view-options.tsx](https://github.com/shadcn-ui/ui/blob/c2477f311c19982ef6e246085438e6cfec3e35ea/apps/v4/app/(app)/examples/tasks/components/data-table-view-options.tsx).</Callout>
-
-```tsx
-<DataTableViewOptions table={table} />
-```
-
-## RTL
-
-To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui.shadcn.com/docs/rtl).
-
-<ComponentPreview
-  name="data-table-rtl"
-  direction="rtl"
-  previewClassName="items-start h-auto px-4 md:px-8"
-  hideCode
-/>
-
-## Tecton recipes
-
-Tecton ships no `DataTable` component: build tables with [TanStack Table](https://tanstack.com/table/latest) and the `Table` components, as the guide above does. Each recipe below is a self-contained starting point built on `useTable`.
-
-### Playground
-
-Every recipe below at once, on up to 100,000 wells: switch between virtual scrolling and pages, compact and default rows, a flat list and a tree, and turn selection, column resizing, column reordering and row reordering on and off. Sort by any column header. The readout reports how long each click took to paint. A sort and a manual row order exclude each other: sorting by a column turns row reordering off, and turning row reordering on clears the sort. In pages mode, pick 10, 20, 40 or 100 rows per page.
-
-<ComponentPreview name="data-table-playground" align="start" />
-
-### Density and alternating rows
-
-Density is nothing more than Tailwind classes on the `Table`: an emphasised header (`[&_thead]:bg-muted`), alternating rows (`[&_tbody_tr:nth-child(even)]:bg-surface-alt`) and, for the compact variant, shorter rows and smaller text (`[&_th]:h-8 [&_td]:py-1 text-xs`).
-
-<ComponentPreview name="data-table-density" align="start" />
-
-### Row selection
-
-`Table` is a plain HTML table, so selection is TanStack's `rowSelection` state: add a display column with a `Checkbox` in the header (`checked` when every row is selected, `indeterminate` when some are, `onCheckedChange` → `toggleAllRowsSelected`) and one in each cell (`row.getIsSelected()` / `row.toggleSelected`), and mark selected rows with `data-state="selected"`. Summarise the selection below the table.
+`selectionMode="single"` or `"multiple"` adds a checkbox column. `DataTableActionBar` shows while rows are selected, with the count, Clear and your actions.
 
 <ComponentPreview name="data-table-selection" align="start" />
 
-### Bulk actions
+| Prop                      | Does                                                                                                 |
+| ------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `value` / `onValueChange` | The selected row ids.                                                                                |
+| `isItemDisabled`          | Disables rows; `disabledBehavior="selection"` keeps them focusable and openable.                     |
+| `itemToDisabledReason`    | Says why a disabled row cannot be selected.                                                          |
+| `onActivate(id, item)`    | Called when a row opens: <Kbd>Enter</Kbd>, a double click, or a click while no row is selected.      |
+| `itemToHref`              | Makes each row header a link, followed through the [TectonProvider](/docs/tecton/provider)'s router. |
 
-While rows are selected, replace the table toolbar with an [Action Bar](/docs/tecton/action-bar): the count and a Clear control, then the actions in an overflow toolbar that collapses into a More menu when the table is narrow. Escape, while focus is in the bar, clears the selection.
+- **Select all** selects every row the view matches, on every page.
+- The disabled reason shows in a tooltip on the row's checkbox. It appears on hover, and when the arrow keys reach the row (`disabledBehavior="selection"`).
+- Screen readers announce the disabled reason with the row.
 
-<ComponentPreview name="action-bar-demo" align="start" />
+## Row reordering
 
-### Pagination
+`reorderableRows` adds a drag handle at the start of each row. `onRowOrderChange(ids, eventDetails)` gets every item's id in the new order: put `items` in that order.
 
-Register `rowPaginationFeature` with `createPaginatedRowModel()`, keep the `pagination` state in React and render previous/next buttons, a page-size `Select` and a "Page x of y" label in a footer line.
+<ComponentPreview name="data-table-row-reordering" align="start" />
 
-<ComponentPreview name="data-table-pagination" align="start" />
+```tsx
+<DataTable
+  items={jobs}
+  columns={columns}
+  reorderableRows
+  onRowOrderChange={(ids) => setJobs(ids.map((id) => byId.get(id)!))}
+>
+```
 
-### Small screens
+- Drag the handle, or reach it with <Kbd>→</Kbd> and press <Kbd>Enter</Kbd>.
+- From the keyboard, <Kbd>↑</Kbd> / <Kbd>↓</Kbd> move the row one place at a time. Each place is announced, such as "Insert between 34/7-D-2 and 2/8-C-3".
+- <Kbd>Enter</Kbd> drops the row and <Kbd>Escape</Kbd> cancels.
+- Rows move in the items' order. While the view sorts, searches, filters or groups, the handles are hidden, but their column stays.
+- With pages, a row moves within its page. In a virtualized table, the keyboard steps through every row.
+- Flat lists only: row reordering is off in a tree.
 
-Hide low-priority columns below `md` with `hidden md:table-cell` on both the header and the cell, and let the primary cell carry that information as a subtitle so nothing is lost on a phone.
+## Virtualized rows
 
-<ComponentPreview name="data-table-small-screen" align="start" />
+`virtualized` on `DataTableContent` renders only the rows in view. Give the root or the content a bounded height.
 
-### Column resizing
-
-Register `columnSizingFeature`, keep the `columnSizing` state in React and put a `TableColumnResizer` (from `@tecton/react/table-column-resizer`) on the end edge of each `TableHead` (`className="relative"`, `style={{ width: header.getSize() }}`). Give the `Table` `table-fixed`, the total width (`table.getTotalSize()`) and `minWidth: "100%"`, leave the last column's width unset so it takes the space left, and let cells `truncate`. The limits come from `defaultColumn` (`minSize`, `maxSize`) or each column's own; `resetValue={column.columnDef.size}` is what Enter and a double click go back to. The resizer is a focusable separator: the arrow keys resize too, mirrored in a right-to-left table.
-
-<ComponentPreview name="data-table-column-resize" align="start" />
-
-`TableColumnResizer` is a focusable separator named `Resize {label}`. ArrowRight widens and ArrowLeft narrows (mirrored in a right-to-left table), with steps four times as large while Shift is held; Home sets `min`, End sets `max`, and Enter or a double click sets `resetValue`. Escape during a drag puts the width back. At rest it is a short line in the middle of the header between columns; dragging draws a guide down the table at the new edge, with a chip that shows the width.
-
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `value` | `number` | - | The column's width in px (controlled). |
-| `defaultValue` | `number` | `150` | The initial width, when not controlled. |
-| `onValueChange` | `(value: number, eventDetails) => void` | - | Called with each new width. `eventDetails.reason` is `"drag"`, `"keyboard"` or `"reset"`. |
-| `onValueCommitted` | `(value: number, eventDetails) => void` | - | Called once a drag ends, and after each key. |
-| `min` | `number` | `48` | The narrowest width. |
-| `max` | `number` | `1000` | The widest width. |
-| `step` | `number` | `8` | The arrow keys' step in px. Shift multiplies it by four. |
-| `resetValue` | `number` | - | The width that Enter and a double click go back to. |
-| `label` | `string` | - | The column's name, so the resizer is named `Resize {label}`. |
-| `disabled` | `boolean` | `false` | Turns the resizer off. |
-
-### Column reordering
-
-Register `columnOrderingFeature` and keep the `columnOrder` state, starting with every column's id. Wrap the `Table` in a [Reorderable](/docs/tecton/reorderable) with `orientation="horizontal"`, render each movable header as a `ReorderableItem` with `render={<TableHead />}` and `dragHandle={false}`, and write the new order back to `columnOrder`. A header has no room for a grip, so it is its own handle: drag it from anywhere (a sort button inside it keeps its clicks), or Tab to it, press Enter or Space and pick the gap with the arrow keys. A column that must stay put (the identifying column, the selection column) is a plain `TableHead` left out of the `Reorderable`'s `value`.
-
-<ComponentPreview name="data-table-column-reorder" align="start" />
-
-### Row reordering
-
-Keep the rows in React state, list their ids as the `Reorderable`'s `value`, render each row as a `ReorderableItem` (`render={<TableRow />}`) with a `ReorderableHandle` in its first cell, and reorder the data in `onValueChange`. Drag the handle, or press Enter or Space on it and pick the gap with the arrow keys. A sorted table has no manual order: hide the handles while a sort is applied, or clear the sort first.
-
-<ComponentPreview name="data-table-row-reorder" align="start" />
-
-### Tree table
-
-Register `rowExpandingFeature` with `createExpandedRowModel()` and pass `getSubRows` (here fields → platforms → wells). In the first column, indent the cell by `row.depth` (`paddingInlineStart`, 1.25rem a level) and put a chevron button, styled like a Tree View row's, before the name of each row that `getCanExpand()`, with `aria-expanded` and an "Expand …" / "Collapse …" name; leaves keep the chevron's space so names line up. `toggleAllRowsExpanded` drives an Expand all / Collapse all button. For a hierarchy without columns, use a [Tree View](/docs/tecton/tree-view).
-
-<ComponentPreview name="data-table-tree" align="start" />
-
-### Virtual scrolling
-
-For thousands of rows, set `virtualized` on the `Table` and give its parent a bounded height (here `h-96`, with the border). Pass `items={table.getRowModel().rows}` to `TableBody` and render one row with a function: only the rows in view are rendered, so sorting 10,000 rows renders a screenful. The header sticks while the rows scroll, the columns keep their first widths, and the row height is measured, so the Default / Compact switch works as it does on a short table. Rows must be one height within the table. For page-sized chunks instead, use [pagination](#pagination).
-
-**Fast sorting.** TanStack's own sorted row model calls a comparator, and through it `row.getValue`, about 2 · n · log n times: 3.4 million calls for 100,000 rows. The helper below goes in the same `sortedRowModel` slot. It reads each value once, turns each column into integer ranks in natural order (like `alphanumeric`), and sorts them with the engine's native typed-array sort. It keeps a column's ranks, so the other direction, or that column again later, is a single native sort, and it works out the ranks in idle time before the first click. It does not read a column's own `sortFn`, `invertSorting` or `sortUndefined`, so keep `createSortedRowModel()` for columns that need them. `Reorderable` sees only the rows in view, so reordering a virtualized table moves rows within the visible window.
+A table of bounded height scrolls without `virtualized` too, with its header at the top. `virtualized` is for long lists, where rendering every row would be slow.
 
 <ComponentPreview name="data-table-virtual" align="start" />
 
-<ComponentSource src="examples/lib/fast-sorted-row-model" maxLines={30} />
+For rows the server sends in batches, see [Load more](#load-more).
 
-### Virtual tree table
+## Load more
 
-A tree table of thousands of rows combines the two recipes above. `table.getRowModel().rows` holds only the open rows, flattened in order with their `depth`, so pass it as `items` to a `virtualized` table: expanding a field adds its rows to the scroll range, and Expand all opens 13,040 rows while only a screenful is rendered. A chevron that has focus keeps its row mounted while it scrolls out of view. The columns keep the widths they are first laid out with, so give the Name column room for the deepest indent (`w-[45%]` on its `TableHead`).
+For rows sent in batches, `hasMore` says more follow and `onLoadMore` loads the next batch. Add each batch to `items`.
 
-<ComponentPreview name="data-table-tree-virtual" align="start" />
+Set `loading` while a batch is out. When it fails, set `error` and `onRetry`: the error shows after the loaded rows, with Retry.
+
+In this example the server sends 500 readings, 50 at a time. Switch between loading on scroll and with a button, and turn on "Fail the next batch" to see the error.
+
+<ComponentPreview name="data-table-load-more" align="start" />
+
+```tsx
+<DataTable
+  items={rows}
+  columns={columns}
+  dataMode="server"
+  rowCount={total}
+  hasMore={rows.length < total}
+  onLoadMore={loadNext}
+  loading={isLoading}
+  error={error}
+  onRetry={loadNext}
+  className="h-96"
+>
+  <DataTableContent aria-label="Meter readings" virtualized />
+</DataTable>
+```
+
+`loadMore` sets how the next batch is asked for:
+
+| `loadMore`           | Next batch                                                                     | Use it when                                                                                                         |
+| -------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `"scroll"` (default) | Loads as the end of the rows comes near, with loading rows after the last row. | The table has a bounded height (`virtualized`) or is the last thing on the page, so the user only scrolls.          |
+| `"button"`           | Loads when the user presses Show more, the table's last row.                   | Content follows the table and loading on scroll would keep pushing it away, or the user should decide when to load. |
+
+With `"button"`:
+
+- Show more is a row as tall as the others, before any totals row. The whole row is the button.
+- It reads "Show more · 50 of 500", out of `rowCount` in server mode. Without `rowCount` it reads "Show more · 50 rows".
+- The text stays in the middle of the visible part of the table, also when it scrolls sideways.
+- While the batch loads, the row reads "Loading…" with a spinner and keeps focus.
+- A failed batch shows its error in the row, with Retry.
+- Once no more rows follow, the row goes and focus moves to the first new row.
+- Screen readers hear "Show more, 50 of 500 rows shown", then "Loaded 50 more rows".
+
+For both modes:
+
+- Load more is off with `pagination`.
+- In client mode, load more is also off while a search or filter is in effect. Use server mode to load what matches.
+
+## Live data
+
+For rows that arrive while the user watches, set `highlightChanges`. Examples are alarms, events or readings pushed by a subscription. It shows what came without moving what the user is looking at.
+
+Put each new record in `items`, as for any change.
+
+In this example, start the feed: an alarm is raised every two seconds and lands where the sort by pressure puts it. Scroll down, point at a row or open its menu, and pause the feed to compare.
+
+- **Pages** shows ten rows a page instead of a scrolling table.
+- **Group by severity** puts the alarms in groups. Close a group to see its row take the highlight.
+- **Stripes** turns the alternate row fills on and off under the highlight.
+
+<ComponentPreview name="data-table-live" align="start" />
+
+```tsx
+<DataTable items={alarms} columns={columns} highlightChanges className="h-96">
+  <DataTableContent aria-label="Pressure alarms" virtualized />
+</DataTable>
+```
+
+### Highlight
+
+A new row goes straight to its sorted place and is tinted until the user sees it.
+
+- The tint is a light shade of the info colour, unlike hover or selection. It covers the whole row, pinned columns included.
+- A striped, hovered or selected row keeps its own fill under the tint.
+- A row counts as seen when half of it is in view, on the page shown. Its tint then fades out over 1.5 s.
+- A row that lands in view fades at once. One that lands out of view, or on another page, keeps its tint until the user scrolls or pages to it.
+- A row added inside a closed group, or under a closed tree row, highlights the group's row or the tree row.
+- `highlightChanges={{ duration: 3000 }}` lengthens the fade.
+
+### New-row buttons
+
+New rows the user has not seen are counted in a button at each edge of the table.
+
+| Button                                     | Counts                                   | Pressed                            |
+| ------------------------------------------ | ---------------------------------------- | ---------------------------------- |
+| "↑ 3 new rows", at the top                 | Rows above the view                      | Scrolls up to the topmost of them. |
+| "↓ 2 new rows", at the bottom              | Rows below the view, on this page        | Scrolls down to the nearest.       |
+| "3 new rows on other pages", at the bottom | Rows on other pages, once none are below | Turns to the first one's page.     |
+
+- A button stays until each row it counts has been seen.
+- Its accessible name says it in full, such as "3 new rows above".
+- Rows that the search or filters hide are not counted.
+- The buttons follow the table in the tab order while they show. They never take focus by themselves.
+- Pressed from the keyboard, a button moves focus to the new row.
+- They scroll smoothly to rows near the view, and jump to rows further away.
+
+### The row the user is on
+
+As rows land or leave above it, the row the user is on keeps its place on screen. That row is the first of these:
+
+1. the row whose menu or popover is open
+2. the row with focus
+3. the row under the pointer
+4. once the table is scrolled, the first row in view
+
+- Rows added above it go above it, out of view if need be. The top button counts them.
+- A row landing below it moves the rows under it down.
+- At the top of the table, with nothing in use, new rows push the others down.
+- With `pagination`, a row added to an earlier page would shift the whole page shown. While the pointer is over the rows, focus is in them or a row's menu is open, such rows wait.
+- Waiting rows count in "on other pages", and arrive 0.3 s after the user is done.
+- Only additions wait. Rows the application removes or changes apply at once.
+
+### Which rows are added
+
+A row is added when its id is in `items` but not in the previous `items`. In client mode `items` are compared, not the rows the view shows. A search or filter that brings rows back adds none.
+
+These rows are not added:
+
+- the rows of the first render, and the first rows of a table that starts empty
+- rows that come with a load: while `loading`, in the change that ends it, and the batch `onLoadMore` asked for
+- in server mode, the first `items` after the search, filters, sorting, grouping, page or page size change. Only `items` that change while the view stays the same are compared, so set `loading` while the server answers a view change.
+- the children of a tree row, loaded as it opens. A child added to a row whose children were already there is added, open or not.
+
+### Announcements and motion
+
+- Screen readers hear "3 rows added", at most once a second, for the rows the view shows.
+- With reduced motion, the buttons always jump instead of scrolling, and show and hide without moving.
+- The highlight still fades with reduced motion: it is a change of colour, not of place.
+
+## Trees and detail rows
+
+`itemToChildren` makes the rows a tree. `renderDetail` on `DataTableContent` gives each row an expandable detail row instead.
+
+<ComponentPreview name="data-table-tree" align="start" />
+
+```tsx
+<DataTableContent
+  aria-label="Wells"
+  renderDetail={(well: Well) => <Perforations well={well} />}
+/>
+```
+
+Both use `expanded` / `onExpandedChange`. In server mode, a row whose children are `undefined` loads them when it opens.
+
+## Grouping and totals
+
+`groupable` with `DataTableGroupBy` groups rows by columns, with subtotals. `totals` on `DataTableContent` adds a totals row at the foot.
+
+<ComponentPreview name="data-table-grouping" align="start" />
+
+- Each group has a row: its value, its number of rows and its subtotals. Click it, or press <Kbd>→</Kbd> / <Kbd>←</Kbd>, to open or close the group.
+- In a table of bounded height (`className="h-96"` on the root or the content), the rows scroll under the header. A group's row stays under the header while its rows scroll past, and the next group's row pushes it up. Nested groups stack under the groups above them.
+- Group rows have the stripes' fill, so a grouped table has no stripes.
+
+Number columns sum and boolean columns count by default. Set a column's `aggregate` to `"avg"`, `"min"`, `"max"`, `"count"`, `"countDistinct"` or a function. `renderAggregate` draws the cell.
+
+## Editing
+
+Edit a row in a [Dialog](/docs/components/dialog) opened from a `DataTableRowActions` item. Then put the saved record in `items`.
+
+<ComponentPreview name="data-table-edit-dialog" align="start" />
+
+A `cell` can also render a field. <Kbd>Enter</Kbd> or <Kbd>F2</Kbd> moves into it, and <Kbd>Escape</Kbd> returns to the cell.
+
+<ComponentPreview name="data-table-editable-cells" align="start" />
+
+## Size and stripes
+
+`size="sm"` makes the table compact, for dense data that is scanned rather than read. `striped` puts every even row on an alternate surface, which helps the eye along a wide row.
+
+<ComponentPreview name="data-table-size" align="start" />
+
+- Compact rows are shorter, with smaller text.
+- The footer matches: the pager gets small arrows, a small Select and a small page field.
+- A selected or hovered row keeps its own fill over the stripes.
+- Not while rows are grouped: the group rows have the stripes' fill, so a grouped table shows no stripes. They come back when the grouping is cleared.
+
+## States
+
+`loading`, `error` with `onRetry`, and `empty` and `noResults` on `DataTableContent` replace the rows.
+
+<ComponentPreview name="data-table-states" align="start" />
+
+| State      | When                                                  | Customize                  |
+| ---------- | ----------------------------------------------------- | -------------------------- |
+| Loading    | `loading`: skeleton rows, or a bar over existing rows | -                          |
+| Error      | `error` set                                           | `error` content, `onRetry` |
+| Empty      | no rows                                               | `empty`                    |
+| No results | nothing matches the search and filters                | `noResults`                |
+
+## Server data
+
+With `dataMode="server"`, the table reports each view and page change and shows the `items` the server returns. `rowCount` is the server's total.
+
+In this example, <Kbd>Shift</Kbd> + click a second header. `view.sorting` holds both sorts, in order, and the request below carries them.
+
+<ComponentPreview name="data-table-server" align="start" />
+
+|                            | Client                   | Server                                           |
+| -------------------------- | ------------------------ | ------------------------------------------------ |
+| Sort, search, filter, page | the table                | the server, from `onViewChange` / `onPageChange` |
+| Option counts              | from `items`             | each option's `count`; none for yes / no         |
+| "No value" filter          | while a row has no value | always; `empty: true` in the filter              |
+| Totals, export             | every matching row       | the loaded rows                                  |
+| "Select all N"             | every matching row       | all matching: `eventDetails.allMatching.except`  |
+
+Each filter in `view.filters` is a list. Match a row when it matches any item, and send the whole list, not its first item:
+
+- `values` for text (contains), options and yes / no (equals);
+- `ranges` for numbers and dates, each with its own bounds;
+- `empty: true` also keeps the rows with no value.
+
+```ts
+function depthWhere(filter: DataTableFilterValue) {
+  if (filter.type !== "number") return null
+  const ranges = filter.ranges.map((range) =>
+    [
+      range.min === undefined
+        ? null
+        : `depth ${range.minExclusive ? ">" : ">="} ${range.min}`,
+      range.max === undefined
+        ? null
+        : `depth ${range.maxExclusive ? "<" : "<="} ${range.max}`,
+    ]
+      .filter(Boolean)
+      .join(" AND ")
+  )
+  if (filter.empty) ranges.push("depth IS NULL")
+  return ranges.map((range) => `(${range})`).join(" OR ")
+}
+```
+
+## The view
+
+The sorting, search, filters, grouping and column layout are one JSON object. Start from `defaultView`, or control it with `view` / `onViewChange`.
+
+```tsx
+<DataTable
+  items={wells}
+  columns={columns}
+  defaultView={JSON.parse(savedView)}
+  onViewChange={(view) => saveView(JSON.stringify(view))}
+>
+```
+
+A saved view is checked against the columns. Unknown or opted-out columns are dropped, without an error.
+
+Dates in a saved view:
+
+- JSON turns a date filter's `from` and `to` into strings. The view reads them back as dates.
+- A date-only string (`"2024-03-01"`) is the start of that day in the column's `format.timeZone`, or the local zone without one. A `to` like it takes in the whole day, wherever the table runs.
+
+## Custom parts and export
+
+`useDataTable()` gives a component inside `DataTable` the table's state and actions. For example, `exportCsv` backs a download button.
+
+<ComponentPreview name="data-table-export" align="start" />
+
+| `exportCsv` option | Default      | Values                                             |
+| ------------------ | ------------ | -------------------------------------------------- |
+| `rows`             | `"filtered"` | `"filtered"`, `"selected"`, `"page"`               |
+| `columns`          | `"visible"`  | `"visible"`, `"all"`                               |
+| `header`           | `true`       | Headers as the first record.                       |
+| `bom`              | `false`      | A byte order mark, for Excel.                      |
+| `escapeFormulas`   | `true`       | Prefixes cells that start like a formula with `'`. |
+
+## Keyboard
+
+The table is one tab stop. Focus is on a row, or on a cell once the arrow keys move into the row.
+
+| Key                                                               | Does                                                                                                               |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| <Kbd>↓</Kbd> / <Kbd>↑</Kbd>                                       | Next / previous row, or cell below / above                                                                         |
+| <Kbd>→</Kbd> / <Kbd>←</Kbd>                                       | Into and between cells and their controls; opens / closes a tree row, group or detail row                          |
+| <Kbd>Home</Kbd> / <Kbd>End</Kbd>                                  | First / last row, or cell of the row                                                                               |
+| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>Home</Kbd> / <Kbd>End</Kbd> | First / last cell of the table                                                                                     |
+| <Kbd>Page Up</Kbd> / <Kbd>Page Down</Kbd>                         | A screenful of rows                                                                                                |
+| Letters                                                           | Next row whose row header starts with the text                                                                     |
+| <Kbd>Space</Kbd>                                                  | Selects or clears the row, or a group's rows                                                                       |
+| <Kbd>Shift</Kbd> + <Kbd>Space</Kbd> / <Kbd>↓</Kbd> / <Kbd>↑</Kbd> | Extends the selection                                                                                              |
+| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>A</Kbd>                     | Selects every row                                                                                                  |
+| <Kbd>Escape</Kbd>                                                 | Clears the selection                                                                                               |
+| <Kbd>Enter</Kbd>                                                  | Opens the row (`onActivate`, its link)                                                                             |
+| <Kbd>Enter</Kbd> / <Kbd>F2</Kbd>                                  | Into a cell's field; <Kbd>Escape</Kbd> back to the cell                                                            |
+| <Kbd>Enter</Kbd> on a header's sort button                        | Sorts by the column: ascending, descending, off                                                                    |
+| <Kbd>Shift</Kbd> + <Kbd>Enter</Kbd> on a header's sort button     | Adds the column to the sort, or turns it round there (`multiSort`)                                                 |
+| <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a header                   | Starts moving the column (`reorderableColumns`)                                                                    |
+| <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a row's handle             | Starts moving the row (`reorderableRows`): <Kbd>↑</Kbd> / <Kbd>↓</Kbd>, then <Kbd>Enter</Kbd> or <Kbd>Escape</Kbd> |
+| <Kbd>←</Kbd> / <Kbd>→</Kbd> on a resizer                          | Narrows / widens the column; <Kbd>Enter</Kbd> keeps, <Kbd>Escape</Kbd> reverts                                     |
+| <Kbd>Enter</Kbd> in the page field                                | Opens the page typed, kept within the pages there are                                                              |
+| <Kbd>↑</Kbd> / <Kbd>↓</Kbd> in the page field                     | Next / previous page; <Kbd>Home</Kbd> / <Kbd>End</Kbd> the first / last                                            |
+
+## Accessibility
+
+- A grid, or a treegrid with trees, details or groups.
+- Name it with `aria-label` on `DataTableContent`.
+- Rows named by their row header column.
+- Sort, selection and result counts announced, and the rows `highlightChanges` sees added.
+- Full `aria-rowcount` on pages and virtualized rows.
+- Focus never drops to the page.
+
+## RTL
+
+Direction and locale come from the [TectonProvider](/docs/tecton/provider). Columns, arrow keys and pinning mirror. Numbers, dates and the table's own texts are localized; column headers are your own texts.
+
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- An application shows records in columns: a data grid of wells, work orders, run results or documents. Use `DataTable` for every such table, even one that only sorts today, so all tables look and behave the same.
+- Users sort, search, filter, group, select, page or open rows, or hide, pin, resize or reorder the columns.
+- The rows are many (`virtualized`), load as the user scrolls or presses Show more (`hasMore`), come from a server (`dataMode="server"`), or form a tree (`itemToChildren`) or detail rows (`renderDetail`). Rows that arrive while the user watches, such as alarms, events or readings from a subscription, use `highlightChanges`.
+
+### Not for
+
+- a short static table of a few rows that is only read, such as a spec sheet, a legend or the figures of a report: use [Table](/docs/components/table)
+- a hierarchy that is browsed, with no columns: use [TreeView](/docs/tecton/tree-view)
+- a list of rows with media, a title and actions rather than columns: use [Item](/docs/components/item)
+- rows the user drags into an order of their own: use [Reorderable](/docs/tecton/reorderable)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Make the columns once with `createColumns`, at module level or in a `React.useMemo`, each with an `id`, a plain-text `header` and a `type`. Return raw numbers and `Date`s from `accessor`, `null` for a missing value, and use `cell` only to draw a value differently.
+
+</Do>
+
+<Do>
+
+Turn features on at the root (`selectionMode`, `pagination`, `filterable`, `groupable`, the `…Columns` props), then place their parts. For a table people filter all day, use the power search `<DataTableSearch syntax="query" />`, never a query parser of your own. Its suggestions and "?" help come with it: add no syntax legend or suggestion list.
+
+</Do>
+
+<Do>
+
+Name the table with `aria-label` on `DataTableContent`. Open rows with `itemToHref` or `onActivate`, explain disabled rows with `itemToDisabledReason`, and put actions in `DataTableRowActions` and `DataTableActionBar`.
+
+</Do>
+
+<Do>
+
+Set `size="sm"` and `striped` for dense data. Show states with `loading`, `error` with `onRetry`, and `empty` / `noResults` on `DataTableContent`.
+
+</Do>
+
+<Do>
+
+In server mode, pass the page's `items`, `rowCount` and `loading`, and load from `onViewChange`, `onPageChange` and `onPageSizeChange`. Every filter in `view.filters` is a list a row matches any item of (`values` for text, options and yes / no, `ranges` for numbers and dates), plus `empty` for "No value": send the whole list, not its first item. For live data, set `highlightChanges` and never tint, animate or scroll rows yourself.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="CRITICAL" title="A records table hand-built on Table">
+
+<Wrong>
+
+```tsx
+const rows = [...wells].sort(byDepth).slice(page * 10, page * 10 + 10)
+<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead><Checkbox checked={allSelected} onCheckedChange={toggleAll} /></TableHead>
+      <TableHead><button onClick={() => setSort("depth")}>Depth</button></TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>{rows.map((well) => <WellRow key={well.id} well={well} />)}</TableBody>
+</Table>
+<Button onClick={() => setPage(page + 1)}>Next</Button>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<DataTable items={wells} columns={columns} selectionMode="multiple" pagination>
+  <DataTableContent aria-label="Wells" />
+  <DataTableFooter>
+    <DataTablePagination />
+  </DataTableFooter>
+</DataTable>
+```
+
+</Correct>
+
+Every hand-built table sorts, selects and pages a little differently, with no `aria-sort`, no grid keyboard, no announcements and no selection across pages; `DataTable` gives every application the same table.
+
+</Dont>
+
+<Dont severity="HIGH" title="Formatting values inside a cell">
+
+<Wrong>
+
+```tsx
+const columns = createColumns<Well>([
+  { id: "depth", header: "Depth (m)", cell: (well) => <div className="text-end">{well.depth.toLocaleString()}</div> },
+])
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+const columns = createColumns<Well>([
+  { id: "depth", header: "Depth (m)", type: "number", format: { maximumFractionDigits: 0 } },
+])
+```
+
+</Correct>
+
+Without `type` the column is text: it sits at the start, sorts and filters as text and has no sum, and `toLocaleString()` formats in the browser's locale, not the provider's.
+
+</Dont>
+
+<Dont severity="HIGH" title="Placeholder text for missing values">
+
+<Wrong>
+
+```tsx
+const columns = createColumns<Well>([{ id: "depth", header: "Depth (m)", type: "number", accessor: (well) => well.depth ?? "N/A" }])
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+const columns = createColumns<Well>([{ id: "depth", header: "Depth (m)", type: "number", accessor: (well) => well.depth }])
+```
+
+</Correct>
+
+"N/A" is a value: it is drawn as text instead of the table's muted dash, read as "N/A" in every locale, written to the CSV, and the filters' "No value" does not find it.
+
+</Dont>
+
+{/* guidelines:end */}
+
+## API Reference
+
+### DataTable
+
+The root `div`. Every `on…Change` gets the new value and `eventDetails` (`reason`, `event`, `cancel()`).
+
+| Prop                     | Type                                                | Default                   | Description                                                                                                                   |
+| ------------------------ | --------------------------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `items`                  | `ReadonlyArray<T>`                                  | -                         | The rows; in server mode, the view's page.                                                                                    |
+| `columns`                | `DataTableColumns<T>`                               | -                         | From `createColumns`.                                                                                                         |
+| `itemToId`               | `(item: T) => string`                               | `String(item.id)`         | A row's id.                                                                                                                   |
+| `itemToChildren`         | `(item: T) => ReadonlyArray<T> \| undefined`        | -                         | Makes the rows a tree.                                                                                                        |
+| `itemToHref`             | `(item: T) => string \| undefined`                  | -                         | Makes each row a link.                                                                                                        |
+| `isItemDisabled`         | `(item: T) => boolean`                              | -                         | Disables rows.                                                                                                                |
+| `itemToDisabledReason`   | `(item: T) => ReactNode \| undefined`               | -                         | Why a disabled row cannot be selected: a tooltip on its checkbox.                                                             |
+| `disabledBehavior`       | `"all" \| "selection"`                              | `"all"`                   | What a disabled row cannot do.                                                                                                |
+| `dataMode`               | `"client" \| "server"`                              | `"client"`                | Who sorts, filters and pages.                                                                                                 |
+| `rowCount`               | `number`                                            | -                         | Server mode: rows the view matches.                                                                                           |
+| `loading`                | `boolean`                                           | `false`                   | Shows the loading state.                                                                                                      |
+| `error`                  | `ReactNode`                                         | -                         | Shows the error state; `true` for the default text.                                                                           |
+| `onRetry`                | `() => void`                                        | -                         | Adds Retry to the error state.                                                                                                |
+| `hasMore`                | `boolean`                                           | `false`                   | More rows follow; not with `pagination`.                                                                                      |
+| `loadMore`               | `"scroll" \| "button"`                              | `"scroll"`                | Load as the end of the rows nears, or on Show more.                                                                           |
+| `onLoadMore`             | `() => void`                                        | -                         | Called to load the next rows.                                                                                                 |
+| `size`                   | `"default" \| "sm"`                                 | `"default"`               | Compact rows.                                                                                                                 |
+| `striped`                | `boolean`                                           | `false`                   | Alternate row fills, not while rows are grouped.                                                                              |
+| `highlightChanges`       | `boolean \| { added?: boolean; duration?: number }` | `false`                   | Highlights rows added to `items` until they are seen, then fades them over `duration` ms (1500). See [Live data](#live-data). |
+| `sortable`               | `boolean`                                           | `true`                    | Headers sort.                                                                                                                 |
+| `multiSort`              | `boolean`                                           | `true`                    | Sorting by several columns: <Kbd>Shift</Kbd> + click, Add to sort.                                                            |
+| `filterable`             | `boolean`                                           | `false`                   | Turns on search and filters.                                                                                                  |
+| `groupable`              | `boolean`                                           | `false`                   | Turns on grouping.                                                                                                            |
+| `resizableColumns`       | `boolean`                                           | `false`                   | Users resize columns.                                                                                                         |
+| `reorderableColumns`     | `boolean`                                           | `false`                   | Users reorder columns.                                                                                                        |
+| `hideableColumns`        | `boolean`                                           | `false`                   | Users hide columns.                                                                                                           |
+| `pinnableColumns`        | `boolean`                                           | `false`                   | Users pin columns.                                                                                                            |
+| `reorderableRows`        | `boolean`                                           | `false`                   | A drag handle per row; flat lists only.                                                                                       |
+| `pagination`             | `boolean`                                           | `false`                   | Shows a page at a time.                                                                                                       |
+| `selectionMode`          | `"none" \| "single" \| "multiple"`                  | `"none"`                  | Row selection.                                                                                                                |
+| `value`                  | `ReadonlyArray<string>`                             | -                         | Selected ids (controlled).                                                                                                    |
+| `defaultValue`           | `ReadonlyArray<string>`                             | `[]`                      | Initially selected ids.                                                                                                       |
+| `onValueChange`          | `(value, eventDetails) => void`                     | -                         | Called with the selected ids; `eventDetails.allMatching` in server mode.                                                      |
+| `disallowEmptySelection` | `boolean`                                           | `false`                   | Keeps one row selected.                                                                                                       |
+| `view`                   | `DataTablePartialView`                              | -                         | The view (controlled).                                                                                                        |
+| `defaultView`            | `DataTablePartialView`                              | -                         | The initial view.                                                                                                             |
+| `onViewChange`           | `(view: DataTableView, eventDetails) => void`       | -                         | Called with the whole view.                                                                                                   |
+| `searchDelay`            | `number`                                            | `0`, `300` in server mode | ms before a search or text filter applies.                                                                                    |
+| `expanded`               | `ReadonlyArray<string>`                             | -                         | Open tree and detail rows (controlled).                                                                                       |
+| `defaultExpanded`        | `ReadonlyArray<string>`                             | `[]`                      | Initially open rows.                                                                                                          |
+| `onExpandedChange`       | `(expanded, eventDetails) => void`                  | -                         | Called with the open rows.                                                                                                    |
+| `page`                   | `number`                                            | -                         | The page, from 1 (controlled).                                                                                                |
+| `defaultPage`            | `number`                                            | `1`                       | The initial page.                                                                                                             |
+| `onPageChange`           | `(page, eventDetails) => void`                      | -                         | Called with the new page. See [DataTablePagination](#datatablepagination) for each `reason`.                                  |
+| `pageSize`               | `number`                                            | -                         | Rows per page (controlled).                                                                                                   |
+| `defaultPageSize`        | `number`                                            | `10`                      | Initial rows per page.                                                                                                        |
+| `onPageSizeChange`       | `(pageSize, eventDetails) => void`                  | -                         | Called with the new page size.                                                                                                |
+| `pageSizes`              | `ReadonlyArray<number>`                             | `[10, 20, 50, 100]`       | The page sizes `DataTablePagination` offers.                                                                                  |
+| `onActivate`             | `(id: string, item: T) => void`                     | -                         | Called when a row opens.                                                                                                      |
+| `onRowOrderChange`       | `(ids: string[], eventDetails) => void`             | -                         | Called with every item's id in the new order; `reason` is `"pointer"`, `"keyboard"` or `"virtual"`.                           |
+
+### DataTableContent
+
+The table in its frame.
+
+| Prop               | Type                     | Default | Description                              |
+| ------------------ | ------------------------ | ------- | ---------------------------------------- |
+| `aria-label`       | `string`                 | -       | The table's name (or `aria-labelledby`). |
+| `aria-describedby` | `string`                 | -       | Id of a longer description.              |
+| `virtualized`      | `boolean`                | `false` | Renders only the rows in view.           |
+| `empty`            | `ReactNode`              | -       | Replaces the empty state.                |
+| `noResults`        | `ReactNode`              | -       | Replaces the no results state.           |
+| `renderDetail`     | `(item: T) => ReactNode` | -       | A detail row per row; not in a tree.     |
+| `totals`           | `boolean`                | `false` | Adds a totals row.                       |
+
+### DataTableToolbar
+
+The row above the table: a [Toolbar](/docs/tecton/overflow) that takes `ToolbarProps`.
+
+- When the row runs out of room, the filters, Group by and Columns move into its More menu. The search stays.
+- Other children stay in the row, unless wrapped in an `OverflowItem`.
+- An `OverflowSpacer` pushes what follows it to the end.
+
+| Prop             | Type     | Default         | Description            |
+| ---------------- | -------- | --------------- | ---------------------- |
+| `aria-label`     | `string` | `"Table tools"` | The toolbar's name.    |
+| `minimumVisible` | `number` | `1`             | Items kept in the row. |
+
+### DataTableSearch
+
+The search field; takes the props of an `input`.
+
+| Prop          | Type                | Default                                                | Description                                                                 |
+| ------------- | ------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------- |
+| `syntax`      | `"text" \| "query"` | `"text"`                                               | `"query"`: a [power search](#power-search), its terms the columns' filters. |
+| `placeholder` | `string`            | `"Search"`, `"Search or filter"` with `syntax="query"` | The placeholder.                                                            |
+| `aria-label`  | `string`            | `"Search"`                                             | The field's name.                                                           |
+
+### DataTableFilter
+
+A column's filter button and popover; takes the props of a [Button](/docs/components/button).
+
+| Prop       | Type             | Default          | Description           |
+| ---------- | ---------------- | ---------------- | --------------------- |
+| `column`   | `string`         | -                | The column to filter. |
+| `variant`  | Button `variant` | `"outline"`      | The button's look.    |
+| `size`     | Button `size`    | `"sm"`           | The button's size.    |
+| `children` | `ReactNode`      | header and value | The button's content. |
+
+### DataTableActiveFilters
+
+The search and filters in effect as removable [Chips](/docs/tecton/chip), then Clear all.
+
+### DataTableGroupBy
+
+The Group by button and menu; takes the props of a [Button](/docs/components/button).
+
+| Prop       | Type             | Default     | Description           |
+| ---------- | ---------------- | ----------- | --------------------- |
+| `variant`  | Button `variant` | `"outline"` | The button's look.    |
+| `size`     | Button `size`    | `"sm"`      | The button's size.    |
+| `children` | `ReactNode`      | "Group by"  | The button's content. |
+
+### DataTableColumnsMenu
+
+The Columns button and menu; takes the props of a [Button](/docs/components/button).
+
+| Prop       | Type             | Default     | Description           |
+| ---------- | ---------------- | ----------- | --------------------- |
+| `variant`  | Button `variant` | `"outline"` | The button's look.    |
+| `children` | `ReactNode`      | "Columns"   | The button's content. |
+
+### DataTableRowActions
+
+A row's "⋯" menu, for a column's `cell`; takes the props of a [Button](/docs/components/button).
+
+| Prop              | Type                           | Default                                               | Description                                           |
+| ----------------- | ------------------------------ | ----------------------------------------------------- | ----------------------------------------------------- |
+| `children`        | `ReactNode`                    | -                                                     | [DropdownMenu](/docs/components/dropdown-menu) items. |
+| `align`           | `"start" \| "center" \| "end"` | `"end"`                                               | The menu's alignment.                                 |
+| `aria-label`      | `string`                       | `"Row actions"`                                       | The button's name.                                    |
+| `variant`, `size` | Button `variant`, `size`       | `"ghost"`, `"icon-sm"` (`"icon-xs"` when `size="sm"`) | The button's look.                                    |
+
+### DataTableActionBar
+
+An [ActionBar](/docs/tecton/action-bar) bound to the selection. It takes the `ActionBar`'s props, except `open`.
+
+- It shows only while rows are selected, with the count, the total, "Select all N" and Clear. In server mode, "Select all N" selects all matching rows.
+- <Kbd>Escape</Kbd> in the bar clears the selection and returns focus to the
+  table.
+
+| Prop           | Type                      | Default           | Description                                                                                                                     |
+| -------------- | ------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `children`     | `ReactNode`               | -                 | The actions, in an overflow [Toolbar](/docs/tecton/overflow): wrap each in an `OverflowItem` to let it move into the More menu. |
+| `placement`    | `"toolbar" \| "floating"` | `"toolbar"`       | In the flow, or floating over the rows.                                                                                         |
+| `aria-label`   | `string`                  | `"Selected rows"` | The bar's name.                                                                                                                 |
+| `onOpenChange` | `(open: boolean) => void` | -                 | Called with `false` on <Kbd>Escape</Kbd>, before the selection clears.                                                          |
+
+### DataTableFooter
+
+A band for `DataTablePagination`. It takes the props of a `div`, and takes no room when empty.
+
+- Right after `DataTableContent`, it is the table's last band: inside its border, on the totals row's fill, and outside the rows' scroll area.
+- There it is at least as tall as a body row of the table's `size`, in the same text size. A default-size band keeps a little room above and below its controls.
+- Anywhere else, it is a row below the table.
+
+### DataTablePagination
+
+A spreadsheet-style page strip, for `pagination`. It takes the props of a `div`.
+
+- At the start: "Rows", a rows-per-page [Select](/docs/components/select) named "Rows per page", and the rows shown ("21–30 of 50").
+- At the end: [Pagination](/docs/components/pagination) with First, Previous, the page field, Next and Last. The arrows are disabled at the ends.
+- The page field reads "Page [3] of 5". It is a [Number Field](/docs/tecton/number-field) from 1 to the last page, without minus and plus buttons.
+- The page resets to 1 when the view changes.
+
+In the page field:
+
+- <Kbd>Enter</Kbd> opens the page typed, kept within the pages there are. An
+  empty field goes back to the current page.
+- Leaving the field also opens the page typed. A page out of range, a fraction or an empty field goes back to the current page.
+- <Kbd>↑</Kbd>, <Kbd>↓</Kbd>, <Kbd>Home</Kbd> and <Kbd>End</Kbd> move through
+  the pages at once.
+
+Size and width:
+
+- It follows the table's `size`. The default size has `icon-sm` arrows and the default Select and field. Compact (`size="sm"`) has `icon-xs` arrows and a small, borderless Select and field.
+- It stays on one line. As it narrows, it drops, in turn: the "Rows" label (the Select keeps its name), the Select, First and Last, the words around the field ("[3] / 5" instead), and the rows shown.
+- Previous, the page field and Next always stay. When each part drops depends on the size and on the digits of the last page.
+- Its controls keep their places as the page changes, so the button under the pointer stays put. The rows shown keep the width of their widest text, and the field the width of the last page's number.
+- A last page that is short of rows keeps the height of a full page.
+
+| Prop        | Type                    | Default                | Description                                         |
+| ----------- | ----------------------- | ---------------------- | --------------------------------------------------- |
+| `pageSizes` | `ReadonlyArray<number>` | the root's `pageSizes` | The page sizes offered; `[]` leaves the Select out. |
+
+Each page change calls the root's `onPageChange` with a `reason`:
+
+| `reason`                                       | Source                                                               |
+| ---------------------------------------------- | -------------------------------------------------------------------- |
+| `"first"`, `"previous"`, `"next"`, `"last"`    | The pager's arrow buttons.                                           |
+| `"page"`                                       | The page field: typed, or stepped with the arrow keys, Home and End. |
+| `"new-rows"`                                   | The "new rows on other pages" button ([Live data](#live-data)).      |
+| `"reset"`, `"page-size"`, `"clamp"`, `"group"` | Any other change.                                                    |
+
+### createColumns
+
+`createColumns<T>(columns)` validates the columns for `DataTable`; it throws on an empty or repeated id.
+
+| Field                                              | Type                                                                         | Default                       | Description                                          |
+| -------------------------------------------------- | ---------------------------------------------------------------------------- | ----------------------------- | ---------------------------------------------------- |
+| `id`                                               | `string`                                                                     | -                             | Unique id, used by the view.                         |
+| `header`                                           | `string`                                                                     | -                             | Header text and accessible name.                     |
+| `type`                                             | `"text" \| "number" \| "date" \| "boolean" \| "options"`                     | `"text"`                      | Display, alignment and sort.                         |
+| `accessor`                                         | `keyof T \| (item: T) => DataTableValue`                                     | `item[id]`                    | The cell's raw value.                                |
+| `format`                                           | `Intl.NumberFormatOptions \| Intl.DateTimeFormatOptions`                     | -                             | Number or date format.                               |
+| `options`                                          | `ReadonlyArray<DataTableOption>`                                             | -                             | `{ value, label, variant?, count? }`, in sort order. |
+| `cell`                                             | `(item: T, details) => ReactNode`                                            | -                             | Custom cell content.                                 |
+| `emptyValue`                                       | `ReactNode`                                                                  | muted "—", read as "No value" | A cell without a value; `null` for a blank cell.     |
+| `renderHeader`                                     | `(details) => ReactNode`                                                     | -                             | Custom header content.                               |
+| `align`                                            | `"start" \| "center" \| "end"`                                               | by type                       | Cell and header alignment.                           |
+| `compare`                                          | `(a: T, b: T) => number`                                                     | -                             | Custom ascending sort.                               |
+| `filter`                                           | `(item: T, value: DataTableFilterValue) => boolean`                          | -                             | Custom filter.                                       |
+| `aggregate`                                        | `"sum" \| "avg" \| "min" \| "max" \| "count" \| "countDistinct" \| function` | by type                       | Group and totals figure.                             |
+| `renderAggregate`                                  | `(value, { items }) => ReactNode`                                            | -                             | Custom aggregate content.                            |
+| `rowHeader`                                        | `boolean`                                                                    | first column                  | Names each row.                                      |
+| `description`                                      | `string`                                                                     | -                             | Info popover in the header.                          |
+| `width`                                            | `number`                                                                     | content                       | Initial width in px.                                 |
+| `minWidth`, `maxWidth`                             | `number`                                                                     | `48`, -                       | Width bounds in px.                                  |
+| `hideBelow`                                        | `"sm" \| "md" \| "lg"`                                                       | -                             | Hidden below the breakpoint.                         |
+| `wrap`                                             | `boolean`                                                                    | `false`                       | Multi-line text; not virtualized.                    |
+| `sortable`, `filterable`, `groupable`              | `false`                                                                      | -                             | Opts out of the feature.                             |
+| `resizable`, `reorderable`, `hideable`, `pinnable` | `false`                                                                      | -                             | Opts out of the feature.                             |
+
+A group is `{ id, header, description?, columns }`. `cell` gets `{ id, column, value, text, depth, emptyValue }`; `renderHeader` gets `{ column, header, sorted }`.
+
+### DataTableView
+
+```ts
+type DataTableView = {
+  sorting: ReadonlyArray<{
+    column: string
+    direction: "ascending" | "descending"
+  }>
+  search: string
+  filters: Readonly<Record<string, DataTableFilterValue>>
+  grouping: ReadonlyArray<string>
+  columns: {
+    order: ReadonlyArray<string>
+    hidden: ReadonlyArray<string>
+    widths: Readonly<Record<string, number>>
+    pinned: { start: ReadonlyArray<string>; end: ReadonlyArray<string> }
+  }
+}
+
+// `view` and `defaultView` take a DataTablePartialView: every part optional.
+// Every filter is a list: a row matches when it matches any item. `empty: true`
+// is "No value": the rows without a value match too, or alone when the list
+// is empty.
+type DataTableFilterValue =
+  | { type: "text"; values: ReadonlyArray<string>; empty?: boolean }
+  | {
+      type: "number"
+      ranges: ReadonlyArray<DataTableNumberRange>
+      empty?: boolean
+    }
+  | { type: "date"; ranges: ReadonlyArray<DataTableDateRange>; empty?: boolean }
+  | { type: "boolean"; values: ReadonlyArray<boolean>; empty?: boolean }
+  | { type: "options"; values: ReadonlyArray<string>; empty?: boolean }
+  | { type: "custom"; value: unknown }
+
+// Both ends are included, but with `minExclusive` / `maxExclusive: true`
+// (`value > min`, `value < max`).
+type DataTableNumberRange = {
+  min?: number
+  max?: number
+  minExclusive?: true
+  maxExclusive?: true
+}
+
+// Both ends are included; a `to` at midnight includes that whole day.
+// "2024-03-01" is that day in the column's `format.timeZone`.
+type DataTableDateRange = { from?: Date; to?: Date }
+```
+
+### useDataTable
+
+`useDataTable<T>()` returns the enclosing table's state and actions; it throws outside a `DataTable`.
+
+| Field                                              | Type                                         | Description                          |
+| -------------------------------------------------- | -------------------------------------------- | ------------------------------------ |
+| `view`, `setView`                                  | `DataTableView`                              | The view.                            |
+| `setSorting`                                       | `(sorting) => void`                          | Sets the sorting.                    |
+| `setSearch`                                        | `(search: string) => void`                   | Sets the search.                     |
+| `setFilter`                                        | `(column, value \| null) => void`            | Sets or removes a filter.            |
+| `clearFilters`                                     | `() => void`                                 | Removes the search and filters.      |
+| `setGrouping`                                      | `(grouping) => void`                         | Sets the grouping.                   |
+| `resetView`                                        | `() => void`                                 | Back to `defaultView`.               |
+| `setColumnOrder`                                   | `(order) => void`                            | Reorders columns.                    |
+| `setColumnHidden`                                  | `(column, hidden) => void`                   | Hides or shows a column.             |
+| `setColumnWidth`                                   | `(column, width \| null) => void`            | Sets or resets a width.              |
+| `setColumnPinned`                                  | `(column, "start" \| "end" \| null) => void` | Pins or unpins a column.             |
+| `resetColumns`                                     | `() => void`                                 | Resets the column layout.            |
+| `value`, `setValue`                                | `ReadonlyArray<string>`                      | The selected ids.                    |
+| `selectAll`, `selectAllMatching`, `clearSelection` | `() => void`                                 | Change the selection.                |
+| `allMatching`                                      | `{ except } \| null`                         | Server "all matching".               |
+| `expanded`, `setExpanded`                          | `ReadonlyArray<string>`                      | The open rows.                       |
+| `expandAllGroups`, `collapseAllGroups`             | `() => void`                                 | Open or close every group.           |
+| `canExpandAllGroups`, `canCollapseAllGroups`       | `boolean`                                    | Whether those would change anything. |
+| `page`, `pageCount`, `pageSize`, `pageSizes`       | `number`, `ReadonlyArray<number>`            | The paging.                          |
+| `setPage`, `setPageSize`                           | `(n: number) => void`                        | Change the paging.                   |
+| `rows`                                             | `{ all, filtered, page }`                    | The items.                           |
+| `rowCount`                                         | `number`                                     | Rows the view matches.               |
+| `columns`                                          | `ReadonlyArray<DataTableLeafColumn<T>>`      | The shown columns.                   |
+| `loading`                                          | `boolean`                                    | The root's `loading`.                |
+| `exportCsv`                                        | `(options?) => Promise<string>`              | The rows as CSV.                     |
+
+### TableColumnResizer
+
+`@tecton/react/table-column-resizer`: the resize grip of a column header, for a plain [Table](/docs/components/table).
+
+| Prop               | Type                            | Default | Description                                |
+| ------------------ | ------------------------------- | ------- | ------------------------------------------ |
+| `value`            | `number`                        | -       | Width in px (controlled).                  |
+| `defaultValue`     | `number`                        | `150`   | Initial width.                             |
+| `onValueChange`    | `(value, eventDetails) => void` | -       | Called while the width changes.            |
+| `onValueCommitted` | `(value, eventDetails) => void` | -       | Called when a drag or key ends.            |
+| `min`              | `number`                        | `48`    | Narrowest width.                           |
+| `max`              | `number`                        | `1000`  | Widest width.                              |
+| `step`             | `number`                        | `8`     | Arrow key step.                            |
+| `resetValue`       | `number`                        | -       | Width on <Kbd>Enter</Kbd> or double click. |
+| `label`            | `string`                        | -       | Column name, for `"Resize {label}"`.       |
+| `disabled`         | `boolean`                       | `false` | Turns it off.                              |

@@ -82,27 +82,46 @@
    "stat"
   ],
   "grid": [
+   "datatable",
    "table"
   ],
   "datagrid": [
-   "table"
+   "data",
+   "datatable"
+  ],
+  "data grid": [
+   "datatable"
   ],
   "spreadsheet": [
-   "table"
+   "data",
+   "datatable"
+  ],
+  "sortable table": [
+   "data",
+   "datatable"
+  ],
+  "sortable columns": [
+   "data",
+   "datatable"
+  ],
+  "records table": [
+   "data",
+   "datatable"
   ],
   "rows": [
-   "table"
+   "table",
+   "datatable"
   ],
   "hierarchy": [
    "tree"
   ],
   "treegrid": [
    "tree",
-   "table"
+   "datatable"
   ],
   "tree table": [
    "tree",
-   "table"
+   "datatable"
   ],
   "rearrange": [
    "reorder"
@@ -339,6 +358,16 @@
   ],
   "spin button": [
    "number"
+  ],
+  "spinbutton": [
+   "number"
+  ],
+  "numeric input": [
+   "number",
+   "numberfield"
+  ],
+  "number input": [
+   "numberfield"
   ]
  },
  "entries": [
@@ -1032,13 +1061,13 @@
    "fields": {
     "names": "calendar calendar calendar day button",
     "useWhen": "A month grid is the point: choosing a spud date, reading which days are booked, stepping through a schedule. The calendar stays on the page — in a `Card`, a panel or a wizard step — rather than hiding behind a trigger. A period is chosen as two dates: `mode=\"range\"` draws the span between them.",
-    "routed": "",
-    "do": "Pick the selection with `mode=\"single\" | \"multiple\" | \"range\"` and drive it with `selected` / `onSelect`, holding plain `Date` values (a `DateRange` `{ from, to }` for a range). Show more months with `numberOfMonths`, month and year dropdowns with `captionLayout=\"dropdown\"`, week numbers with `showWeekNumber`. Block days with `disabled` — a matcher such as `{ before: new Date() }`, `{ dayOfWeek: [0, 6] }` or a function — so they get the dimmed cell styling. Resize the grid through its variable, `className=\"[--cell-size:--spacing(11)]\"`; never restyle the cells. For a date field, put the `Calendar` in a `PopoverContent` behind a `PopoverTrigger render={<Button variant=\"outline\" />}` inside a `Field`; there is no `DatePicker` component."
+    "routed": "a month grid that stays on the page",
+    "do": "Pick the selection with `mode=\"single\" | \"multiple\" | \"range\"` and drive it with `selected` / `onSelect`, holding plain `Date` values (a `DateRange` `{ from, to }` for a range). Show more months with `numberOfMonths`, month and year dropdowns with `captionLayout=\"dropdown\"`, week numbers with `showWeekNumber`. Block days with `disabled` — a matcher such as `{ before: new Date() }`, `{ dayOfWeek: [0, 6] }` or a function — so they get the dimmed cell styling. Resize the grid through its variable, `className=\"[--cell-size:--spacing(11)]\"`; never restyle the cells. For a date field use `DatePicker` (a range: `DateRangePicker`), which puts this `Calendar` in a `Popover` behind a button or a date input; never assemble one from `Popover` and `Calendar`."
    },
    "notFor": [
     {
      "need": "a compact date field that opens a calendar on demand",
-     "id": "popover"
+     "id": "date-picker"
     },
     {
      "need": "a year or a month picked in a dense form row",
@@ -1046,7 +1075,7 @@
     }
    ],
    "related": [
-    "popover",
+    "date-picker",
     "field",
     "native-select"
    ],
@@ -1055,7 +1084,7 @@
     "CalendarDayButton"
    ],
    "aliases": [],
-   "tokens": 971
+   "tokens": 930
   },
   {
    "id": "canvas",
@@ -1135,7 +1164,7 @@
     },
     {
      "need": "rows with sorting, paging and selection",
-     "id": "tanstack-table"
+     "id": "data-table"
     }
    ],
    "related": [
@@ -1153,7 +1182,7 @@
     "CardFooter"
    ],
    "aliases": [],
-   "tokens": 907
+   "tokens": 905
   },
   {
    "id": "carousel",
@@ -1231,7 +1260,7 @@
     "ChartStyle"
    ],
    "aliases": [],
-   "tokens": 1113
+   "tokens": 1064
   },
   {
    "id": "checkbox",
@@ -1461,7 +1490,7 @@
     "ColorSwatch"
    ],
    "aliases": [],
-   "tokens": 845
+   "tokens": 791
   },
   {
    "id": "combobox",
@@ -1728,6 +1757,98 @@
    "tokens": 854
   },
   {
+   "id": "data-table",
+   "kind": "component",
+   "name": "DataTable",
+   "import": "import { DataTable, DataTableContent, DataTableToolbar, DataTableSearch, DataTableFilter, DataTableActiveFilters, DataTableGroupBy, DataTableColumnsMenu, DataTableRowActions, DataTableActionBar, DataTableFooter, DataTablePagination, createColumns, useDataTable } from \"@tecton/react/data-table\"",
+   "family": "data",
+   "summary": "An application shows records in columns: a data grid of wells, work orders, run results or documents. Use `DataTable` for every such table, even one that only sorts today, so all tables look and behave the same.",
+   "fields": {
+    "names": "data table data table data table content data table toolbar data table search data table filter data table active filters data table group by data table columns menu data table row actions data table action bar data table footer data table pagination create columns use data table",
+    "useWhen": "An application shows records in columns: a data grid of wells, work orders, run results or documents. Use `DataTable` for every such table, even one that only sorts today, so all tables look and behave the same. Users sort, search, filter, group, select, page or open rows, or hide, pin, resize or reorder the columns. The rows are many (`virtualized`), load as the user scrolls or presses Show more (`hasMore`), come from a server (`dataMode=\"server\"`), or form a tree (`itemToChildren`) or detail rows (`renderDetail`). Rows that arrive while the user watches, such as alarms, events or readings from a subscription, use `highlightChanges`.",
+    "routed": "rows with sorting, paging and selection rows with columns, sorting, paging and selection paging driven by a table's own sorting and filtering state sorting rows by a column's values records in an application, or rows that are sorted, searched, filtered, selected or paged a tree table, a hierarchy whose expandable rows have columns",
+    "do": "Make the columns once with `createColumns`, at module level or in a `React.useMemo`, each with an `id`, a plain-text `header` and a `type`. Return raw numbers and `Date`s from `accessor`, `null` for a missing value, and use `cell` only to draw a value differently. Turn features on at the root (`selectionMode`, `pagination`, `filterable`, `groupable`, the `…Columns` props), then place their parts. For a table people filter all day, use the power search `<DataTableSearch syntax=\"query\" />`, never a query parser of your own. Its suggestions and \"?\" help come with it: add no syntax legend or suggestion list. Name the table with `aria-label` on `DataTableContent`. Open rows with `itemToHref` or `onActivate`, explain disabled rows with `itemToDisabledReason`, and put actions in `DataTableRowActions` and `DataTableActionBar`. Set `size=\"sm\"` and `striped` for dense data. Show states with `loading`, `error` with `onRetry`, and `empty` / `noResults` on `DataTableContent`. In server mode, pass the page's `items`, `rowCount` and `loading`, and load from `onViewChange`, `onPageChange` and `onPageSizeChange`. Every filter in `view.filters` is a list a row matches any item of (`values` for text, options and yes / no, `ranges` for numbers and dates), plus `empty` for \"No value\": send the whole list, not its first item. For live data, set `highlightChanges` and never tint, animate or scroll rows yourself."
+   },
+   "notFor": [
+    {
+     "need": "a short static table of a few rows that is only read, such as a spec sheet, a legend or the figures of a report",
+     "id": "table"
+    },
+    {
+     "need": "a hierarchy that is browsed, with no columns",
+     "id": "tree-view"
+    },
+    {
+     "need": "a list of rows with media, a title and actions rather than columns",
+     "id": "item"
+    },
+    {
+     "need": "rows the user drags into an order of their own",
+     "id": "reorderable"
+    }
+   ],
+   "related": [
+    "table",
+    "action-bar",
+    "tree-view",
+    "badge"
+   ],
+   "exports": [
+    "DataTable",
+    "DataTableContent",
+    "DataTableToolbar",
+    "DataTableSearch",
+    "DataTableFilter",
+    "DataTableActiveFilters",
+    "DataTableGroupBy",
+    "DataTableColumnsMenu",
+    "DataTableRowActions",
+    "DataTableActionBar",
+    "DataTableFooter",
+    "DataTablePagination",
+    "createColumns",
+    "useDataTable"
+   ],
+   "aliases": [],
+   "tokens": 1402
+  },
+  {
+   "id": "date-picker",
+   "kind": "component",
+   "name": "DatePicker",
+   "import": "import { DatePicker, DateRangePicker, datePickerVariants } from \"@tecton/react/date-picker\"",
+   "family": "forms",
+   "summary": "A form field holds one date — a spud date, a report date, a date of birth — picked on a calendar that opens from a button.",
+   "fields": {
+    "names": "date picker date picker date range picker date picker variants",
+    "useWhen": "A form field holds one date — a spud date, a report date, a date of birth — picked on a calendar that opens from a button. The user may know the date and want to type it: `variant=\"input\"`, a date input with a calendar button. A period is picked as a start and an end: `DateRangePicker`, two months side by side, with `presets` such as `\"last7Days\"` and `\"thisMonth\"`.",
+    "routed": "a compact date field that opens a calendar on demand",
+    "do": "Put it in a `Field` with an `id` and a `FieldLabel htmlFor`: the label names the trigger and the date describes it. Hold plain `Date` values in `value` / `defaultValue` / `onValueChange` (a `{ from, to }` range for `DateRangePicker`); `onValueChange` reports `undefined` when the date is cleared. Bound the days with `minDate` / `maxDate`, and pass `captionLayout=\"dropdown\"` when the date is years away (a date of birth). Let the `TectonProvider` set the locale: the text, the calendar's month and day names and its first weekday all follow it; change how the date is written with `format` (`Intl.DateTimeFormat` options), never by formatting it yourself. Give `className` the width only (`w-full` in a `Field`, `w-48`)."
+   },
+   "notFor": [
+    {
+     "need": "a month grid that stays on the page",
+     "id": "calendar"
+    },
+    {
+     "need": "a year or a month picked in a dense form row",
+     "id": "native-select"
+    }
+   ],
+   "related": [
+    "field",
+    "calendar",
+    "popover"
+   ],
+   "exports": [
+    "DatePicker",
+    "DateRangePicker",
+    "datePickerVariants"
+   ],
+   "aliases": [],
+   "tokens": 917
+  },
+  {
    "id": "dialog",
    "kind": "component",
    "name": "Dialog",
@@ -1878,7 +1999,7 @@
     "names": "dropdown menu dropdown menu dropdown menu trigger dropdown menu content dropdown menu portal dropdown menu group dropdown menu label dropdown menu item dropdown menu checkbox item dropdown menu radio group dropdown menu radio item dropdown menu separator dropdown menu shortcut dropdown menu sub dropdown menu sub trigger dropdown menu sub content",
     "useWhen": "A button opens a menu of actions: row actions, an account menu, a \"more\" overflow menu. Some of those entries are toggles or one exclusive choice, shown with check marks. The list wants submenus, shortcut hints, or a destructive entry at the end.",
     "routed": "a list of actions behind a single button a short list of actions opened from a header button a long list of actions behind one trigger several related actions behind one control a menu of actions opened from a button a menu opened from a visible button every action behind one button from the start a menu of actions rather than a value",
-    "do": "Compose `DropdownMenu` (the root) > `DropdownMenuTrigger render={<Button variant=\"ghost\" size=\"icon\" />}` + `DropdownMenuContent`. Run actions from `onClick` on `DropdownMenuItem`; the menu closes after it. Show toggles with `DropdownMenuCheckboxItem` (`checked` / `onCheckedChange`) and one exclusive choice with `DropdownMenuRadioGroup` (`value` / `onValueChange`) holding `DropdownMenuRadioItem value=\"…\"`. Title groups with `DropdownMenuLabel` inside a `DropdownMenuGroup`, divide with `DropdownMenuSeparator`, hint keys with `DropdownMenuShortcut` (a label only — Tecton binds no keys). Place with `side` / `align` on `DropdownMenuContent` and nest with `DropdownMenuSub`, `DropdownMenuSubTrigger` and `DropdownMenuSubContent`."
+    "do": "Compose `DropdownMenu` (the root) > `DropdownMenuTrigger render={<Button variant=\"ghost\" size=\"icon\" />}` + `DropdownMenuContent` (placed with `side` / `align`); nest with `DropdownMenuSub` > `DropdownMenuSubTrigger` + `DropdownMenuSubContent`. Run actions from `onClick` on `DropdownMenuItem`; the menu closes after it. Show toggles with `DropdownMenuCheckboxItem` (`checked` / `onCheckedChange`) and one exclusive choice with `DropdownMenuRadioGroup` (`value` / `onValueChange`) holding `DropdownMenuRadioItem value=\"…\"`. Title groups with `DropdownMenuLabel` inside a `DropdownMenuGroup`, divide with `DropdownMenuSeparator`, hint keys with `DropdownMenuShortcut` (a label only — Tecton binds no keys). Leave the menu non-modal (the default: the page keeps scrolling and a press outside closes the menu and still acts); pass `modal` only when an outside press must just close it, e.g. over destructive controls — it locks page scroll."
    },
    "notFor": [
     {
@@ -1917,7 +2038,7 @@
     "DropdownMenuSubContent"
    ],
    "aliases": [],
-   "tokens": 990
+   "tokens": 1041
   },
   {
    "id": "dropzone",
@@ -2097,10 +2218,10 @@
    "name": "Input",
    "import": "import { Input } from \"@tecton/react/input\"",
    "family": "forms",
-   "summary": "A single line of text: name, email, password, date, file.",
+   "summary": "A single line of text: name, email, password, an identifier, a file.",
    "fields": {
     "names": "input input",
-    "useWhen": "A single line of text: name, email, password, date, file. The value is free-form; a fixed set of options belongs in a picker instead. Inside a `Field`, so the control arrives with a label and room for an error.",
+    "useWhen": "A single line of text: name, email, password, an identifier, a file. The value is free-form; a fixed set of options belongs in a picker instead. Inside a `Field`, so the control arrives with a label and room for an error.",
     "routed": "a plain one-line text or number entry the single-line text control itself a plain field with nothing attached to it a password, a token or any other free-form value free text, an identifier or a phone number made of digits a single line of text",
     "do": "Pick the surface with `variant=\"outline\" | \"filled\" | \"text\"` — outline in forms, filled in dense panels, text for inline editing. Wire the label by hand: `<FieldLabel htmlFor=\"x\">` plus `<Input id=\"x\">`. Nothing associates them implicitly. `Input` is a real `<input>`: use the DOM props `value`, `onChange(event)`, `disabled`, `required`, `type` and `aria-invalid`. Mirror the state on the `Field` — `data-disabled` beside `disabled`, `data-invalid` beside `aria-invalid` — and keep `className` to layout (`w-full`, `col-span-2`)."
    },
@@ -2131,7 +2252,7 @@
     "Input"
    ],
    "aliases": [],
-   "tokens": 1133
+   "tokens": 1202
   },
   {
    "id": "input-group",
@@ -2226,7 +2347,7 @@
    "fields": {
     "names": "item item item group item separator item header item media item content item title item description item actions item footer",
     "useWhen": "One row of a list: a file, a person, a well, a setting with a switch beside it. The row has a shape — media, then title and description, then actions. A stack of rows should look and space consistently: wrap them in `ItemGroup`.",
-    "routed": "a row of a file browser or a settings list a row of an application list, with media, title and actions one row in a list of records a row of a list with media, title and actions a row of an application list, with media, title and actions a divider between the rows of a list a list of rows with media, a title and actions rather than columns a list of steps the user works through a flat list of rows with media, a title and actions",
+    "routed": "a row of a file browser or a settings list a row of an application list, with media, title and actions one row in a list of records a list of rows with media, a title and actions rather than columns a row of a list with media, title and actions a row of an application list, with media, title and actions a divider between the rows of a list a list of rows with media, a title and actions rather than columns a list of steps the user works through a flat list of rows with media, a title and actions",
     "do": "Compose it: `ItemMedia`, then `ItemContent` with `ItemTitle` and `ItemDescription`, then `ItemActions`. Make the whole row a link with `render={<a href=\"/wells/34-10-a-12\" />}` (or the router's `Link`); the `[a]:` rules give it the hover and focus states. Choose the look with `variant=\"default\" | \"outline\" | \"muted\"` and the density with `size=\"default\" | \"sm\" | \"xs\"`. Use `ItemMedia variant=\"icon\"` for a glyph and `variant=\"image\"` for a thumbnail; an `Avatar` goes in the plain `ItemMedia`. Separate rows inside an `ItemGroup` with `ItemSeparator`, never with a border class on the row."
    },
    "notFor": [
@@ -2236,7 +2357,7 @@
     },
     {
      "need": "rows with columns, sorting, paging and selection",
-     "id": "tanstack-table"
+     "id": "data-table"
     },
     {
      "need": "the trailing actions of a panel header",
@@ -2261,7 +2382,7 @@
     "ItemFooter"
    ],
    "aliases": [],
-   "tokens": 951
+   "tokens": 948
   },
   {
    "id": "kbd",
@@ -2330,7 +2451,7 @@
     "Label"
    ],
    "aliases": [],
-   "tokens": 655
+   "tokens": 695
   },
   {
    "id": "link",
@@ -2549,7 +2670,7 @@
    "fields": {
     "names": "native select native select native select option native select opt group",
     "useWhen": "You want the platform's own dropdown: native keyboard behaviour and the mobile wheel, with no popover. A form posts natively and the value has to come from a real `select` element in the DOM. The row is dense and the options are plain text, with no icons or descriptions.",
-    "routed": "a year or a month picked in a dense form row the browser's own dropdown, for a dense form or a phone",
+    "routed": "a year or a month picked in a dense form row a year or a month picked in a dense form row the browser's own dropdown, for a dense form or a phone",
     "do": "Treat it as a `select`: `value` / `defaultValue` / `onChange(event)`, `disabled`, `required`, `name`. Set the height with `size=\"sm\" | \"default\"`; the native row-count `size` is deliberately not available. Make the first `NativeSelectOption` an empty-valued row when you need a placeholder. Group options with `NativeSelectOptGroup label=\"…\"`. Signal errors with `aria-invalid` on the select and `data-invalid` on the surrounding `Field`."
    },
    "notFor": [
@@ -2729,7 +2850,7 @@
    "notFor": [
     {
      "need": "paging driven by a table's own sorting and filtering state",
-     "id": "tanstack-table"
+     "id": "data-table"
     },
     {
      "need": "switching between sibling sections of one page",
@@ -2754,7 +2875,7 @@
     "PaginationEllipsis"
    ],
    "aliases": [],
-   "tokens": 966
+   "tokens": 964
   },
   {
    "id": "panel",
@@ -2814,7 +2935,7 @@
    "fields": {
     "names": "popover popover popover trigger popover content popover header popover title popover description",
     "useWhen": "A few controls belong to one trigger and should appear next to it: dimensions, a colour, a filter. The user opens it deliberately by pressing, and the page behind it stays live. The content is interactive — inputs, buttons, a small form — so a `Tooltip` is out.",
-    "routed": "a compact date field that opens a calendar on demand short content anchored to the control that opened it content the user opens deliberately and works in content anchored to the control that opened it content with a link, a button or a field inside it",
+    "routed": "short content anchored to the control that opened it content the user opens deliberately and works in content anchored to the control that opened it content with a link, a button or a field inside it",
     "do": "Compose `Popover` (the root) > `PopoverTrigger render={<Button variant=\"outline\" />}` + `PopoverContent`; control it with `open` / `onOpenChange` on `Popover`. Position with `side` (`\"top\" | \"bottom\" | \"left\" | \"right\" | \"inline-start\" | \"inline-end\"`) and `align` (`\"start\" | \"center\" | \"end\"`) on `PopoverContent`, nudged with `sideOffset` / `alignOffset`. Structure the top with `PopoverHeader`, `PopoverTitle` and `PopoverDescription`; the content is already a `flex flex-col gap-4`. Use `className` on `PopoverContent` for width only (`w-80`): it owns its padding, radius, shadow and surface."
    },
    "notFor": [
@@ -3027,8 +3148,8 @@
    "summary": "The user puts rows of a table in their own order: a drilling queue, a run sequence, a playlist of logs.",
    "fields": {
     "names": "reorderable reorderable reorderable item reorderable handle",
-    "useWhen": "The user puts rows of a table in their own order: a drilling queue, a run sequence, a playlist of logs. The user moves the columns of a data table into the order they read them in. A short stack of items (steps, tracks, layers) has an order the user decides. The user arranges a grid of cards: equal cards put in order (`orientation=\"grid\"`), or tiles of several sizes swapped between the fixed slots of a bento grid (`mode=\"swap\"`).",
-    "routed": "rows or columns the user drags into another order",
+    "useWhen": "The user puts rows of a table in their own order: a drilling queue, a run sequence, a playlist of logs. The user moves the columns of a plain `Table` into the order they read them in (a `DataTable` does it with `reorderableColumns`). A short stack of items (steps, tracks, layers) has an order the user decides. The user arranges a grid of cards: equal cards put in order (`orientation=\"grid\"`), or tiles of several sizes swapped between the fixed slots of a bento grid (`mode=\"swap\"`).",
+    "routed": "rows the user drags into an order of their own rows or columns the user drags into another order",
     "do": "Keep the order in state as an array of item values, pass it as `value`, render the items in that order and write `onValueChange`'s array back. With `mode=\"swap\"`, `value[i]` is the item of slot `i` (or `null`): render a `ReorderableSlot` per entry, keyed by its index and sized from your layout data, with its item inside as a size container (`[container-type:size]`). Wrap the whole `Table` in `Reorderable` and render each row as `ReorderableItem` with `render={<TableRow />}`, or each header with `render={<TableHead />}` and `orientation=\"horizontal\"`. Give every item a `label` (the row's or column's name) and a `ReorderableHandle` in a row; a column header gets `dragHandle={false}` instead and is dragged and focused itself, with no grip. To reorder rows and columns of one table, nest the two `Reorderable`s around it: an item joins the nearest one whose `value` holds it. Leave a column that must stay put (the identifying or selection column) out of `value` and render it as a plain `TableHead`; turn every handle off with `disabled` while a sort is applied."
    },
    "notFor": [
@@ -3042,14 +3163,14 @@
     },
     {
      "need": "sorting rows by a column's values",
-     "id": "tanstack-table"
+     "id": "data-table"
     }
    ],
    "related": [
     "table",
+    "data-table",
     "table-column-resizer",
-    "item",
-    "tanstack-table"
+    "item"
    ],
    "exports": [
     "Reorderable",
@@ -3057,7 +3178,7 @@
     "ReorderableHandle"
    ],
    "aliases": [],
-   "tokens": 1023
+   "tokens": 984
   },
   {
    "id": "resizable",
@@ -3149,7 +3270,7 @@
     "names": "select select select trigger select value select content select group select label select item select separator select scroll up button select scroll down button select trigger variants",
     "useWhen": "A field picks one value out of a known, closed list: a datum, a unit, a status. The list is short enough to scan and needs no typing to get through. The trigger must match the other controls in a field row: `variant=\"outline\" | \"filled\" | \"text\"`.",
     "routed": "a short fixed list that needs no typing choosing a value for a form field a themed popover with icons, rich items or a searchable list a fixed set of numeric options the rows-per-page picker beside the controls more than a handful of options picking a value for a form field",
-    "do": "Drive it with `value` / `defaultValue` / `onValueChange` on `Select`, identify each `SelectItem` by `value`, and narrow the `null` that `onValueChange` hands over when nothing is selected. Pass `items` (`{ msl: \"Mean sea level\" }` or `[{ value, label }]`) so `SelectValue` shows the label, not the raw value; its `placeholder` shows while nothing is selected. In a `Field`, put the `id` on `SelectTrigger` and point `FieldLabel htmlFor` at it. Choose the surface with `SelectTrigger`'s `variant`, the height with its `size=\"sm\" | \"default\"`; place the list with `side` / `align` on `SelectContent`, which apply once `alignItemWithTrigger={false}` (by default a mouse-opened list overlaps the trigger so the selected item lines up with the value). Structure long lists with `SelectGroup` and `SelectLabel`, divided by `SelectSeparator`."
+    "do": "Drive it with `value` / `defaultValue` / `onValueChange` on `Select`, identify each `SelectItem` by `value`, and narrow the `null` that `onValueChange` hands over when nothing is selected. Pass `items` (`{ msl: \"Mean sea level\" }` or `[{ value, label }]`) so `SelectValue` shows the label, not the raw value; its `placeholder` shows while nothing is selected. In a `Field`, put the `id` on `SelectTrigger` and point `FieldLabel htmlFor` at it. Choose the surface with `SelectTrigger`'s `variant`, the height with its `size=\"sm\" | \"default\"`; leave the list non-modal and below the trigger (the defaults: the page keeps scrolling and an outside press closes the list and still acts), placed with `side` / `align` on `SelectContent` — `modal` on `Select` and `alignItemWithTrigger` on `SelectContent` (the list over the trigger) each lock page scroll. Structure long lists with `SelectGroup` and `SelectLabel`, divided by `SelectSeparator`."
    },
    "notFor": [
     {
@@ -3188,7 +3309,7 @@
     "selectTriggerVariants"
    ],
    "aliases": [],
-   "tokens": 1250
+   "tokens": 1276
   },
   {
    "id": "separator",
@@ -3488,7 +3609,7 @@
     "StatGroup"
    ],
    "aliases": [],
-   "tokens": 987
+   "tokens": 938
   },
   {
    "id": "switch",
@@ -3533,17 +3654,17 @@
    "name": "Table",
    "import": "import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption } from \"@tecton/react/table\"",
    "family": "data",
-   "summary": "Records of the same shape have to line up in columns: invoices, wells, run results.",
+   "summary": "A short, static table is read rather than worked with: a spec sheet, a legend, the figures of a report or a dialog, a comparison in documentation.",
    "fields": {
     "names": "table table table header table body table footer table head table row table cell table caption",
-    "useWhen": "Records of the same shape have to line up in columns: invoices, wells, run results. A footer totals the columns, or a caption names the table. The rows are read, compared or opened; interaction beyond that (sorting, paging) comes from TanStack Table on these parts.",
-    "routed": "",
-    "do": "Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`. Select rows with a `Checkbox` per row (and one in the header for all) driven by your own state, and mark a selected row with `data-state=\"selected\"` for the `bg-table-active` fill. Open a record from a link in its identifying cell, not from a handler on the row. For hundreds of rows or more, set `virtualized`, give the parent a bounded height (`h-96`, with the border) and pass `items` with a render function to `TableBody`; rows are one height within the table. Show an empty result as `Empty` in place of the table, or inside one `TableCell colSpan={n}` when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`)."
+    "useWhen": "A short, static table is read rather than worked with: a spec sheet, a legend, the figures of a report or a dialog, a comparison in documentation. The layout is free-form: cells of your own, spans, a footer that totals the columns, a caption that names the table.",
+    "routed": "a short static table of a few rows that is only read, such as a spec sheet, a legend or the figures of a report",
+    "do": "Keep `Table` for content that is only read; records in an application go in a `DataTable`, so every records table looks and behaves the same. Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`; open a record from a link in its identifying cell. Set `size=\"sm\"` for a compact table of dense data, and `striped` to put every even body row on an alternate surface; hover and selected rows keep their fill over the stripe. For hundreds of rows or more, set `virtualized`, give the parent a bounded height (`h-96`, with the border) and pass `items` with a render function to `TableBody`; rows are one height within the table. Show an empty value as a muted em dash, with \"No value\" for screen readers, as `DataTable` draws it: `<TableCell><span aria-hidden className=\"text-muted-foreground\">—</span><span className=\"sr-only\">No value</span></TableCell>` (aligned as the column, never \"N/A\" or \"-\"); show an empty result as `Empty` in place of the table, or as `TableBody empty={…}` (one row across every column) when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`)."
    },
    "notFor": [
     {
-     "need": "sorting, filtering, paging or column visibility over the rows",
-     "id": "tanstack-table"
+     "need": "records in an application, or rows that are sorted, searched, filtered, selected or paged",
+     "id": "data-table"
     },
     {
      "need": "a list of rows with media, a title and actions rather than columns",
@@ -3555,11 +3676,11 @@
     }
    ],
    "related": [
+    "data-table",
     "item",
     "tree-view",
     "reorderable",
-    "table-column-resizer",
-    "tanstack-table"
+    "table-column-resizer"
    ],
    "exports": [
     "Table",
@@ -3572,7 +3693,7 @@
     "TableCaption"
    ],
    "aliases": [],
-   "tokens": 1326
+   "tokens": 1431
   },
   {
    "id": "table-column-resizer",
@@ -3580,12 +3701,12 @@
    "name": "TableColumnResizer",
    "import": "import { TableColumnResizer } from \"@tecton/react/table-column-resizer\"",
    "family": "data",
-   "summary": "The user widens a data table column to read long values, or narrows one they do not need.",
+   "summary": "The user widens a table column to read long values, or narrows one they do not need.",
    "fields": {
     "names": "table column resizer table column resizer",
-    "useWhen": "The user widens a data table column to read long values, or narrows one they do not need. Column widths are state the application keeps (TanStack Table's `columnSizing`, a saved layout).",
+    "useWhen": "The user widens a table column to read long values, or narrows one they do not need. The column widths of a plain `Table` are state the application keeps (a saved layout). In a `DataTable`, `resizableColumns` puts one on each column header instead.",
     "routed": "",
-    "do": "Put one `TableColumnResizer` last in each resizable `TableHead`, give that head `className=\"relative\"` and `style={{ width }}` from the same state. Give the `Table` `className=\"table-fixed\"`, its total width and `minWidth: \"100%\"`, leave the last column's width unset so it fills the rest, and let cells `truncate`. Name it with `label` (the column's name: \"Resize Field\"), bound it with `min` and `max`, and pass `resetValue` for Enter and a double click. Write `onValueChange` back to the width state; save a layout from `onValueCommitted`, which fires once a drag ends."
+    "do": "Put one `TableColumnResizer` last in each resizable `TableHead`, give that head `className=\"relative\"` and `style={{ width }}` from the same state. Give the `Table` `className=\"table-fixed\"`, its total width and `minWidth: \"100%\"`, leave the last column's width unset so it fills the rest, and let cells `truncate`. Name it with `label` (the column's name: \"Resize Field\"), bound it with `min` and `max`, and pass `resetValue` for Enter and a double click. Write `onValueChange` back to the width state; save a layout from `onValueCommitted`, which fires once a drag ends. For a column pinned to the table's end, pass `edge=\"start\"`: the grip sits on its inner edge, and dragging toward the start widens it."
    },
    "notFor": [
     {
@@ -3599,14 +3720,13 @@
    ],
    "related": [
     "table",
-    "reorderable",
-    "tanstack-table"
+    "reorderable"
    ],
    "exports": [
     "TableColumnResizer"
    ],
    "aliases": [],
-   "tokens": 715
+   "tokens": 706
   },
   {
    "id": "tabs",
@@ -3939,7 +4059,7 @@
    "fields": {
     "names": "tree view tree view tree view item tree view item content tree view action tree view visibility toggle tree view collection move tree items",
     "useWhen": "A hierarchy is browsed rather than read: a project tree, a field and well inventory, a layer list. Rows carry more than a label: selection, disabled, hidden, a colour, a count, a per-row menu. Arrow-key navigation, expansion and type-ahead have to work across the whole structure.",
-    "routed": "an expandable hierarchy of folders and records moving rows between folders of a hierarchy a hierarchy of folders and records expanded in place",
+    "routed": "an expandable hierarchy of folders and records a hierarchy that is browsed, with no columns moving rows between folders of a hierarchy a hierarchy of folders and records expanded in place",
     "do": "Give `TreeView` an `aria-label` and every `TreeViewItem` a unique `value` (add `label` when the row content is not plain text). Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `TreeViewItem`s — or `items` on `TreeView` and a `TreeViewCollection` per node for data. Drive state with string arrays: `selectionMode`, `value` / `defaultValue` / `onValueChange` and `expanded` / `defaultExpanded` / `onExpandedChange`; mark rows with `disabled` and `hidden` on `TreeViewItem`, and open a row through `onActivate` (Enter or a click; a double click when rows are also selectable), never an `onClick` on its content. Hang the extras on `TreeViewItemContent`: `colorTag`, `suffix`, `endAdornment` (`TreeViewVisibilityToggle` with `visible` / `onVisibleChange`, `TreeViewAction` with `onClick`). Let rows move with `onMove` (apply it with `moveTreeItems`, restrict it with `canDrop`), never with drag events of your own on the rows: those have no keyboard path and no drop rules. Row commands go in one `contextMenu={(value) => <ContextMenuContent>…</ContextMenuContent>}` on `TreeView` (`null` for a row without), never a `ContextMenu` around each row; keep a visible `TreeViewAction` for the ones a row cannot do without, since a context menu is hard to find on touch and for most keyboard users. Set `virtualized` on a tree of hundreds of rows or more, with a bounded height (`h-80`, or `min-h-0 flex-1` in a flex column); padding and borders go on a wrapper, since virtualized rows span the full width of the tree. Keep `items` and the render function stable (module-level or `useCallback`), or every parent render re-renders every row. Style rows from the presence attributes `data-selected`, `data-expanded`, `data-disabled`, `data-hidden`, `data-context-menu-open` and from `:hover` / `:focus-visible` (`group-hover/tree-item:opacity-100`). Write the selected state as `data-[selected]:…`: shadcn's `data-selected:` variant matches only `\"true\"`."
    },
    "notFor": [
@@ -3953,7 +4073,7 @@
     },
     {
      "need": "a tree table, a hierarchy whose expandable rows have columns",
-     "id": "tanstack-table"
+     "id": "data-table"
     }
    ],
    "related": [
@@ -3971,7 +4091,7 @@
     "moveTreeItems"
    ],
    "aliases": [],
-   "tokens": 1348
+   "tokens": 1297
   },
   {
    "id": "use-busy-delay",
@@ -4010,26 +4130,6 @@
    ],
    "aliases": [],
    "tokens": 718
-  },
-  {
-   "id": "tanstack-table",
-   "kind": "external",
-   "name": "TanStack Table",
-   "import": "import { useReactTable } from \"@tanstack/react-table\"",
-   "summary": "Data tables are a recipe on the shadcn Table, not a component.",
-   "fields": {
-    "names": "tanstack table tan stack table ",
-    "useWhen": "Data tables are a recipe on the shadcn Table, not a component.",
-    "routed": "rows with sorting, paging and selection rows with columns, sorting, paging and selection paging driven by a table's own sorting and filtering state sorting rows by a column's values sorting, filtering, paging or column visibility over the rows a tree table, a hierarchy whose expandable rows have columns",
-    "do": ""
-   },
-   "notFor": [],
-   "related": [],
-   "exports": [],
-   "aliases": [
-    "react-table"
-   ],
-   "tokens": 49
   },
   {
    "id": "tanstack-form",
