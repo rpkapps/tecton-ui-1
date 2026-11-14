@@ -21,6 +21,8 @@
  *   `2015-`, that year's months, or a month's name the months of that name,
  *   each with the days it stands for and its rows.
  *
+ * Nothing is offered for a term a minus or `NOT` leaves out.
+ *
  * Counts come from a query source (`source.ts`); without one (server mode)
  * the options' own `count` is all there is. Every offer's `text` replaces
  * `start`–`end`, then the caret goes `caret` characters into it; an offer
@@ -41,16 +43,9 @@ import {
   todayIn,
 } from "./dates"
 import type { QueryColumn, QueryLanguage } from "./language"
-import { joinsNumber } from "./numbers"
+import { valueItems } from "./parse"
 import type { QuerySource } from "./source"
-import {
-  isEmptyWord,
-  itemsOf,
-  keyForm,
-  unquote,
-  valueToken,
-  type Item,
-} from "./syntax"
+import { isEmptyWord, keyForm, unquote, valueToken, type Item } from "./syntax"
 import type {
   ParsedQuery,
   QueryFilterTerm,
@@ -212,9 +207,19 @@ function suggestQuery(
   }
 
   const term = parsed.terms.find((t) => caret >= t.start && caret <= t.end)
+  // The term before the caret's (or before the caret).
+  const before = parsed.terms
+    .filter((t) => t.end < (term?.start ?? caret))
+    .at(-1)
+  // Nothing for a term a minus or NOT leaves out: it is not applied.
+  if (
+    term?.kind === "keyword" ||
+    (term && text[term.start] === "-") ||
+    (before?.kind === "keyword" && before.keyword === "NOT")
+  )
+    return NONE
   if (!term)
     return { context: "column", start: caret, end: caret, items: columns("") }
-  if (term.kind === "keyword" || text[term.start] === "-") return NONE
 
   if (term.kind === "text") return word(term)
   const filter = term
@@ -340,15 +345,14 @@ function suggestQuery(
     ]
   }
 
-  function currentItem(filter: QueryFilterTerm) {
-    const numbers = language.byId.get(filter.column ?? "")?.type === "number"
-    const items = itemsOf(
+  function currentItem(filter: QueryFilterTerm, column: QueryColumn) {
+    const items = valueItems(
+      language,
+      column,
       text,
       filter.valueStart,
       filter.end,
-      numbers
-        ? (before, after) => joinsNumber(before, after, language.numbers)
-        : undefined
+      now
     )
     const item =
       items.find((one) => caret >= one.start && caret <= one.end) ??
@@ -361,7 +365,7 @@ function suggestQuery(
     column: QueryColumn,
     rest: QueryView
   ): QuerySuggestions {
-    const { items, item } = currentItem(filter)
+    const { items, item } = currentItem(filter, column)
     const typed = foldText(unquote(text.slice(item.start, caret)).trim())
     const complete = item.end === filter.end
     const listed = new Set(
@@ -450,7 +454,7 @@ function suggestQuery(
     column: QueryColumn,
     rest: QueryView
   ): QuerySuggestions {
-    const { items, item } = currentItem(filter)
+    const { items, item } = currentItem(filter, column)
     const typed = unquote(text.slice(item.start, Math.max(item.start, caret)))
     const folded = foldText(typed.trim())
     const complete = item.end === filter.end
@@ -506,7 +510,7 @@ function suggestQuery(
     column: QueryColumn,
     rest: QueryView
   ): QuerySuggestions {
-    const { items, item } = currentItem(filter)
+    const { items, item } = currentItem(filter, column)
     const segment = text.slice(item.start, item.end)
     const lead = /^\s*/.exec(segment)?.[0].length ?? 0
     const operator = /^(>=|<=|≥|≤|>|<|=)/.exec(segment.slice(lead))?.[1] ?? ""

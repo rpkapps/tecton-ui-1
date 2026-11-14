@@ -30,6 +30,7 @@ import {
   type QueryDiagnosticCode,
   type QuerySuggestion,
 } from "../internal/data-table/engine/query"
+import { valueItems } from "../internal/data-table/engine/query/parse"
 import { startOfDay } from "../internal/data-table/engine/values"
 import {
   problemMessage,
@@ -1904,5 +1905,92 @@ describe("problemMessage: OR, NOT and a leading minus in words", () => {
     )
     expect(message("-a", none)).toBe(MINUS)
     expect(message("NOT a", none)).toBe(MINUS)
+  })
+})
+
+describe("the parser, the suggestions and the view agree", () => {
+  const spud = en.byId.get("spud")!
+
+  it("splits a date's own comma as the parser does (valueItems), for the suggestions too", () => {
+    const text = "spud:jun 30, 2015"
+    const slices = (from: number) =>
+      valueItems(en, spud, text, from, text.length, NOW).map((item) =>
+        text.slice(item.start, item.end)
+      )
+    expect(slices(5)).toEqual(["jun 30, 2015"])
+    expect(parse(text).filters.spud).toEqual({
+      type: "date",
+      ranges: [{ from: day(2015, 6, 30), to: day(2015, 6, 30) }],
+    })
+    // The item at the caret is the whole date: an offer replaces all of it.
+    const suggestions = suggestQuery(en, parse(text), text.length, { now: NOW })
+    expect(text.slice(suggestions.start, suggestions.end)).toBe("jun 30, 2015")
+    // Two dates are two items; a number keeps its own comma.
+    expect(
+      valueItems(en, spud, "spud:2015,2016", 5, 14, NOW).map((item) => [
+        item.start,
+        item.end,
+      ])
+    ).toEqual([
+      [5, 9],
+      [10, 14],
+    ])
+    expect(valueItems(en, en.byId.get("td")!, "td:1,234.5", 3, 10)).toEqual([
+      { start: 3, end: 10 },
+    ])
+  })
+
+  it("lets a typed term replace a view's filter the query cannot say", () => {
+    const current = {
+      ...createDefaultView(columns, undefined, {
+        sortable: true,
+        filterable: true,
+        groupable: true,
+      }),
+      filters: {
+        status: { type: "custom" as const, value: 1 },
+        name: { type: "custom" as const, value: 2 },
+      },
+    }
+    expect(applyQuery(en, current, parse("status:drilling")).filters).toEqual({
+      status: { type: "options", values: ["drilling"] },
+      name: { type: "custom", value: 2 },
+    })
+  })
+
+  it("reads a range's end after a space as the same term", () => {
+    expect(filterOf("spud:2015 ..2016", "spud")).toEqual({
+      type: "date",
+      ranges: [{ from: day(2015, 1, 1), to: day(2016, 12, 31) }],
+    })
+    expect(parse("spud:2015 ..2016").search).toBe("")
+    expect(parse("td:1000 ..2000 gull").filters.td).toEqual({
+      type: "number",
+      ranges: [{ min: 1000, max: 2000 }],
+    })
+    expect(parse("td:1000 ..2000 gull").search).toBe("gull")
+    expect(filterOf("spud:2015 ..jun 2016", "spud")).toEqual({
+      type: "date",
+      ranges: [{ from: day(2015, 1, 1), to: day(2016, 6, 30) }],
+    })
+  })
+
+  it("reads a minus alone as text, not as excluding", () => {
+    const parsed = parse("A - 12")
+    expect(parsed.diagnostics).toEqual([])
+    expect(parsed.search).toBe("A - 12")
+    expect(codes(parse("A -12"))).toEqual(["unsupportedOperator"])
+  })
+
+  it("offers nothing for a term NOT leaves out, as for one a minus does", () => {
+    const at = (text: string) =>
+      suggestQuery(en, parse(text), text.length, { now: NOW }).items
+    expect(at("-sta")).toEqual([])
+    expect(at("NOT sta")).toEqual([])
+    expect(at("NOT ")).toEqual([])
+    expect(at("NOT status:")).toEqual([])
+    // Not after the term NOT took.
+    expect(at("NOT a ").length).toBeGreaterThan(0)
+    expect(at("sta").length).toBeGreaterThan(0)
   })
 })

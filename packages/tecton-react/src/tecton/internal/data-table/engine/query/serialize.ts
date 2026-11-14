@@ -28,7 +28,7 @@
  * another type than its column's, a column no key names, and a number range
  * with both ends and an exclusive one beside other ranges (its two ends
  * would be two terms, which keep the rows both match). `applyQuery` keeps
- * those in the view.
+ * those in the view, but for a column the query filters.
  */
 import type {
   DataTableDateRange,
@@ -267,7 +267,9 @@ function serializeQuery(
 
 /**
  * `view` with the filters and search of `parsed`, keeping the filters the
- * query cannot say; `view` itself when they are the same.
+ * query cannot say on the columns it does not filter (a typed term
+ * replaces such a filter, as it replaces any other); `view` itself when
+ * they are the same.
  */
 function applyQuery(
   language: QueryLanguage,
@@ -276,7 +278,8 @@ function applyQuery(
 ): DataTableView {
   const filters: Record<string, DataTableFilterValue> = { ...parsed.filters }
   for (const [id, value] of Object.entries(view.filters))
-    if (!canSay(language, id, value)) filters[id] = value
+    if (!(id in parsed.filters) && !canSay(language, id, value))
+      filters[id] = value
   const same = sameFilters(filters, view.filters)
   if (same && parsed.search === view.search) return view
   return {

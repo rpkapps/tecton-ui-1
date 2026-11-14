@@ -31,14 +31,15 @@
  *   filter reads such a `to` (the query writes that end as its day).
  *   A date with spaces in it (`jun 2015`, `30 jun 2015`) takes the words
  *   after it that make it one, when it is not a date without them. Each
- *   item is a range of `ranges` (`spud:2015,last30d`);
+ *   item is a range of `ranges` (`spud:2015,last30d`). A number's or a
+ *   date's range may have a space before its `..` (`spud:2015 ..2016`);
  * - `none` or `empty`, for any type, is "No value" (`status:none`,
  *   `td:>=3000,none`).
  *
  * A column filtered twice keeps the rows both terms match, when one filter
  * can say that (`td:>=1000 td:<=3000` is `1000..3000`); otherwise the second
  * term is a problem (`duplicateColumn`). `OR`, `NOT` and a leading `-` are
- * problems too: filters cannot say "either" or "not", and a term with a
+ * problems too (a `-` alone is text, as in `A - 12`): filters cannot say "either" or "not", and a term with a
  * problem is not applied rather than applied otherwise. `NOT` takes the
  * term after it with it, as `-` does its own (`NOT drilling` searches for
  * nothing, never for "drilling"). Quote a word to
@@ -337,7 +338,7 @@ class TermReader {
 
   date(items: ReadonlyArray<Item>): FilterReading {
     const { values, empty } = this.list(
-      this.joinDates(items),
+      items,
       (item) => this.dateRange(item),
       sameDateRange
     )
@@ -518,6 +519,44 @@ const emptyFlag = (empty: boolean) => (empty ? { empty: true as const } : {})
 const suggestion = (value: string | undefined) =>
   value === undefined ? {} : { suggestion: value }
 
+/**
+ * The items of a value over `text[from, to)` (`itemsOf`), as `reader`'s
+ * column reads them: a number keeps its own commas (`1,234.5`, `3,5` in
+ * German), a date its own (`jun 30, 2015`).
+ */
+function itemsIn(reader: TermReader, from: number, to: number) {
+  const { text, language, column } = reader
+  const items = itemsOf(
+    text,
+    from,
+    to,
+    column.type === "number"
+      ? (before, after) => joinsNumber(before, after, language.numbers)
+      : undefined
+  )
+  return column.type === "date" ? reader.joinDates(items) : items
+}
+
+/**
+ * The items of column `column`'s value over `text[from, to)`, as the
+ * parser reads them (`itemsIn`): what the suggestions and the calendar
+ * take the item at the caret from.
+ */
+function valueItems(
+  language: QueryLanguage,
+  column: QueryColumn,
+  text: string,
+  from: number,
+  to: number,
+  now = new Date()
+) {
+  return itemsIn(
+    new TermReader(text, language, column, (zone) => todayIn(now, zone)),
+    from,
+    to
+  )
+}
+
 /** Reads the filter term `key:value` over `text[start, end)`, its colon at `colon`. */
 function readFilter(
   text: string,
@@ -563,16 +602,7 @@ function readFilter(
   const { column } = resolved
   const reader = new TermReader(text, language, column, today)
   reader.spans.push(...spans)
-  const valueStart = colon + 1
-  // A number keeps its own commas (`1,234.5`, `3,5` in German).
-  const items = itemsOf(
-    text,
-    valueStart,
-    end,
-    column.type === "number"
-      ? (before, after) => joinsNumber(before, after, language.numbers)
-      : undefined
-  )
+  const items = itemsIn(reader, colon + 1, end)
   let reading: FilterReading
   switch (column.type) {
     case "options":
@@ -659,7 +689,8 @@ function parseQuery(
         })
       continue
     }
-    const minus = raw.startsWith("-")
+    // A minus alone is text (`A - 12`): it excludes nothing.
+    const minus = raw.length > 1 && raw.startsWith("-")
     const negatedBy = not
     not = undefined
     const negated = minus || negatedBy !== undefined
@@ -673,6 +704,16 @@ function parseQuery(
         readFilter(text, language, today, start, colon, end)
       let end = chunk.end
       let result = read(end)
+      // A range's end after a space (`spud:2015 ..2016`).
+      const next = chunks[index + 1]
+      if (
+        (result.column?.type === "date" || result.column?.type === "number") &&
+        next &&
+        text.startsWith("..", next.start)
+      ) {
+        index++
+        result = read((end = next.end))
+      }
       // A date with spaces: the words after it, when they make it one.
       if (
         result.column?.type === "date" &&
@@ -775,5 +816,5 @@ function parseQuery(
   }
 }
 
-export { parseQuery }
+export { parseQuery, valueItems }
 export type { ParseOptions }
