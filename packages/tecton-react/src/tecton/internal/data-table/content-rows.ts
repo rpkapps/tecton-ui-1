@@ -43,7 +43,6 @@ import { DRAG_AND_DROP, useFeature } from "./lazy"
 import type { FlashStore } from "./live-bridge"
 import { describeRow } from "./row"
 import { createRowOrder, inItemOrder, type RowOrder } from "./row-order"
-import { stickyRowsOf } from "./sticky-groups"
 import { useStable } from "./use-stable"
 
 type Row = BodyRow<unknown>
@@ -160,7 +159,6 @@ type RowSharedBase = Pick<
   | "handlePin"
   | "virtualized"
   | "live"
-  | "stickyGroups"
 >
 
 /**
@@ -396,13 +394,6 @@ function useGridOptions(
     () => (parity ? rowParityOf(rows) : undefined),
     [parity, rows]
   )
-  // A virtualized body keeps the group rows of the row at the top rendered,
-  // where they stick (`sticky-groups.ts`).
-  const sticky = shared.grouped && shared.virtualized
-  const stickyRows = React.useMemo(
-    () => (sticky ? stickyRowsOf(rows) : undefined),
-    [sticky, rows]
-  )
   const [asked] = React.useState(
     (): Pick<
       TableGridOptions,
@@ -444,7 +435,6 @@ function useGridOptions(
     describeItem,
     tree: shared.levelled,
     rowParity,
-    stickyRowsOf: stickyRows,
     ...asked,
   })
 }

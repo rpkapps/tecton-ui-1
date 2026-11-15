@@ -766,8 +766,8 @@ function DataTableHeaderImpl<T>({ shared }: { shared: HeaderShared<T> }) {
   const rows = spannedRows(layout.headerRows)
   return (
     // Stuck to the top of a table of bounded height, virtualized or not
-    // (as a virtualized `Table`'s header): over the rows, the group rows
-    // stuck under it included.
+    // (as a virtualized `Table`'s header): over the rows and their pinned
+    // cells.
     <TableHeader className="sticky top-0 z-10">
       {rows.map(({ row, cells }) => {
         // A group in one cell is keyed by its id, so it keeps its cell as

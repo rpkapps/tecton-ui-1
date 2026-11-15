@@ -38,9 +38,7 @@
  * - The header sticks to the top of the container; the window starts below
  *   it.
  * - The row holding focus stays mounted when it scrolls out of view, so a
- *   focused checkbox or link is never lost. So do the rows the grid says
- *   stick over the row at the top of the view (`stickyRowsOf`: a
- *   DataTable's group rows), in their place in the table.
+ *   focused checkbox or link is never lost.
  * - Each row keeps the `nth-child` parity of its index, so a striped
  *   table's stripes stay on their rows as rows mount and unmount. With
  *   rows that are not striped on their own (a detail row, which takes its
@@ -488,7 +486,6 @@ function useVirtualRows<T>(
   const gridConfig = useTableGridOptions()
   const describeItem = gridConfig?.describeItem
   const rowParity = gridConfig?.rowParity
-  const stickyRowsOf = gridConfig?.stickyRowsOf
   const virtualized = context !== null
   const render = typeof children === "function" ? children : null
   const elements = React.useMemo(
@@ -551,8 +548,6 @@ function useVirtualRows<T>(
     start: measures.headerHeight,
     sizes,
     keep: focused === null ? [] : [focused],
-    // The rows that stick over the row at the top (a grid's group rows).
-    keepFor: stickyRowsOf,
     // A viewport of rows ready beyond each edge, applied in the frame; a
     // jump (the scrollbar dragged) mounts only the view plus two rows, and
     // the rest once the scrolling stops.

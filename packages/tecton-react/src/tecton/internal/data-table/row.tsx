@@ -39,8 +39,7 @@
  * nothing (`groupCellsOf`), each aggregate column's subtotal over the
  * group's items, and a checkbox (Space on the row) that selects them. It
  * reads the row model itself, so its subtotals follow the items while its
- * engine row stays the same. Its cells stick under the header while its
- * rows scroll past (`sticky-groups.ts`).
+ * engine row stays the same.
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -86,7 +85,6 @@ import {
 import { useLiveRowProps } from "./live-bridge"
 import { DataTableRowHandle } from "./row-order"
 import { DataTableSelectionCheckbox, hasContent } from "./selection-checkbox"
-import { groupCellClassName, groupCellStyle } from "./sticky-groups"
 
 type RowProps<TRow, T> = Omit<React.ComponentProps<"tr">, "children"> & {
   row: TRow
@@ -309,7 +307,7 @@ function GroupRowComponent<T>({
   const context = useDataTableContext<T>("DataTableContent")
   // The subtotals are the model's: they change with the items in the group.
   const model = useDataTableSelector(context, (state) => state.model)
-  const { actions, columns, pins, groupCells, stickyGroups } = shared
+  const { actions, columns, pins, groupCells } = shared
   const name = shared.groupLabel(row)
   const label = name.text
   const count = t("groupCount", {
@@ -332,17 +330,6 @@ function GroupRowComponent<T>({
     }),
     [row, label, actions, shared.multiple]
   )
-  // A row that mounts, or takes another group's place, in a virtualized
-  // body: where the rows stick is measured again.
-  React.useLayoutEffect(() => {
-    if (shared.virtualized) stickyGroups?.()
-  }, [row.key, shared.virtualized, stickyGroups])
-  // Every cell sticks, at its level's place (`sticky-groups.ts`), a pinned
-  // one sideways too.
-  const stick = (pin: CellPin | undefined): React.CSSProperties => ({
-    ...(pin && pinStyle(pin)),
-    ...groupCellStyle(row.depth),
-  })
   // A cell over the column at the pinned columns' inner edge draws it,
   // without clipping: the group's label goes on over the columns after it.
   const pinned = (column: number, span = 1) => {
@@ -351,8 +338,7 @@ function GroupRowComponent<T>({
     return cn(
       shared.pinned && cellBorderClassName,
       pin && pinnedCellClassName,
-      pin && edge && pinEdgeClassName({ ...pin, edge }, false),
-      groupCellClassName(row.depth, !!pin)
+      pin && edge && pinEdgeClassName({ ...pin, edge }, false)
     )
   }
   const controlCell = (pin: CellPin | undefined, content?: React.ReactNode) => (
@@ -360,10 +346,9 @@ function GroupRowComponent<T>({
       className={cn(
         "w-px",
         shared.pinned && cellBorderClassName,
-        pin && pinnedCellClassName,
-        groupCellClassName(row.depth, !!pin)
+        pin && pinnedCellClassName
       )}
-      style={stick(pin)}
+      style={pin && pinStyle(pin)}
     >
       {content}
     </TableCell>
@@ -406,7 +391,7 @@ function GroupRowComponent<T>({
           pinned(cell.column, cell.span),
           cell.reach && GROUP_LABEL_REACH_EDGE
         )}
-        style={stick(pin)}
+        style={pin && pinStyle(pin)}
       >
         {named && (
           <span id={`${sum}-name`} hidden>
@@ -493,7 +478,7 @@ function GroupRowComponent<T>({
           numericClassName(column),
           pinned(cell.column)
         )}
-        style={stick(pin)}
+        style={pin && pinStyle(pin)}
       >
         {subtotal(column, row, model, shared)}
       </TableCell>
@@ -511,8 +496,6 @@ function GroupRowComponent<T>({
         // The stripes' surface: apart from the header and the item rows
         // (a grouped table has no stripes), under hover and selection.
         className={GROUP_ROW_CLASS}
-        // Scrolled to, it rests where it sticks.
-        style={{ scrollMarginTop: groupCellStyle(row.depth).top }}
         // A quick series of clicks selects no text: each click opens or
         // closes the group.
         onMouseDown={(event) => {

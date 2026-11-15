@@ -16,10 +16,8 @@
  * `cell.tsx`: the scroll fade's keyframes), and reordering.
  *
  * Of bounded height (`h-96`, or a root of bounded height), virtualized or
- * not, the table scrolls in its frame with its header stuck to the top,
- * and the group rows stick under it while their rows scroll past
- * (`sticky-groups.ts`). A grouped table draws no stripes: its group rows
- * have their fill.
+ * not, the table scrolls in its frame with its header stuck to the top.
+ * A grouped table draws no stripes: its group rows have their fill.
  *
  * The rows (`content-rows.ts`): detail rows under the rows that open
  * (`renderDetail`, which makes the table a treegrid: each row of level 1,
@@ -81,7 +79,6 @@ import { DataTableHeader, type HeaderShared } from "./header"
 import { useContentWarnings } from "./dev-warnings"
 import { createLiveBridge, LiveAnchor } from "./live-bridge"
 import { renderRow } from "./row"
-import { GROUPED_TABLE_CLASS, useStickyGroups } from "./sticky-groups"
 import { useStable } from "./use-stable"
 import { DataTableTotals } from "./totals"
 import {
@@ -263,12 +260,10 @@ function DataTableContentImpl({
   const formatter = useDataTableSelector(context, (state) => state.formatter)
   const options = useDataTableSelector(context, (state) => state.options)
   const sorting = useDataTableSelector(context, (state) => state.view.sorting)
-  // The levels of groups (grouping columns).
-  const levels = useDataTableSelector(
+  const grouped = useDataTableSelector(
     context,
-    (state) => state.view.grouping.length
+    (state) => state.view.grouping.length > 0
   )
-  const grouped = levels > 0
   const searching = useDataTableSelector(
     context,
     (state) =>
@@ -315,11 +310,8 @@ function DataTableContentImpl({
   const { failed, rows } = after
   const firstLoad = loading && !failed && rows.length === 0
   const frame = React.useRef<HTMLDivElement | null>(null)
-  // Cells stick: pinned columns' sideways, group rows' down. Each then
-  // draws its row's border, in separate borders (`cell.tsx`).
-  const pinned = layout.pinnedStart + layout.pinnedEnd > 0 || grouped
+  const pinned = layout.pinnedStart + layout.pinnedEnd > 0
   const container = React.useRef<HTMLDivElement | null>(null)
-  const stickyGroups = useStickyGroups(container, grouped, levels)
   const {
     sizer,
     headerLayout,
@@ -384,7 +376,6 @@ function DataTableContentImpl({
       handlePin,
       virtualized,
       live: live ? liveBridge.flashes : null,
-      stickyGroups,
     }
   )
   // Set on every grouped table's frame, so a grouped table in a detail row
@@ -545,9 +536,7 @@ function DataTableContentImpl({
               className={cn(
                 sizer.mode === "fixed" && "table-fixed",
                 // Each cell draws its border (`cell.tsx`).
-                pinned && "border-separate border-spacing-0",
-                // Rows scrolled to rest under the stuck group rows.
-                grouped && GROUPED_TABLE_CLASS
+                pinned && "border-separate border-spacing-0"
               )}
               style={
                 sizer.mode === "fixed" && sizing

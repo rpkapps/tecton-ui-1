@@ -110,8 +110,8 @@ export default function DataTableGrouping() {
         grouping: ["field", "installation"],
         columns: { pinned: { start: ["well"] } },
       }}
-      // A bounded height: the rows scroll under the header, each group's
-      // row stuck under it while its rows go past.
+      // A bounded height: the rows, group rows included, scroll under the
+      // header.
       className="h-96 w-full"
     >
       <DataTableToolbar>

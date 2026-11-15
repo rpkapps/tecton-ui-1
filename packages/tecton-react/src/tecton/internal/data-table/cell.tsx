@@ -18,11 +18,10 @@
  * A pinned column's cells stick to their edge (`position: sticky`, at a
  * variable of the frame's, `column-sizing.ts`) with their row's
  * background: the row is then opaque (the table's cell surface), and its
- * cells inherit its fill, so
- * stripes, hover and selection show on them too. A stuck cell would be
- * painted over the row's collapsed border (unevenly, by browser), so a
- * table with pinned columns draws each cell's border itself, in separate
- * borders.
+ * cells inherit its fill, so stripes, hover and selection show on them
+ * too. A stuck cell would be painted over the row's collapsed border
+ * (unevenly, by browser), so a table with pinned columns draws each cell's
+ * border itself, in separate borders.
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -106,16 +105,8 @@ type RowShared<T> = {
   selectionPin: CellPin | undefined
   /** The handle column's pin, likewise. */
   handlePin: CellPin | undefined
-  /**
-   * Cells stick (pinned columns, or group rows): the row is opaque, each
-   * cell draws its border.
-   */
+  /** Columns are pinned: the row is opaque, each cell draws its border. */
   pinned: boolean
-  /**
-   * Group rows stick (`sticky-groups.ts`): measures them again, for a
-   * group row that mounts or takes another's place in a virtualized body.
-   */
-  stickyGroups: (() => void) | null
   /** Live data's highlights (`highlightChanges`); `null` when off. */
   live: FlashStore | null
   actions: DataTableActions<T>

@@ -568,7 +568,7 @@ Both use `expanded` / `onExpandedChange`. In server mode, a row whose children a
 <ComponentPreview name="data-table-grouping" align="start" />
 
 - Each group has a row: its value, its number of rows and its subtotals. Click it, or press <Kbd>→</Kbd> / <Kbd>←</Kbd>, to open or close the group.
-- In a table of bounded height (`className="h-96"` on the root or the content), the rows scroll under the header. A group's row stays under the header while its rows scroll past, and the next group's row pushes it up. Nested groups stack under the groups above them.
+- In a table of bounded height (`className="h-96"` on the root or the content), the rows scroll under the header, the group rows with them.
 - Group rows have the stripes' fill, so a grouped table has no stripes.
 
 Number columns sum and boolean columns count by default. Set a column's `aggregate` to `"avg"`, `"min"`, `"max"`, `"count"`, `"countDistinct"` or a function. `renderAggregate` draws the cell.

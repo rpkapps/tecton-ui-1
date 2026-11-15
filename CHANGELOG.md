@@ -34,9 +34,7 @@ write entries and cut a release.
   `useDataTable()` reads the table from custom parts. Its text is translated into the 34 locales.
 - `DataTable` group rows have the stripes' surface, and a grouped table draws no stripes (they come
   back once the rows are not grouped). In a table of bounded height, virtualized or not, the rows
-  scroll under the stuck header, and a group's row sticks under it while its rows scroll past,
-  pushed up by the next group's row; nested groups stack under the groups above them, the pinned
-  cells stick sideways too, and a row reached with the keyboard comes to rest below them.
+  scroll under the stuck header.
 - `DataTableSearch syntax="query"`: a power search. Typed terms (`status:drilling td:>3000
 spud:2015`) set the same column filters as the filter buttons and free words the search: a comma
   means "any of" for every column type (`well:a-12,b-3`, `td:<1000,>3000`, `spud:2015,last30d`;
