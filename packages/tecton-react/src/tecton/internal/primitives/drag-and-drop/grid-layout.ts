@@ -306,6 +306,52 @@ function stepResize(
   return { ...from, w, h }
 }
 
+/**
+ * The empty space of a grid, as rectangles: the holes among the items (each
+ * grown as wide as it goes, then as tall), in reading order, then the rows
+ * below the items (at least one, down to `rows`) as one area across the
+ * grid, marked `end`.
+ */
+function freeAreas(
+  layout: ReadonlyArray<GridRect>,
+  columns: number,
+  rows = 0
+): Array<GridRect & { end: boolean }> {
+  const bottom = bottomOf(layout)
+  const taken = Array.from({ length: bottom }, () =>
+    new Array<boolean>(columns).fill(false)
+  )
+  for (const item of layout)
+    for (let y = item.y; y < Math.min(item.y + item.h, bottom); y += 1)
+      for (let x = item.x; x < Math.min(item.x + item.w, columns); x += 1)
+        taken[y][x] = true
+  const areas: Array<GridRect & { end: boolean }> = []
+  for (let y = 0; y < bottom; y += 1)
+    for (let x = 0; x < columns; x += 1) {
+      if (taken[y][x]) continue
+      let w = 0
+      while (x + w < columns && !taken[y][x + w]) w += 1
+      let h = 1
+      while (
+        y + h < bottom &&
+        taken[y + h].slice(x, x + w).every((cell) => !cell)
+      )
+        h += 1
+      for (let row = y; row < y + h; row += 1)
+        for (let column = x; column < x + w; column += 1)
+          taken[row][column] = true
+      areas.push({ x, y, w, h, end: false })
+    }
+  areas.push({
+    x: 0,
+    y: bottom,
+    w: columns,
+    h: Math.max(rows - bottom, 1),
+    end: true,
+  })
+  return areas
+}
+
 const sameRect = (a: GridRect, b: GridRect) =>
   a.x === b.x && a.y === b.y && a.w === b.w && a.h === b.h
 
@@ -314,6 +360,7 @@ export {
   clampItem,
   collides,
   firstFit,
+  freeAreas,
   inReadingOrder,
   limitsOf,
   resolveLayout,

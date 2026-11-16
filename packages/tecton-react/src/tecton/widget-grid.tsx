@@ -2,7 +2,8 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { GripIcon, XIcon } from "lucide-react"
+import { mergeProps } from "@base-ui/react/merge-props"
+import { GripIcon, PlusIcon, XIcon } from "lucide-react"
 
 import { buttonVariants } from "@tecton/react/components/button"
 import { usePortalTarget } from "@tecton/react/tecton/portal"
@@ -16,6 +17,7 @@ import {
 import {
   bottomOf,
   firstFit,
+  freeAreas,
   inReadingOrder,
   limitsOf,
   resolveLayout,
@@ -83,6 +85,12 @@ import { createStore, useStore, type Store } from "./internal/store"
  */
 
 type WidgetGridLayoutItem = GridLayoutItem
+
+/** A widget to add: its `id`, its size in cells and its size limits. */
+type WidgetGridNewItem = Pick<
+  WidgetGridLayoutItem,
+  "id" | "w" | "h" | "minW" | "maxW" | "minH" | "maxH"
+>
 
 /** A side of a widget it is resized from. */
 type WidgetGridEdge = "top" | "end" | "bottom" | "start"
@@ -227,6 +235,11 @@ type WidgetGridContextValue = {
   ) => void
   remove: (id: string) => void
   add: (id: string) => void
+  labelOf: (id: string) => string
+  addWidget: (
+    item: WidgetGridNewItem,
+    options?: { at?: { x: number; y: number }; label?: string }
+  ) => boolean | undefined
   move: (id: string, direction: MoveDirection) => void
   canMove: (id: string, direction: MoveDirection) => boolean | undefined
   resize: (id: string, size: { w: number; h: number }) => void
@@ -238,7 +251,7 @@ const WidgetGridContext = React.createContext<WidgetGridContextValue | null>(
   null
 )
 
-function useWidgetGrid(part: string) {
+function useRoot(part: string) {
   const context = React.useContext(WidgetGridContext)
   if (!context) throw new Error(`${part} must be used inside WidgetGrid`)
   return context
@@ -870,35 +883,69 @@ function WidgetGrid({
     announce(latest.current.t("removed", { itemText: labelOf(id) }))
   })
 
+  /**
+   * Adds `item` at `at` (the first free place by default): it is placed
+   * there and what it covers makes way. Focuses it, announces it; whether
+   * it was added.
+   */
+  const addWidget = useEventCallback(
+    (
+      item: WidgetGridNewItem,
+      { at, label }: { at?: { x: number; y: number }; label?: string } = {}
+    ) => {
+      const id = item.id
+      if (latest.current.layout.some((entry) => entry.id === id)) return false
+      const { columns } = latest.current.options
+      const { minW, maxW, minH, maxH } = limitsOf(
+        { ...item, x: 0, y: 0 },
+        columns
+      )
+      const size = {
+        w: Math.min(Math.max(Math.round(item.w), minW), maxW),
+        h: Math.min(Math.max(Math.round(item.h), minH), maxH),
+      }
+      const place = at
+        ? {
+            x: Math.min(Math.max(at.x, 0), columns - size.w),
+            y: Math.max(at.y, 0),
+          }
+        : firstFit(latest.current.layout, size, columns)
+      const next = resolveLayout(
+        latest.current.layout,
+        latest.current.options,
+        {
+          item: { ...item, ...size, ...place },
+          kind: "add",
+        }
+      )
+      if (!commit(next, "add", id)) return false
+      entering.current = id
+      focusAfter.current = null
+      queueMicrotask(() => {
+        const handle = items
+          .get(id)
+          ?.element?.querySelector<HTMLElement>(
+            '[data-slot="widget-grid-handle"]'
+          )
+        handle?.focus({ preventScroll: true })
+      })
+      const placed = next.find((entry) => entry.id === id)
+      if (placed)
+        announce(
+          latest.current.t("added", {
+            itemText: label ?? labelOf(id),
+            position: grid.position(placed),
+          })
+        )
+      return true
+    }
+  )
+
+  /** Adds the widget of the source `id` at the first free place. */
   const add = useEventCallback((id: string) => {
     const source = sources.get(id)
-    if (!source || latest.current.layout.some((item) => item.id === id)) return
-    const { columns } = latest.current.options
-    const size = { w: Math.min(source.item.w, columns), h: source.item.h }
-    const at = firstFit(latest.current.layout, size, columns)
-    const next = resolveLayout(
-      [...latest.current.layout, { ...source.item, ...size, ...at, id }],
-      latest.current.options
-    )
-    if (!commit(next, "add", id)) return
-    entering.current = id
-    focusAfter.current = null
-    queueMicrotask(() => {
-      const handle = items
-        .get(id)
-        ?.element?.querySelector<HTMLElement>(
-          '[data-slot="widget-grid-handle"]'
-        )
-      handle?.focus({ preventScroll: true })
-    })
-    const placed = next.find((item) => item.id === id)
-    if (placed)
-      announce(
-        latest.current.t("added", {
-          itemText: source.label,
-          position: grid.position(placed),
-        })
-      )
+    if (!source) return
+    addWidget(source.item, { label: source.label })
   })
 
   const step = (id: string, way: MoveDirection) => {
@@ -1027,6 +1074,8 @@ function WidgetGrid({
       startResize,
       remove,
       add,
+      addWidget,
+      labelOf,
       move,
       canMove,
       resize,
@@ -1051,6 +1100,8 @@ function WidgetGrid({
       startResize,
       remove,
       add,
+      addWidget,
+      labelOf,
       move,
       canMove,
       resize,
@@ -1140,7 +1191,7 @@ function WidgetGridContent({
   ref,
   ...props
 }: WidgetGridContentProps) {
-  const context = useWidgetGrid("WidgetGridContent")
+  const context = useRoot("WidgetGridContent")
   const {
     store,
     dragAndDrop,
@@ -1161,11 +1212,11 @@ function WidgetGridContent({
   const mode = useStore(dragAndDrop.store, (s) => s.mode)
   const dragged = useStore(dragAndDrop.store, (s) => s.dragging.at(0) ?? null)
   const shown = preview ?? layout
-  // A new widget, dragged in from a source.
-  const incoming =
-    dragged !== null && !byId.has(dragged)
-      ? shown.find((item) => item.id === dragged)
-      : undefined
+  // A placeholder of the consumer's own, among the children.
+  const customPlaceholder = React.Children.toArray(children).some(
+    (child) =>
+      React.isValidElement(child) && child.type === WidgetGridPlaceholder
+  )
   const sized = resizing ?? (mode && mode !== "pointer" ? dragged : null)
   const sizedRect = sized ? shown.find((item) => item.id === sized) : undefined
   // Stacked, the size shows where the widget is in the stack.
@@ -1219,17 +1270,7 @@ function WidgetGridContent({
         <>
           {cells}
           {children}
-          {incoming && (
-            <div
-              aria-hidden
-              data-slot="widget-grid-placeholder"
-              className="pointer-events-none rounded-xl border-2 border-dashed border-primary/60 bg-[color-mix(in_oklab,var(--primary)_6%,var(--background))]"
-              style={{
-                gridColumn: `${incoming.x + 1} / span ${incoming.w}`,
-                gridRow: `${incoming.y + 1} / span ${incoming.h}`,
-              }}
-            />
-          )}
+          {!customPlaceholder && <WidgetGridPlaceholder />}
           {sizedRect && (!stacked || sizedRow > 0) && (
             <div
               aria-hidden
@@ -1308,7 +1349,7 @@ function WidgetGridItem({
   ref,
   ...props
 }: WidgetGridItemProps) {
-  const root = useWidgetGrid("WidgetGridItem")
+  const root = useRoot("WidgetGridItem")
   const { store, dragAndDrop, byId, stackRows, registerItem } = root
   const committed = byId.get(value)
   // The place it shows, as a string: a preview that leaves it where it is
@@ -1659,10 +1700,7 @@ function WidgetGridRemove({
   return element
 }
 
-type WidgetGridSourceProps = Omit<
-  PrimitiveProps<"button", { disabled: boolean }>,
-  "value"
-> & {
+type WidgetGridSourceOptions = {
   /** The `id` the new widget gets in the layout. */
   value: string
   /** The widget's name, for the announcements. */
@@ -1675,14 +1713,148 @@ type WidgetGridSourceProps = Omit<
   maxW?: number
   minH?: number
   maxH?: number
+  /** Turns the source off. */
+  disabled?: boolean
 }
+
+type WidgetGridSourceState = {
+  /**
+   * The props that make an element a source: spread them on any element
+   * (pass your own props in, to have handlers chained and refs joined).
+   */
+  getSourceProps: <T extends Record<string, unknown>>(
+    props?: T
+  ) => Record<string, unknown>
+  /** Off: out of the edit mode, `disabled`, or its widget is on the grid. */
+  disabled: boolean
+  /** A widget with its `value` is on the grid. */
+  onGrid: boolean
+  /** It is being dragged onto the grid. */
+  dragging: boolean
+}
+
+/** Both refs, as one. */
+function joinRefs<T>(...refs: Array<React.Ref<T> | undefined>) {
+  return (node: T | null) => {
+    for (const ref of refs) {
+      if (typeof ref === "function") ref(node)
+      else if (ref) ref.current = node
+    }
+  }
+}
+
+/**
+ * Makes any element a widget the user adds to the grid, in the look you
+ * give it: a card, a list row, a tile. Pressed (or Enter or Space), the
+ * widget is added at the first free place; dragged (a finger: after a long
+ * press), a placeholder of its size follows the pointer over the grid and
+ * the widget lands where it is let go. Call it inside `WidgetGrid`.
+ *
+ *   const source = useWidgetGridSource({ value: "uptime", label: "Uptime", w: 3, h: 2 })
+ *   <Item {...source.getSourceProps({ className: "cursor-grab" })}>…</Item>
+ */
+function useWidgetGridSource({
+  value,
+  label,
+  w,
+  h,
+  minW,
+  maxW,
+  minH,
+  maxH,
+  disabled: disabledProp = false,
+}: WidgetGridSourceOptions): WidgetGridSourceState {
+  const root = useRoot("useWidgetGridSource")
+  const onGrid = root.byId.has(value)
+  const disabled = disabledProp || !root.editable || onGrid
+  const dragging = useStore(root.dragAndDrop.store, (s) =>
+    s.dragging.includes(value)
+  )
+  const entry = React.useRef<SourceEntry>({
+    element: null,
+    label,
+    item: { id: value, x: 0, y: 0, w, h },
+  })
+  const attach = React.useCallback((node: HTMLElement | null) => {
+    entry.current.element = node
+  }, [])
+  React.useLayoutEffect(() => {
+    entry.current.label = label
+    entry.current.item = { id: value, x: 0, y: 0, w, h, minW, maxW, minH, maxH }
+  }, [value, label, w, h, minW, maxW, minH, maxH])
+  const { registerSource } = root
+  React.useLayoutEffect(
+    () => registerSource(value, entry.current),
+    [registerSource, value]
+  )
+
+  const description = root.t("sourceDescription")
+  const latest = React.useRef({ root, disabled })
+  React.useInsertionEffect(() => {
+    latest.current = { root, disabled }
+  })
+  const getSourceProps = React.useCallback(
+    <T extends Record<string, unknown>>(props?: T) => {
+      // The attributes of this render; the handlers read the latest state.
+      const off = disabled
+      const own = {
+        role: "button",
+        tabIndex: off ? -1 : 0,
+        "data-slot": "widget-grid-source",
+        "data-disabled": off ? "" : undefined,
+        "data-dragging": dragging ? "" : undefined,
+        "aria-disabled": off || undefined,
+        "aria-description": description,
+        onPointerDown: (event: React.PointerEvent<HTMLElement>) => {
+          // Stacked, a new widget is added by a press, not dragged in.
+          if (!latest.current.disabled && latest.current.root.movable)
+            latest.current.root.dragAndDrop.onPointerDown(event, value)
+        },
+        // An image inside would start the browser's own drag.
+        onDragStart: (event: React.DragEvent<HTMLElement>) =>
+          event.preventDefault(),
+        onClick: () => {
+          if (!latest.current.disabled) latest.current.root.add(value)
+        },
+        // A button presses itself on Enter and Space; anything else is
+        // pressed here.
+        onKeyDown: (event: React.KeyboardEvent<HTMLElement>) => {
+          if (
+            event.target !== event.currentTarget ||
+            event.currentTarget.tagName === "BUTTON" ||
+            (event.key !== "Enter" && event.key !== " ")
+          )
+            return
+          event.preventDefault()
+          if (!latest.current.disabled) latest.current.root.add(value)
+        },
+      }
+      const { ref, ...rest } = (props ?? {}) as T & {
+        ref?: React.Ref<HTMLElement>
+      }
+      return {
+        ...mergeProps(own as never, rest as never),
+        ref: joinRefs(attach, ref),
+      }
+    },
+    [attach, value, dragging, disabled, description]
+  )
+  return { getSourceProps, disabled, onGrid, dragging }
+}
+
+type WidgetGridSourceProps = Omit<
+  PrimitiveProps<"button", { disabled: boolean; dragging: boolean }>,
+  "value"
+> &
+  WidgetGridSourceOptions
 
 /**
  * A widget of the catalog, not yet on the grid: press it to add the widget
  * at the first free place, or drag it to the place it goes (a finger:
- * after a long press). Renders a `button`; put it anywhere inside
- * `WidgetGrid` (a side `Panel` of widgets beside the grid). Disabled out of
- * the edit mode and while a widget with its `value` is on the grid.
+ * after a long press). Renders a `button` (or the element you pass to
+ * `render`); put it anywhere inside `WidgetGrid`. Disabled out of the edit
+ * mode and while a widget with its `value` is on the grid. For a source of
+ * your own make, use `useWidgetGridSource`.
  */
 function WidgetGridSource({
   value,
@@ -1699,24 +1871,17 @@ function WidgetGridSource({
   ref,
   ...props
 }: WidgetGridSourceProps) {
-  const root = useWidgetGrid("WidgetGridSource")
-  const off = !!disabled || !root.editable || root.byId.has(value)
-  const entry = React.useRef<SourceEntry>({
-    element: null,
+  const source = useWidgetGridSource({
+    value,
     label,
-    item: { id: value, x: 0, y: 0, w, h },
+    w,
+    h,
+    minW,
+    maxW,
+    minH,
+    maxH,
+    disabled,
   })
-  const attach = React.useCallback((node: HTMLElement | null) => {
-    entry.current.element = node
-  }, [])
-  React.useLayoutEffect(() => {
-    entry.current.label = label
-    entry.current.item = { id: value, x: 0, y: 0, w, h, minW, maxW, minH, maxH }
-  }, [value, label, w, h, minW, maxW, minH, maxH])
-  React.useLayoutEffect(
-    () => root.registerSource(value, entry.current),
-    [root.registerSource, value]
-  )
   return usePrimitive(
     "button",
     {
@@ -1727,26 +1892,253 @@ function WidgetGridSource({
       ),
       ref,
     },
-    { disabled: off },
+    { disabled: source.disabled, dragging: source.dragging },
     {
-      ref: attach,
+      ...source.getSourceProps(),
       type: "button",
-      "data-slot": "widget-grid-source",
-      disabled: off,
-      "aria-description": root.t("sourceDescription"),
-      onPointerDown: (event: React.PointerEvent<HTMLElement>) => {
-        // Stacked, a new widget is added by a press, not dragged in.
-        if (!off && root.movable) root.dragAndDrop.onPointerDown(event, value)
-      },
-      // An image inside would start the browser's own drag.
-      onDragStart: (event: React.DragEvent<HTMLElement>) =>
-        event.preventDefault(),
-      onClick: () => {
-        if (!off) root.add(value)
-      },
+      role: undefined,
+      tabIndex: undefined,
+      disabled: source.disabled,
       children,
     }
   )
+}
+
+type WidgetGridPlaceholderState = { w: number; h: number }
+
+type WidgetGridPlaceholderProps = Omit<
+  PrimitiveProps<"div", WidgetGridPlaceholderState>,
+  "children"
+> & {
+  /** Its content: nodes, or a function of the widget dragged in. */
+  children?:
+    | React.ReactNode
+    | ((widget: {
+        id: string
+        label: string
+        w: number
+        h: number
+      }) => React.ReactNode)
+}
+
+/**
+ * Where a widget dragged in from a source will land, while it is dragged:
+ * a dashed area of its size by default. Render one inside
+ * `WidgetGridContent` to style it or fill it (`{({ label }) => label}`);
+ * without one, the grid draws its own. Carries `data-w` and `data-h`.
+ */
+function WidgetGridPlaceholder({
+  className,
+  style,
+  children,
+  ...props
+}: WidgetGridPlaceholderProps) {
+  const root = useRoot("WidgetGridPlaceholder")
+  const { store, dragAndDrop, byId, labelOf } = root
+  const dragged = useStore(dragAndDrop.store, (s) => s.dragging.at(0) ?? null)
+  // A new widget, dragged in from a source, where it would land.
+  const at = useStore(store, (s) =>
+    dragged !== null && !byId.has(dragged)
+      ? rectKey(s.previewById?.get(dragged))
+      : ""
+  )
+  const [x, y, w, h] = at ? at.split(",").map(Number) : [0, 0, 0, 0]
+  const element = usePrimitive(
+    "div",
+    {
+      ...props,
+      className: withClass(
+        // Positioned: over the cells, whose masks paint as layers.
+        "pointer-events-none relative rounded-xl border-2 border-dashed border-primary/60 bg-[color-mix(in_oklab,var(--primary)_6%,var(--background))]",
+        className
+      ),
+      style: (state: WidgetGridPlaceholderState) => ({
+        gridColumn: `${x + 1} / span ${w}`,
+        gridRow: `${y + 1} / span ${h}`,
+        ...(typeof style === "function" ? style(state) : style),
+      }),
+    },
+    { w, h },
+    {
+      "aria-hidden": true,
+      "data-slot": "widget-grid-placeholder",
+      children:
+        typeof children === "function" && dragged
+          ? children({ id: dragged, label: labelOf(dragged), w, h })
+          : (children as React.ReactNode),
+    },
+    {
+      w: (value) => ({ "data-w": String(value) }),
+      h: (value) => ({ "data-h": String(value) }),
+    }
+  )
+  return at ? element : null
+}
+
+/** A free space of the grid, and what can be done with it. */
+type WidgetGridSlotState = GridRect & {
+  /** The rows below every widget: any height fits. */
+  end: boolean
+  /** Whether a widget of `size` fits in it without moving any other. */
+  fits: (size: { w: number; h: number }) => boolean
+  /** Adds `item` here; whether it was added. */
+  add: (item: WidgetGridNewItem, options?: { label?: string }) => boolean
+}
+
+const SlotContext = React.createContext<WidgetGridSlotState | null>(null)
+
+/** The free space around it: inside `WidgetGridSlots`. */
+function useWidgetGridSlot(): WidgetGridSlotState {
+  const slot = React.useContext(SlotContext)
+  if (!slot)
+    throw new Error("useWidgetGridSlot must be used inside WidgetGridSlots")
+  return slot
+}
+
+type WidgetGridSlotsProps = {
+  /**
+   * What each free space shows: nodes (a `WidgetGridSlot`), or a function
+   * of the space (`{(slot) => …}`). Default: a `WidgetGridSlot`.
+   */
+  children?: React.ReactNode | ((slot: WidgetGridSlotState) => React.ReactNode)
+  /** The smallest space shown, in cells. Default 1 × 1. */
+  minW?: number
+  minH?: number
+}
+
+/**
+ * The free spaces of the grid in the edit mode, each a place to add a
+ * widget: the holes beside shorter widgets (each as wide, then as tall, as
+ * it goes) and the rows below every widget, across the grid. Render it
+ * inside `WidgetGridContent`, after the widgets. Hidden while a widget is
+ * dragged or resized, out of the edit mode and when stacked.
+ */
+function WidgetGridSlots({
+  children = <WidgetGridSlot />,
+  minW = 1,
+  minH = 1,
+}: WidgetGridSlotsProps) {
+  const root = useRoot("WidgetGridSlots")
+  const { store, dragAndDrop, layout, columns, rows, editable, addWidget } =
+    root
+  const stacked = useStore(store, (s) => s.stacked)
+  const active = useStore(dragAndDrop.store, (s) => s.mode !== null)
+  const resizing = useStore(store, (s) => s.resizing !== null)
+  const slots = React.useMemo(
+    () =>
+      freeAreas(layout, columns, rows)
+        .filter((area) => area.end || (area.w >= minW && area.h >= minH))
+        .map((area): WidgetGridSlotState => ({
+          ...area,
+          fits: (size) => size.w <= area.w && (area.end || size.h <= area.h),
+          add: (item, options) =>
+            !!addWidget(item, { at: { x: area.x, y: area.y }, ...options }),
+        })),
+    [layout, columns, rows, minW, minH, addWidget]
+  )
+  if (!editable || stacked || active || resizing) return null
+  return slots.map((slot) => (
+    <SlotContext.Provider key={`${slot.x}:${slot.y}`} value={slot}>
+      {typeof children === "function" ? children(slot) : children}
+    </SlotContext.Provider>
+  ))
+}
+
+type WidgetGridSlotProps = PrimitiveProps<
+  "button",
+  { w: number; h: number; end: boolean }
+>
+
+/**
+ * One free space, placed on it: a dashed button reading "Add widget" by
+ * default, named after the place ("Add a widget at column 9, row 3, 4 by
+ * 2"). Open your own list of widgets from it (`render` it as a popover's
+ * trigger) and add one with `useWidgetGridSlot().add(…)`. Carries `data-w`,
+ * `data-h` and `data-end`.
+ */
+function WidgetGridSlot({
+  className,
+  style,
+  children,
+  ...props
+}: WidgetGridSlotProps) {
+  const root = useRoot("WidgetGridSlot")
+  const slot = useWidgetGridSlot()
+  return usePrimitive(
+    "button",
+    {
+      ...props,
+      className: withClass(
+        "relative flex min-w-0 animate-in items-center justify-center gap-1.5 overflow-hidden rounded-xl border-2 border-dashed border-border bg-background px-2 text-sm text-muted-foreground transition-colors duration-200 fade-in outline-none hover:border-primary/60 hover:bg-[color-mix(in_oklab,var(--primary)_6%,var(--background))] hover:text-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50 data-popup-open:border-primary/60 data-popup-open:bg-[color-mix(in_oklab,var(--primary)_6%,var(--background))] data-popup-open:text-foreground [&_svg]:size-4 [&_svg]:shrink-0",
+        className
+      ),
+      style: (state: { w: number; h: number; end: boolean }) => ({
+        gridColumn: `${slot.x + 1} / span ${slot.w}`,
+        gridRow: `${slot.y + 1} / span ${slot.h}`,
+        ...(typeof style === "function" ? style(state) : style),
+      }),
+    },
+    { w: slot.w, h: slot.h, end: slot.end },
+    {
+      type: "button",
+      "data-slot": "widget-grid-slot",
+      "aria-label": root.t("addAt", {
+        position: root.t("position", {
+          column: slot.x + 1,
+          row: slot.y + 1,
+          width: slot.w,
+          height: slot.h,
+        }),
+      }),
+      children: children ?? (
+        <>
+          <PlusIcon />
+          <span className="truncate">{root.t("addWidget")}</span>
+        </>
+      ),
+    },
+    {
+      w: (value) => ({ "data-w": String(value) }),
+      h: (value) => ({ "data-h": String(value) }),
+    }
+  )
+}
+
+type WidgetGridControls = {
+  /** The layout as it shows, resolved, in reading order. */
+  layout: ReadonlyArray<WidgetGridLayoutItem>
+  columns: number
+  /** The edit mode is on. */
+  editable: boolean
+  /** Widgets can be moved now: editable, and not stacked. */
+  movable: boolean
+  /**
+   * Adds a widget at `at` (cells), or at the first free place; what it
+   * covers makes way. It is focused and announced (by `label`, or its id).
+   * Whether it was added (not when its `id` is on the grid already).
+   */
+  add: (
+    item: WidgetGridNewItem,
+    options?: { at?: { x: number; y: number }; label?: string }
+  ) => boolean
+  /** Removes a widget, as its `WidgetGridRemove` does. */
+  remove: (id: string) => void
+}
+
+/**
+ * The grid around it, for controls of your own: a command palette that
+ * adds widgets, a menu of your own, a count of what is on the grid.
+ */
+function useWidgetGrid(): WidgetGridControls {
+  const root = useRoot("useWidgetGrid")
+  return {
+    layout: root.layout,
+    columns: root.columns,
+    editable: root.editable,
+    movable: root.movable,
+    add: (item, options) => !!root.addWidget(item, options),
+    remove: root.remove,
+  }
 }
 
 type WidgetGridItemActions = {
@@ -1796,7 +2188,13 @@ export {
   WidgetGridResizeHandle,
   WidgetGridRemove,
   WidgetGridSource,
+  WidgetGridPlaceholder,
+  WidgetGridSlots,
+  WidgetGridSlot,
   useWidgetGridItem,
+  useWidgetGridSource,
+  useWidgetGridSlot,
+  useWidgetGrid,
 }
 export type {
   WidgetGridProps,
@@ -1806,6 +2204,14 @@ export type {
   WidgetGridResizeHandleProps,
   WidgetGridRemoveProps,
   WidgetGridSourceProps,
+  WidgetGridSourceOptions,
+  WidgetGridSourceState,
+  WidgetGridPlaceholderProps,
+  WidgetGridSlotsProps,
+  WidgetGridSlotProps,
+  WidgetGridSlotState,
+  WidgetGridControls,
+  WidgetGridNewItem,
   WidgetGridLayoutItem,
   WidgetGridGap,
   WidgetGridEdge,

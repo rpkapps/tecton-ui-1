@@ -139,7 +139,66 @@ Make the item a size container (`@container` on `PanelContent`) and show more wh
 
 ## Adding widgets
 
-A `WidgetGridSource` is a widget of your catalog that is not on the grid yet. It renders a `button` with your content. Press it and the widget is added at the first free place, scrolled into view, focused and announced. Drag it and a dashed placeholder of its size follows the pointer over the grid, with the widgets making way. A finger drags after a long press, so the catalog still scrolls.
+Widgets are added from the grid's free spaces, from a catalog of sources, or from controls of your own. All three place the widget, scroll it into view, focus its grip and announce it ("Uptime added at column 9, row 1, 4 by 2"). An `id` already on the grid is never added twice.
+
+### Free spaces
+
+The demo above adds widgets where they go. `WidgetGridSlots` shows each free space of the grid in the edit mode:
+
+- the holes beside shorter widgets, each as wide and then as tall as it goes;
+- the rows below every widget, as one space across the grid.
+
+Each space is a `WidgetGridSlot`, a dashed button reading "Add widget" and named after its place ("Add a widget at column 9, row 1, 4 by 2"). Pass a function to get each space and offer what fits it: `slot.fits({ w, h })` says whether a size fits without moving any widget, and `slot.add(widget)` puts a widget exactly there. A bigger widget goes there too, and the widgets below make way.
+
+```tsx
+<WidgetGridContent>
+  {layout.map(…)}
+  <WidgetGridSlots minW={3} minH={2}>
+    {(slot) => (
+      <Popover>
+        <PopoverTrigger render={<WidgetGridSlot />}>
+          <PlusIcon /> Add a {slot.w} × {slot.h} widget
+        </PopoverTrigger>
+        <PopoverContent>
+          {catalog.filter((widget) => slot.fits(widget)).map((widget) => (
+            <Button key={widget.id} onClick={() => slot.add(widget, { label: widget.name })}>
+              {widget.name}
+            </Button>
+          ))}
+        </PopoverContent>
+      </Popover>
+    )}
+  </WidgetGridSlots>
+</WidgetGridContent>
+```
+
+`minW` and `minH` leave out spaces too small to be worth offering; the rows below the widgets are always offered, and any height fits them (`slot.end`). The spaces step aside while a widget is dragged or resized, and are not shown stacked or out of the edit mode. A component inside a space reads it with `useWidgetGridSlot()`.
+
+### Sources of your own
+
+<ComponentPreview name="widget-grid-custom-source" />
+
+`useWidgetGridSource` turns any element into a widget of your catalog: a list row, a card, a tile, a table row, in your own look. Spread `getSourceProps()` on the element, and pass your own props through it so handlers are chained and refs joined:
+
+```tsx
+function LibraryItem({ entry }) {
+  const source = useWidgetGridSource({ value: entry.id, label: entry.name, w: 4, h: 2 })
+  return (
+    <Item {...source.getSourceProps({ className: "cursor-grab data-disabled:opacity-60" })}>
+      <ItemTitle>{entry.name}</ItemTitle>
+      {source.onGrid && <CheckIcon />}
+    </Item>
+  )
+}
+```
+
+The element is then a button for assistive technology and the keyboard:
+- **Press** it, or press Enter or Space, to add the widget at the first free place.
+- **Drag** it, and a placeholder of its size follows the pointer over the grid while the widgets make way. A finger drags after a long press, so a list still scrolls.
+
+The hook also returns `onGrid`, `disabled` and `dragging`, and the element carries `data-disabled` and `data-dragging`. It is disabled out of the edit mode and while its widget is on the grid. Stacked, it adds with a press only.
+
+`WidgetGridSource` is the same thing as a ready `button`:
 
 ```tsx
 <WidgetGridSource value="uptime" label="Uptime" w={3} h={2} minW={2}>
@@ -147,9 +206,30 @@ A `WidgetGridSource` is a widget of your catalog that is not on the grid yet. It
 </WidgetGridSource>
 ```
 
-`value` is the `id` the new widget gets. A source is disabled out of the edit mode and while a widget with its `value` is on the grid. For a widget that can be added more than once, give the source a fresh `value` each time (`pressure-${count}`). Put the catalog anywhere inside `WidgetGrid`: a row above the grid as here, or a side `Panel` beside it.
+`value` is the `id` the new widget gets. For a widget that can be added more than once, give the source a fresh `value` each time (`pressure-${count}`). Put the catalog anywhere inside `WidgetGrid`.
 
-When the layout is empty, render an [Empty](/docs/components/empty) inside `WidgetGridContent` that spans the grid (`col-span-full row-span-4 row-start-1`), with a way to add the first widget. Never leave a blank grid.
+### The placeholder
+
+While a widget is dragged in from a source, a dashed placeholder of its size shows where it will land. Render a `WidgetGridPlaceholder` inside `WidgetGridContent` to style it, or to fill it from the widget being dragged in, as the library above does:
+
+```tsx
+<WidgetGridPlaceholder className="flex items-center justify-center gap-2">
+  {({ label, w, h }) => `${label} · ${w}×${h}`}
+</WidgetGridPlaceholder>
+```
+
+### Controls of your own
+
+`useWidgetGrid()`, anywhere inside `WidgetGrid`, adds and removes widgets from your own controls: a command palette, a menu, a "Quick add" button. It also reads the layout and the mode:
+
+```tsx
+const grid = useWidgetGrid()
+<CommandItem onSelect={() => grid.add({ id: "uptime", w: 3, h: 2 }, { label: "Uptime" })}>Uptime</CommandItem>
+```
+
+`add` places the widget at the first free place, or at `{ at: { x, y } }`, and returns whether it was added. The hook also returns `remove(id)`, `layout`, `columns`, `editable` and `movable`.
+
+When the layout is empty and the edit mode is off, render an [Empty](/docs/components/empty) inside `WidgetGridContent` that spans the grid (`col-span-full row-span-4 row-start-1`), with a way into the edit mode. In the edit mode, the free space below the widgets fills the grid instead. Never leave a blank grid.
 
 ## Removing widgets
 
@@ -268,7 +348,7 @@ Render each `WidgetGridItem` with `render={<Panel />}`, a `label`, the `WidgetGr
 
 <Do>
 
-Put the toolbar and the catalog inside `WidgetGrid`, around `WidgetGridContent`: each `WidgetGridSource` has the new widget's `value`, `label`, `w` and `h`.
+Offer what fits each free space with `WidgetGridSlots` inside `WidgetGridContent` (`slot.fits`, `slot.add`); put a catalog inside `WidgetGrid`, as `WidgetGridSource`s or your own elements with `useWidgetGridSource().getSourceProps()`, each with the new widget's `value`, `label`, `w` and `h`.
 
 </Do>
 
@@ -440,6 +520,39 @@ A ghost icon button with a cross, unless you pass children, named `Remove {label
 | `minW`, `maxW`, `minH`, `maxH` | `number` | - | The new widget's size limits. |
 | `disabled` | `boolean` | `false` | Turns the source off. It is also off out of the edit mode and while its widget is on the grid. |
 | `render` | `ReactElement \| function` | `<button />` | Replaces the element. |
+
+### useWidgetGridSource
+
+Makes any element a source. Takes `{ value, label, w, h, minW?, maxW?, minH?, maxH?, disabled? }` and returns:
+- `getSourceProps(props?)`: the props to spread on the element, with yours merged in.
+- `onGrid`, `disabled` and `dragging`.
+
+### WidgetGridPlaceholder
+
+Where a widget dragged in from a source will land. Without one, the grid draws its own. Takes `className`, `style` and `render`. `children` are nodes, or a function of `{ id, label, w, h }`. Carries `data-w` and `data-h`.
+
+### WidgetGridSlots
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode \| (slot) => ReactNode` | `<WidgetGridSlot />` | What each free space shows. |
+| `minW`, `minH` | `number` | `1` | The smallest space shown, in cells. The rows below the widgets are always shown. |
+
+A slot is `{ x, y, w, h, end, fits(size), add(widget, { label }?) }`.
+
+### WidgetGridSlot
+
+One free space, placed on it: a dashed button named after its place. Render it as a popover's or a menu's trigger (`render={<WidgetGridSlot />}`). Carries `data-w`, `data-h` and `data-end`.
+
+### useWidgetGridSlot
+
+Inside `WidgetGridSlots`: the space around it.
+
+### useWidgetGrid
+
+Inside `WidgetGrid`. Returns:
+- `add(widget, { at?, label? })` and `remove(id)`;
+- `layout`, `columns`, `editable` and `movable`.
 
 ### useWidgetGridItem
 

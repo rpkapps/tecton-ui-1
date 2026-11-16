@@ -2,7 +2,7 @@
 component: WidgetGrid
 module: "@tecton/react/tecton/widget-grid"
 family: surfaces
-exports: [WidgetGrid, WidgetGridContent, WidgetGridItem, WidgetGridHandle, WidgetGridResizeHandle, WidgetGridRemove, WidgetGridSource, useWidgetGridItem]
+exports: [WidgetGrid, WidgetGridContent, WidgetGridItem, WidgetGridHandle, WidgetGridResizeHandle, WidgetGridRemove, WidgetGridSource, WidgetGridPlaceholder, WidgetGridSlots, WidgetGridSlot, useWidgetGridItem, useWidgetGridSource, useWidgetGridSlot, useWidgetGrid]
 notFor:
   - need: cards in a layout the user never changes
     use: Card
@@ -23,7 +23,7 @@ related: [Panel, Reorderable, Empty, toast, DropdownMenu]
 
 - Keep the layout in state, pass it as `value` and write `onValueChange`'s layout back; render each widget in the layout's order as a `React.memo` component taking its `id`, which subscribes to its own live data rather than receiving it from the dashboard.
 - Render each `WidgetGridItem` with `render={<Panel />}`, a `label`, the `WidgetGridHandle` first in its `PanelHeader`, `WidgetGridRemove` in `PanelActions` and a `WidgetGridResizeHandle` inside it.
-- Put the toolbar and the catalog inside `WidgetGrid`, around `WidgetGridContent`: each `WidgetGridSource` has the new widget's `value`, `label`, `w` and `h`.
+- Offer what fits each free space with `WidgetGridSlots` inside `WidgetGridContent` (`slot.fits`, `slot.add`); put a catalog inside `WidgetGrid`, as `WidgetGridSource`s or your own elements with `useWidgetGridSource().getSourceProps()`, each with the new widget's `value`, `label`, `w` and `h`.
 - Turn the edit mode on with `editable` from an **Edit layout** button, keep the layout the edit started from so **Cancel** restores it, and offer an undo `toast` when `eventDetails.reason` is `"remove"` instead of asking first.
 - Give every widget a menu built on `useWidgetGridItem()` (`move`, `canMove`, `resize` with named size presets, `remove`) to arrange without dragging; set its limits in its entry (`minW`, `minH`), and render an `Empty` spanning the grid (`col-span-full row-span-4 row-start-1`) when the layout is empty.
 

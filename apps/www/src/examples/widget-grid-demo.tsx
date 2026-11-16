@@ -19,6 +19,7 @@ import {
   Grid3x3Icon,
   LayoutGridIcon,
   PencilIcon,
+  PlusIcon,
   RotateCcwIcon,
   WavesIcon,
 } from "lucide-react"
@@ -87,10 +88,13 @@ import {
   WidgetGridItem,
   WidgetGridRemove,
   WidgetGridResizeHandle,
-  WidgetGridSource,
+  WidgetGridSlot,
+  WidgetGridSlots,
+  useWidgetGrid,
   useWidgetGridItem,
   type WidgetGridGap,
   type WidgetGridLayoutItem,
+  type WidgetGridSlotState,
 } from "@tecton/react/tecton/widget-grid"
 
 // --- Live data -------------------------------------------------------------
@@ -607,6 +611,87 @@ function WidgetMenu({ widget, columns }: { widget: Widget; columns: number }) {
   )
 }
 
+/**
+ * A free space of the grid, and the widgets to put in it: those that fit
+ * first, then those that need more room (the widgets below make way).
+ */
+function SlotPicker({
+  slot,
+  columns,
+}: {
+  slot: WidgetGridSlotState
+  columns: number
+}) {
+  const [open, setOpen] = React.useState(false)
+  const { layout } = useWidgetGrid()
+  const onGrid = new Set(layout.map((item) => item.id))
+  const choices = Object.entries(WIDGETS)
+    .filter(([id]) => !onGrid.has(id))
+    .map(([id, widget]) => ({
+      id,
+      widget,
+      size: { w: across(columns, widget.size.w), h: widget.size.h },
+    }))
+  const fitting = choices.filter((choice) => slot.fits(choice.size))
+  const bigger = choices.filter((choice) => !slot.fits(choice.size))
+  const choose = (choice: (typeof choices)[number]) => {
+    setOpen(false)
+    slot.add(
+      {
+        id: choice.id,
+        ...choice.size,
+        minW: across(columns, choice.widget.min.w),
+        minH: choice.widget.min.h,
+      },
+      { label: choice.widget.name }
+    )
+  }
+  const group = (title: string, list: typeof choices) =>
+    list.length > 0 && (
+      <div className="grid gap-0.5">
+        <span className="px-2 pt-1 text-xs font-medium text-muted-foreground">
+          {title}
+        </span>
+        {list.map((choice) => (
+          <button
+            key={choice.id}
+            type="button"
+            onClick={() => choose(choice)}
+            className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-start text-sm outline-none hover:bg-accent focus-visible:bg-accent [&_svg]:size-4 [&_svg]:text-muted-foreground"
+          >
+            <choice.widget.icon />
+            <span className="flex-1 truncate">{choice.widget.name}</span>
+            <span dir="ltr" className="font-mono text-xs text-muted-foreground">
+              {choice.size.w}×{choice.size.h}
+            </span>
+          </button>
+        ))}
+      </div>
+    )
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger render={<WidgetGridSlot />}>
+        <PlusIcon />
+        <span className="truncate">
+          {slot.end ? "Add widget" : `Add a ${slot.w} × ${slot.h} widget`}
+        </span>
+      </PopoverTrigger>
+      <PopoverContent align="center" className="w-72 gap-2 p-1.5">
+        {choices.length === 0 ? (
+          <p className="p-2 text-sm text-muted-foreground">
+            Every widget is on the dashboard.
+          </p>
+        ) : (
+          <>
+            {group(slot.end ? "Add below" : "Fits this space", fitting)}
+            {group("Needs more room: the widgets below make way", bigger)}
+          </>
+        )}
+      </PopoverContent>
+    </Popover>
+  )
+}
+
 type Grid = {
   columns: number
   rowHeight: number
@@ -815,7 +900,7 @@ export default function WidgetGridDemo() {
           <h3 className="text-sm font-medium">Gullfaks field</h3>
           <p className="text-xs text-muted-foreground">
             {editing
-              ? "Drag the grips to move and the corners to resize."
+              ? "Drag to move or resize; press a free space to add."
               : "Live · updated every second"}
           </p>
         </div>
@@ -863,33 +948,8 @@ export default function WidgetGridDemo() {
         )}
       </div>
 
-      {editing && (
-        <Panel variant="flat" size="sm" className="bg-muted/50">
-          <PanelContent className="flex flex-wrap items-center gap-1.5">
-            <span className="me-1 text-xs font-medium text-muted-foreground">
-              Add
-            </span>
-            {Object.entries(WIDGETS).map(([id, widget]) => (
-              <WidgetGridSource
-                key={id}
-                value={id}
-                label={widget.name}
-                w={across(grid.columns, widget.size.w)}
-                h={widget.size.h}
-                minW={across(grid.columns, widget.min.w)}
-                minH={widget.min.h}
-                className="inline-flex h-7 items-center gap-1.5 rounded-md border bg-background px-2 text-xs font-medium shadow-xs transition-colors hover:bg-accent disabled:opacity-50 [&_svg]:size-3.5 [&_svg]:text-muted-foreground"
-              >
-                <widget.icon />
-                {widget.name}
-              </WidgetGridSource>
-            ))}
-          </PanelContent>
-        </Panel>
-      )}
-
       <WidgetGridContent>
-        {layout.length === 0 && (
+        {layout.length === 0 && !editing && (
           <Empty className="col-span-full row-span-4 row-start-1 border border-dashed">
             <EmptyHeader>
               <EmptyMedia variant="icon">
@@ -897,9 +957,7 @@ export default function WidgetGridDemo() {
               </EmptyMedia>
               <EmptyTitle>No widgets</EmptyTitle>
               <EmptyDescription>
-                {editing
-                  ? "Press a widget above to add it, or drag it here."
-                  : "Edit the layout to add widgets."}
+                Edit the layout to add widgets.
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
@@ -907,6 +965,10 @@ export default function WidgetGridDemo() {
         {layout.map(({ id }) => (
           <Widget key={id} id={id} editing={editing} columns={grid.columns} />
         ))}
+        {/* In the edit mode, every free space offers what fits it. */}
+        <WidgetGridSlots minW={across(grid.columns, 3)} minH={2}>
+          {(slot) => <SlotPicker slot={slot} columns={grid.columns} />}
+        </WidgetGridSlots>
       </WidgetGridContent>
     </WidgetGrid>
   )

@@ -11,8 +11,13 @@ import {
   WidgetGridItem,
   WidgetGridRemove,
   WidgetGridResizeHandle,
+  WidgetGridPlaceholder,
+  WidgetGridSlot,
+  WidgetGridSlots,
   WidgetGridSource,
+  useWidgetGrid,
   useWidgetGridItem,
+  useWidgetGridSource,
   type WidgetGridChangeDetails,
   type WidgetGridLayoutItem,
 } from "@tecton/react/tecton/widget-grid"
@@ -20,6 +25,7 @@ import {
 import {
   collides,
   firstFit,
+  freeAreas,
   resolveLayout,
   stepMove,
 } from "../internal/primitives/drag-and-drop/grid-layout"
@@ -780,5 +786,174 @@ describe("WidgetGrid", () => {
       screen.getByRole("button", { name: "Remove Production" })
     )
     expect(placement("Production")).toBe("1 / span 6 | 1 / span 2")
+  })
+})
+
+describe("freeAreas", () => {
+  it("finds the holes beside shorter widgets, then the rows below them", () => {
+    const layout = [
+      { x: 0, y: 0, w: 8, h: 2 },
+      { x: 0, y: 2, w: 4, h: 2 },
+      { x: 4, y: 2, w: 8, h: 2 },
+    ]
+    expect(freeAreas(layout, 12)).toEqual([
+      { x: 8, y: 0, w: 4, h: 2, end: false },
+      { x: 0, y: 4, w: 12, h: 1, end: true },
+    ])
+    // The grid's own rows below the widgets are one area.
+    expect(freeAreas(layout, 12, 8).at(-1)).toEqual({
+      x: 0,
+      y: 4,
+      w: 12,
+      h: 4,
+      end: true,
+    })
+  })
+})
+
+/** Building blocks of your own: a source, a placeholder, slots, a control. */
+const HOLED: Array<WidgetGridLayoutItem> = [
+  { id: "production", x: 0, y: 0, w: 8, h: 2 },
+  { id: "alarms", x: 0, y: 2, w: 12, h: 2 },
+]
+
+function OwnSource() {
+  const source = useWidgetGridSource({
+    value: "uptime",
+    label: "Uptime",
+    w: 4,
+    h: 2,
+  })
+  return (
+    <div {...source.getSourceProps({ className: "tile" })}>
+      Uptime {source.onGrid ? "(added)" : ""}
+    </div>
+  )
+}
+
+function OwnControl() {
+  const grid = useWidgetGrid()
+  return (
+    <button
+      type="button"
+      onClick={() =>
+        grid.add({ id: "pressure", w: 6, h: 2 }, { label: "Pressure" })
+      }
+    >
+      Quick add pressure
+    </button>
+  )
+}
+
+function Builder({ editable = true }: { editable?: boolean }) {
+  const [layout, setLayout] = React.useState(HOLED)
+  return (
+    <WidgetGrid
+      value={layout}
+      onValueChange={setLayout}
+      editable={editable}
+      animated={false}
+    >
+      <OwnSource />
+      <OwnControl />
+      <WidgetGridContent>
+        {layout.map((item) => (
+          <WidgetGridItem key={item.id} value={item.id} label={NAMES[item.id]}>
+            <WidgetGridHandle />
+            <span>{NAMES[item.id]}</span>
+          </WidgetGridItem>
+        ))}
+        <WidgetGridPlaceholder className="own-placeholder">
+          {({ label, w, h }) => `${label} ${w}×${h}`}
+        </WidgetGridPlaceholder>
+        <WidgetGridSlots>
+          {(slot) => (
+            <WidgetGridSlot
+              onClick={() =>
+                slot.add({ id: "uptime", w: 4, h: 2 }, { label: "Uptime" })
+              }
+            />
+          )}
+        </WidgetGridSlots>
+      </WidgetGridContent>
+    </WidgetGrid>
+  )
+}
+
+describe("WidgetGrid building blocks", () => {
+  it("shows the free spaces as slots, and adds a widget exactly in one", async () => {
+    render(<Builder />)
+    const hole = screen.getByRole("button", {
+      name: "Add a widget at column 9, row 1, 4 by 2",
+    })
+    expect(hole.style.gridColumn).toBe("9 / span 4")
+    expect(
+      screen.getByRole("button", {
+        name: "Add a widget at column 1, row 5, 12 by 1",
+      }).dataset.end
+    ).toBe("")
+    await userEvent.click(hole)
+    expect(placement("Uptime")).toBe("9 / span 4 | 1 / span 2")
+    // The hole is filled: its slot is gone.
+    expect(
+      screen.queryByRole("button", {
+        name: "Add a widget at column 9, row 1, 4 by 2",
+      })
+    ).toBeNull()
+  })
+
+  it("shows no slots out of the edit mode", () => {
+    render(<Builder editable={false} />)
+    expect(document.querySelector('[data-slot="widget-grid-slot"]')).toBeNull()
+  })
+
+  it("makes any element a source: pressed from the keyboard, it adds the widget", () => {
+    render(<Builder />)
+    const tile = screen.getByRole("button", { name: /^Uptime/ })
+    expect(tile.className).toBe("tile")
+    expect(tile.tabIndex).toBe(0)
+    fireEvent.keyDown(tile, { key: "Enter" })
+    // The first free place: the hole beside Production.
+    expect(placement("Uptime")).toBe("9 / span 4 | 1 / span 2")
+    expect(tile.getAttribute("aria-disabled")).toBe("true")
+    expect(tile.textContent).toContain("(added)")
+  })
+
+  it("draws a placeholder of your own while a widget is dragged in", () => {
+    render(<Builder />)
+    fireEvent.pointerDown(screen.getByRole("button", { name: /^Uptime/ }), {
+      button: 0,
+      pointerId: 10,
+      pointerType: "mouse",
+      clientX: 5,
+      clientY: 5,
+    })
+    fireEvent.pointerMove(document, {
+      pointerId: 10,
+      clientX: 1000,
+      clientY: 20,
+    })
+    const placeholders = document.querySelectorAll<HTMLElement>(
+      '[data-slot="widget-grid-placeholder"]'
+    )
+    expect(placeholders.length).toBe(1)
+    expect(placeholders[0].className).toContain("own-placeholder")
+    expect(placeholders[0].textContent).toBe("Uptime 4×2")
+    expect(placeholders[0].style.gridColumn).toBe("9 / span 4")
+    // While a widget is dragged, the slots step aside.
+    expect(document.querySelector('[data-slot="widget-grid-slot"]')).toBeNull()
+    fireEvent.pointerUp(document, { pointerId: 10, clientX: 1000, clientY: 20 })
+    expect(placement("Uptime")).toBe("9 / span 4 | 1 / span 2")
+  })
+
+  it("adds a widget from a control of your own", async () => {
+    render(<Builder />)
+    await userEvent.click(
+      screen.getByRole("button", { name: "Quick add pressure" })
+    )
+    // Too wide for the hole: it goes below the widgets.
+    expect(placement("Pressure")).toBe("1 / span 6 | 5 / span 2")
+    await act(() => vi.advanceTimersByTimeAsync(150))
+    expect(announced()).toContain("Pressure added at column 1, row 5, 6 by 2.")
   })
 })
