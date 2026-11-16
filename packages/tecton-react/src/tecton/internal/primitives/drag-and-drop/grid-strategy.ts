@@ -4,9 +4,9 @@
  * dragged item is asked to cover; `grid-layout` decides where it ends up
  * and what makes way, and the grid shows that as the drag goes.
  *
- * - Pointer: the cells nearest the lifted item's top corner on the inline
- *   start side, as the pointer moves it (a new item from a source: centred
- *   under the pointer, and only over the grid).
+ * - Pointer: the cells nearest the top corner, on the inline start side,
+ *   of the copy the pointer drags: the item's, or the source's a new item
+ *   comes from (over the grid only).
  * - Keyboard: the arrow keys move the item a cell (or past the item in the
  *   way, when one cell would change nothing), Shift and the arrow keys
  *   resize it a cell, mirrored in a right-to-left page. Tab steps through
@@ -145,16 +145,8 @@ function createGridStrategy({
       const rtl = direction() === "rtl"
       /** Px from the grid's inline start. */
       const inline = (x: number) => (rtl ? m.right - x : x - m.left)
-      let x: number
-      let y: number
-      if (ownOf(key)) {
-        const press = grab() ?? { x: 0, y: 0, width: 0 }
-        // The lifted item's corner on the inline start side.
-        const edge = rtl ? point.x - press.x + press.width : point.x - press.x
-        x = Math.round(inline(edge) / m.columnPitch)
-        y = Math.round((point.y - press.y - m.top) / m.rowPitch)
-      } else {
-        // A new item: over the grid only, centred under the pointer.
+      if (!ownOf(key)) {
+        // A new item: over the grid only.
         const margin = m.rowPitch / 2
         if (
           point.x < m.left - margin ||
@@ -163,9 +155,14 @@ function createGridStrategy({
           point.y > m.bottom + m.rowPitch * item.h
         )
           return null
-        x = Math.round(inline(point.x) / m.columnPitch - item.w / 2)
-        y = Math.floor((point.y - m.top) / m.rowPitch)
       }
+      // The corner of the dragged copy on the inline start side (the item,
+      // or the source a new one is dragged from), as the pointer moves it:
+      // the cells nearest it.
+      const press = grab() ?? { x: 0, y: 0, width: 0 }
+      const edge = rtl ? point.x - press.x + press.width : point.x - press.x
+      const x = Math.round(inline(edge) / m.columnPitch)
+      const y = Math.round((point.y - press.y - m.top) / m.rowPitch)
       const w = Math.min(item.w, columns)
       return {
         x: clamp(x, 0, columns - w),

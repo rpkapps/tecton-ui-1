@@ -691,7 +691,9 @@ function WidgetGrid({
     keyboardInstructions: (keys) =>
       latest.current.t("dragStarted", { itemText: labelOf(keys[0] ?? "") }),
     onDragStart: (keys) => {
-      const element = items.get(keys[0] ?? "")?.element
+      // Where the dragged copy was grabbed: a widget, or a source.
+      const key = keys[0] ?? ""
+      const element = items.get(key)?.element ?? sources.get(key)?.element
       const at = press.current
       if (element && at) {
         const rect = element.getBoundingClientRect()
@@ -1877,8 +1879,14 @@ function useWidgetGridSource({
         "aria-description": description,
         onPointerDown: (event: React.PointerEvent<HTMLElement>) => {
           // Stacked, a new widget is added by a press, not dragged in.
-          if (!latest.current.disabled && latest.current.root.movable)
+          if (!latest.current.disabled && latest.current.root.movable) {
+            // Outside the grid: its own press, for the copy's corner.
+            latest.current.root.press.current = {
+              x: event.clientX,
+              y: event.clientY,
+            }
             latest.current.root.dragAndDrop.onPointerDown(event, key)
+          }
         },
         // An image inside would start the browser's own drag.
         onDragStart: (event: React.DragEvent<HTMLElement>) =>

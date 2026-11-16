@@ -757,7 +757,8 @@ describe("WidgetGrid", () => {
       clientX: 5,
       clientY: 5,
     })
-    // Over the third row, 8.2 columns along: centred, it covers columns 7 to 10.
+    // The source sits at the page's corner and was pressed 5 px into it:
+    // its copy's corner, at (815, 135), is nearest column 9, row 3.
     fireEvent.pointerMove(document, {
       pointerId: 3,
       clientX: 820,
@@ -766,7 +767,8 @@ describe("WidgetGrid", () => {
     const placeholder = document.querySelector<HTMLElement>(
       '[data-slot="widget-grid-placeholder"]'
     )!
-    expect(placeholder.style.gridColumn).toBe("7 / span 4")
+    expect(placeholder.style.gridColumn).toBe("9 / span 4")
+    expect(placeholder.style.gridRow).toBe("3 / span 2")
     // Alarms makes way below it.
     expect(placement("Alarms")).toBe("1 / span 12 | 5 / span 2")
     fireEvent.pointerUp(document, { pointerId: 3, clientX: 820, clientY: 140 })
@@ -774,7 +776,7 @@ describe("WidgetGrid", () => {
       reason: "add",
       item: "uptime",
     })
-    expect(placement("Uptime")).toBe("7 / span 4 | 3 / span 2")
+    expect(placement("Uptime")).toBe("9 / span 4 | 3 / span 2")
     expect(
       document.querySelector('[data-slot="widget-grid-placeholder"]')
     ).toBeNull()
@@ -1117,5 +1119,59 @@ describe("WidgetGrid slots fill their space", () => {
     expect(end.textContent).toBe('12×1 gives {"w":4,"h":2}')
     await userEvent.click(end)
     expect(placement("uptime")).toBe("1 / span 4 | 7 / span 2")
+  })
+})
+
+describe("WidgetGrid sources dragged in", () => {
+  it("lines the placeholder up with the copy, wherever the source was grabbed", () => {
+    const original = Element.prototype.getBoundingClientRect
+    // The source: a 200 × 60 card at (40, 700), below the grid.
+    Element.prototype.getBoundingClientRect = function (this: Element) {
+      if ((this as HTMLElement).dataset.slot === "widget-grid-source")
+        return {
+          left: 40,
+          top: 700,
+          width: 200,
+          height: 60,
+          right: 240,
+          bottom: 760,
+          x: 40,
+          y: 700,
+          toJSON() {},
+        }
+      return original.call(this)
+    }
+    try {
+      render(<Builder />)
+      const source = screen.getByRole("button", { name: /^Uptime/ })
+      const columnOf = () =>
+        document.querySelector<HTMLElement>(
+          '[data-slot="widget-grid-placeholder"]'
+        )?.style.gridColumn
+      // Grabbed 20 px or 180 px into the card, moved so that the card's
+      // corner is at x = 610 both times: the placeholder starts at column 7.
+      for (const [id, grabX] of [
+        [20, 60],
+        [21, 220],
+      ] as const) {
+        fireEvent.pointerDown(source, {
+          button: 0,
+          pointerId: id,
+          pointerType: "mouse",
+          clientX: grabX,
+          clientY: 710,
+        })
+        fireEvent.pointerMove(document, {
+          pointerId: id,
+          clientX: 610 + (grabX - 40),
+          clientY: 300,
+        })
+        expect(columnOf()).toBe("7 / span 4")
+        fireEvent.keyDown(document, { key: "Escape" })
+        fireEvent.pointerUp(document, { pointerId: id })
+      }
+    } finally {
+      Element.prototype.getBoundingClientRect = original
+    }
   })
 })
