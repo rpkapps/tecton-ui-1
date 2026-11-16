@@ -8,7 +8,7 @@ description: "A dashboard the user arranges: widgets moved, resized, added and r
 Press **Edit layout**, then:
 - drag a widget by its grip, or resize it from any edge;
 - press a free space to add a widget there: search, arrow keys and Enter work, and Wellhead pressure and Tank levels can be added more than once;
-- remove a widget, and undo it from the toast.
+- remove a widget.
 
 ## Usage
 
@@ -279,21 +279,7 @@ When the layout is empty and the edit mode is off, render an [Empty](/docs/compo
 
 ## Removing widgets
 
-`WidgetGridRemove` removes its widget at once. The widget fades out, the others close the gap, focus goes to the next widget's grip, and "Pressure removed." is announced. Don't ask first: offer an undo in a [toast](/docs/components/sonner), which costs the user nothing when they meant it.
-
-```tsx
-<WidgetGrid
-  value={layout}
-  onValueChange={(next, { reason, item }) => {
-    const previous = layout
-    setLayout(next)
-    if (reason === "remove")
-      toast(`${names[item]} removed`, {
-        action: { label: "Undo", onClick: () => setLayout(previous) },
-      })
-  }}
->
-```
+`WidgetGridRemove` removes its widget at once. The widget fades out, the others close the gap, focus goes to the next widget's grip, and "Pressure removed." is announced. `onValueChange` reports it with `eventDetails.reason` set to `"remove"` and `eventDetails.item` set to the widget's `id`.
 
 ## Without dragging
 
@@ -400,7 +386,7 @@ Offer what fits each free space with `WidgetGridSlots` inside `WidgetGridContent
 
 <Do>
 
-Turn the edit mode on with `editable` from an **Edit layout** button, keep the layout the edit started from so **Cancel** restores it, and offer an undo `toast` when `eventDetails.reason` is `"remove"` instead of asking first.
+Turn the edit mode on with `editable` from an **Edit layout** button, and keep the layout the edit started from so **Cancel** restores it.
 
 </Do>
 

@@ -23,7 +23,6 @@ import {
   RotateCcwIcon,
   WavesIcon,
 } from "lucide-react"
-import { toast } from "sonner"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -918,17 +917,7 @@ export default function WidgetGridDemo() {
   return (
     <WidgetGrid
       value={layout}
-      onValueChange={(next, { reason, item }) => {
-        const previous = layout
-        setLayout(next)
-        if (reason === "remove")
-          toast(
-            `${nameOf(layout.find((entry) => entry.id === item) ?? { id: item })} removed`,
-            {
-              action: { label: "Undo", onClick: () => setLayout(previous) },
-            }
-          )
-      }}
+      onValueChange={setLayout}
       editable={editing}
       columns={grid.columns}
       rowHeight={grid.rowHeight}

@@ -23,7 +23,7 @@ import { WidgetGrid, WidgetGridContent, WidgetGridItem, WidgetGridHandle, Widget
 - Keep the layout in state, pass it as `value` and write `onValueChange`'s layout back; render each widget in the layout's order as a `React.memo` component taking its `id`, which subscribes to its own live data rather than receiving it from the dashboard.
 - Render each `WidgetGridItem` with `render={<Panel />}`, a `label`, the `WidgetGridHandle` first in its `PanelHeader`, `WidgetGridRemove` in `PanelActions` and a `WidgetGridResizeHandle` inside it.
 - Offer what fits each free space with `WidgetGridSlots` inside `WidgetGridContent` (`slot.fits`, `slot.add`); put a catalog inside `WidgetGrid`, as `WidgetGridSource`s or your own elements with `useWidgetGridSource().getSourceProps()`, each with the new widget's `value`, `label`, `w` and `h`, and `multiple` for a widget added once per well or pad (its entries share a `type`).
-- Turn the edit mode on with `editable` from an **Edit layout** button, keep the layout the edit started from so **Cancel** restores it, and offer an undo `toast` when `eventDetails.reason` is `"remove"` instead of asking first.
+- Turn the edit mode on with `editable` from an **Edit layout** button, and keep the layout the edit started from so **Cancel** restores it.
 - Give every widget a menu built on `useWidgetGridItem()` (`move`, `canMove`, `resize` with named size presets, `remove`) to arrange without dragging; set its limits in its entry (`minW`, `minH`), and render an `Empty` spanning the grid (`col-span-full row-span-4 row-start-1`) when the layout is empty.
 
 ## Don't
@@ -101,4 +101,4 @@ Correct:
 
 - A dashboard the user arranges is a `WidgetGrid` holding `WidgetGridContent` with a `WidgetGridItem` per entry of `value` (`{ id, x, y, w, h }`, written back from `onValueChange`), each rendered as a `Panel` with a `label`, a `WidgetGridHandle` in its header and a `WidgetGridResizeHandle`, never absolutely positioned or natively `draggable` divs.
 
-Related: panel, reorderable, empty, toast, dropdown-menu
+Related: panel, reorderable, empty, dropdown-menu

@@ -1715,8 +1715,7 @@ function WidgetGridResizeHandle({
 type WidgetGridRemoveProps = PrimitiveProps<"button", object>
 
 /**
- * Removes the widget at once (offer an undo, rather than asking first):
- * the others close the gap, focus goes to the next widget's handle, and
+ * Removes the widget at once: the others close the gap, focus goes to the next widget's handle, and
  * "{label} removed." is announced. An icon button named "Remove {label}";
  * only in the edit mode, and never on a locked widget.
  */
