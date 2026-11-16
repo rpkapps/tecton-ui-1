@@ -8,23 +8,22 @@ import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableC
 
 ## Use it when
 
-- Records of the same shape have to line up in columns: invoices, wells, run results.
-- A footer totals the columns, or a caption names the table.
-- The rows are read, compared or opened; interaction beyond that (sorting, paging) comes from TanStack Table on these parts.
+- A short, static table is read rather than worked with: a spec sheet, a legend, the figures of a report or a dialog, a comparison in documentation.
+- The layout is free-form: cells of your own, spans, a footer that totals the columns, a caption that names the table.
 
 ## Not for
 
-- sorting, filtering, paging or column visibility over the rows → `TanStack Table` (tecton docs tanstack-table)
+- records in an application, or rows that are sorted, searched, filtered, selected or paged → `DataTable` (tecton docs data-table)
 - a list of rows with media, a title and actions rather than columns → `Item` (tecton docs item)
 - rows or columns the user drags into another order → `Reorderable` (tecton docs reorderable)
 
 ## Do
 
-- Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`.
-- Select rows with a `Checkbox` per row (and one in the header for all) driven by your own state, and mark a selected row with `data-state="selected"` for the `bg-table-active` fill.
-- Open a record from a link in its identifying cell, not from a handler on the row.
+- Keep `Table` for content that is only read; records in an application go in a `DataTable`, so every records table looks and behaves the same.
+- Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`; open a record from a link in its identifying cell.
+- Set `size="sm"` for a compact table of dense data, and `striped` to put every even body row on an alternate surface; hover and selected rows keep their fill over the stripe.
 - For hundreds of rows or more, set `virtualized`, give the parent a bounded height (`h-96`, with the border) and pass `items` with a render function to `TableBody`; rows are one height within the table.
-- Show an empty result as `Empty` in place of the table, or inside one `TableCell colSpan={n}` when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`).
+- Show an empty value as a muted em dash, with "No value" for screen readers, as `DataTable` draws it: `<TableCell><span aria-hidden className="text-muted-foreground">—</span><span className="sr-only">No value</span></TableCell>` (aligned as the column, never "N/A" or "-"); show an empty result as `Empty` in place of the table, or as `TableBody empty={…}` (one row across every column) when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`).
 - Give text-heavy columns (well name, remarks) a minimum width on `TableHead`; they never collapse when the panel narrows.
 
 ## Don't
@@ -57,27 +56,21 @@ Correct:
 
 The grid emits no table semantics, so assistive technology reads a stream of unassociated cells with no row or column count, and `bg-zinc-100` is stock Tailwind the reset palette emits no CSS for — the header band is `bg-table-header` on `TableHead`.
 
-### HIGH selectionMode and selectedKeys on the table
+### HIGH Density and stripes from classes
 
 Wrong:
 
 ```tsx
-<Table aria-label="Wells" selectionMode="multiple" selectedKeys={selected} onSelectionChange={setSelected}>
-  <TableHeader><TableHead isRowHeader>Well</TableHead></TableHeader>
-  <TableBody renderEmptyState={() => "No wells"}>{rows}</TableBody>
-</Table>
+<Table className="text-xs [&_td]:py-1 [&_tbody_tr:nth-child(even)]:bg-surface-alt">{rows}</Table>
 ```
 
 Correct:
 
 ```tsx
-<Table>
-  <TableHeader><TableRow><TableHead>Well</TableHead></TableRow></TableHeader>
-  <TableBody>{rows.length ? rows : <TableRow><TableCell><Empty>No wells</Empty></TableCell></TableRow>}</TableBody>
-</Table>
+<Table size="sm" striped>{rows}</Table>
 ```
 
-`Table` is a plain `table`: `selectionMode`, `selectedKeys`, `isRowHeader` and `renderEmptyState` land on the DOM as unknown attributes, so nothing is selectable and an empty body renders nothing.
+Hand-written classes miss the header's height, paint the stripe over the hover and selected fill, and shift as a virtualized table mounts and unmounts rows, so the stripes flicker while it scrolls. `size` and `striped` set every part and keep each row on its stripe.
 
 ### HIGH Activating a row with onClick
 
@@ -97,15 +90,16 @@ Correct:
 </TableRow>
 ```
 
-A `tr` has no role, no tab stop and no Enter key, so the row opens with a mouse only; a link in the identifying cell is reachable, announced and middle-clickable.
+A `tr` has no role, no tab stop and no Enter key, so the row opens with a mouse only. A link in the identifying cell is reachable, announced and middle-clickable.
 
 ## Before you finish
 
-- A table is plain HTML — `Table > TableHeader > TableRow > TableHead` and `TableBody > TableRow > TableCell`, with `TableFooter` and `TableCaption` as needed; sorting, filtering and paging come from TanStack Table on these parts.
+- Every table of records in an application is a `DataTable` (columns from `createColumns`, features turned on at the root, `aria-label` on `DataTableContent`), never a `Table` with sort, selection or paging state of its own, so tables behave the same across applications; `Table` is for a short, static table that is only read.
+- A static table is plain HTML — `Table > TableHeader > TableRow > TableHead` and `TableBody > TableRow > TableCell`, with `TableFooter` and `TableCaption` as needed.
 - Rows or columns the user drags into order are a `Reorderable` around the `Table` with `ReorderableItem render={<TableRow />}` with a `label` and a `ReorderableHandle` (or headers with `render={<TableHead />}`, `dragHandle={false}` and `orientation="horizontal"`, no grip), never native `draggable` rows; a resizable column has a `TableColumnResizer` in its `TableHead` (`relative`, width from state) on a `table-fixed` table.
 - A table of hundreds of rows or more is `<Table virtualized>` inside a parent of bounded height (`h-96`), with `TableBody items={rows}` and a render function, not a hand-built window of sliced rows.
-- An empty table renders `Empty` in place of the table, or inside one `TableCell` spanning every column when the header has to stay.
-- Row selection is a `Checkbox` per row driven by your own state (the row marked `data-state="selected"`), and a row opens through a link in its identifying cell, never an `onClick` on the `tr`.
+- An empty table renders `Empty` in place of the table, or `TableBody empty={…}` (one row across every column) when the header has to stay.
+- A table opens a row through a link in its identifying cell, never an `onClick` on the `tr`; a compact or striped table is `size="sm"` or `striped` on `Table`, never `[&_td]:py-1` or `nth-child` classes.
 - `className` on `TableHead`, `TableRow` and `TableCell` is alignment and width only (`text-end`, `w-24`): `text-muted-foreground`, `font-medium` and any colour class restyle what the parts already own.
 
-Related: item, tree-view, reorderable, table-column-resizer, tanstack-table
+Related: data-table, item, tree-view, reorderable, table-column-resizer

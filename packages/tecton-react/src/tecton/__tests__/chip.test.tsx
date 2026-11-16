@@ -1,5 +1,5 @@
 import * as React from "react"
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
@@ -338,6 +338,15 @@ describe("Chip keyboard", () => {
     await userEvent.keyboard("{Backspace}")
     expect(rows().map((row) => row.textContent)).toEqual(["A-7", "B-2"])
     expect(screen.getByRole("row", { name: "B-2" })).toHaveFocus()
+  })
+
+  it("moves focus to the next chip when one is removed by its button", async () => {
+    render(<Removable />)
+    await userEvent.click(screen.getByRole("button", { name: /Remove.*B-2/ }))
+    expect(rows().map((row) => row.textContent)).toEqual(["A-7", "C-4"])
+    await waitFor(() =>
+      expect(screen.getByRole("row", { name: "C-4" })).toHaveFocus()
+    )
   })
 
   it("reverses the arrow keys right to left", async () => {

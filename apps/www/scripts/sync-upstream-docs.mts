@@ -90,8 +90,14 @@ const BLOCK_PREVIEWS: Record<string, string> = {
   "sidebar-demo": "sidebar-01",
 }
 
-/** Upstream docs pages without a component file that are still worth keeping. */
-const EXTRA_PAGES = ["data-table", "date-picker"]
+/**
+ * Upstream docs pages without a component file that are still worth keeping.
+ * `data-table` and `date-picker` are not: they are hand-written
+ * (`components/<name>.mdx`, no `upstream:` line) and document Tecton's own
+ * `DataTable`, `DatePicker` and `DateRangePicker` where upstream has recipes.
+ * Their examples (`date-picker-*`) are Tecton's too and are not synced.
+ */
+const EXTRA_PAGES: Array<string> = []
 
 /**
  * Other upstream docs folders that are synced page by page. The pages reference
@@ -130,7 +136,6 @@ const ALLOWED_MODULES = new Set([
   "react-day-picker/locale",
   "recharts",
   "input-otp",
-  "@tanstack/react-table",
   "zod",
   "embla-carousel-autoplay",
   "react-textarea-autosize",
@@ -262,7 +267,31 @@ function toGregorianArabic(label: string) {
 // Per-example source fixes for upstream demos that assume the vega look.
 const EXAMPLE_REWRITES: Record<string, (code: string) => string> = {
   "calendar-rtl": toGregorianArabic("calendar-rtl"),
-  "date-picker-rtl": toGregorianArabic("date-picker-rtl"),
+  // Upstream mirrors the menus' alignment by hand, for a portal that is
+  // left to right: Tecton's right-to-left preview portals its overlays in
+  // its own direction (`ThemeRoot`), where `start` and `end` are already
+  // the reading direction's, so the hand mirror would flip them twice.
+  "dropdown-menu-rtl": (code) =>
+    replaceOrThrow(
+      code,
+      'align={dir === "rtl" ? "end" : "start"}',
+      'align="start"',
+      "dropdown-menu-rtl"
+    ),
+  "breadcrumb-rtl": (code) =>
+    replaceOrThrow(
+      code,
+      'align={dir === "rtl" ? "end" : "start"}',
+      'align="start"',
+      "breadcrumb-rtl"
+    ),
+  "button-group-rtl": (code) =>
+    replaceOrThrow(
+      code,
+      'align={dir === "rtl" ? "start" : "end"}',
+      'align="end"',
+      "button-group-rtl"
+    ),
   // Upstream's docs site serves its components at /components; ours at /docs/components.
   "breadcrumb-separator": (code) =>
     replaceOrThrow(
@@ -903,6 +932,15 @@ const PAGE_REWRITES: Record<
       "badge page (API table)"
     )
   },
+  // Tecton's list opens below the trigger unless `alignItemWithTrigger` is
+  // set (overlay, docs/UPSTREAM.md): an aligned list locks the page's scroll.
+  select: (mdx) =>
+    replaceOrThrow(
+      mdx,
+      "When `true` (default), the popup positions so the selected item appears over the trigger. When `false`, the popup aligns to the trigger edge.",
+      "When `true`, the popup positions so the selected item appears over the trigger, and the page's scroll is locked while it is open (see [Modal](#modal)). When `false` (default), the popup opens below the trigger, aligned to its start edge.",
+      "select page (align item with trigger)"
+    ),
   // Upstream's base usage snippet carries the Radix `type` prop; the group is
   // single-select unless `multiple` is set.
   "toggle-group": (mdx) =>
@@ -935,8 +973,8 @@ const PAGE_REWRITES: Record<
       "avatar page (AvatarFallback)"
     )
   },
-  // The package files are read-only for applications: a custom spinner and
-  // a reusable data table are the application's own components.
+  // The package files are read-only for applications: a custom spinner is
+  // the application's own component.
   spinner: (mdx) => {
     mdx = replaceOrThrow(
       mdx,
@@ -951,13 +989,6 @@ const PAGE_REWRITES: Record<
       "spinner page (customization title)"
     )
   },
-  "data-table": (mdx) =>
-    replaceOrThrow(
-      mdx,
-      "extracting it to `components/ui/data-table.tsx`.",
-      "extracting it to a `components/data-table.tsx` file in your application.",
-      "data-table page (tip)"
-    ),
   // `shadcn init` is for projects that own the component sources
   button: (mdx) =>
     replaceOrThrow(
@@ -1010,6 +1041,15 @@ const PAGE_REWRITES: Record<
       "calendar page (RTL)"
     )
   },
+  // Tecton's Data Table is a component of its own, not a recipe on a table
+  // library, and has no Tasks demo here.
+  table: (mdx) =>
+    replaceOrThrow(
+      mdx,
+      /\n## Data Table\n[\s\S]*?(?=\n## )/,
+      "\n## Data Table\n\nFor records in an application, use [Data Table](/docs/components/data-table): it is built on these parts and adds typed columns, sorting, search and filters, selection, pages and keyboard navigation, so every records table looks and behaves the same. Keep `Table` for a short table that is only read.\n",
+      "table page (Data Table)"
+    ),
 }
 
 const PREVIEW_TAG =
@@ -1522,6 +1562,16 @@ async function main() {
     report.pages.push(page.folder ? page.key : page.name)
   }
 
+  // Hand-written component pages (no `upstream:` line, such as data-table)
+  // are listed in the navigation with the synced ones, in name order.
+  const authoredPages: string[] = []
+  for (const file of await listFiles(OUT_DOCS)) {
+    if (!file.endsWith(".mdx") || file === "index.mdx") continue
+    const name = file.replace(/\.mdx$/, "")
+    if (plannedPages.some((p) => !p.folder && p.name === name)) continue
+    const content = await fs.readFile(path.join(OUT_DOCS, file), "utf8")
+    if (!SYNCED_PAGE_MARKER.test(content)) authoredPages.push(name)
+  }
   outputs.set(
     path.join(OUT_DOCS, "meta.json"),
     JSON.stringify(
@@ -1529,7 +1579,11 @@ async function main() {
         title: "Components",
         pages: [
           "index",
-          ...plannedPages.filter((p) => !p.folder).map((p) => p.name),
+          ...plannedPages
+            .filter((p) => !p.folder)
+            .map((p) => p.name)
+            .concat(authoredPages)
+            .sort(),
         ],
       },
       null,

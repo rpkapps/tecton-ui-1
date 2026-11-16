@@ -16,7 +16,7 @@ import { TreeView, TreeViewItem, TreeViewItemContent, TreeViewAction, TreeViewVi
 
 - stacked sections that expand, with no parent and child structure → `Accordion` (tecton docs accordion)
 - a flat list of rows with media, a title and actions → `Item` (tecton docs item)
-- a tree table, a hierarchy whose expandable rows have columns → `TanStack Table` (tecton docs tanstack-table)
+- a tree table, a hierarchy whose expandable rows have columns → `DataTable` (tecton docs data-table)
 
 ## Do
 
@@ -99,7 +99,6 @@ Rows expose no hover, press or focus attributes: use `:hover`, `:active`, `:focu
 
 ## Before you finish
 
-- Row selection is a `Checkbox` per row driven by your own state (the row marked `data-state="selected"`), and a row opens through a link in its identifying cell, never an `onClick` on the `tr`.
 - A hierarchy is a `TreeView` with an `aria-label` and a `value` (plus `label` when the content is not plain text) on every `TreeViewItem`, not a pile of nested `Collapsible`s, and rows are never indented with `ps-*`.
 
 Related: accordion, item, color-swatch

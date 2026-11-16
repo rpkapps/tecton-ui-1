@@ -1,7 +1,7 @@
 ---
 component: TableColumnResizer
 module: "@tecton/react/table-column-resizer"
-docs: "components/data-table#column-resizing"
+docs: "components/data-table#resizing"
 family: data
 exports: [TableColumnResizer]
 notFor:
@@ -9,13 +9,13 @@ notFor:
     use: ResizablePanelGroup
   - need: a value picked along a track
     use: Slider
-related: [Table, Reorderable, "TanStack Table"]
+related: [Table, Reorderable]
 ---
 
 ## Use it when
 
-- The user widens a data table column to read long values, or narrows one they do not need.
-- Column widths are state the application keeps (TanStack Table's `columnSizing`, a saved layout).
+- The user widens a table column to read long values, or narrows one they do not need.
+- The column widths of a plain `Table` are state the application keeps (a saved layout). In a `DataTable`, `resizableColumns` puts one on each column header instead.
 
 ## Do
 
@@ -23,6 +23,7 @@ related: [Table, Reorderable, "TanStack Table"]
 - Give the `Table` `className="table-fixed"`, its total width and `minWidth: "100%"`, leave the last column's width unset so it fills the rest, and let cells `truncate`.
 - Name it with `label` (the column's name: "Resize Field"), bound it with `min` and `max`, and pass `resetValue` for Enter and a double click.
 - Write `onValueChange` back to the width state; save a layout from `onValueCommitted`, which fires once a drag ends.
+- For a column pinned to the table's end, pass `edge="start"`: the grip sits on its inner edge, and dragging toward the start widens it.
 
 ## Don't
 
@@ -33,16 +34,16 @@ Wrong:
 ```tsx
 <TableHead className="relative">
   Field
-  <div onMouseDown={header.getResizeHandler()} className="absolute inset-y-0 end-0 w-1 cursor-col-resize" />
+  <div onMouseDown={startResize} className="absolute inset-y-0 end-0 w-1 cursor-col-resize" />
 </TableHead>
 ```
 
 Correct:
 
 ```tsx
-<TableHead className="relative" style={{ width: column.getSize() }}>
+<TableHead className="relative" style={{ width: widths.field }}>
   Field
-  <TableColumnResizer label="Field" value={column.getSize()} onValueChange={(size) => setColumnSizing((s) => ({ ...s, [column.id]: size }))} />
+  <TableColumnResizer label="Field" value={widths.field} onValueChange={(width) => setWidths((w) => ({ ...w, field: width }))} />
 </TableHead>
 ```
 
@@ -61,7 +62,7 @@ Wrong:
 Correct:
 
 ```tsx
-<Table className="table-fixed" style={{ width: table.getTotalSize() }}>
+<Table className="table-fixed" style={{ width: totalWidth, minWidth: "100%" }}>
   <TableHeader><TableRow>{heads}</TableRow></TableHeader>
 </Table>
 ```

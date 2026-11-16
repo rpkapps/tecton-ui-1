@@ -1,63 +1,25 @@
-// Synced from shadcn/ui (apps/v4/examples/base/date-picker-range.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
-import { addDays, format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
-import { type DateRange } from "react-day-picker"
 
-import { Button } from "@tecton/react/button"
-import { Calendar } from "@tecton/react/calendar"
 import { Field, FieldLabel } from "@tecton/react/field"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@tecton/react/popover"
+import { DateRangePicker, type DateRange } from "@tecton/react/date-picker"
 
-export function DatePickerWithRange() {
-  const [date, setDate] = React.useState<DateRange | undefined>({
-    from: new Date(new Date().getFullYear(), 0, 20),
-    to: addDays(new Date(new Date().getFullYear(), 0, 20), 20),
+export default function DatePickerRange() {
+  const [range, setRange] = React.useState<DateRange | undefined>(() => {
+    const year = new Date().getFullYear()
+    return { from: new Date(year, 0, 20), to: new Date(year, 1, 9) }
   })
 
   return (
     <Field className="mx-auto w-60">
-      <FieldLabel htmlFor="date-picker-range">Date Picker Range</FieldLabel>
-      <Popover>
-        <PopoverTrigger
-          render={
-            <Button
-              variant="outline"
-              id="date-picker-range"
-              className="justify-start px-2.5 font-normal"
-            />
-          }
-        >
-          <CalendarIcon data-icon="inline-start" />
-          {date?.from ? (
-            date.to ? (
-              <>
-                {format(date.from, "LLL dd, y")} -{" "}
-                {format(date.to, "LLL dd, y")}
-              </>
-            ) : (
-              format(date.from, "LLL dd, y")
-            )
-          ) : (
-            <span>Pick a date</span>
-          )}
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="range"
-            defaultMonth={date?.from}
-            selected={date}
-            onSelect={setDate}
-            numberOfMonths={2}
-          />
-        </PopoverContent>
-      </Popover>
+      <FieldLabel htmlFor="date-picker-range">Reporting period</FieldLabel>
+      <DateRangePicker
+        id="date-picker-range"
+        value={range}
+        onValueChange={setRange}
+        className="w-full"
+      />
     </Field>
   )
 }

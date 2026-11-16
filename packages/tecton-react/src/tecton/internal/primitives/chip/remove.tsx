@@ -3,7 +3,7 @@
 import * as React from "react"
 
 import { usePrimitive, type PrimitiveProps } from "../render"
-import { ChipContext, ChipRootContext } from "./context"
+import { ChipContext, ChipListContext, ChipRootContext } from "./context"
 
 type ChipRemoveState = { disabled: boolean }
 
@@ -12,12 +12,15 @@ type ChipRemoveProps = PrimitiveProps<"button", ChipRemoveState>
 /**
  * The remove button of a chip. In a chip of a removable group it removes
  * the chip, is skipped by Tab (the grid's Delete key does the same), and is
- * named "Remove" followed by the chip's name, in the group's locale. On its
- * own it is a plain button.
+ * named "Remove" followed by the chip's name, in the group's locale. A
+ * press on it counts as focus on its chip: once the chip goes, focus goes to
+ * the chip now in its place, as for Delete (not to the page with the
+ * button). On its own it is a plain button.
  */
 function ChipRemove(props: ChipRemoveProps) {
   const root = React.useContext(ChipRootContext)
   const chip = React.useContext(ChipContext)
+  const list = React.useContext(ChipListContext)
   const generatedId = React.useId()
   const id = props.id ?? generatedId
   const disabled = !!chip?.disabled
@@ -30,7 +33,9 @@ function ChipRemove(props: ChipRemoveProps) {
       "aria-labelledby": `${id} ${chip.rowId}`,
       disabled: disabled || undefined,
       onClick: (event: React.MouseEvent) => {
-        if (!disabled) root.remove([chip.value], "remove-press", event)
+        if (disabled) return
+        list?.focus.setFocused(chip.value)
+        root.remove([chip.value], "remove-press", event)
       },
     })
   }

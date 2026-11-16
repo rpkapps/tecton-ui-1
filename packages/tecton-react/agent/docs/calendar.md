@@ -14,7 +14,7 @@ import { Calendar, CalendarDayButton } from "@tecton/react/calendar"
 
 ## Not for
 
-- a compact date field that opens a calendar on demand → `Popover` (tecton docs popover)
+- a compact date field that opens a calendar on demand → `DatePicker` (tecton docs date-picker)
 - a year or a month picked in a dense form row → `NativeSelect` (tecton docs native-select)
 
 ## Do
@@ -23,9 +23,9 @@ import { Calendar, CalendarDayButton } from "@tecton/react/calendar"
 - Show more months with `numberOfMonths`, month and year dropdowns with `captionLayout="dropdown"`, week numbers with `showWeekNumber`.
 - Block days with `disabled` — a matcher such as `{ before: new Date() }`, `{ dayOfWeek: [0, 6] }` or a function — so they get the dimmed cell styling.
 - Resize the grid through its variable, `className="[--cell-size:--spacing(11)]"`; never restyle the cells.
-- For a date field, put the `Calendar` in a `PopoverContent` behind a `PopoverTrigger render={<Button variant="outline" />}` inside a `Field`; there is no `DatePicker` component.
+- For a date field use `DatePicker` (a range: `DateRangePicker`), which puts this `Calendar` in a `Popover` behind a button or a date input; never assemble one from `Popover` and `Calendar`.
 - When days are unavailable (rig move, shutdown), say why beside the calendar or in the day; never block days unexplained (a `disabled` matcher, with the reason in the `footer`).
-- Let users type a date they already know or one far from today (`Input type="date"`) instead of paging a `Calendar` month by month.
+- Let users type a date they already know or one far from today (`DatePicker variant="input"`) instead of paging a `Calendar` month by month.
 - An optional or filtering date gets a clear button that empties it (`selected` back to `undefined`).
 
 ## Don't
@@ -92,7 +92,6 @@ The grid, the navigation buttons and the dropdowns all read `--cell-size`, so re
 
 ## Before you finish
 
-- Row selection is a `Checkbox` per row driven by your own state (the row marked `data-state="selected"`), and a row opens through a link in its identifying cell, never an `onClick` on the `tr`.
 - `Calendar` is react-day-picker: `mode="single" | "multiple" | "range"` with `selected` / `onSelect` holding `Date` values and days blocked with a `disabled` matcher — no `@internationalized/date` values, no `minValue`, no `RangeCalendar`.
 
-Related: popover, field, native-select
+Related: date-picker, field, native-select

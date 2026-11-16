@@ -133,7 +133,7 @@ export function DropdownMenuRtl() {
         {t.open}
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        align={dir === "rtl" ? "end" : "start"}
+        align="start"
         dir={dir}
         className="w-36"
         data-lang={dir === "rtl" ? language : undefined}

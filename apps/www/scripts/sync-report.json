@@ -22,8 +22,6 @@
     "combobox",
     "command",
     "context-menu",
-    "data-table",
-    "date-picker",
     "dialog",
     "drawer",
     "dropdown-menu",
@@ -243,15 +241,6 @@
     "context-menu-shortcuts",
     "context-menu-sides",
     "context-menu-submenu",
-    "data-table-demo",
-    "data-table-rtl",
-    "date-picker-basic",
-    "date-picker-demo",
-    "date-picker-dob",
-    "date-picker-input",
-    "date-picker-range",
-    "date-picker-rtl",
-    "date-picker-time",
     "dialog-close-button",
     "dialog-demo",
     "dialog-no-close-button",
@@ -547,7 +536,6 @@
     "code-block-streaming": "unsupported import: ai",
     "code-block-markdown": "unsupported import: @ai-sdk/react",
     "collapsible-basic": "unsupported import: @/registry/icons/__lucide__",
-    "date-picker-natural-language": "unsupported import: chrono-node",
     "message-scroller-demo": "unsupported import: @ai-sdk/react",
     "message-scroller-anchoring": "unsupported import: @/components/message-animated",
     "message-scroller-previous-context": "unsupported import: @ai-sdk/react",
@@ -581,9 +569,6 @@
     ],
     "collapsible": [
       "collapsible-basic"
-    ],
-    "date-picker": [
-      "date-picker-natural-language"
     ],
     "message-scroller": [
       "message-scroller-demo",

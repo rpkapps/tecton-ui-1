@@ -192,7 +192,7 @@ import { arSA } from "react-day-picker/locale"
 
 ### Not for
 
-- a compact date field that opens a calendar on demand: use [Popover](/docs/components/popover)
+- a compact date field that opens a calendar on demand: use [DatePicker](/docs/components/date-picker)
 - a year or a month picked in a dense form row: use [NativeSelect](/docs/components/native-select)
 
 ### Do
@@ -225,7 +225,7 @@ Resize the grid through its variable, `className="[--cell-size:--spacing(11)]"`;
 
 <Do>
 
-For a date field, put the `Calendar` in a `PopoverContent` behind a `PopoverTrigger render={<Button variant="outline" />}` inside a `Field`; there is no `DatePicker` component.
+For a date field use `DatePicker` (a range: `DateRangePicker`), which puts this `Calendar` in a `Popover` behind a button or a date input; never assemble one from `Popover` and `Calendar`.
 
 </Do>
 
@@ -237,7 +237,7 @@ When days are unavailable (rig move, shutdown), say why beside the calendar or i
 
 <Do>
 
-Let users type a date they already know or one far from today (`Input type="date"`) instead of paging a `Calendar` month by month.
+Let users type a date they already know or one far from today (`DatePicker variant="input"`) instead of paging a `Calendar` month by month.
 
 </Do>
 

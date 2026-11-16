@@ -1,0 +1,13 @@
+## Indeterminate
+
+Pass `value={null}` while the amount of work is not known yet: a request with no total, the first page of a query, a refresh. A segment then sweeps across the track, entering at the start and leaving at the end (right to left in RTL), and repeats until a value arrives. With reduced motion turned on, the whole bar pulses slowly instead. Screen readers hear a progressbar with no value, so name it as any other.
+
+<ComponentPreview name="progress-indeterminate" />
+
+```tsx
+<Progress value={null} className="w-full max-w-sm">
+  <ProgressLabel>Loading well logs</ProgressLabel>
+</Progress>
+```
+
+Switch to a number as soon as the total is known; the indicator then fills to the value.

@@ -21,6 +21,8 @@ type SelectionAnnouncementOptions = {
   getText: (key: string) => string
   /** Every key "select all" covers: selecting them all reads "All items selected." */
   getAllKeys: () => ReadonlyArray<string>
+  /** The number of items selected: the selection's size by default. */
+  getCount?: () => number
 }
 
 function useSelectionAnnouncement({
@@ -30,6 +32,7 @@ function useSelectionAnnouncement({
   hasFocus,
   getText,
   getAllKeys,
+  getCount,
 }: SelectionAnnouncementOptions) {
   const t = useTranslations("grid")
   const last = React.useRef(selected)
@@ -56,7 +59,7 @@ function useSelectionAnnouncement({
         messages.push(
           isAll
             ? t("selectedAll")
-            : t("selectedCount", { count: selected.size })
+            : t("selectedCount", { count: getCount?.() ?? selected.size })
         )
     }
     announce(messages.join(" "))

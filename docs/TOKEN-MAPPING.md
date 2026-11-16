@@ -25,7 +25,7 @@ Tecton token was chosen (see note); **derived** = computed, no Tecton source.
 | `--secondary-foreground` | `--tecton-color-action-secondary-text` | `#bab3c0` | `#644a78` | exact | Text on the secondary action surface. |
 | `--muted` | `--tecton-color-input-filled-bg` | `#28232c` | `#f0eef3` | approximated | Tecton has no generic 'muted surface'; the filled-input background (also the table footer) is the closest subdued surface. |
 | `--muted-foreground` | `--tecton-color-text-secondary` | `#a7a2ac` | `#604e6e` | exact | Secondary labels, descriptions and metadata. |
-| `--accent` | `--tecton-color-action-tertiary-bg-hover` | `#3a343e` | `#ece8f0` | approximated | shadcn uses accent for hover/selected rows and ghost hover; Tecton's tertiary hover surface (same as the table hover row) plays that role. |
+| `--accent` | `--tecton-color-action-tertiary-bg-hover` | `#3a343e` | `#ece8f0` | approximated | shadcn uses accent for hover/selected items and ghost hover; Tecton's tertiary hover surface plays that role (table rows hover with `table-hover`). |
 | `--accent-foreground` | `--tecton-color-text-primary` | `#f6f5f8` | `#21172a` | exact | Text on hovered/selected surfaces. |
 | `--destructive` | `--tecton-color-status-error` | `#c16e6c` | `#ba2a0f` | exact | Error status main colour; shadcn draws destructive text on background and destructive buttons with destructive/10. |
 | `--border` | `--tecton-color-divider` | `#57515c` | `#b2a1bb` | exact | Default divider/border. |
@@ -114,7 +114,9 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--avatar-foreground` | `--tecton-color-avatar-text` | `#131214` | `#fafafb` | exact | Initials / icon on the avatar fallback surface. |
 | `--input-hover` | `--tecton-color-input-outlined-border-hover` | `#a7a2ac` | `#6d5a7d` | exact | Outlined input, textarea and select border while hovered. |
 | `--table-header` | `--tecton-color-table-header-bg` | `#433d47` | `#d5cddb` | exact | Table header row surface (Tecton draws the header as a filled band). |
-| `--table-active` | `--tecton-color-table-cell-bg-active` | `#4e4853` | `#e4dde7` | exact | Selected table row surface; the hovered row uses accent. |
+| `--table-cell` | `--tecton-color-table-cell-bg` | `#1d1c1f` | `#ffffff` | exact | Table body cell surface: the body rows' fill (white in light mode), under the stripes (`surface-alt`), hover and selection. |
+| `--table-hover` | `--tecton-color-table-cell-bg-hover` | `#3a343e` | `#ebe9ee` | exact | Hovered table row surface. |
+| `--table-active` | `--tecton-color-table-cell-bg-active` | `#4e4853` | `#e4dde7` | exact | Selected table row surface. |
 | `--slider` | `--tecton-color-accent-lilac-main` | `#9f8ead` | `#7a4e9b` | exact | Slider range and thumb (Tecton's lilac); the rail is `slider-rail`. |
 | `--progress` | `--tecton-color-extended-lilac-680` | `#af9ebc` | `#6b438c` | exact | Progress indicator (bar), as the Tecton MUI linear progress; the track is `progress-track`. |
 | `--tooltip` | `--tecton-color-surface-elevation-2-bg` | `#000000` | `#ffffff` | exact | Tooltip surface: Tecton's second elevation level, as the Tecton MUI tooltip uses (white in light mode, black in dark mode). |
@@ -205,6 +207,8 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--color-avatar-foreground` | `var(--avatar-foreground)` | `var(--avatar-foreground)` |
 | `--color-input-hover` | `var(--input-hover)` | `var(--input-hover)` |
 | `--color-table-header` | `var(--table-header)` | `var(--table-header)` |
+| `--color-table-cell` | `var(--table-cell)` | `var(--table-cell)` |
+| `--color-table-hover` | `var(--table-hover)` | `var(--table-hover)` |
 | `--color-table-active` | `var(--table-active)` | `var(--table-active)` |
 | `--color-slider` | `var(--slider)` | `var(--slider)` |
 | `--color-progress` | `var(--progress)` | `var(--progress)` |

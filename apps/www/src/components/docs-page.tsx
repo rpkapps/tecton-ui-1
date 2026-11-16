@@ -9,6 +9,7 @@ import { buttonVariants } from "@tecton/react/button"
 import { DocsTableOfContents } from "@/components/docs-toc"
 import { getMDXComponents } from "@/components/mdx"
 import { getDocsPage } from "@/lib/page-tree"
+import { preloadMarker } from "@/lib/preload"
 import { siteConfig } from "@/lib/site"
 
 type DocsPageData = NonNullable<Awaited<ReturnType<typeof getDocsPage>>>
@@ -32,13 +33,20 @@ const clientLoader = browserCollections.docs.createClientLoader({
 })
 
 /**
- * The loader of a docs route: the page at `slugs`, with its code-split MDX
- * body fetched so it renders synchronously (also on SSR).
+ * Fetches the code-split MDX body at `path`, so that it renders synchronously:
+ * by the loader of a docs route (also on SSR) and, as a loader does not run
+ * for the page the browser hydrates, by the client entry before hydration
+ * (lib/preload.ts).
  */
+function preloadDocsBody(path: string) {
+  return clientLoader.preload(path)
+}
+
+/** The loader of a docs route: the page at `slugs`, its MDX body fetched. */
 async function loadDocsPage(slugs: string[]): Promise<DocsPageData> {
   const data = await getDocsPage({ data: slugs })
   if (!data) throw notFound()
-  await clientLoader.preload(data.path)
+  await preloadDocsBody(data.path)
   return data
 }
 
@@ -68,7 +76,7 @@ function DocsPage({ data }: { data: DocsPageData }) {
 }
 
 function Content({
-  data: { title, description, links, previous, next },
+  data: { path, title, description, links, previous, next },
   toc,
   body,
 }: {
@@ -80,6 +88,7 @@ function Content({
     <div
       data-slot="docs"
       className="flex scroll-mt-24 items-stretch pb-8 text-[1.05rem] sm:text-[15px] xl:w-full"
+      {...preloadMarker("docs-page", path)}
     >
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="h-(--top-spacing) shrink-0" />
@@ -201,4 +210,4 @@ function Content({
   )
 }
 
-export { DocsPage, docsPageHead, loadDocsPage }
+export { DocsPage, docsPageHead, loadDocsPage, preloadDocsBody }

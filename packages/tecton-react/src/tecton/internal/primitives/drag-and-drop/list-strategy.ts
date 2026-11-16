@@ -3,7 +3,11 @@
  * table columns, a stack of items) for `useDragAndDrop`. A drop goes into a
  * gap between the items shown: gap `g` is before the `g`th item shown, gap
  * `n` after the last. The two gaps next to the dragged item would leave it
- * where it is, so they are not places.
+ * where it is: the pointer does not aim them, and the keyboard has one of
+ * them, the gap before it, as the item's own place, where a drag starts
+ * (a drop there moves nothing). Each arrow key then aims the next place,
+ * one move each; places are named after the items around them but the
+ * dragged one ("Insert between A and C" for B's own place).
  *
  * The items shown may be a subset of the order (a page of rows, the visible
  * columns): a drop moves the item in the whole order, before the item shown
@@ -173,16 +177,14 @@ function createListStrategy({
       const list = items()
       const index = indexOf(dragging)
       const places: Array<ListDropPlace> = []
-      let start = -1
+      let start = 0
       for (let gap = 0; gap <= list.length; gap++) {
-        if (index >= 0 && isStay(index, gap)) continue
-        if (start < 0 && gap > index) start = places.length
+        // The item's own place once (the gap before it): where it starts.
+        if (index >= 0 && gap === index + 1) continue
+        if (gap === index) start = places.length
         places.push({ gap })
       }
-      return {
-        places,
-        start: start < 0 ? Math.max(places.length - 1, 0) : start,
-      }
+      return { places, start }
     },
 
     isSame: (a, b) => a.gap === b.gap && !!a.end === !!b.end,
@@ -223,11 +225,14 @@ function createListStrategy({
       return best
     },
 
-    label({ gap }, t: Translator<"dragAndDrop">) {
-      const list = items()
-      const before = list.at(gap - 1)
-      const after = gap < list.length ? list.at(gap) : undefined
-      if (gap > 0 && before && after)
+    label({ gap }, t: Translator<"dragAndDrop">, dragging) {
+      // The items around the place but the dragged one.
+      const list = items().filter((item) => item.value !== dragging.at(0))
+      const index = indexOf(dragging)
+      const at = index >= 0 && gap > index ? gap - 1 : gap
+      const before = at > 0 ? list.at(at - 1) : undefined
+      const after = at < list.length ? list.at(at) : undefined
+      if (before && after)
         return t("insertBetween", {
           beforeItemText: before.label,
           afterItemText: after.label,

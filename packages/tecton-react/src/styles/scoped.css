@@ -490,6 +490,8 @@
   --color-number-field-fill: var(--number-field-fill, var(--tecton-color-accent-lilac-muted, light-dark(#decae5, #514659)));
   --color-input-filled: var(--input-filled, var(--tecton-color-input-filled-bg, light-dark(#f0eef3, #28232c)));
   --color-input-filled-focus: var(--input-filled-focus, var(--tecton-color-input-filled-bg-focus, light-dark(#f6f3f8, #342f39)));
+  --color-table-cell: var(--table-cell, var(--tecton-color-table-cell-bg, light-dark(#ffffff, #1d1c1f)));
+  --color-table-hover: var(--table-hover, var(--tecton-color-table-cell-bg-hover, light-dark(#ebe9ee, #3a343e)));
 }
 
 @custom-variant dark (&:where(.dark *, [data-theme="dark"] *):not(:where(:is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]), :is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]) *)));

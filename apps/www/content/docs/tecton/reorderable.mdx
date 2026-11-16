@@ -42,11 +42,11 @@ Reorderable
 
 ## Tables
 
-Wrap the whole `Table`, not its body, and render each row with `render={<TableRow />}`. For columns, set `orientation="horizontal"` and render each header with `render={<TableHead />}` and `dragHandle={false}`: a header has no room for a grip, so the header itself is dragged and focused. The Data Table page has both recipes with TanStack Table: [row reordering](/docs/components/data-table#row-reordering) and [column reordering](/docs/components/data-table#column-reordering).
+Wrap the whole `Table`, not its body, and render each row with `render={<TableRow />}`. For columns, set `orientation="horizontal"` and render each header with `render={<TableHead />}` and `dragHandle={false}`: a header has no room for a grip, so the header itself is dragged and focused.
 
 Items left out of the page, such as another page of rows or a hidden column, keep their place in `value`: a dropped item lands next to the item it was dropped beside.
 
-To reorder both the rows and the columns of one table, put one `Reorderable` inside the other around the `Table`. An item belongs to the nearest `Reorderable` whose `value` holds it, so the column headers join the horizontal list and the rows the vertical one. The Data Table [playground](/docs/components/data-table#playground) does this.
+To reorder both the rows and the columns of one table, put one `Reorderable` inside the other around the `Table`. An item belongs to the nearest `Reorderable` whose `value` holds it, so the column headers join the horizontal list and the rows the vertical one.
 
 ## Horizontal
 
@@ -92,7 +92,7 @@ An item takes the size of its slot, including the slot it is shown in during a d
 ## Keyboard and screen readers
 
 - **Pointer:** press the handle (or the item, with `dragHandle={false}`) and drag. Near the edge of the scroll container (a table's, or the page) the list scrolls, up and down for rows and sideways for columns of a wide table. A finger on an item without a handle drags after a long press, so a quick swipe still scrolls. A line shows where the item will land. Escape cancels.
-- **Keyboard:** focus the handle and press Enter or Space. The arrow keys (or Tab) move between gaps, each one announced ("Insert between B-3 and C-7"). Enter or Space drops and Escape cancels. The list scrolls to keep the aimed gap in view, clear of a sticky header. Focus returns to the moved item's handle.
+- **Keyboard:** focus the handle and press Enter or Space. The drag starts at the item's own place, announced after its neighbours ("Insert between A-12 and C-7" for B-3; a drop there moves nothing), and each arrow key (or Tab) moves one place, each one announced ("Insert between C-7 and D-2"). Enter or Space drops and Escape cancels. The list scrolls to keep the aimed gap in view, clear of a sticky header. Focus returns to the moved item's handle.
 - **Screen reader on a touch screen:** activating the handle turns every gap into a button. Double tap one to drop.
 - **Swap:** Enter or Space starts with the item where it is ("Keep Pressure here"). The arrow keys move to the nearest slot wholly in that direction, the same row or column first, and Tab steps through the slots in order. Each slot is announced ("Swap with Alarms", "Move to empty slot 8") and shows its swap. Give an empty slot a `label` to announce it by name.
 
@@ -113,7 +113,7 @@ Set `dropAnimation={false}` to drop without it:
 ### Use it when
 
 - The user puts rows of a table in their own order: a drilling queue, a run sequence, a playlist of logs.
-- The user moves the columns of a data table into the order they read them in.
+- The user moves the columns of a plain `Table` into the order they read them in (a `DataTable` does it with `reorderableColumns`).
 - A short stack of items (steps, tracks, layers) has an order the user decides.
 - The user arranges a grid of cards: equal cards put in order (`orientation="grid"`), or tiles of several sizes swapped between the fixed slots of a bento grid (`mode="swap"`).
 
@@ -121,7 +121,7 @@ Set `dropAnimation={false}` to drop without it:
 
 - open workspace tabs the user drags into another order: use [DocumentTabs](/docs/tecton/document-tabs)
 - moving rows between folders of a hierarchy: use [TreeView](/docs/tecton/tree-view)
-- sorting rows by a column's values: use [TanStack Table](/docs/components/data-table)
+- sorting rows by a column's values: use [DataTable](/docs/components/data-table)
 
 ### Do
 

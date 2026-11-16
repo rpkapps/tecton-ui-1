@@ -23,10 +23,10 @@ Upstream authors every preset as a CSS file of `@apply` lists
 component sources of each base (`apps/v4/registry/bases/<base>/ui/*.tsx`). Tecton is one more
 preset, built from `scripts/registry-mirror/overlay/` for the `base` base only:
 
-| File               | What it is                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `style-tecton.css` | `style-vega.css` with the Tecton deviations: solid 2px focus ring (`ring-2 ring-ring`), flat controls (no `shadow-xs`), buttons that lighten on hover / press (`:active`, since Base UI's Button sets no press attribute), Tecton tab and toggle colours, the surfaces and control colours of Tecton's MUI theme (sheet and drawer on `card`, blurred `backdrop` overlays, `filled` checked checkbox / radio, a lilac slider on `slider-rail`, `progress-track`, `content-*` sidebar states), and the class lists of the extra variants |
-| `tecton.patch`     | Registers the style in `registry/styles.tsx` and patches `registry/bases/base/ui/*` (see [Overlay hunks](#overlay-hunks))                                                                                                                                                                                                                                                                                                                                                                                                               |
+| File               | What it is                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `style-tecton.css` | `style-vega.css` with the Tecton deviations: solid 2px focus ring (`ring-2 ring-ring`), flat controls (no `shadow-xs`), buttons that lighten on hover / press (`:active`, since Base UI's Button sets no press attribute), Tecton tab and toggle colours, the surfaces and control colours of Tecton's MUI theme (sheet and drawer on `card`, blurred `backdrop` overlays, `filled` checked checkbox / radio, a disabled checkbox dimmed by Base UI's `data-disabled` (upstream's `disabled:` never matches its non-native root, so a checkbox outside a `Field` showed no disabled state), a lilac slider on `slider-rail`, `progress-track`, `content-*` sidebar states), a field's label, control and description `gap-2` apart (`cn-field`; vega's `gap-3`), the indeterminate `progress-indicator` (`data-indeterminate`: a segment swept across the track by the vendored `tw-shimmer` keyframes, reversed in RTL, a `pulse` with reduced motion), and the class lists of the extra variants |
+| `tecton.patch`     | Registers the style in `registry/styles.tsx` and patches `registry/bases/base/ui/*` (see [Overlay hunks](#overlay-hunks))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 
 `scripts/registry-mirror.sh build` resets every file under `registry/bases` and
 `registry/styles.tsx` that differs from the pin (plus every file the patch names), re-applies the
@@ -189,14 +189,35 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   `ContextMenuContent` and their `*SubContent` directly). `usePortalTarget()` is never `null`,
   which Base UI would read as "render nothing". Tested in
   `src/tecton/__tests__/overlay-portal-container.test.tsx`.
+- **Anchor** (`dropdown-menu`, `popover`) — `DropdownMenuContent` and `PopoverContent` take the
+  positioner's `anchor`, so a controlled menu or popover can sit by an element that is not its
+  `*Trigger`. The DataTable's toolbar parts use it: opened from the toolbar's "More" menu, their
+  popup sits by the More button (`src/tecton/internal/data-table/part-popup.ts`). Tested in
+  `src/tecton/__tests__/data-table-toolbar.test.tsx`.
+- **Non-modal `DropdownMenu`** (`dropdown-menu`) — `DropdownMenu` defaults `modal` to `false` and
+  passes it through, so `modal` still makes a menu modal. A modal menu locks page scroll, and each
+  lock re-probes scrollbar-gutter support on `<html>`, restyling the whole document (150–200 ms per
+  open and close on a page with a DataTable, the open animation lost). Tested in
+  `src/tecton/__tests__/dropdown-menu-modal.test.tsx`.
+- **Non-modal `Select`, list below the trigger** (`select`) — `Select` is a function that defaults
+  `modal` to `false` (upstream re-exports the root), and `SelectContent` defaults
+  `alignItemWithTrigger` to `false` and `align` to `"start"`; all three pass through. A modal Select
+  and an aligned list (the selected item over the value: fixed positioning, no anchor tracking)
+  each lock page scroll, with the same whole-document restyle as a modal `DropdownMenu`. The list
+  opens below the trigger instead, start-aligned so a trigger narrower than the list's `min-w-36`
+  keeps the list under it (as the aligned list sat), and plays its open animation (aligned lists
+  have `animate-none`). Tested in `src/tecton/__tests__/select-modal.test.tsx`. `ContextMenu` stays
+  modal: Base UI's context-menu root drops `modal` (its props omit it, and the menu store forces
+  `modal` for a context menu), so no overlay default can reach it.
 - **Variant axes** — `alert` (`variant` success / warning / info, `appearance` default / outline /
   filled, exposed as `data-variant` / `data-appearance`; `alertVariants` exported), `badge`
   (`variant` success / warning / info, `appearance` solid / outline, `size` default / md / lg,
   exposed as `data-appearance` / `data-size`; 2px focus ring), `separator` (`emphasis` subtle /
   default / strong, `data-emphasis`, `separatorVariants`), `input` / `textarea` / `select` trigger
   (`variant` outline / filled / text, `data-variant`; `inputVariants`, `textareaVariants`,
-  `selectTriggerVariants`). The `select` trigger variants and the `input-otp` container are pinned
-  in `src/tecton/__tests__/overlay-variants.test.tsx`.
+  `selectTriggerVariants`), `table` (`size` default / sm, `striped`; see `table` below). The
+  `select` trigger variants and the `input-otp` container are pinned in
+  `src/tecton/__tests__/overlay-variants.test.tsx`.
 - **`button`** — renders `data-variant` / `data-size` (as the other bases do), which the
   `button-group` rule in `style-tecton.css` keys on to give filled members the outline stroke when
   the group has an outlined member.
@@ -263,16 +284,64 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   any `ThemeRoot` (else the oldest) is elected, and the `toast` of every other copy of the package
   on the page (micro-frontend remotes) routes `add`/`update`/`close`/`promise` into it, so the
   page has one toast stack.
-- **`table`** — `Table` takes `virtualized`: its container becomes the scroll element
+- **`table`** — `Table` takes `size` (`"default"` / `"sm"`, `data-size`) and `striped`
+  (`data-striped`), a variant axis like `badge`'s. In `style-tecton.css` `sm` gives the table
+  `text-xs` (`data-[size=sm]:`; a nested table resets it with its own `text-sm`) and its own
+  `TableHead`s `h-8` and `TableCell`s `py-1` (`[:where([data-size=sm]>*>tr)>&]:`, so a table
+  nested in a cell keeps its own size; the horizontal padding stays), while `striped` gives
+  every even, unselected row of the table's own body `bg-surface-alt`
+  (`[&:where([data-striped]>tbody>:nth-child(even):not([data-selected=true],[data-state=selected]))]:`),
+  and a striped table's rows no longer transition their background
+  (`[&:where([data-striped]>tbody>*)]:transition-[color,border-color,outline-color]`): a row that
+  sorting moves from an even place to an odd one would otherwise carry its old stripe for the
+  transition's 150 ms.
+  The conditions are in `:where()`, no more specific than the part's class, so the hover and
+  expanded fills win over the stripe; a selected row is left out of it, because shadcn's
+  `data-selected:` variant is a `:where()` too and would tie with the stripe, which comes later
+  (a selected row has one fill whatever its place; the footer and a nested table are not
+  striped). A `TableHead` with `scope="row"` (a row header in the body) takes the body
+  cell's look: `h-auto py-3` (`py-1` at `sm`), `font-normal`, `text-inherit` and no header
+  background (`[&[scope=row]]:`, one attribute more specific than the header's rules), so a
+  row names itself without looking like a column header. The body has Tecton's table cell
+  surface as its fill (`cn-table-body`: `bg-table-cell`, white in light mode), whatever the
+  table sits on, so the stripes (`bg-surface-alt`, the page background in light mode) show on
+  it; a body row hovers with Tecton's table hover surface (`cn-table-row`: `hover:bg-table-hover`,
+  not shadcn's `accent`). Tested in `src/tecton/__tests__/table.test.tsx`.
+  `Table` also takes `virtualized`: its container becomes the scroll element
   (`h-full overflow-auto`, filling a parent of bounded height), `TableHeader` sticks
   (`sticky top-0 z-10`; the colour is on the `th`) and `TableBody` mounts only the rows in view,
-  with spacer rows for the rest, `aria-rowcount` / `aria-rowindex` and the focused row kept;
-  `TableBody` takes `items` and a render function called only for the rows in view; the columns are
-  locked at their content's first widths (a px `colgroup`, the space left spread over the columns
-  of text and the last column taking the rest, `table-fixed`) unless the caller made the table
-  fixed. The logic is `src/tecton/internal/table-virtualizer.tsx` (on the shared
-  `useVirtualList`); without `virtualized` the markup is unchanged. Tested in
-  `src/tecton/__tests__/table-virtualized.test.tsx`.
+  with spacer rows for the rest (and an empty row where one keeps the rows' `nth-child` parity,
+  so `striped` does not flicker), `aria-rowcount` / `aria-rowindex` and the focused row kept;
+  `TableBody` takes `items` and a render function called only for the rows in view, and `empty`
+  (one row across every column); the columns are locked at their content's first widths (a px
+  `colgroup`, the space left spread over the columns of text and the last column taking the
+  rest, `table-fixed`) unless the caller made the table fixed (`table-fixed`, header cells with
+  widths, or a `colgroup` of its own, as `DataTable` renders for its column widths). The logic is
+  `src/tecton/internal/table-virtualizer.tsx` (on the shared `useVirtualList`); without
+  `virtualized` the markup is unchanged. Tested in `src/tecton/__tests__/table-virtualized.test.tsx`.
+  The hunk also calls `useTableGrid` in `Table` and `useTableRow` in `TableRow`: grid mode,
+  internal to the package and turned on by `DataTable`. A `Table` inside a `TableGridConfig`
+  becomes a grid (a treegrid when rows have a `level`) that is one tab stop, moved through with
+  the keyboard, with rows that select and activate; each body row's `value`, `disabled`,
+  `textValue`, `level` and `expanded` come from a `TableRowConfig` around it, and the rows of a
+  virtualized body out of view from the config's `describeItem`. A selected row gets
+  `aria-selected` / `data-selected="true"`, which `cn-table-row` fills with `bg-table-active`
+  like `data-[state=selected]`; rows and cells get a focus ring. The logic is
+  `src/tecton/internal/table-grid.tsx` (on the shared selection, type-ahead and announcement
+  primitives); outside a `TableGridConfig` the markup is unchanged and no grid prop is public.
+  Tested in `src/tecton/__tests__/table-grid.test.tsx`. The container also reads
+  `useTableContainer` (`table-grid.tsx`): inside a `TableContainerConfig` (internal, used by
+  `DataTable` for the divider and scroll shadow at pinned columns' edges) it takes that config's `className` and
+  `style` and hands its element to the config's `ref`; outside one it is unchanged.
+- **`--surface`** (`style-tecton.css` only) — every opaque surface sets an inherited
+  `--surface` to its own fill: `card`, `sheet` and `drawer` content `var(--color-card)`; the
+  `dialog`, `alert-dialog`, `popover`, `hover-card`, `dropdown-menu`, `context-menu` (their
+  submenus are the same content), `select`, `combobox` and `command` surfaces
+  `var(--color-popover)`; the sidebar
+  `var(--color-sidebar)` and its inset `var(--color-background)`. (`DataTable`'s opaque rows
+  take the table's own cell surface, `bg-table-cell`, not `--surface`.) Tecton's own surfaces in `src/tecton`
+  (`Panel`, the `AppShell` parts, `ActionBar`, the composer's popup, the document tabs' strip)
+  set it in their own classes.
 
 ## Renaming the package
 

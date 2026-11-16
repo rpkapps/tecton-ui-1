@@ -8,7 +8,7 @@ import { Input } from "@tecton/react/input"
 
 ## Use it when
 
-- A single line of text: name, email, password, date, file.
+- A single line of text: name, email, password, an identifier, a file.
 - The value is free-form; a fixed set of options belongs in a picker instead.
 - Inside a `Field`, so the control arrives with a label and room for an error.
 
@@ -105,6 +105,7 @@ Correct:
 - `Input`, `Textarea` and `SelectTrigger` take their surface from `variant="outline" | "filled" | "text"`, and `className` on them carries layout only (`w-full`, `col-span-2`).
 - An icon, unit, hint or in-field button on a text field lives in an `InputGroup` with `InputGroupInput` (never a plain `Input`) and an `InputGroupAddon` placed after the control in the DOM and positioned with `align`; a `NumberField` uses its own `NumberFieldGroup` instead.
 - A number the user types or steps is a `NumberField` (never `Input type="number"`): the `id` goes on `NumberField`, the unit in `NumberFieldUnit` or `format`, and `onValueChange` reports `number | null`.
+- A date is picked with a `DatePicker` (`variant="input"` to type it too) and a period with a `DateRangePicker`, both holding plain `Date` values in `value` / `onValueChange` — never a `Popover` and a `Calendar` put together by hand, nor an `Input type="date"`.
 - Every numeric value shows its unit (ft, psi, bbl/d): `NumberFieldUnit` in a `NumberField`, after the live value on a `Slider`.
 - Never let a placeholder stand in for the label; keep it to an example value such as `34/10-A-12`.
 - Mark as required only the fields a record cannot be saved without, and show that mark visibly in their label.

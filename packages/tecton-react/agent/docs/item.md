@@ -15,7 +15,7 @@ import { Item, ItemGroup, ItemSeparator, ItemHeader, ItemMedia, ItemContent, Ite
 ## Not for
 
 - a standalone block with its own title, body and footer → `Card` (tecton docs card)
-- rows with columns, sorting, paging and selection → `TanStack Table` (tecton docs tanstack-table)
+- rows with columns, sorting, paging and selection → `DataTable` (tecton docs data-table)
 - the trailing actions of a panel header → `PanelActions` (tecton docs panel)
 
 ## Do

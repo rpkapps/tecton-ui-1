@@ -7,31 +7,38 @@ import { Button } from "@tecton/react/button"
 import { Separator } from "@tecton/react/separator"
 
 import { CodeBlock } from "@/components/code-block"
-import { loadExampleSource } from "@/lib/examples"
+import { getExampleSource } from "@/lib/examples"
+import { preloadMarker, readable } from "@/lib/preload"
 import { hasSource, loadSource, sourceTitle } from "@/lib/sources"
 
 const cache = new Map<string, Promise<string>>()
 
-function resolve(name: string | undefined, src: string | undefined) {
-  const key = src ? `src:${src}` : `name:${name}`
+/** What a `<ComponentSource>` shows: `src:<path>` or `name:<name>`. */
+function sourceKey(name: string | undefined, src: string | undefined) {
+  return src ? `src:${src}` : `name:${name}`
+}
+
+/**
+ * The source at `key` (`sourceKey()`), loaded once, for `use()`
+ * (lib/preload.ts); "" when it cannot be loaded.
+ */
+export function getComponentSource(key: string) {
   let promise = cache.get(key)
   if (!promise) {
-    if (src) {
-      promise = loadSource(src)
-    } else if (name && hasSource(`components/${name}`)) {
-      promise = loadSource(`components/${name}`)
-    } else if (name && hasSource(`tecton/${name}`)) {
-      promise = loadSource(`tecton/${name}`)
-    } else if (name) {
-      promise = loadExampleSource(name)
+    const value = key.slice(key.indexOf(":") + 1)
+    const name = key.startsWith("name:") ? value : undefined
+    let source: Promise<string>
+    if (!name) {
+      source = loadSource(value)
+    } else if (hasSource(`components/${name}`)) {
+      source = loadSource(`components/${name}`)
+    } else if (hasSource(`tecton/${name}`)) {
+      source = loadSource(`tecton/${name}`)
     } else {
-      promise = Promise.resolve("")
+      source = getExampleSource(name)
     }
-    cache.set(
-      key,
-      promise.catch(() => "")
-    )
-    promise = cache.get(key)!
+    promise = readable(source.catch(() => ""))
+    cache.set(key, promise)
   }
   return promise
 }
@@ -51,7 +58,7 @@ function Inner({
   maxLines?: number
   className?: string
 }) {
-  const code = React.use(resolve(name, src))
+  const code = React.use(getComponentSource(sourceKey(name, src)))
   if (!code) {
     return (
       <p className="my-4 text-sm text-muted-foreground">
@@ -104,6 +111,7 @@ export function ComponentSource({
 }) {
   if (!name && !src) return null
 
+  const marker = preloadMarker("source", sourceKey(name, src))
   const content = (
     <React.Suspense
       fallback={<div className="bg-code mt-6 h-24 animate-pulse rounded-2xl" />}
@@ -120,10 +128,14 @@ export function ComponentSource({
   )
 
   if (!collapsible)
-    return <div className={cn("relative", className)}>{content}</div>
+    return (
+      <div className={cn("relative", className)} {...marker}>
+        {content}
+      </div>
+    )
 
   return (
-    <CodeCollapsibleWrapper className={className}>
+    <CodeCollapsibleWrapper className={className} {...marker}>
       {content}
     </CodeCollapsibleWrapper>
   )
@@ -132,10 +144,8 @@ export function ComponentSource({
 export function CodeCollapsibleWrapper({
   className,
   children,
-}: {
-  className?: string
-  children: React.ReactNode
-}) {
+  ...props
+}: React.ComponentProps<"div">) {
   const [isOpened, setIsOpened] = React.useState(false)
 
   return (
@@ -143,6 +153,7 @@ export function CodeCollapsibleWrapper({
       data-not-typeset
       data-state={isOpened ? "open" : "closed"}
       className={cn("group/collapsible relative md:-mx-1", className)}
+      {...props}
     >
       <div className="absolute top-1.5 right-9 z-10 flex items-center">
         <Button

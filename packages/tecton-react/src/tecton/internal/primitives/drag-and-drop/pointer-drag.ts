@@ -13,7 +13,10 @@
  *   sideways: a wide table), so a drop target stays right under a resting
  *   pointer while content scrolls.
  * - With `preview`, a copy of the item follows the pointer (the item itself
- *   keeps its look); with `capture`, that element takes the pointer, so
+ *   keeps its look): along one axis only, level with the item, with its
+ *   `axis`; cut to an element's box (a table's frame) with `clip`; opaque
+ *   with `solid`, see-through otherwise. With `capture`, that element takes
+ *   the pointer, so
  *   nothing else hovers while dragging. Escape cancels; a click the release
  *   would cause is swallowed; a finger does not pan or open a menu.
  *
@@ -35,7 +38,16 @@ type PointerDragOptions = {
   /** Scrolls the nearest scroll containers of this element at their edges. */
   autoScroll?: HTMLElement | null
   /** A copy of `item` follows the pointer, appended to `container`. */
-  preview?: { item: HTMLElement; container?: HTMLElement | null } | null
+  preview?: {
+    item: HTMLElement
+    container?: HTMLElement | null
+    /** It moves along this axis only, kept level with the item on the other. */
+    axis?: "x" | "y"
+    /** Only its part inside this element's border shows. */
+    clip?: HTMLElement | null
+    /** Opaque, rather than see-through. */
+    solid?: boolean
+  } | null
   /** Called as the press becomes a drag; `false` refuses it. */
   onStart: () => boolean | void
   /** The pointer in the viewport, and its travel since the press. */
@@ -147,7 +159,11 @@ function tablePreview(item: HTMLElement, copy: HTMLElement) {
 }
 
 /** A copy of `item` under the pointer, as the browser's own drag shows one. */
-function createPreview(item: HTMLElement, container: HTMLElement) {
+function createPreview(
+  item: HTMLElement,
+  container: HTMLElement,
+  solid = false
+) {
   const copy = item.cloneNode(true) as HTMLElement
   for (const element of [copy, ...copy.querySelectorAll("[id]")]) {
     element.removeAttribute("id")
@@ -174,11 +190,12 @@ function createPreview(item: HTMLElement, container: HTMLElement) {
     margin: "0",
     font: style.font,
     color: style.color,
-    opacity: "0.8",
+    opacity: solid ? "1" : "0.8",
     pointerEvents: "none",
     zIndex: "50",
   })
-  preview.classList.add("bg-background", "shadow-md")
+  // A solid one is lifted higher: nothing shows through it.
+  preview.classList.add("bg-background", solid ? "shadow-lg" : "shadow-md")
   container.append(preview)
   return preview
 }
@@ -248,8 +265,24 @@ function trackPointerDrag(
 
   const travel = () => ({ x: pointer.x - origin.x, y: pointer.y - origin.y })
   const place = () => {
-    if (preview)
-      preview.style.transform = `translate(${pointer.x - grab.x}px, ${pointer.y - grab.y}px)`
+    if (!preview || !previewOf) return
+    const { item, axis: along, clip } = previewOf
+    // Level with the item across the axis it moves along.
+    const box = along ? item.getBoundingClientRect() : null
+    const x = along === "y" && box ? box.left : pointer.x - grab.x
+    const y = along === "x" && box ? box.top : pointer.y - grab.y
+    preview.style.transform = `translate(${x}px, ${y}px)`
+    if (!clip) return
+    // The frame's inside, in the preview's own box (negative where the
+    // frame reaches past it, so its shadow shows there).
+    const edge = clip.getBoundingClientRect()
+    const width = parseFloat(preview.style.width)
+    const height = parseFloat(preview.style.height)
+    const top = edge.top + clip.clientTop - y
+    const left = edge.left + clip.clientLeft - x
+    const right = x + width - (edge.left + clip.clientLeft + clip.clientWidth)
+    const bottom = y + height - (edge.top + clip.clientTop + clip.clientHeight)
+    preview.style.clipPath = `inset(${top}px ${right}px ${bottom}px ${left}px)`
   }
   const tick = () => {
     frame = view.requestAnimationFrame(tick)
@@ -276,7 +309,11 @@ function trackPointerDrag(
     if (previewOf) {
       const box = previewOf.item.getBoundingClientRect()
       grab = { x: origin.x - box.left, y: origin.y - box.top }
-      preview = createPreview(previewOf.item, previewOf.container ?? doc.body)
+      preview = createPreview(
+        previewOf.item,
+        previewOf.container ?? doc.body,
+        previewOf.solid
+      )
       place()
     }
     if (scrollFrom) {

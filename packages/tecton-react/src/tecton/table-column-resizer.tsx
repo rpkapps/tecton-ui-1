@@ -5,6 +5,10 @@ import { cn } from "cn"
 
 import { useDirection } from "@tecton/react/provider"
 
+import {
+  columnResizerClassName,
+  columnResizerStartClassName,
+} from "./internal/column-resizer-style"
 import { useTranslations } from "./internal/i18n/translations"
 import { trackPointerDrag } from "./internal/primitives/drag-and-drop/pointer-drag"
 import {
@@ -22,6 +26,9 @@ import {
  * focus it and press the arrow keys (Shift for bigger steps), Home or End
  * for the narrowest or widest, Enter (or a double click) for `resetValue`.
  * In a right-to-left table the edge, the drag and the arrow keys mirror.
+ * With `edge="start"` the grip sits on the header's start edge instead (a
+ * column pinned to the table's end grows toward its start): dragging or
+ * pressing the arrow toward the start widens it.
  *
  * It holds no width of its own beyond `defaultValue`: give the header
  * `className="relative"`, set the column's width from `value`, and give the
@@ -31,10 +38,10 @@ import {
  *
  * The look: a short, quiet line at rest (none after the last column); the
  * header's full height while the pointer is over the header; a 2 px line
- * in the active outline colour on the grip (strong in both themes), with
- * a tint on hover and the focus ring, centred on it, on keyboard focus;
+ * in the drop line's colour (`primary-active`) on the grip, with
+ * the focus ring, centred on it, on keyboard focus;
  * and while dragging, a guide line down the table in view and the width
- * beside it.
+ * beside it, on the tooltip's surface.
  */
 
 type TableColumnResizerReason = "drag" | "keyboard" | "reset"
@@ -70,6 +77,11 @@ type TableColumnResizerProps = Omit<
   resetValue?: number
   /** The column's name: the resizer is named "Resize {label}". */
   label?: string
+  /**
+   * The header edge the grip sits on: `"end"` (default), or `"start"` for a
+   * column that grows toward its start (one pinned to the table's end).
+   */
+  edge?: "start" | "end"
   disabled?: boolean
 }
 
@@ -87,6 +99,7 @@ function TableColumnResizer({
   step = 8,
   resetValue,
   label,
+  edge = "end",
   disabled = false,
   className,
   onPointerDown,
@@ -100,6 +113,8 @@ function TableColumnResizer({
   // While dragging: how far the guide runs down the visible table.
   const [guide, setGuide] = React.useState(0)
   const rtl = useDirection() === "rtl"
+  // +1 when moving toward the inline end widens the column.
+  const sign = (rtl ? -1 : 1) * (edge === "start" ? -1 : 1)
   const t = useTranslations("tableColumnResizer")
   const stop = React.useRef<(() => void) | null>(null)
   const latest = React.useRef(value)
@@ -146,25 +161,10 @@ function TableColumnResizer({
       tabIndex={disabled ? undefined : 0}
       data-dragging={dragging ? "" : undefined}
       data-disabled={disabled ? "" : undefined}
+      data-edge={edge}
       className={cn(
-        // A 12 px grip centred on the column's end edge.
-        "absolute inset-y-0 end-0 z-10 -me-1.5 w-3 cursor-col-resize touch-none outline-none select-none",
-        // The line: short and quiet at rest, the header's full height while
-        // the pointer is over the header, 2 px of the active outline colour
-        // on the grip.
-        "after:pointer-events-none after:absolute after:start-[calc(50%-0.5px)] after:top-1/3 after:bottom-1/3 after:w-px after:bg-border",
-        "in-[thead:hover]:after:inset-y-0",
-        "hover:after:inset-y-0 hover:after:start-[calc(50%-1px)] hover:after:w-0.5 hover:after:bg-outline-active-border",
-        "focus-visible:after:inset-y-0 focus-visible:after:start-[calc(50%-1px)] focus-visible:after:w-0.5 focus-visible:after:bg-outline-active-border",
-        "data-dragging:after:inset-y-0 data-dragging:after:start-[calc(50%-1px)] data-dragging:after:w-0.5 data-dragging:after:bg-outline-active-border",
-        // Behind the line, centred on it: the grip's tint on hover, the
-        // focus ring on keyboard focus.
-        "before:pointer-events-none before:absolute before:inset-y-1 before:start-0.5 before:end-0.5 before:rounded-sm",
-        "hover:before:bg-outline-active-border/15 focus-visible:before:ring-2 focus-visible:before:ring-ring data-dragging:before:bg-transparent",
-        // The table's end edge is no divider: the last column shows its
-        // line only when it is reached for.
-        "[th:last-child>&]:after:opacity-0 [th:last-child>&]:hover:after:opacity-100 [th:last-child>&]:focus-visible:after:opacity-100 [th:last-child>&]:data-dragging:after:opacity-100",
-        "data-disabled:pointer-events-none data-disabled:after:hidden",
+        columnResizerClassName,
+        edge === "start" && columnResizerStartClassName,
         className
       )}
       onPointerDown={(event) => {
@@ -185,22 +185,27 @@ function TableColumnResizer({
             } catch {
               // A pointer the browser no longer tracks.
             }
-            // From the header's bottom to the bottom of the table in view.
+            // From the header's bottom to the bottom of the table in view:
+            // the scroller's content box, above its horizontal scrollbar
+            // (a guide reaching past it would make the table scroll).
             const scroller =
               element.closest<HTMLElement>('[data-slot="table-container"]') ??
               element.closest("table")
             const head = element.parentElement?.getBoundingClientRect()
             const box = scroller?.getBoundingClientRect()
-            setGuide(head && box ? Math.max(0, box.bottom - head.bottom) : 0)
+            const bottom =
+              box && scroller
+                ? box.top + scroller.clientTop + scroller.clientHeight
+                : undefined
+            setGuide(
+              head && bottom !== undefined
+                ? Math.max(0, Math.floor(bottom - head.bottom))
+                : 0
+            )
             setDragging(true)
           },
           onMove: (_point, travel) =>
-            change(
-              from + (rtl ? -travel.x : travel.x),
-              "drag",
-              undefined,
-              false
-            ),
+            change(from + sign * travel.x, "drag", undefined, false),
           onEnd: (drop) => {
             if (drop) change(latest.current, "drag", undefined, true)
             else change(from, "drag", undefined, true)
@@ -215,8 +220,8 @@ function TableColumnResizer({
         onKeyDown?.(event)
         if (disabled || event.defaultPrevented) return
         const by = event.shiftKey ? step * 4 : step
-        const wider = rtl ? "ArrowLeft" : "ArrowRight"
-        const narrower = rtl ? "ArrowRight" : "ArrowLeft"
+        const wider = sign > 0 ? "ArrowRight" : "ArrowLeft"
+        const narrower = sign > 0 ? "ArrowLeft" : "ArrowRight"
         let next: number | null = null
         let reason: TableColumnResizerReason = "keyboard"
         if (event.key === wider) next = latest.current + by
@@ -251,13 +256,20 @@ function TableColumnResizer({
           <span
             aria-hidden="true"
             data-slot="table-column-resizer-guide"
-            className="pointer-events-none absolute start-[calc(50%-0.5px)] top-full w-px bg-outline-active-border"
+            className="pointer-events-none absolute start-[calc(50%-0.5px)] top-full w-px bg-primary-active"
             style={{ height: guide }}
           />
           <span
             aria-hidden="true"
             data-slot="table-column-resizer-width"
-            className="pointer-events-none absolute start-[calc(50%+0.5rem)] top-full mt-2 inline-flex h-[22px] items-center rounded-sm bg-foreground px-2 font-mono text-xs whitespace-nowrap text-background tabular-nums"
+            className={cn(
+              "pointer-events-none absolute top-full mt-2 inline-flex h-[22px] items-center rounded-md bg-tooltip px-2 font-mono text-xs whitespace-nowrap text-tooltip-foreground tabular-nums",
+              // Beside the guide, away from the column: over the columns
+              // the edge moves into (a pinned column's cells would cover it).
+              edge === "start"
+                ? "end-[calc(50%+0.5rem)]"
+                : "start-[calc(50%+0.5rem)]"
+            )}
           >
             {value} px
           </span>

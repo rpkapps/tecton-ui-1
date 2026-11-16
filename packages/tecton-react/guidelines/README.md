@@ -52,7 +52,7 @@ related: [Chip, CountBadge]
 | `module` | The import path. Must exist in the package `exports` map and match the file name. |
 | `family` | A key of `families.json`; the module must be listed under it. |
 | `exports` | Every export this file covers (compound parts included: `Chip`, `ChipGroup`, `ChipList`). Each must be a real export of the module. |
-| `notFor` | The boundaries. `need` is the thing an agent wants, in plain words. `use` is the replacement: a `component` or `exports` name from any guideline file, or a key of `externals` in `families.json` (`toast`, `TanStack Table`). Every entry must name a replacement. |
+| `notFor` | The boundaries. `need` is the thing an agent wants, in plain words. `use` is the replacement: a `component` or `exports` name from any guideline file, or a key of `externals` in `families.json` (`toast`, `TanStack Form`). Every entry must name a replacement. |
 | `related` | Components to read next. Same resolution rule as `use`. |
 | `docs` | Optional. The docs page section that documents a module with no page of its own (`components/data-table#column-resizing`). Links to the module go there, and no page is expected at its own path. |
 

@@ -151,6 +151,21 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
   direction="rtl"
 />
 
+## Modal
+
+A `DropdownMenu` is not modal by default, so it opens and closes fast even on a large page and locks nothing on it: the page still scrolls, and a press outside the menu closes it and still reaches what it pressed (another menu's button opens that menu, a field takes focus). Escape and choosing an item return focus to the trigger.
+
+Pass `modal` for a menu whose outside presses must only close it, for example one over destructive controls. A modal menu also locks the page's scroll while it is open.
+
+```tsx
+<DropdownMenu modal>
+  <DropdownMenuTrigger render={<Button variant="outline" />}>
+    Well actions
+  </DropdownMenuTrigger>
+  <DropdownMenuContent>…</DropdownMenuContent>
+</DropdownMenu>
+```
+
 {/* guidelines:start */}
 
 ## Usage guidelines
@@ -173,7 +188,7 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 <Do>
 
-Compose `DropdownMenu` (the root) > `DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}` + `DropdownMenuContent`.
+Compose `DropdownMenu` (the root) > `DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}` + `DropdownMenuContent` (placed with `side` / `align`); nest with `DropdownMenuSub` > `DropdownMenuSubTrigger` + `DropdownMenuSubContent`.
 
 </Do>
 
@@ -197,7 +212,7 @@ Title groups with `DropdownMenuLabel` inside a `DropdownMenuGroup`, divide with 
 
 <Do>
 
-Place with `side` / `align` on `DropdownMenuContent` and nest with `DropdownMenuSub`, `DropdownMenuSubTrigger` and `DropdownMenuSubContent`.
+Leave the menu non-modal (the default: the page keeps scrolling and a press outside closes the menu and still acts); pass `modal` only when an outside press must just close it, e.g. over destructive controls — it locks page scroll.
 
 </Do>
 

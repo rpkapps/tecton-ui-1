@@ -2,6 +2,8 @@ import type * as React from "react"
 
 import { blocks as registry } from "@tecton/blocks"
 
+import { readable } from "@/lib/preload"
+
 export type BlockCategory =
   | "application"
   | "authentication"
@@ -39,12 +41,13 @@ export function getBlock(name: string) {
 
 const cache = new Map<string, Promise<React.ComponentType>>()
 
+/** The block's component, loaded once, for `use()` (lib/preload.ts). */
 export function loadBlock(name: string) {
   let promise = cache.get(name)
   if (!promise) {
     const block = getBlock(name)
     if (!block) throw new Error(`Unknown block: ${name}`)
-    promise = block.component().then((mod) => mod.default)
+    promise = readable(block.component().then((mod) => mod.default))
     cache.set(name, promise)
   }
   return promise

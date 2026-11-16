@@ -9,7 +9,7 @@ import { Reorderable, ReorderableItem, ReorderableHandle } from "@tecton/react/r
 ## Use it when
 
 - The user puts rows of a table in their own order: a drilling queue, a run sequence, a playlist of logs.
-- The user moves the columns of a data table into the order they read them in.
+- The user moves the columns of a plain `Table` into the order they read them in (a `DataTable` does it with `reorderableColumns`).
 - A short stack of items (steps, tracks, layers) has an order the user decides.
 - The user arranges a grid of cards: equal cards put in order (`orientation="grid"`), or tiles of several sizes swapped between the fixed slots of a bento grid (`mode="swap"`).
 
@@ -17,7 +17,7 @@ import { Reorderable, ReorderableItem, ReorderableHandle } from "@tecton/react/r
 
 - open workspace tabs the user drags into another order → `DocumentTabs` (tecton docs document-tabs)
 - moving rows between folders of a hierarchy → `TreeView` (tecton docs tree-view)
-- sorting rows by a column's values → `TanStack Table` (tecton docs tanstack-table)
+- sorting rows by a column's values → `DataTable` (tecton docs data-table)
 
 ## Do
 
@@ -89,6 +89,5 @@ The order is `value` and the whole new array arrives in `onValueChange`; `items`
 ## Before you finish
 
 - Rows or columns the user drags into order are a `Reorderable` around the `Table` with `ReorderableItem render={<TableRow />}` with a `label` and a `ReorderableHandle` (or headers with `render={<TableHead />}`, `dragHandle={false}` and `orientation="horizontal"`, no grip), never native `draggable` rows; a resizable column has a `TableColumnResizer` in its `TableHead` (`relative`, width from state) on a `table-fixed` table.
-- Row selection is a `Checkbox` per row driven by your own state (the row marked `data-state="selected"`), and a row opens through a link in its identifying cell, never an `onClick` on the `tr`.
 
-Related: table, table-column-resizer, item, tanstack-table
+Related: table, data-table, table-column-resizer, item

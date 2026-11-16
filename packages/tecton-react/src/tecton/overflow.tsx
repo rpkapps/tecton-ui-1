@@ -20,6 +20,8 @@ import { Separator } from "@tecton/react/separator"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@tecton/react/tooltip"
 import { useDirection } from "@tecton/react/provider"
 
+import { useTranslations } from "./internal/i18n/translations"
+
 /**
  * Tecton Overflow — a flex row that gives up space in stages when its
  * container gets narrower: elastic items shrink, labels collapse to icons,
@@ -29,6 +31,14 @@ import { useDirection } from "@tecton/react/provider"
  *
  * Only `OverflowItem`s leave the row; unwrapped children are fixed. Items,
  * dividers and spacers must be direct children of the row.
+ *
+ * Rendered on the server, the row cannot know its width: until it has
+ * measured once in the browser (`data-measured` on the row), it keeps to one
+ * line, and the items it may move or collapse, its dividers and whatever
+ * follows the first such item keep their place unseen, so the first layout
+ * drawn is never one the row does not keep. The fixed and elastic items
+ * before them show from the first paint. Mounted in the browser, the row
+ * measures before its first paint.
  *
  * Cost: one `ResizeObserver` per row, sizes cached per element, the visible
  * set kept in a store outside React. Each item subscribes to its own
@@ -132,6 +142,14 @@ class OverflowStore {
   private outOfFlow = new WeakSet<Element>()
   private observer: ResizeObserver | null = null
   private mutations: MutationObserver | null = null
+  /**
+   * The hidden items' content (a filter's summary cleared from outside the
+   * row, a label renamed), and a popup closing anywhere in the row.
+   */
+  private changes: MutationObserver | null = null
+  /** Hidden items whose content changed since their size was cached. */
+  private stale = new Set<Item>()
+  private fonts: FontFaceSet | null = null
   /** The rendered menu trigger's wrapper, while one is shown. */
   private trigger: HTMLElement | null = null
   private warnedLastResort = false
@@ -139,6 +157,12 @@ class OverflowStore {
   private hidden = new Set<string>()
   private compact = false
   private available = 0
+  /**
+   * The row has run its first pass in the browser (or found it has nothing
+   * to measure): what it draws is its real layout from then on.
+   */
+  measured = false
+  private rootSubscribers = new Set<() => void>()
   focusRequested = false
   /** An item that returned from the menu and takes the focus the menu had. */
   focusItem: string | null = null
@@ -154,8 +178,12 @@ class OverflowStore {
 
   attach(root: HTMLElement) {
     // Not in a live document: nothing to measure, and the store stays
-    // detached, so every pass is a no-op.
-    if (!isMeasurable(root)) return
+    // detached, so every pass is a no-op. The row shows every item, as it
+    // would with room for them all.
+    if (!isMeasurable(root)) {
+      this.markMeasured()
+      return
+    }
     this.root = root
     this.observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -194,8 +222,39 @@ class OverflowStore {
         if (!this.syncChildren()) this.compute()
       })
       this.mutations.observe(root, { childList: true })
+      this.changes = new MutationObserver((records) => {
+        if (this.noteChanges(records)) this.compute()
+      })
+      this.watch()
+    }
+    // Text drawn in a web font that arrived after the row was measured: the
+    // visible items report their new size, the hidden ones are measured again.
+    // Not every document has one (jsdom).
+    const fonts = root.ownerDocument.fonts as FontFaceSet | undefined
+    if (fonts) {
+      this.fonts = fonts
+      fonts.addEventListener("loadingdone", this.onFontsLoaded)
     }
     if (!this.syncChildren()) this.compute()
+    this.markMeasured()
+  }
+
+  /**
+   * Once: the row's real layout replaces the unmeasured one, in the same
+   * commit as the pass that made it.
+   */
+  private markMeasured() {
+    if (this.measured) return
+    this.measured = true
+    this.rootSubscribers.forEach((cb) => cb())
+  }
+
+  private onFontsLoaded = () => {
+    for (const id of this.hidden) {
+      const item = this.items.get(id)
+      if (item) this.stale.add(item)
+    }
+    this.compute()
   }
 
   detach() {
@@ -203,6 +262,11 @@ class OverflowStore {
     this.observer = null
     this.mutations?.disconnect()
     this.mutations = null
+    this.changes?.disconnect()
+    this.changes = null
+    this.stale.clear()
+    this.fonts?.removeEventListener("loadingdone", this.onFontsLoaded)
+    this.fonts = null
     this.observed = new WeakSet()
     this.outOfFlow = new WeakSet()
     this.margins = new WeakMap()
@@ -379,6 +443,81 @@ class OverflowStore {
     else item.full = size
   }
 
+  /**
+   * Observe the row for popups that close (an item kept in the row while
+   * its popup was open may have to leave now, rule 5.17) and each hidden
+   * item's content, which can change while it is in the menu.
+   */
+  private watch() {
+    const observer = this.changes
+    if (!observer || !this.root) return
+    // `disconnect` drops what is queued: note it first.
+    const due = this.noteChanges(observer.takeRecords())
+    observer.disconnect()
+    observer.observe(this.root, {
+      subtree: true,
+      attributeFilter: ["aria-expanded"],
+    })
+    for (const id of this.hidden) {
+      const element = this.items.get(id)?.element
+      if (!element) continue
+      observer.observe(element, {
+        subtree: true,
+        childList: true,
+        characterData: true,
+        attributes: true,
+      })
+    }
+    if (due) queueMicrotask(() => this.compute())
+  }
+
+  /** Notes the hidden items whose content changed; true when a pass is due. */
+  private noteChanges(records: MutationRecord[]) {
+    let due = false
+    for (const record of records) {
+      if (record.attributeName === "aria-expanded") due = true
+      let node: Node | null = record.target
+      while (node && node.parentNode !== this.root) node = node.parentNode
+      const item = node ? this.byElement.get(node as Element) : undefined
+      if (!item || !this.hidden.has(item.id)) continue
+      // The row's own marks on the item, written as it hides or compacts.
+      if (
+        record.target === item.element &&
+        (record.attributeName === "data-overflowing" ||
+          record.attributeName === "data-compact")
+      )
+        continue
+      this.stale.add(item)
+      due = true
+    }
+    return due
+  }
+
+  /**
+   * A hidden item's size is the one cached when it was last in the row; an
+   * item whose content changed since is measured again. It is put back in
+   * the row for the read and hidden again in the same task, before any
+   * paint.
+   */
+  private measureStale() {
+    if (this.stale.size === 0) return
+    const items = [...this.stale].filter(
+      (item) =>
+        this.hidden.has(item.id) &&
+        this.items.get(item.id) === item &&
+        isMeasurable(item.element)
+    )
+    this.stale.clear()
+    if (items.length === 0) return
+    for (const item of items) item.element.removeAttribute("data-overflowing")
+    const sizes = items.map((item) => this.rectSize(item.element))
+    items.forEach((item, index) => {
+      if (sizes[index] > 0)
+        this.setSize(item.element, sizes[index] + this.margin(item.element))
+    })
+    for (const item of items) item.element.setAttribute("data-overflowing", "")
+  }
+
   // ---- the pass ------------------------------------------------------------
 
   private entries(): Entry[] {
@@ -479,6 +618,8 @@ class OverflowStore {
 
   compute() {
     if (!this.root) return
+    if (this.changes) this.noteChanges(this.changes.takeRecords())
+    this.measureStale()
     const entries = this.entries()
     const items = entries.flatMap((e) => (e.kind === "item" ? [e.item] : []))
     const { available } = this
@@ -492,7 +633,9 @@ class OverflowStore {
         : this.labels === "never"
 
     // Stage 3: overflow, lowest priority first, ties from the logical end.
-    // An item with an open overlay is not hidden while it is open.
+    // An item in the row with an open overlay is not hidden while it is
+    // open. One already in the menu (its popup opened from there) is not
+    // brought back by it: it returns only when the row has room for it.
     const indexOf = new Map<Item, number>()
     entries.forEach((entry, index) => {
       if (entry.kind === "item") indexOf.set(entry.item, index)
@@ -506,7 +649,11 @@ class OverflowStore {
       if (tally.need() <= available) break
       if (hidden.has(item.id)) continue
       if (items.length - hidden.size <= this.minimumVisible) break
-      if (item.element.querySelector('[aria-expanded="true"]')) continue
+      if (
+        !this.hidden.has(item.id) &&
+        item.element.querySelector('[aria-expanded="true"]')
+      )
+        continue
       const together = item.groupId && this.groups.get(item.groupId)?.together
       for (const member of items) {
         if (hidden.has(member.id)) continue
@@ -619,6 +766,7 @@ class OverflowStore {
       )
       this.menuState = { hidden: ordered, version: this.menuState.version }
       this.menuSubscribers.forEach((cb) => cb())
+      this.watch()
     }
   }
 
@@ -644,6 +792,11 @@ class OverflowStore {
     this.itemSubscribers.set(id, set)
     set.add(callback)
     return () => set.delete(callback)
+  }
+
+  subscribeRoot(callback: () => void) {
+    this.rootSubscribers.add(callback)
+    return () => this.rootSubscribers.delete(callback)
   }
 
   subscribeMenu(callback: () => void) {
@@ -894,6 +1047,28 @@ function callBoth<TEvent>(
   }
 }
 
+/**
+ * A row that has not measured yet (server rendered, until it hydrates)
+ * cannot know which of its items fit. It lays every child out on one line at
+ * its own size (only elastic items shrink), clipping what runs past its end
+ * (`not-data-measured:` `flex-nowrap` and `overflow-*-clip`): no second line
+ * or scrollbar that the measured row would take away, and the sizes the
+ * first pass reads are the real ones. What may still move is laid out but
+ * not drawn (`visibility: hidden`: neither focusable nor announced): an
+ * item that can go into the menu or lose its label (neither `data-fixed`
+ * nor `data-elastic`), a divider, and every child after the first such
+ * item, whose place depends on it. The fixed and elastic children before it
+ * show. The first pass sets `data-measured` in the commit that hides what
+ * does not fit and renders the More trigger. Written out whole, for
+ * Tailwind to find.
+ */
+const UNMEASURED = [
+  "[&:not([data-measured])>:not([data-elastic])]:shrink-0",
+  "[&:not([data-measured])>[data-slot=overflow-divider]]:invisible",
+  "[&:not([data-measured])>[data-slot=overflow-item]:not([data-fixed]):not([data-elastic])]:invisible",
+  "[&:not([data-measured])>[data-slot=overflow-item]:not([data-fixed]):not([data-elastic])~*]:invisible",
+].join(" ")
+
 function OverflowRoot({
   toolbar,
   className,
@@ -921,6 +1096,13 @@ function OverflowRoot({
   const ref = React.useRef<HTMLDivElement>(null)
   const mergedRef = useMergedRef(ref, refProp)
   const keyboard = useToolbarKeyboard(ref, orientation)
+  // `false` on the server and while hydrating; set by the first pass, which
+  // runs in a layout effect, so the browser never paints the row before it.
+  const measured = React.useSyncExternalStore(
+    React.useCallback((cb) => store.subscribeRoot(cb), [store]),
+    () => store.measured,
+    () => false
+  )
 
   React.useLayoutEffect(() => {
     store.configure(orientation, labels, minimumVisible)
@@ -959,6 +1141,7 @@ function OverflowRoot({
         data-slot={toolbar ? "toolbar" : "overflow"}
         data-overflow-root=""
         data-orientation={orientation}
+        data-measured={measured ? "" : undefined}
         className={cn(
           "flex min-w-0 items-center gap-2",
           vertical && "min-h-0 flex-col items-stretch",
@@ -968,6 +1151,10 @@ function OverflowRoot({
             : lastResort === "wrap"
               ? "flex-wrap"
               : "overflow-x-auto",
+          UNMEASURED,
+          vertical
+            ? "not-data-measured:overflow-y-clip"
+            : "not-data-measured:flex-nowrap not-data-measured:overflow-x-clip",
           className
         )}
         {...props}
@@ -1181,6 +1368,7 @@ function OverflowItem({
         ref={mergedRef}
         data-slot="overflow-item"
         data-overflowing={visible ? undefined : ""}
+        data-fixed={fixed ? "" : undefined}
         data-compact={compact ? "" : undefined}
         data-elastic={elastic ? "" : undefined}
         className={cn(
@@ -1304,7 +1492,7 @@ function OverflowSpacer({ className, ...props }: React.ComponentProps<"div">) {
 // ---- menu ----------------------------------------------------------------------
 
 type OverflowMenuProps = {
-  /** Accessible name of the default trigger. Default "More actions". */
+  /** Accessible name of the default trigger. Default "More actions" (translated). */
   label?: string
   /** A custom trigger button (an element, e.g. `<Button variant="outline" />`) instead of the ellipsis. */
   trigger?: React.ReactElement
@@ -1314,11 +1502,12 @@ type OverflowMenuProps = {
 }
 
 function OverflowMenu({
-  label = "More actions",
+  label,
   trigger,
   badge = false,
   className,
 }: OverflowMenuProps) {
+  const t = useTranslations("overflow")
   const { store, orientation } = useOverflow("OverflowMenu")
   const state = React.useSyncExternalStore(
     React.useCallback((cb) => store.subscribeMenu(cb), [store]),
@@ -1362,7 +1551,13 @@ function OverflowMenu({
           <DropdownMenuTrigger render={trigger} />
         ) : (
           <DropdownMenuTrigger
-            render={<Button variant="ghost" size="icon" aria-label={label} />}
+            render={
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={label ?? t("moreActions")}
+              />
+            }
           >
             <EllipsisIcon />
           </DropdownMenuTrigger>

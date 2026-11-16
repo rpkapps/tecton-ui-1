@@ -96,6 +96,8 @@
   --avatar-foreground: var(--tecton-color-avatar-text);
   --input-hover: var(--tecton-color-input-outlined-border-hover);
   --table-header: var(--tecton-color-table-header-bg);
+  --table-cell: var(--tecton-color-table-cell-bg);
+  --table-hover: var(--tecton-color-table-cell-bg-hover);
   --table-active: var(--tecton-color-table-cell-bg-active);
   --slider: var(--tecton-color-accent-lilac-main);
   --progress: var(--tecton-color-extended-lilac-680);
@@ -209,6 +211,8 @@
   --avatar-foreground: var(--tecton-color-avatar-text);
   --input-hover: var(--tecton-color-input-outlined-border-hover);
   --table-header: var(--tecton-color-table-header-bg);
+  --table-cell: var(--tecton-color-table-cell-bg);
+  --table-hover: var(--tecton-color-table-cell-bg-hover);
   --table-active: var(--tecton-color-table-cell-bg-active);
   --slider: var(--tecton-color-accent-lilac-main);
   --progress: var(--tecton-color-extended-lilac-680);
@@ -323,6 +327,8 @@
   --avatar-foreground: var(--tecton-color-avatar-text);
   --input-hover: var(--tecton-color-input-outlined-border-hover);
   --table-header: var(--tecton-color-table-header-bg);
+  --table-cell: var(--tecton-color-table-cell-bg);
+  --table-hover: var(--tecton-color-table-cell-bg-hover);
   --table-active: var(--tecton-color-table-cell-bg-active);
   --slider: var(--tecton-color-accent-lilac-main);
   --progress: var(--tecton-color-extended-lilac-680);
@@ -412,6 +418,8 @@
   --color-avatar-foreground: var(--avatar-foreground);
   --color-input-hover: var(--input-hover);
   --color-table-header: var(--table-header);
+  --color-table-cell: var(--table-cell);
+  --color-table-hover: var(--table-hover);
   --color-table-active: var(--table-active);
   --color-slider: var(--slider);
   --color-progress: var(--progress);

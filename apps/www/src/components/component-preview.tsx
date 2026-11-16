@@ -6,6 +6,7 @@ import { cn } from "cn"
 import { Button } from "@tecton/react/button"
 import { Spinner } from "@tecton/react/spinner"
 import { TectonProvider } from "@tecton/react/provider"
+import { ThemeRoot } from "@tecton/react/theme-root"
 
 import { CodeBlock } from "@/components/code-block"
 import {
@@ -13,28 +14,11 @@ import {
   LanguageSelector,
   useLanguageContext,
 } from "@/components/language-selector"
-import { hasExample, loadExample, loadExampleSource } from "@/lib/examples"
-
-const componentCache = new Map<string, Promise<React.ComponentType>>()
-const sourceCache = new Map<string, Promise<string>>()
-
-function useExample(name: string) {
-  let component = componentCache.get(name)
-  if (!component) {
-    component = loadExample(name)
-    componentCache.set(name, component)
-  }
-  let source = sourceCache.get(name)
-  if (!source) {
-    source = loadExampleSource(name)
-    sourceCache.set(name, source)
-  }
-  return { component, source }
-}
+import { getExample, getExampleSource, hasExample } from "@/lib/examples"
+import { preloadMarker } from "@/lib/preload"
 
 function Example({ name }: { name: string }) {
-  const { component } = useExample(name)
-  const Component = React.use(component)
+  const Component = React.use(getExample(name))
   return <Component />
 }
 
@@ -45,8 +29,7 @@ function ExampleSource({
   name: string
   maxLines?: number
 }) {
-  const { source } = useExample(name)
-  const code = React.use(source)
+  const code = React.use(getExampleSource(name))
   return <CodeBlock code={code} lang="tsx" maxLines={maxLines} />
 }
 
@@ -142,6 +125,7 @@ export function ComponentPreview({
           <ExampleSource name={name} maxLines={3} />
         </React.Suspense>
       }
+      {...preloadMarker("example", name)}
       {...props}
     />
   )
@@ -264,12 +248,13 @@ function RtlPreview({ children }: { children: React.ReactNode }) {
   const dir = language === "en" ? "ltr" : "rtl"
   const locale =
     language === "ar" ? "ar-EG" : language === "he" ? "he-IL" : "en-US"
+  // A theme root: the overlays the preview opens portal into a container of
+  // its own, in its direction, so they are placed and laid out as in a
+  // right-to-left application.
   return (
-    <TectonProvider locale={locale} direction={dir}>
-      <div dir={dir} data-lang={language}>
-        {children}
-      </div>
-    </TectonProvider>
+    <ThemeRoot locale={locale} dir={dir} data-lang={language}>
+      {children}
+    </ThemeRoot>
   )
 }
 

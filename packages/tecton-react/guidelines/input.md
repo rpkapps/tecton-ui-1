@@ -17,7 +17,7 @@ related: [Field, InputGroup, Textarea]
 
 ## Use it when
 
-- A single line of text: name, email, password, date, file.
+- A single line of text: name, email, password, an identifier, a file.
 - The value is free-form; a fixed set of options belongs in a picker instead.
 - Inside a `Field`, so the control arrives with a label and room for an error.
 
