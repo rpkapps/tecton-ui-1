@@ -28,6 +28,11 @@ type GridRect = { x: number; y: number; w: number; h: number }
 
 type GridLayoutItem = GridRect & {
   id: string
+  /**
+   * The kind of widget, when several entries are of one kind (two
+   * pressure widgets, one per well); the `id` stands for it otherwise.
+   */
+  type?: string
   /** Size limits, in cells. */
   minW?: number
   maxW?: number

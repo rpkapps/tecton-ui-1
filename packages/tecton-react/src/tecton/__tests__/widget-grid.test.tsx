@@ -957,3 +957,107 @@ describe("WidgetGrid building blocks", () => {
     expect(announced()).toContain("Pressure added at column 1, row 5, 6 by 2.")
   })
 })
+
+/** Widgets added more than once: one entry per instance, of one `type`. */
+function Multi({
+  onValueChange,
+}: {
+  onValueChange?: (value: Array<WidgetGridLayoutItem>) => void
+}) {
+  const [layout, setLayout] = React.useState<Array<WidgetGridLayoutItem>>([
+    { id: "production", x: 0, y: 0, w: 12, h: 2 },
+  ])
+  return (
+    <WidgetGrid
+      value={layout}
+      onValueChange={(next) => {
+        onValueChange?.(next)
+        setLayout(next)
+      }}
+      animated={false}
+    >
+      <WidgetGridSource value="pressure" label="Pressure" w={4} h={2} multiple>
+        Pressure
+      </WidgetGridSource>
+      <Counter />
+      <WidgetGridContent>
+        {layout.map((item) => (
+          <WidgetGridItem key={item.id} value={item.id} label={item.id}>
+            <span>{item.id}</span>
+          </WidgetGridItem>
+        ))}
+      </WidgetGridContent>
+    </WidgetGrid>
+  )
+}
+
+function Counter() {
+  const grid = useWidgetGrid()
+  const [added, setAdded] = React.useState<string | null>(null)
+  return (
+    <button
+      type="button"
+      onClick={() => setAdded(grid.add({ type: "pressure", w: 4, h: 2 }))}
+    >
+      {`${grid.count("pressure")} pressure, added ${added ?? "none"}`}
+    </button>
+  )
+}
+
+describe("WidgetGrid instances", () => {
+  it("adds a new instance on each press of a multiple source", async () => {
+    const onValueChange = vi.fn()
+    render(<Multi onValueChange={onValueChange} />)
+    const source = screen.getByRole("button", { name: "Pressure" })
+    await userEvent.click(source)
+    await userEvent.click(source)
+    const layout = onValueChange.mock.calls.at(
+      -1
+    )![0] as Array<WidgetGridLayoutItem>
+    expect(
+      layout.filter((item) => item.type === "pressure").map((item) => item.id)
+    ).toEqual(["pressure", "pressure-2"])
+    // Still on: one more can be added.
+    expect(source).toHaveProperty("disabled", false)
+    expect(screen.getByRole("button", { name: /^2 pressure/ })).toBeTruthy()
+  })
+
+  it("drags in a new instance rather than moving the one on the grid", () => {
+    render(<Multi />)
+    const source = screen.getByRole("button", { name: "Pressure" })
+    fireEvent.click(source)
+    expect(placement("pressure")).toBe("1 / span 4 | 3 / span 2")
+    fireEvent.pointerDown(source, {
+      button: 0,
+      pointerId: 11,
+      pointerType: "mouse",
+      clientX: 5,
+      clientY: 5,
+    })
+    fireEvent.pointerMove(document, {
+      pointerId: 11,
+      clientX: 1000,
+      clientY: 150,
+    })
+    fireEvent.pointerUp(document, {
+      pointerId: 11,
+      clientX: 1000,
+      clientY: 150,
+    })
+    // The first one stays; the second lands where it was let go.
+    expect(placement("pressure")).toBe("1 / span 4 | 3 / span 2")
+    expect(placement("pressure-2")).toBe("9 / span 4 | 3 / span 2")
+  })
+
+  it("adds by type from a control, making the id", async () => {
+    render(<Multi />)
+    await userEvent.click(screen.getByRole("button", { name: /^0 pressure/ }))
+    expect(
+      screen.getByRole("button", { name: "1 pressure, added pressure" })
+    ).toBeTruthy()
+    await userEvent.click(screen.getByRole("button", { name: /^1 pressure/ }))
+    expect(
+      screen.getByRole("button", { name: "2 pressure, added pressure-2" })
+    ).toBeTruthy()
+  })
+})

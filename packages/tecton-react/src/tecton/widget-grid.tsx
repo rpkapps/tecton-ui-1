@@ -86,11 +86,23 @@ import { createStore, useStore, type Store } from "./internal/store"
 
 type WidgetGridLayoutItem = GridLayoutItem
 
-/** A widget to add: its `id`, its size in cells and its size limits. */
+/**
+ * A widget to add: its size in cells and its size limits, with its `id`, or
+ * its `type` only (an `id` is then made for it: the type, or the type and
+ * the next free number, `pressure-2`).
+ */
 type WidgetGridNewItem = Pick<
   WidgetGridLayoutItem,
-  "id" | "w" | "h" | "minW" | "maxW" | "minH" | "maxH"
->
+  "w" | "h" | "minW" | "maxW" | "minH" | "maxH"
+> &
+  ({ id: string; type?: string } | { id?: string; type: string })
+
+/** The kind of a layout entry: its `type`, or its `id`. */
+const typeOf = (item: { id: string; type?: string }) => item.type ?? item.id
+
+/** A source's key in a drag: never the `id` of a widget on the grid. */
+const SOURCE = "\u0001source:"
+const sourceKey = (value: string) => SOURCE + value
 
 /** A side of a widget it is resized from. */
 type WidgetGridEdge = "top" | "end" | "bottom" | "start"
@@ -187,6 +199,8 @@ type WidgetGridProps = Omit<
 
 type ItemEntry = { element: HTMLElement | null; label: string }
 type SourceEntry = {
+  /** Each add is a new instance, with an `id` of its own. */
+  multiple: boolean
   element: HTMLElement | null
   label: string
   item: WidgetGridLayoutItem
@@ -239,7 +253,9 @@ type WidgetGridContextValue = {
   addWidget: (
     item: WidgetGridNewItem,
     options?: { at?: { x: number; y: number }; label?: string }
-  ) => boolean | undefined
+  ) => string | null | undefined
+  /** The source registered under the drag key `key`, if any. */
+  sourceOf: (key: string) => SourceEntry | undefined
   move: (id: string, direction: MoveDirection) => void
   canMove: (id: string, direction: MoveDirection) => boolean | undefined
   resize: (id: string, size: { w: number; h: number }) => void
@@ -493,6 +509,10 @@ function WidgetGrid({
         : null),
     [sources]
   )
+  const sourceOf = React.useCallback(
+    (key: string) => sources.get(key),
+    [sources]
+  )
   const labelOf = React.useCallback(
     (key: string) => items.get(key)?.label ?? sources.get(key)?.label ?? key,
     [items, sources]
@@ -607,28 +627,41 @@ function WidgetGrid({
     ) => {
       const key = keys.at(0)
       if (key === undefined) return
-      const own = latest.current.layout.find((item) => item.id === key)
-      const reason: WidgetGridChangeReason = !own
-        ? "add"
-        : own.x === place.x && own.y === place.y
-          ? "resize"
-          : "move"
-      const next = grid.preview(key, place)
       const ghost = takePreview?.() ?? null
-      if (!commit(next, reason, key)) return ghost?.remove()
+      const source = sources.get(key)
+      let id = key
+      let next = grid.preview(key, place)
+      let reason: WidgetGridChangeReason
+      if (source) {
+        // A new widget: one more instance, or the source's only one.
+        const value = key.slice(SOURCE.length)
+        id = source.multiple ? uniqueId(value) : value
+        if (latest.current.layout.some((entry) => entry.id === id))
+          return ghost?.remove()
+        const type = source.multiple ? value : source.item.type
+        next = next.map((entry) =>
+          entry.id === key ? { ...entry, id, ...(type && { type }) } : entry
+        )
+        reason = "add"
+      } else {
+        const own = latest.current.layout.find((item) => item.id === key)
+        reason =
+          own && own.x === place.x && own.y === place.y ? "resize" : "move"
+      }
+      if (!commit(next, reason, id)) return ghost?.remove()
       if (ghost && latest.current.animated) {
-        landing.current = { key, ghost }
+        landing.current = { key: id, ghost }
         // The copy never outlives its landing, whatever becomes of it.
         setTimeout(() => ghost.remove(), DURATION * 5)
       } else ghost?.remove()
       if (reason === "add") {
-        if (!ghost) entering.current = key
+        if (!ghost) entering.current = id
         if (mode === "pointer") {
-          const at = next.find((entry) => entry.id === key)
+          const at = next.find((entry) => entry.id === id)
           if (at)
             announce(
               latest.current.t("added", {
-                itemText: labelOf(key),
+                itemText: source?.label ?? labelOf(id),
                 position: grid.position(at),
               })
             )
@@ -883,18 +916,29 @@ function WidgetGrid({
     announce(latest.current.t("removed", { itemText: labelOf(id) }))
   })
 
+  /** An `id` for a new widget of `type`: the type, or the type and a number. */
+  const uniqueId = (type: string) => {
+    const taken = new Set(latest.current.layout.map((entry) => entry.id))
+    if (!taken.has(type)) return type
+    let n = 2
+    while (taken.has(`${type}-${n}`)) n += 1
+    return `${type}-${n}`
+  }
+
   /**
    * Adds `item` at `at` (the first free place by default): it is placed
-   * there and what it covers makes way. Focuses it, announces it; whether
-   * it was added.
+   * there and what it covers makes way. Focuses it, announces it; its `id`,
+   * or `null` when it was not added (its `id` is on the grid already, or
+   * `onValueChange` refused it).
    */
   const addWidget = useEventCallback(
     (
-      item: WidgetGridNewItem,
+      newItem: WidgetGridNewItem,
       { at, label }: { at?: { x: number; y: number }; label?: string } = {}
-    ) => {
-      const id = item.id
-      if (latest.current.layout.some((entry) => entry.id === id)) return false
+    ): string | null => {
+      const id = newItem.id ?? uniqueId(newItem.type ?? "widget")
+      if (latest.current.layout.some((entry) => entry.id === id)) return null
+      const item = { ...newItem, id }
       const { columns } = latest.current.options
       const { minW, maxW, minH, maxH } = limitsOf(
         { ...item, x: 0, y: 0 },
@@ -918,7 +962,7 @@ function WidgetGrid({
           kind: "add",
         }
       )
-      if (!commit(next, "add", id)) return false
+      if (!commit(next, "add", id)) return null
       entering.current = id
       focusAfter.current = null
       queueMicrotask(() => {
@@ -937,15 +981,21 @@ function WidgetGrid({
             position: grid.position(placed),
           })
         )
-      return true
+      return id
     }
   )
 
-  /** Adds the widget of the source `id` at the first free place. */
-  const add = useEventCallback((id: string) => {
-    const source = sources.get(id)
+  /** Adds the widget of the source `value` at the first free place. */
+  const add = useEventCallback((value: string) => {
+    const source = sources.get(sourceKey(value))
     if (!source) return
-    addWidget(source.item, { label: source.label })
+    const { id: _id, ...item } = source.item
+    addWidget(
+      source.multiple
+        ? { ...item, type: value }
+        : { ...item, id: value, type: source.item.type },
+      { label: source.label }
+    )
   })
 
   const step = (id: string, way: MoveDirection) => {
@@ -1076,6 +1126,7 @@ function WidgetGrid({
       add,
       addWidget,
       labelOf,
+      sourceOf,
       move,
       canMove,
       resize,
@@ -1102,6 +1153,7 @@ function WidgetGrid({
       add,
       addWidget,
       labelOf,
+      sourceOf,
       move,
       canMove,
       resize,
@@ -1715,6 +1767,13 @@ type WidgetGridSourceOptions = {
   maxH?: number
   /** Turns the source off. */
   disabled?: boolean
+  /**
+   * Each add is a new instance of the widget, with an `id` of its own
+   * (`pressure`, `pressure-2`, …) and `type: value`; the source stays on.
+   * Default `false`: the widget's `id` is `value`, and the source is off
+   * while it is on the grid.
+   */
+  multiple?: boolean
 }
 
 type WidgetGridSourceState = {
@@ -1727,8 +1786,10 @@ type WidgetGridSourceState = {
   ) => Record<string, unknown>
   /** Off: out of the edit mode, `disabled`, or its widget is on the grid. */
   disabled: boolean
-  /** A widget with its `value` is on the grid. */
+  /** A widget of its `value` is on the grid. */
   onGrid: boolean
+  /** How many widgets of its `value` are on the grid. */
+  count: number
   /** It is being dragged onto the grid. */
   dragging: boolean
 }
@@ -1763,16 +1824,24 @@ function useWidgetGridSource({
   minH,
   maxH,
   disabled: disabledProp = false,
+  multiple = false,
 }: WidgetGridSourceOptions): WidgetGridSourceState {
   const root = useRoot("useWidgetGridSource")
-  const onGrid = root.byId.has(value)
-  const disabled = disabledProp || !root.editable || onGrid
+  const key = sourceKey(value)
+  const count = root.layout.reduce(
+    (n, entry) => n + (typeOf(entry) === value ? 1 : 0),
+    0
+  )
+  const onGrid = count > 0
+  const disabled =
+    disabledProp || !root.editable || (!multiple && root.byId.has(value))
   const dragging = useStore(root.dragAndDrop.store, (s) =>
-    s.dragging.includes(value)
+    s.dragging.includes(key)
   )
   const entry = React.useRef<SourceEntry>({
     element: null,
     label,
+    multiple,
     item: { id: value, x: 0, y: 0, w, h },
   })
   const attach = React.useCallback((node: HTMLElement | null) => {
@@ -1780,12 +1849,13 @@ function useWidgetGridSource({
   }, [])
   React.useLayoutEffect(() => {
     entry.current.label = label
+    entry.current.multiple = multiple
     entry.current.item = { id: value, x: 0, y: 0, w, h, minW, maxW, minH, maxH }
-  }, [value, label, w, h, minW, maxW, minH, maxH])
+  }, [value, label, multiple, w, h, minW, maxW, minH, maxH])
   const { registerSource } = root
   React.useLayoutEffect(
-    () => registerSource(value, entry.current),
-    [registerSource, value]
+    () => registerSource(key, entry.current),
+    [registerSource, key]
   )
 
   const description = root.t("sourceDescription")
@@ -1808,7 +1878,7 @@ function useWidgetGridSource({
         onPointerDown: (event: React.PointerEvent<HTMLElement>) => {
           // Stacked, a new widget is added by a press, not dragged in.
           if (!latest.current.disabled && latest.current.root.movable)
-            latest.current.root.dragAndDrop.onPointerDown(event, value)
+            latest.current.root.dragAndDrop.onPointerDown(event, key)
         },
         // An image inside would start the browser's own drag.
         onDragStart: (event: React.DragEvent<HTMLElement>) =>
@@ -1837,9 +1907,9 @@ function useWidgetGridSource({
         ref: joinRefs(attach, ref),
       }
     },
-    [attach, value, dragging, disabled, description]
+    [attach, key, value, dragging, disabled, description]
   )
-  return { getSourceProps, disabled, onGrid, dragging }
+  return { getSourceProps, disabled, onGrid, count, dragging }
 }
 
 type WidgetGridSourceProps = Omit<
@@ -1866,6 +1936,7 @@ function WidgetGridSource({
   minH,
   maxH,
   disabled,
+  multiple,
   className,
   children,
   ref,
@@ -1881,6 +1952,7 @@ function WidgetGridSource({
     minH,
     maxH,
     disabled,
+    multiple,
   })
   return usePrimitive(
     "button",
@@ -1934,7 +2006,7 @@ function WidgetGridPlaceholder({
   ...props
 }: WidgetGridPlaceholderProps) {
   const root = useRoot("WidgetGridPlaceholder")
-  const { store, dragAndDrop, byId, labelOf } = root
+  const { store, dragAndDrop, byId, labelOf, sourceOf } = root
   const dragged = useStore(dragAndDrop.store, (s) => s.dragging.at(0) ?? null)
   // A new widget, dragged in from a source, where it would land.
   const at = useStore(store, (s) =>
@@ -1964,7 +2036,12 @@ function WidgetGridPlaceholder({
       "data-slot": "widget-grid-placeholder",
       children:
         typeof children === "function" && dragged
-          ? children({ id: dragged, label: labelOf(dragged), w, h })
+          ? children({
+              id: sourceOf(dragged) ? dragged.slice(SOURCE.length) : dragged,
+              label: labelOf(dragged),
+              w,
+              h,
+            })
           : (children as React.ReactNode),
     },
     {
@@ -1981,8 +2058,8 @@ type WidgetGridSlotState = GridRect & {
   end: boolean
   /** Whether a widget of `size` fits in it without moving any other. */
   fits: (size: { w: number; h: number }) => boolean
-  /** Adds `item` here; whether it was added. */
-  add: (item: WidgetGridNewItem, options?: { label?: string }) => boolean
+  /** Adds `item` here; its `id`, or `null` when it was not added. */
+  add: (item: WidgetGridNewItem, options?: { label?: string }) => string | null
 }
 
 const SlotContext = React.createContext<WidgetGridSlotState | null>(null)
@@ -2032,7 +2109,8 @@ function WidgetGridSlots({
           ...area,
           fits: (size) => size.w <= area.w && (area.end || size.h <= area.h),
           add: (item, options) =>
-            !!addWidget(item, { at: { x: area.x, y: area.y }, ...options }),
+            addWidget(item, { at: { x: area.x, y: area.y }, ...options }) ??
+            null,
         })),
     [layout, columns, rows, minW, minH, addWidget]
   )
@@ -2115,12 +2193,15 @@ type WidgetGridControls = {
   /**
    * Adds a widget at `at` (cells), or at the first free place; what it
    * covers makes way. It is focused and announced (by `label`, or its id).
-   * Whether it was added (not when its `id` is on the grid already).
+   * Its `id` (made from its `type` when it has none), or `null` when it
+   * was not added (its `id` is on the grid already).
    */
   add: (
     item: WidgetGridNewItem,
     options?: { at?: { x: number; y: number }; label?: string }
-  ) => boolean
+  ) => string | null
+  /** How many widgets of `type` (their `type`, or their `id`) are on the grid. */
+  count: (type: string) => number
   /** Removes a widget, as its `WidgetGridRemove` does. */
   remove: (id: string) => void
 }
@@ -2136,7 +2217,9 @@ function useWidgetGrid(): WidgetGridControls {
     columns: root.columns,
     editable: root.editable,
     movable: root.movable,
-    add: (item, options) => !!root.addWidget(item, options),
+    add: (item, options) => root.addWidget(item, options) ?? null,
+    count: (type) =>
+      root.layout.reduce((n, entry) => n + (typeOf(entry) === type ? 1 : 0), 0),
     remove: root.remove,
   }
 }

@@ -28,6 +28,15 @@ import { toast } from "sonner"
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandShortcut,
+} from "@tecton/react/components/command"
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -376,6 +385,8 @@ type Widget = {
   presets: Record<"Small" | "Medium" | "Large", Size>
   /** A list reads from the top; a figure sits at the bottom. */
   list?: boolean
+  /** Added more than once (one per well, one per pad). */
+  multiple?: boolean
 }
 
 const KPI = {
@@ -427,6 +438,7 @@ const WIDGETS: Record<string, Widget> = {
     name: "Wellhead pressure",
     description: "B-3",
     icon: GaugeIcon,
+    multiple: true,
     body: Pressure,
     size: { w: 4, h: 3 },
     min: { w: 3, h: 3 },
@@ -468,6 +480,7 @@ const WIDGETS: Record<string, Widget> = {
     name: "Tank levels",
     description: "Pad 2",
     icon: CylinderIcon,
+    multiple: true,
     body: Tanks,
     size: { w: 4, h: 3 },
     min: { w: 3, h: 3 },
@@ -492,6 +505,14 @@ const WIDGETS: Record<string, Widget> = {
     body: Flaring,
     ...KPI,
   },
+}
+
+/** The kind of a layout entry, and its name: "Wellhead pressure 2". */
+const kindOf = (item: { id: string; type?: string }) => item.type ?? item.id
+const nameOf = (item: { id: string; type?: string }) => {
+  const widget = WIDGETS[kindOf(item)]
+  const n = item.type ? /-(\d+)$/.exec(item.id)?.[1] : undefined
+  return n ? `${widget.name} ${n}` : widget.name
 }
 
 const entry = (id: string, x: number, y: number, w: number, h: number) => ({
@@ -612,8 +633,9 @@ function WidgetMenu({ widget, columns }: { widget: Widget; columns: number }) {
 }
 
 /**
- * A free space of the grid, and the widgets to put in it: those that fit
- * first, then those that need more room (the widgets below make way).
+ * A free space of the grid, and the widgets to put in it: a searchable
+ * list, those that fit first, then those that need more room (the widgets
+ * below make way). Arrow keys move, Enter adds, Escape closes.
  */
 function SlotPicker({
   slot,
@@ -623,50 +645,58 @@ function SlotPicker({
   columns: number
 }) {
   const [open, setOpen] = React.useState(false)
-  const { layout } = useWidgetGrid()
-  const onGrid = new Set(layout.map((item) => item.id))
+  const grid = useWidgetGrid()
+  // A widget added once is offered while it is not on the grid; one added
+  // many times, always.
   const choices = Object.entries(WIDGETS)
-    .filter(([id]) => !onGrid.has(id))
-    .map(([id, widget]) => ({
-      id,
+    .filter(([type, widget]) => widget.multiple || grid.count(type) === 0)
+    .map(([type, widget]) => ({
+      type,
       widget,
+      count: grid.count(type),
       size: { w: across(columns, widget.size.w), h: widget.size.h },
     }))
   const fitting = choices.filter((choice) => slot.fits(choice.size))
   const bigger = choices.filter((choice) => !slot.fits(choice.size))
   const choose = (choice: (typeof choices)[number]) => {
     setOpen(false)
+    const limits = {
+      ...choice.size,
+      minW: across(columns, choice.widget.min.w),
+      minH: choice.widget.min.h,
+    }
+    const name =
+      choice.widget.multiple && choice.count > 0
+        ? `${choice.widget.name} ${choice.count + 1}`
+        : choice.widget.name
     slot.add(
-      {
-        id: choice.id,
-        ...choice.size,
-        minW: across(columns, choice.widget.min.w),
-        minH: choice.widget.min.h,
-      },
-      { label: choice.widget.name }
+      choice.widget.multiple
+        ? { type: choice.type, ...limits }
+        : { id: choice.type, ...limits },
+      { label: name }
     )
   }
-  const group = (title: string, list: typeof choices) =>
+  const group = (heading: string, list: typeof choices) =>
     list.length > 0 && (
-      <div className="grid gap-0.5">
-        <span className="px-2 pt-1 text-xs font-medium text-muted-foreground">
-          {title}
-        </span>
+      <CommandGroup heading={heading}>
         {list.map((choice) => (
-          <button
-            key={choice.id}
-            type="button"
-            onClick={() => choose(choice)}
-            className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-start text-sm outline-none hover:bg-accent focus-visible:bg-accent [&_svg]:size-4 [&_svg]:text-muted-foreground"
+          <CommandItem
+            key={choice.type}
+            value={choice.widget.name}
+            keywords={[choice.widget.description]}
+            onSelect={() => choose(choice)}
           >
             <choice.widget.icon />
             <span className="flex-1 truncate">{choice.widget.name}</span>
-            <span dir="ltr" className="font-mono text-xs text-muted-foreground">
+            {choice.count > 0 && (
+              <Badge variant="secondary">{choice.count} on dashboard</Badge>
+            )}
+            <CommandShortcut dir="ltr" className="font-mono">
               {choice.size.w}×{choice.size.h}
-            </span>
-          </button>
+            </CommandShortcut>
+          </CommandItem>
         ))}
-      </div>
+      </CommandGroup>
     )
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -676,17 +706,15 @@ function SlotPicker({
           {slot.end ? "Add widget" : `Add a ${slot.w} × ${slot.h} widget`}
         </span>
       </PopoverTrigger>
-      <PopoverContent align="center" className="w-72 gap-2 p-1.5">
-        {choices.length === 0 ? (
-          <p className="p-2 text-sm text-muted-foreground">
-            Every widget is on the dashboard.
-          </p>
-        ) : (
-          <>
+      <PopoverContent align="center" className="w-80 p-0">
+        <Command>
+          <CommandInput placeholder="Search widgets" autoFocus />
+          <CommandList>
+            <CommandEmpty>No widget matches.</CommandEmpty>
             {group(slot.end ? "Add below" : "Fits this space", fitting)}
-            {group("Needs more room: the widgets below make way", bigger)}
-          </>
-        )}
+            {group("Needs more room", bigger)}
+          </CommandList>
+        </Command>
       </PopoverContent>
     </Popover>
   )
@@ -826,20 +854,23 @@ function GridSettings({
  */
 const Widget = React.memo(function Widget({
   id,
+  type,
   editing,
   columns,
 }: {
   id: string
+  type?: string
   editing: boolean
   columns: number
 }) {
-  const widget = WIDGETS[id]
+  const widget = WIDGETS[type ?? id]
+  const name = nameOf({ id, type })
   const Body = widget.body
   return (
-    <WidgetGridItem value={id} label={widget.name} render={<Panel size="sm" />}>
+    <WidgetGridItem value={id} label={name} render={<Panel size="sm" />}>
       <PanelHeader>
         <WidgetGridHandle />
-        <PanelTitle>{widget.name}</PanelTitle>
+        <PanelTitle>{name}</PanelTitle>
         <PanelActions>
           {editing && <WidgetMenu widget={widget} columns={columns} />}
           <WidgetGridRemove />
@@ -882,9 +913,12 @@ export default function WidgetGridDemo() {
         const previous = layout
         setLayout(next)
         if (reason === "remove")
-          toast(`${WIDGETS[item].name} removed`, {
-            action: { label: "Undo", onClick: () => setLayout(previous) },
-          })
+          toast(
+            `${nameOf(layout.find((entry) => entry.id === item) ?? { id: item })} removed`,
+            {
+              action: { label: "Undo", onClick: () => setLayout(previous) },
+            }
+          )
       }}
       editable={editing}
       columns={grid.columns}
@@ -962,8 +996,14 @@ export default function WidgetGridDemo() {
             </EmptyHeader>
           </Empty>
         )}
-        {layout.map(({ id }) => (
-          <Widget key={id} id={id} editing={editing} columns={grid.columns} />
+        {layout.map(({ id, type }) => (
+          <Widget
+            key={id}
+            id={id}
+            type={type}
+            editing={editing}
+            columns={grid.columns}
+          />
         ))}
         {/* In the edit mode, every free space offers what fits it. */}
         <WidgetGridSlots minW={across(grid.columns, 3)} minH={2}>
