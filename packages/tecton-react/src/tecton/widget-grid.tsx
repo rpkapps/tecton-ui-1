@@ -2058,9 +2058,27 @@ type WidgetGridSlotState = GridRect & {
   end: boolean
   /** Whether a widget of `size` fits in it without moving any other. */
   fits: (size: { w: number; h: number }) => boolean
-  /** Adds `item` here; its `id`, or `null` when it was not added. */
-  add: (item: WidgetGridNewItem, options?: { label?: string }) => string | null
+  /**
+   * The size a widget gets here: the space's, within the widget's limits
+   * (`minW` … `maxH`); its own size below every widget (`end`).
+   */
+  sizeFor: (item: SizedItem) => { w: number; h: number }
+  /**
+   * Adds `item` here, sized by `sizeFor` (`fill: false` keeps its own
+   * size); its `id`, or `null` when it was not added. What it covers
+   * beyond the space makes way.
+   */
+  add: (
+    item: WidgetGridNewItem,
+    options?: { label?: string; fill?: boolean }
+  ) => string | null
 }
+
+/** A widget's size and size limits, in cells. */
+type SizedItem = Pick<
+  WidgetGridLayoutItem,
+  "w" | "h" | "minW" | "maxW" | "minH" | "maxH"
+>
 
 const SlotContext = React.createContext<WidgetGridSlotState | null>(null)
 
@@ -2105,13 +2123,30 @@ function WidgetGridSlots({
     () =>
       freeAreas(layout, columns, rows)
         .filter((area) => area.end || (area.w >= minW && area.h >= minH))
-        .map((area): WidgetGridSlotState => ({
-          ...area,
-          fits: (size) => size.w <= area.w && (area.end || size.h <= area.h),
-          add: (item, options) =>
-            addWidget(item, { at: { x: area.x, y: area.y }, ...options }) ??
-            null,
-        })),
+        .map((area): WidgetGridSlotState => {
+          const sizeFor = (item: SizedItem) => {
+            const { minW, maxW, minH, maxH } = limitsOf(
+              { ...item, id: "", x: 0, y: 0 },
+              columns
+            )
+            const clamp = (n: number, low: number, high: number) =>
+              Math.min(Math.max(Math.round(n), low), high)
+            // Below every widget, any height fits: the widget's own size.
+            return area.end
+              ? { w: clamp(item.w, minW, maxW), h: clamp(item.h, minH, maxH) }
+              : { w: clamp(area.w, minW, maxW), h: clamp(area.h, minH, maxH) }
+          }
+          return {
+            ...area,
+            fits: (size) => size.w <= area.w && (area.end || size.h <= area.h),
+            sizeFor,
+            add: (item, { fill = true, ...options } = {}) =>
+              addWidget(fill ? { ...item, ...sizeFor(item) } : item, {
+                at: { x: area.x, y: area.y },
+                ...options,
+              }) ?? null,
+          }
+        }),
     [layout, columns, rows, minW, minH, addWidget]
   )
   if (!editable || stacked || active || resizing) return null

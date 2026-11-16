@@ -152,7 +152,10 @@ The demo above adds widgets where they go. `WidgetGridSlots` shows each free spa
 - the holes beside shorter widgets, each as wide and then as tall as it goes;
 - the rows below every widget, as one space across the grid.
 
-Each space is a `WidgetGridSlot`, a dashed button reading "Add widget" and named after its place ("Add a widget at column 9, row 1, 4 by 2"). Pass a function to get each space and offer what fits it: `slot.fits({ w, h })` says whether a size fits without moving any widget, and `slot.add(widget)` puts a widget exactly there. A bigger widget goes there too, and the widgets below make way.
+Each space is a `WidgetGridSlot`, a dashed button reading "Add widget" and named after its place ("Add a widget at column 9, row 1, 4 by 2"). Pass a function to get each space and offer what fits it:
+- **`slot.add(widget)`** puts a widget there, sized to fill the space: a widget added in a 4 × 6 hole is 4 × 6. It stays within its own limits (`minW`, `maxW`, `minH`, `maxH`): with `maxH: 3` it is 4 × 3. Below every widget (`slot.end`) there is no height to fill, so a widget keeps its own size. Pass `{ fill: false }` to keep it in a hole too.
+- **`slot.sizeFor(widget)`** is the size a widget gets in that space, to show it before the user picks.
+- **`slot.fits({ w, h })`** says whether a size fits without moving any widget. Pass a widget's smallest size: it then grows to fill the space. A widget that does not fit goes there too, and the widgets below make way.
 
 ```tsx
 <WidgetGridContent>
@@ -582,7 +585,9 @@ Where a widget dragged in from a source will land. Without one, the grid draws i
 | `children` | `ReactNode \| (slot) => ReactNode` | `<WidgetGridSlot />` | What each free space shows. |
 | `minW`, `minH` | `number` | `1` | The smallest space shown, in cells. The rows below the widgets are always shown. |
 
-A slot is `{ x, y, w, h, end, fits(size), add(widget, { label }?) }`. `add` takes `{ id, w, h }`, or `{ type, w, h }` to make the `id`, and returns the `id` or `null`.
+A slot is `{ x, y, w, h, end, fits(size), sizeFor(widget), add(widget, { label?, fill? }?) }`:
+- `add` takes `{ id, w, h }`, or `{ type, w, h }` to make the `id`, with size limits. It sizes the widget to fill the space, unless `fill: false` or `end`, and returns the `id` or `null`.
+- `sizeFor` returns the size `add` gives.
 
 ### WidgetGridSlot
 

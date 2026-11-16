@@ -650,21 +650,30 @@ function SlotPicker({
   // many times, always.
   const choices = Object.entries(WIDGETS)
     .filter(([type, widget]) => widget.multiple || grid.count(type) === 0)
-    .map(([type, widget]) => ({
-      type,
-      widget,
-      count: grid.count(type),
-      size: { w: across(columns, widget.size.w), h: widget.size.h },
-    }))
-  const fitting = choices.filter((choice) => slot.fits(choice.size))
-  const bigger = choices.filter((choice) => !slot.fits(choice.size))
+    .map(([type, widget]) => {
+      const limits = {
+        w: across(columns, widget.size.w),
+        h: widget.size.h,
+        minW: across(columns, widget.min.w),
+        minH: widget.min.h,
+      }
+      return {
+        type,
+        widget,
+        limits,
+        count: grid.count(type),
+        // What it becomes here: the space's size, within its limits.
+        size: slot.sizeFor(limits),
+      }
+    })
+  // It fits when its smallest size does: it then grows to fill the space.
+  const fits = (choice: (typeof choices)[number]) =>
+    slot.fits({ w: choice.limits.minW, h: choice.limits.minH })
+  const fitting = choices.filter(fits)
+  const bigger = choices.filter((choice) => !fits(choice))
   const choose = (choice: (typeof choices)[number]) => {
     setOpen(false)
-    const limits = {
-      ...choice.size,
-      minW: across(columns, choice.widget.min.w),
-      minH: choice.widget.min.h,
-    }
+    const { limits } = choice
     const name =
       choice.widget.multiple && choice.count > 0
         ? `${choice.widget.name} ${choice.count + 1}`

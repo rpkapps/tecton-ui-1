@@ -1061,3 +1061,61 @@ describe("WidgetGrid instances", () => {
     ).toBeTruthy()
   })
 })
+
+describe("WidgetGrid slots fill their space", () => {
+  function Tall({ maxH }: { maxH?: number }) {
+    const [layout, setLayout] = React.useState<Array<WidgetGridLayoutItem>>([
+      { id: "production", x: 0, y: 0, w: 8, h: 6 },
+    ])
+    return (
+      <WidgetGrid value={layout} onValueChange={setLayout} animated={false}>
+        <WidgetGridContent>
+          {layout.map((item) => (
+            <WidgetGridItem key={item.id} value={item.id} label={item.id}>
+              <span>{item.id}</span>
+            </WidgetGridItem>
+          ))}
+          <WidgetGridSlots>
+            {(slot) => (
+              <WidgetGridSlot
+                onClick={() => slot.add({ id: "uptime", w: 4, h: 2, maxH })}
+              >
+                {`${slot.w}×${slot.h} gives ${JSON.stringify(slot.sizeFor({ w: 4, h: 2, maxH }))}`}
+              </WidgetGridSlot>
+            )}
+          </WidgetGridSlots>
+        </WidgetGridContent>
+      </WidgetGrid>
+    )
+  }
+
+  it("sizes a widget added in a hole to the hole", async () => {
+    render(<Tall />)
+    const hole = screen.getByRole("button", {
+      name: "Add a widget at column 9, row 1, 4 by 6",
+    })
+    expect(hole.textContent).toBe('4×6 gives {"w":4,"h":6}')
+    await userEvent.click(hole)
+    expect(placement("uptime")).toBe("9 / span 4 | 1 / span 6")
+  })
+
+  it("keeps within the widget's limits", async () => {
+    render(<Tall maxH={3} />)
+    await userEvent.click(
+      screen.getByRole("button", {
+        name: "Add a widget at column 9, row 1, 4 by 6",
+      })
+    )
+    expect(placement("uptime")).toBe("9 / span 4 | 1 / span 3")
+  })
+
+  it("keeps the widget's own size below the widgets", async () => {
+    render(<Tall />)
+    const end = screen.getByRole("button", {
+      name: "Add a widget at column 1, row 7, 12 by 1",
+    })
+    expect(end.textContent).toBe('12×1 gives {"w":4,"h":2}')
+    await userEvent.click(end)
+    expect(placement("uptime")).toBe("1 / span 4 | 7 / span 2")
+  })
+})
