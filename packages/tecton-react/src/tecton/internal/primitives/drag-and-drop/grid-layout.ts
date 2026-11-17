@@ -17,11 +17,14 @@
  *   can, so the grid has no holes.
  * - A moved item takes its place in that order: ahead of every item of its
  *   target row, which make way for it, or after them when it moves down
- *   (to pass below the items it is dragged past). The items it lands on that fit the columns it left fill its old
- *   place, in reading order (two tiles of a row trade places), rather than
- *   being pushed below it.
- * - A resized item goes ahead of every item it grows over, above it too
- *   (its top edge dragged up), and they move below it.
+ *   (to pass below the items it is dragged past). The items it lands on
+ *   that fit the columns it left fill its old place, in reading order (two
+ *   tiles of a row trade places), rather than being pushed below it.
+ * - A resized item keeps its row, and the items it grows over from above
+ *   (its top edge dragged up, or a side grown into a taller item) move
+ *   below it, as those of its own rows do.
+ * - Locked items stay as given: two locked items that overlap each other
+ *   are left overlapping, so a layout keeps its locked items apart.
  */
 
 type GridRect = { x: number; y: number; w: number; h: number }
@@ -131,28 +134,20 @@ function resolveLayout<T extends GridLayoutItem>(
   // Locked items first, where they are: the others make way for them.
   for (const item of items) if (item.locked && item.id !== id) placed.push(item)
 
-  // Its place in the order: a resize goes ahead of every item it grows
-  // over, above it too (the top edge dragged up), which move below it.
   type Entry = { item: T; rank: number; at?: number }
   const entries: Array<Entry> = []
+  // A resize (or a keyboard move that resizes too) keeps its row, and the
+  // items it grows over from above move below it, after it in the order.
+  const grows =
+    !!moved &&
+    (active?.kind === "resize" ||
+      (!!origin && (moved.w !== origin.w || moved.h !== origin.h)))
   if (moved) {
     // The item goes where it is put, ahead of every item of its target
     // row, which make way; only a move down goes after them, to pass below
     // the items it is dragged past.
     const down = !!origin && active?.kind === "move" && moved.y > origin.y
-    const at =
-      active?.kind === "resize"
-        ? Math.min(
-            moved.y,
-            ...items
-              .filter(
-                (item) =>
-                  item.id !== id && !item.locked && collides(item, moved)
-              )
-              .map((item) => item.y)
-          )
-        : undefined
-    entries.push({ item: moved, rank: down ? 1 : -1, at })
+    entries.push({ item: moved, rank: down ? 1 : -1 })
   }
 
   // The items a move lands on, swapped into its old place when they fit
@@ -188,7 +183,15 @@ function resolveLayout<T extends GridLayoutItem>(
         entry = to
       }
     }
-    entries.push({ item: entry, rank: 0 })
+    if (
+      moved &&
+      grows &&
+      entry === item &&
+      item.y < moved.y &&
+      collides(item, moved)
+    )
+      entries.push({ item, rank: 2, at: moved.y })
+    else entries.push({ item: entry, rank: 0 })
   }
 
   // By row; in a row, the moved item before or after all the others.
@@ -362,6 +365,7 @@ const sameRect = (a: GridRect, b: GridRect) =>
 
 export {
   bottomOf,
+  clamp,
   clampItem,
   collides,
   firstFit,

@@ -137,6 +137,34 @@ describe("resolveLayout", () => {
     expect(at(layout, "b")).toEqual([6, 2, 6, 2])
   })
 
+  // Production and Alarms on the left, a tall Pressure on the right.
+  const TALL = [
+    { id: "production", x: 0, y: 0, w: 6, h: 2 },
+    { id: "alarms", x: 0, y: 2, w: 6, h: 2 },
+    { id: "pressure", x: 6, y: 0, w: 6, h: 4 },
+  ]
+
+  it("keeps a resized item in its row, moving only what it grows over", () => {
+    const layout = resolveLayout(TALL, V, {
+      item: { ...TALL[1], w: 7 },
+      kind: "resize",
+    })
+    expect(at(layout, "production")).toEqual([0, 0, 6, 2])
+    expect(at(layout, "alarms")).toEqual([0, 2, 7, 2])
+    expect(at(layout, "pressure")).toEqual([6, 4, 6, 4])
+  })
+
+  it("keeps a moved item in its new row when the move resizes it too", () => {
+    // Moved below Alarms, then made wider (Shift and an arrow key).
+    const layout = resolveLayout(TALL, V, {
+      item: { ...TALL[0], y: 2, w: 7 },
+      kind: "move",
+    })
+    expect(at(layout, "alarms")).toEqual([0, 0, 6, 2])
+    expect(at(layout, "production")).toEqual([0, 2, 7, 2])
+    expect(at(layout, "pressure")).toEqual([6, 4, 6, 4])
+  })
+
   it("never moves a locked item", () => {
     const tiles = [
       { id: "lock", x: 0, y: 0, w: 6, h: 2, locked: true },
@@ -782,6 +810,106 @@ describe("WidgetGrid", () => {
     ).toBeNull()
   })
 
+  it("moves, then resizes, a picked-up widget from the keyboard", async () => {
+    const onValueChange = vi.fn()
+    render(
+      <Dashboard
+        onValueChange={onValueChange}
+        initial={[
+          { id: "production", x: 0, y: 0, w: 6, h: 2 },
+          { id: "alarms", x: 0, y: 2, w: 6, h: 2 },
+          { id: "pressure", x: 6, y: 0, w: 6, h: 4 },
+        ]}
+      />
+    )
+    fireEvent.keyDown(handle("Production"), { key: " " })
+    fireEvent.keyDown(document.activeElement!, { key: "ArrowDown" })
+    expect(placement("Production")).toBe("1 / span 6 | 3 / span 2")
+    fireEvent.keyDown(document.activeElement!, {
+      key: "ArrowRight",
+      shiftKey: true,
+    })
+    // It stays in its row, and Pressure makes way.
+    expect(placement("Production")).toBe("1 / span 7 | 3 / span 2")
+    expect(placement("Pressure")).toBe("7 / span 6 | 5 / span 4")
+    fireEvent.keyDown(document.activeElement!, { key: "Enter" })
+    expect(placement("Production")).toBe("1 / span 7 | 3 / span 2")
+    expect(placement("Alarms")).toBe("1 / span 6 | 1 / span 2")
+  })
+
+  it("stacks or unstacks as soon as stackBelow changes", () => {
+    const { rerender } = render(<Dashboard stackBelow={1600} />)
+    expect(placement("Pressure")).toBe("1 / -1 | 3 / span 2")
+    rerender(<Dashboard stackBelow={0} />)
+    expect(placement("Pressure")).toBe("7 / span 6 | 1 / span 2")
+  })
+
+  it("leaves the actions of a widget's menu out of the edit mode", async () => {
+    render(<Dashboard editable={false} />)
+    await userEvent.click(
+      screen.getByRole("button", { name: "Make Alarms large" })
+    )
+    expect(placement("Alarms")).toBe("1 / span 12 | 3 / span 2")
+  })
+
+  it("announces only the changes a controlled grid applies", async () => {
+    render(
+      <WidgetGrid value={START} onValueChange={() => {}} animated={false}>
+        <WidgetGridContent>
+          {START.map((item) => (
+            <WidgetGridItem
+              key={item.id}
+              value={item.id}
+              label={NAMES[item.id]}
+            >
+              <span>{NAMES[item.id]}</span>
+              <Menu />
+            </WidgetGridItem>
+          ))}
+        </WidgetGridContent>
+      </WidgetGrid>
+    )
+    await userEvent.click(
+      screen.getByRole("button", { name: "Move Production right" })
+    )
+    await act(() => vi.advanceTimersByTimeAsync(150))
+    expect(placement("Production")).toBe("1 / span 6 | 1 / span 2")
+    expect(announced()).not.toContain("moved")
+  })
+
+  it("resizes one widget at a time", () => {
+    render(<Dashboard />)
+    const gripOf = (name: string) =>
+      itemOf(name).querySelector('[data-slot="widget-grid-resize-handle"]')!
+    fireEvent.pointerDown(gripOf("Production"), {
+      button: 0,
+      pointerId: 2,
+      pointerType: "touch",
+      clientX: 595,
+      clientY: 125,
+    })
+    fireEvent.pointerMove(document, {
+      pointerId: 2,
+      clientX: 820,
+      clientY: 125,
+    })
+    fireEvent.pointerDown(gripOf("Alarms"), {
+      button: 0,
+      pointerId: 3,
+      pointerType: "touch",
+      clientX: 1195,
+      clientY: 253,
+    })
+    fireEvent.pointerMove(document, {
+      pointerId: 3,
+      clientX: 1195,
+      clientY: 400,
+    })
+    expect(itemOf("Alarms").dataset.resizing).toBeUndefined()
+    fireEvent.pointerUp(document, { pointerId: 2, clientX: 820, clientY: 125 })
+    expect(placement("Production")).toBe("1 / span 8 | 1 / span 2")
+  })
+
   it("keeps the layout when onValueChange cancels the change", async () => {
     render(<Dashboard onValueChange={(_value, details) => details.cancel()} />)
     await userEvent.click(
@@ -886,12 +1014,12 @@ describe("WidgetGrid building blocks", () => {
   it("shows the free spaces as slots, and adds a widget exactly in one", async () => {
     render(<Builder />)
     const hole = screen.getByRole("button", {
-      name: "Add a widget at column 9, row 1, 4 by 2",
+      name: "Add widget at column 9, row 1, 4 by 2",
     })
     expect(hole.style.gridColumn).toBe("9 / span 4")
     expect(
       screen.getByRole("button", {
-        name: "Add a widget at column 1, row 5, 12 by 1",
+        name: "Add widget at column 1, row 5, 12 by 1",
       }).dataset.end
     ).toBe("")
     await userEvent.click(hole)
@@ -899,7 +1027,7 @@ describe("WidgetGrid building blocks", () => {
     // The hole is filled: its slot is gone.
     expect(
       screen.queryByRole("button", {
-        name: "Add a widget at column 9, row 1, 4 by 2",
+        name: "Add widget at column 9, row 1, 4 by 2",
       })
     ).toBeNull()
   })
@@ -1094,7 +1222,7 @@ describe("WidgetGrid slots fill their space", () => {
   it("sizes a widget added in a hole to the hole", async () => {
     render(<Tall />)
     const hole = screen.getByRole("button", {
-      name: "Add a widget at column 9, row 1, 4 by 6",
+      name: "Add widget at column 9, row 1, 4 by 6",
     })
     expect(hole.textContent).toBe('4×6 gives {"w":4,"h":6}')
     await userEvent.click(hole)
@@ -1105,7 +1233,7 @@ describe("WidgetGrid slots fill their space", () => {
     render(<Tall maxH={3} />)
     await userEvent.click(
       screen.getByRole("button", {
-        name: "Add a widget at column 9, row 1, 4 by 6",
+        name: "Add widget at column 9, row 1, 4 by 6",
       })
     )
     expect(placement("uptime")).toBe("9 / span 4 | 1 / span 3")
@@ -1114,7 +1242,7 @@ describe("WidgetGrid slots fill their space", () => {
   it("keeps the widget's own size below the widgets", async () => {
     render(<Tall />)
     const end = screen.getByRole("button", {
-      name: "Add a widget at column 1, row 7, 12 by 1",
+      name: "Add widget at column 1, row 7, 12 by 1",
     })
     expect(end.textContent).toBe('12×1 gives {"w":4,"h":2}')
     await userEvent.click(end)

@@ -16,6 +16,7 @@ import {
 } from "./internal/primitives/drag-and-drop/drop-animation"
 import {
   bottomOf,
+  clamp,
   firstFit,
   freeAreas,
   inReadingOrder,
@@ -50,6 +51,7 @@ import {
   hidden,
   usePrimitive,
   type PrimitiveProps,
+  withClass,
 } from "./internal/primitives/render"
 import {
   useControlled,
@@ -263,9 +265,8 @@ type WidgetGridContextValue = {
   press: React.RefObject<{ x: number; y: number } | null>
 }
 
-const WidgetGridContext = React.createContext<WidgetGridContextValue | null>(
-  null
-)
+const WidgetGridContext =
+  /* @__PURE__ */ React.createContext<WidgetGridContextValue | null>(null)
 
 function useRoot(part: string) {
   const context = React.useContext(WidgetGridContext)
@@ -273,15 +274,45 @@ function useRoot(part: string) {
   return context
 }
 
-/** `base` and the caller's class, which may be a function of the state. */
-function withClass<TState>(
-  base: string,
-  className: string | ((state: TState) => string | undefined) | undefined
-) {
-  return typeof className === "function"
-    ? (state: TState) => cn(base, className(state))
-    : cn(base, className)
+/** Where `rect` goes in the grid; stacked, from the row `row` on. */
+const areaOf = (rect: GridRect, row?: number): React.CSSProperties => ({
+  gridColumn: row === undefined ? `${rect.x + 1} / span ${rect.w}` : "1 / -1",
+  gridRow: `${row ?? rect.y + 1} / span ${rect.h}`,
+})
+
+/** How many widgets of `type` the layout holds. */
+const countOf = (layout: ReadonlyArray<WidgetGridLayoutItem>, type: string) =>
+  layout.reduce((n, entry) => n + (typeOf(entry) === type ? 1 : 0), 0)
+
+/** `size`, rounded and held to the limits of `item`. */
+const sizeWithin = (
+  item: SizedItem,
+  size: { w: number; h: number },
+  columns: number
+) => {
+  const { minW, maxW, minH, maxH } = limitsOf(
+    { ...item, id: "", x: 0, y: 0 },
+    columns
+  )
+  return {
+    w: clamp(Math.round(size.w), minW, maxW),
+    h: clamp(Math.round(size.h), minH, maxH),
+  }
 }
+
+/** The drag handle of a widget's element, the place its focus goes. */
+const handleOf = (element: HTMLElement | null | undefined) =>
+  element?.querySelector<HTMLElement>('[data-slot="widget-grid-handle"]')
+
+/** Adds an entry to `map` under `id`, and the function that takes it out. */
+const registerIn =
+  <T,>(map: Map<string, T>) =>
+  (id: string, entry: T) => {
+    map.set(id, entry)
+    return () => {
+      if (map.get(id) === entry) map.delete(id)
+    }
+  }
 
 /** Long enough to follow, short enough not to wait for. */
 const DURATION = 200
@@ -503,7 +534,7 @@ function WidgetGrid({
 
   const itemOf = React.useCallback(
     (key: string) =>
-      latest.current.layout.find((item) => item.id === key) ??
+      byIdRef.current.get(key) ??
       (sources.get(key)?.item
         ? { ...sources.get(key)!.item, id: key, x: 0, y: 0 }
         : null),
@@ -531,6 +562,18 @@ function WidgetGrid({
     })
   )
 
+  /** Announces where `id` is in `layout`, as `key` says it got there. */
+  const announceAt = (
+    key: "added" | "moved",
+    layout: ReadonlyArray<GridLayoutItem>,
+    id: string,
+    itemText: string
+  ) => {
+    const at = layout.find((entry) => entry.id === id)
+    if (at)
+      announce(latest.current.t(key, { itemText, position: grid.position(at) }))
+  }
+
   // Animation: where every widget shows before a change, for the commit
   // that applies it to slide them from there (`animateFrom`).
   const pending = React.useRef<{
@@ -539,10 +582,12 @@ function WidgetGrid({
   } | null>(null)
   const landing = React.useRef<{ key: string; ghost: HTMLElement } | null>(null)
   const entering = React.useRef<string | null>(null)
-  const focusAfter = React.useRef<{
-    removed: string
-    next: string | null
-  } | null>(null)
+  // What follows a change (its announcement, where focus goes), once the
+  // layout shows it: the parent of a controlled grid may not apply it.
+  const after = React.useRef<{ layout: string; run: () => void } | null>(null)
+  const whenShown = (next: ReadonlyArray<GridLayoutItem>, run: () => void) => {
+    after.current = { layout: layoutKey(next), run }
+  }
   /** Measures the widgets (those of `only`, when given) before a change. */
   const measure = React.useCallback(
     (only?: ReadonlySet<string>) => {
@@ -638,13 +683,14 @@ function WidgetGrid({
         id = source.multiple ? uniqueId(value) : value
         if (latest.current.layout.some((entry) => entry.id === id))
           return ghost?.remove()
-        const type = source.multiple ? value : source.item.type
         next = next.map((entry) =>
-          entry.id === key ? { ...entry, id, ...(type && { type }) } : entry
+          entry.id === key
+            ? { ...entry, id, ...(source.multiple && { type: value }) }
+            : entry
         )
         reason = "add"
       } else {
-        const own = latest.current.layout.find((item) => item.id === key)
+        const own = byIdRef.current.get(key)
         reason =
           own && own.x === place.x && own.y === place.y ? "resize" : "move"
       }
@@ -657,14 +703,8 @@ function WidgetGrid({
       if (reason === "add") {
         if (!ghost) entering.current = id
         if (mode === "pointer") {
-          const at = next.find((entry) => entry.id === id)
-          if (at)
-            announce(
-              latest.current.t("added", {
-                itemText: source?.label ?? labelOf(id),
-                position: grid.position(at),
-              })
-            )
+          const itemText = source?.label ?? labelOf(id)
+          whenShown(next, () => announceAt("added", next, id, itemText))
         }
       }
     }
@@ -674,7 +714,8 @@ function WidgetGrid({
     strategy: {
       ...grid.strategy,
       onAim: (place, mode) => {
-        const key = dragApi.current?.store.get().dragging.at(0)
+        // Called once a drag is under way: `dragAndDrop` is set by then.
+        const key = dragAndDrop.store.get().dragging.at(0)
         showPreview(
           key !== undefined && place ? grid.preview(key, place) : null
         )
@@ -707,14 +748,9 @@ function WidgetGrid({
     onDrop,
     focusItem: (key) => {
       const element = items.get(key)?.element
-      const handle = element?.querySelector<HTMLElement>(
-        '[data-slot="widget-grid-handle"]'
-      )
-      ;(handle ?? element)?.focus()
+      ;(handleOf(element) ?? element)?.focus()
     },
   })
-  const dragApi = React.useRef<DragAndDrop<GridDropPlace> | null>(null)
-  dragApi.current = dragAndDrop
   const revealActive = React.useRef<string | null>(null)
 
   // Leaving the edit mode ends a drag or a resize under way, and so does
@@ -761,18 +797,10 @@ function WidgetGrid({
         block: "nearest",
         inline: "nearest",
       })
-    const focus = focusAfter.current
-    if (focus && !items.has(focus.removed)) {
-      focusAfter.current = null
-      const next = focus.next ? items.get(focus.next)?.element : null
-      const handle = next?.querySelector<HTMLElement>(
-        '[data-slot="widget-grid-handle"]'
-      )
-      if (handle) handle.focus()
-      else if (content.current) {
-        content.current.tabIndex = -1
-        content.current.focus()
-      }
+    const done = after.current
+    if (done && done.layout === layoutKey(latest.current.layout)) {
+      after.current = null
+      done.run()
     }
     // After every commit, not only those that change what shows: a drop
     // commits the layout its preview already showed.
@@ -784,8 +812,13 @@ function WidgetGrid({
       id: string,
       edge: WidgetGridResizeEdge = "bottom-end"
     ) => {
-      if (event.button !== 0 || dragAndDrop.store.get().mode !== null) return
-      const origin = latest.current.layout.find((item) => item.id === id)
+      if (
+        event.button !== 0 ||
+        dragAndDrop.store.get().mode !== null ||
+        stopResize.current
+      )
+        return
+      const origin = byIdRef.current.get(id)
       const element = items.get(id)?.element
       const m = metrics()
       if (!origin || origin.locked || !element || !m) return
@@ -829,11 +862,9 @@ function WidgetGrid({
       }
       const { columns } = latest.current.options
       const { minW, maxW, minH, maxH } = limitsOf(origin, columns)
-      const clamp = (n: number, low: number, high: number) =>
-        Math.min(Math.max(n, low), high)
       let aimed: GridRect = origin
       store.set({ resizeEdge: edge })
-      stopResize.current = trackPointerDrag(event, {
+      const stop = trackPointerDrag(event, {
         threshold: 2,
         capture: content.current,
         autoScroll: element,
@@ -882,11 +913,10 @@ function WidgetGrid({
           showPreview(grid.preview(id, next, "resize"))
         },
         onStop: () => {
-          stopResize.current = null
-          if (store.get().resizing === id) {
-            store.set({ resizing: null, resizeEdge: null })
-            showPreview(null)
-          }
+          if (stopResize.current === stop) stopResize.current = null
+          const resized = store.get().resizing === id
+          store.set({ resizing: null, resizeEdge: null })
+          if (resized) showPreview(null)
         },
         onEnd: (drop) => {
           store.set({ resizing: null, resizeEdge: null })
@@ -895,6 +925,7 @@ function WidgetGrid({
           else showPreview(null)
         },
       })
+      stopResize.current = stop
     }
   )
 
@@ -914,8 +945,17 @@ function WidgetGrid({
     const removed = commit(next, "remove", id)
     if (!removed) return
     if (copyOf) fadeOut(copyOf, latest.current.portal ?? null)
-    focusAfter.current = { removed: id, next: neighbour?.id ?? null }
-    announce(latest.current.t("removed", { itemText: labelOf(id) }))
+    const itemText = labelOf(id)
+    whenShown(next, () => {
+      // Focus goes to the next widget's grip, or the grid.
+      const handle = handleOf(neighbour && items.get(neighbour.id)?.element)
+      if (handle) handle.focus()
+      else if (content.current) {
+        content.current.tabIndex = -1
+        content.current.focus()
+      }
+      announce(latest.current.t("removed", { itemText }))
+    })
   })
 
   /** An `id` for a new widget of `type`: the type, or the type and a number. */
@@ -942,17 +982,10 @@ function WidgetGrid({
       if (latest.current.layout.some((entry) => entry.id === id)) return null
       const item = { ...newItem, id }
       const { columns } = latest.current.options
-      const { minW, maxW, minH, maxH } = limitsOf(
-        { ...item, x: 0, y: 0 },
-        columns
-      )
-      const size = {
-        w: Math.min(Math.max(Math.round(item.w), minW), maxW),
-        h: Math.min(Math.max(Math.round(item.h), minH), maxH),
-      }
+      const size = sizeWithin(item, item, columns)
       const place = at
         ? {
-            x: Math.min(Math.max(at.x, 0), columns - size.w),
+            x: clamp(at.x, 0, columns - size.w),
             y: Math.max(at.y, 0),
           }
         : firstFit(latest.current.layout, size, columns)
@@ -966,23 +999,11 @@ function WidgetGrid({
       )
       if (!commit(next, "add", id)) return null
       entering.current = id
-      focusAfter.current = null
-      queueMicrotask(() => {
-        const handle = items
-          .get(id)
-          ?.element?.querySelector<HTMLElement>(
-            '[data-slot="widget-grid-handle"]'
-          )
-        handle?.focus({ preventScroll: true })
+      const itemText = label ?? labelOf(id)
+      whenShown(next, () => {
+        handleOf(items.get(id)?.element)?.focus({ preventScroll: true })
+        announceAt("added", next, id, itemText)
       })
-      const placed = next.find((entry) => entry.id === id)
-      if (placed)
-        announce(
-          latest.current.t("added", {
-            itemText: label ?? labelOf(id),
-            position: grid.position(placed),
-          })
-        )
       return id
     }
   )
@@ -993,15 +1014,13 @@ function WidgetGrid({
     if (!source) return
     const { id: _id, ...item } = source.item
     addWidget(
-      source.multiple
-        ? { ...item, type: value }
-        : { ...item, id: value, type: source.item.type },
+      source.multiple ? { ...item, type: value } : { ...item, id: value },
       { label: source.label }
     )
   })
 
   const step = (id: string, way: MoveDirection) => {
-    const from = latest.current.layout.find((item) => item.id === id)
+    const from = byIdRef.current.get(id)
     if (!from || from.locked || store.get().stacked) return null
     const rtl = latest.current.direction === "rtl"
     const dx = way === "left" ? -1 : way === "right" ? 1 : 0
@@ -1020,15 +1039,9 @@ function WidgetGrid({
     const to = step(id, way)
     if (!to) return
     const next = grid.preview(id, to)
-    if (!commit(next, "move", id)) return
-    const at = next.find((item) => item.id === id)
-    if (at)
-      announce(
-        latest.current.t("moved", {
-          itemText: labelOf(id),
-          position: grid.position(at),
-        })
-      )
+    const itemText = labelOf(id)
+    if (commit(next, "move", id))
+      whenShown(next, () => announceAt("moved", next, id, itemText))
   })
 
   const canMove = useEventCallback(
@@ -1037,47 +1050,44 @@ function WidgetGrid({
 
   const resize = useEventCallback(
     (id: string, size: { w: number; h: number }) => {
-      const from = latest.current.layout.find((item) => item.id === id)
+      const from = byIdRef.current.get(id)
       if (!from || from.locked) return
       const { columns } = latest.current.options
-      const { minW, maxW, minH, maxH } = limitsOf(from, columns)
-      const w = Math.min(Math.max(Math.round(size.w), minW), maxW)
-      const h = Math.min(Math.max(Math.round(size.h), minH), maxH)
+      const { w, h } = sizeWithin(from, size, columns)
       const to = { x: Math.min(from.x, columns - w), y: from.y, w, h }
       if (sameRect(to, from)) return
-      if (!commit(grid.preview(id, to), "resize", id)) return
-      announce(
-        latest.current.t("resized", {
-          itemText: labelOf(id),
-          width: w,
-          height: h,
-        })
-      )
+      const next = grid.preview(id, to)
+      const itemText = labelOf(id)
+      if (commit(next, "resize", id))
+        whenShown(next, () =>
+          announce(
+            latest.current.t("resized", { itemText, width: w, height: h })
+          )
+        )
     }
   )
 
-  const registerItem = React.useCallback(
-    (id: string, entry: ItemEntry) => {
-      items.set(id, entry)
-      return () => {
-        if (items.get(id) === entry) items.delete(id)
-      }
-    },
-    [items]
-  )
-  const registerSource = React.useCallback(
-    (id: string, entry: SourceEntry) => {
-      sources.set(id, entry)
-      return () => {
-        if (sources.get(id) === entry) sources.delete(id)
-      }
-    },
-    [sources]
-  )
+  const [registerItem] = React.useState(() => registerIn(items))
+  const [registerSource] = React.useState(() => registerIn(sources))
 
-  // The grid stacks when it is narrow, measured before it first paints.
+  // The grid stacks when it is narrow, measured before it first paints and
+  // again when it is resized or `stackBelow` changes.
   const stackWidth = React.useRef(stackBelow)
-  stackWidth.current = stackBelow
+  const width = React.useRef(0)
+  const [, rerender] = React.useReducer((n: number) => n + 1, 0)
+  const updateStacked = React.useCallback(() => {
+    boxModel.current = null
+    const next = width.current > 0 && width.current < stackWidth.current
+    if (next === store.get().stacked) return
+    store.set({ stacked: next })
+    // Re-rendered now, before the paint, whether or not the store is
+    // subscribed to yet.
+    rerender()
+  }, [store])
+  React.useLayoutEffect(() => {
+    stackWidth.current = stackBelow
+    updateStacked()
+  }, [stackBelow, updateStacked])
   const observer = React.useRef<ResizeObserver | null>(null)
   const registerContent = React.useCallback(
     (element: HTMLElement | null) => {
@@ -1085,19 +1095,18 @@ function WidgetGrid({
       observer.current = null
       content.current = element
       if (!element) return
-      const update = (width: number) => {
-        boxModel.current = null
-        store.set({ stacked: width > 0 && width < stackWidth.current })
-      }
-      update(element.getBoundingClientRect().width)
+      width.current = element.getBoundingClientRect().width
+      updateStacked()
       if (typeof ResizeObserver === "undefined") return
       observer.current = new ResizeObserver((entries) => {
         const entry = entries.at(0)
-        if (entry) update(entry.contentRect.width)
+        if (!entry) return
+        width.current = entry.contentRect.width
+        updateStacked()
       })
       observer.current.observe(element)
     },
-    [store]
+    [updateStacked]
   )
 
   // Stacked, the widgets follow one another in reading order.
@@ -1240,7 +1249,6 @@ function GridCells({
  */
 function WidgetGridContent({
   className,
-  style,
   children,
   ref,
   ...props
@@ -1298,7 +1306,14 @@ function WidgetGridContent({
     {
       ...props,
       className: withClass("relative grid outline-none", className),
-      style: (state: WidgetGridContentState) => ({
+      ref,
+    },
+    { editable, stacked, active },
+    {
+      ref: registerContent,
+      "data-slot": "widget-grid-content",
+      // Merged under the caller's style.
+      style: {
         gridTemplateColumns: stacked
           ? "minmax(0, 1fr)"
           : `repeat(${columns}, minmax(0, 1fr))`,
@@ -1309,14 +1324,7 @@ function WidgetGridContent({
             : undefined,
         gridAutoRows: `${rowHeight}px`,
         gap: spacing(gap),
-        ...(typeof style === "function" ? style(state) : style),
-      }),
-      ref,
-    },
-    { editable, stacked, active },
-    {
-      ref: registerContent,
-      "data-slot": "widget-grid-content",
+      },
       onPointerDownCapture: (event: React.PointerEvent<HTMLElement>) => {
         press.current = { x: event.clientX, y: event.clientY }
       },
@@ -1331,17 +1339,7 @@ function WidgetGridContent({
               data-slot="widget-grid-size"
               dir="ltr"
               className="pointer-events-none relative z-20 m-2 self-end justify-self-end rounded-md bg-foreground px-1.5 py-0.5 font-mono text-xs text-background tabular-nums shadow-sm"
-              style={
-                stacked
-                  ? {
-                      gridColumn: "1 / -1",
-                      gridRow: `${sizedRow} / span ${sizedRect.h}`,
-                    }
-                  : {
-                      gridColumn: `${sizedRect.x + 1} / span ${sizedRect.w}`,
-                      gridRow: `${sizedRect.y + 1} / span ${sizedRect.h}`,
-                    }
-              }
+              style={areaOf(sizedRect, stacked ? sizedRow : undefined)}
             >
               {stacked ? `↕ ${sizedRect.h}` : `${sizedRect.w} × ${sizedRect.h}`}
             </div>
@@ -1374,7 +1372,7 @@ type WidgetGridItemProps = PrimitiveProps<"div", WidgetGridItemState> & {
   label: string
 }
 
-const ItemContext = React.createContext<{
+const ItemContext = /* @__PURE__ */ React.createContext<{
   value: string
   label: string
   root: WidgetGridContextValue
@@ -1398,7 +1396,6 @@ function WidgetGridItem({
   value,
   label,
   className,
-  style,
   children,
   ref,
   ...props
@@ -1426,15 +1423,7 @@ function WidgetGridItem({
     (s) => s.previewStackRows?.get(value) ?? null
   )
   const stackRow = previewRow ?? stackRows?.get(value)
-  const placement: React.CSSProperties =
-    rect && stackRow !== undefined
-      ? { gridColumn: "1 / -1", gridRow: `${stackRow} / span ${rect.h}` }
-      : rect
-        ? {
-            gridColumn: `${rect.x + 1} / span ${rect.w}`,
-            gridRow: `${rect.y + 1} / span ${rect.h}`,
-          }
-        : {}
+  const placement = rect ? areaOf(rect, stackRow) : undefined
 
   // The element as soon as it is attached, before any layout effect: a
   // new widget's preview lands on it in the commit that adds it.
@@ -1465,29 +1454,24 @@ function WidgetGridItem({
     {
       ...props,
       className: withClass(
-        cn(
-          // Its content lays out on its own: live data inside a widget
-          // never lays the grid out again, and a widget out of view is not
-          // rendered at all.
-          "relative min-h-0 min-w-0 [contain:layout_style] [content-visibility:auto]",
+        // Its content lays out on its own: live data inside a widget
+        // never lays the grid out again, and a widget out of view is not
+        // rendered at all.
+        "relative min-h-0 min-w-0 [contain:layout_style] [content-visibility:auto] " +
           // The pointer drags a copy: the widget is the placeholder where
           // it will land.
-          "data-[dragging=pointer]:border-transparent data-[dragging=pointer]:bg-[color-mix(in_oklab,var(--primary)_6%,var(--background))] data-[dragging=pointer]:shadow-none data-[dragging=pointer]:ring-0 data-[dragging=pointer]:outline-2 data-[dragging=pointer]:-outline-offset-2 data-[dragging=pointer]:outline-primary/60 data-[dragging=pointer]:outline-dashed data-[dragging=pointer]:*:invisible",
+          "data-[dragging=pointer]:border-transparent data-[dragging=pointer]:bg-[color-mix(in_oklab,var(--primary)_6%,var(--background))] data-[dragging=pointer]:shadow-none data-[dragging=pointer]:ring-0 data-[dragging=pointer]:outline-2 data-[dragging=pointer]:-outline-offset-2 data-[dragging=pointer]:outline-primary/60 data-[dragging=pointer]:outline-dashed data-[dragging=pointer]:*:invisible " +
           // From the keyboard, or while resized, it is lifted.
-          "data-[dragging=keyboard]:z-10 data-[dragging=keyboard]:shadow-lg data-[dragging=keyboard]:ring-2 data-[dragging=keyboard]:ring-ring data-[dragging=virtual]:z-10 data-[dragging=virtual]:ring-2 data-[dragging=virtual]:ring-ring",
-          "data-resizing:z-10 data-resizing:shadow-lg data-resizing:ring-2 data-resizing:ring-primary/60 data-resizing:select-none"
-        ),
+          "data-[dragging=keyboard]:z-10 data-[dragging=keyboard]:shadow-lg data-[dragging=keyboard]:ring-2 data-[dragging=keyboard]:ring-ring data-[dragging=virtual]:z-10 data-[dragging=virtual]:ring-2 data-[dragging=virtual]:ring-ring " +
+          "data-resizing:z-10 data-resizing:shadow-lg data-resizing:ring-2 data-resizing:ring-primary/60 data-resizing:select-none",
         className
       ),
-      style: (s: WidgetGridItemState) => ({
-        ...placement,
-        ...(typeof style === "function" ? style(s) : style),
-      }),
       ref,
     },
     state,
     {
       ref: attach,
+      style: placement,
       "data-slot": "widget-grid-item",
       children: (
         <ItemContext.Provider value={item}>{children}</ItemContext.Provider>
@@ -1528,10 +1512,8 @@ function WidgetGridHandle({
       tabIndex={0}
       disabled={disabled}
       className={withClass(
-        cn(
-          buttonVariants({ variant: "ghost", size: "icon-xs" }),
-          "relative z-20 -ms-1 cursor-grab text-muted-foreground data-dragging:cursor-grabbing"
-        ),
+        buttonVariants({ variant: "ghost", size: "icon-xs" }) +
+          " relative z-20 -ms-1 cursor-grab text-muted-foreground",
         className
       )}
     >
@@ -1583,9 +1565,14 @@ const RESIZE_ZONES: Record<
   Exclude<WidgetGridResizeEdge, "bottom-end">,
   { zone: string; bar: string }
 > = {
+  // In the order of `ALL_EDGES`, then the corners.
   top: {
     zone: "inset-x-3 top-0 h-1.5 cursor-ns-resize pointer-coarse:h-3",
     bar: "inset-x-0 top-0 mx-auto h-0.5 w-8",
+  },
+  end: {
+    zone: "inset-y-3 end-0 w-1.5 cursor-ew-resize pointer-coarse:w-3",
+    bar: "inset-y-0 end-0 my-auto h-8 w-0.5",
   },
   bottom: {
     zone: "inset-x-3 bottom-0 h-1.5 cursor-ns-resize pointer-coarse:h-3",
@@ -1594,10 +1581,6 @@ const RESIZE_ZONES: Record<
   start: {
     zone: "inset-y-3 start-0 w-1.5 cursor-ew-resize pointer-coarse:w-3",
     bar: "inset-y-0 start-0 my-auto h-8 w-0.5",
-  },
-  end: {
-    zone: "inset-y-3 end-0 w-1.5 cursor-ew-resize pointer-coarse:w-3",
-    bar: "inset-y-0 end-0 my-auto h-8 w-0.5",
   },
   "top-start": {
     zone: "start-0 top-0 size-2.5 cursor-nwse-resize rtl:cursor-nesw-resize pointer-coarse:size-4",
@@ -1697,11 +1680,12 @@ function WidgetGridResizeHandle({
     }
   )
   if (!root.editable || root.byId.get(value)?.locked) return null
-  const zones: Array<Exclude<WidgetGridResizeEdge, "bottom-end">> = []
-  for (const side of ALL_EDGES) if (sides.has(side)) zones.push(side)
-  if (sides.has("top") && sides.has("start")) zones.push("top-start")
-  if (sides.has("top") && sides.has("end")) zones.push("top-end")
-  if (sides.has("bottom") && sides.has("start")) zones.push("bottom-start")
+  // A zone along each side, and at each corner between two of them.
+  const zones = (
+    Object.keys(RESIZE_ZONES) as Array<keyof typeof RESIZE_ZONES>
+  ).filter((zone) =>
+    zone.split("-").every((side) => sides.has(side as WidgetGridEdge))
+  )
   return (
     <>
       {zones.map((edge) => (
@@ -1730,11 +1714,9 @@ function WidgetGridRemove({
     {
       ...props,
       className: withClass(
-        cn(
-          buttonVariants({ variant: "ghost", size: "icon-xs" }),
+        buttonVariants({ variant: "ghost", size: "icon-xs" }) +
           // Over the resize zones along the widget's edges.
-          "relative z-20 text-muted-foreground"
-        ),
+          " relative z-20 text-muted-foreground",
         className
       ),
     },
@@ -1829,10 +1811,7 @@ function useWidgetGridSource({
 }: WidgetGridSourceOptions): WidgetGridSourceState {
   const root = useRoot("useWidgetGridSource")
   const key = sourceKey(value)
-  const count = root.layout.reduce(
-    (n, entry) => n + (typeOf(entry) === value ? 1 : 0),
-    0
-  )
+  const count = countOf(root.layout, value)
   const onGrid = count > 0
   const disabled =
     disabledProp || !root.editable || (!multiple && root.byId.has(value))
@@ -2008,7 +1987,6 @@ type WidgetGridPlaceholderProps = Omit<
  */
 function WidgetGridPlaceholder({
   className,
-  style,
   children,
   ...props
 }: WidgetGridPlaceholderProps) {
@@ -2031,14 +2009,10 @@ function WidgetGridPlaceholder({
         "pointer-events-none relative rounded-xl border-2 border-dashed border-primary/60 bg-[color-mix(in_oklab,var(--primary)_6%,var(--background))]",
         className
       ),
-      style: (state: WidgetGridPlaceholderState) => ({
-        gridColumn: `${x + 1} / span ${w}`,
-        gridRow: `${y + 1} / span ${h}`,
-        ...(typeof style === "function" ? style(state) : style),
-      }),
     },
     { w, h },
     {
+      style: areaOf({ x, y, w, h }),
       "aria-hidden": true,
       "data-slot": "widget-grid-placeholder",
       children:
@@ -2087,7 +2061,8 @@ type SizedItem = Pick<
   "w" | "h" | "minW" | "maxW" | "minH" | "maxH"
 >
 
-const SlotContext = React.createContext<WidgetGridSlotState | null>(null)
+const SlotContext =
+  /* @__PURE__ */ React.createContext<WidgetGridSlotState | null>(null)
 
 /** The free space around it: inside `WidgetGridSlots`. */
 function useWidgetGridSlot(): WidgetGridSlotState {
@@ -2131,18 +2106,9 @@ function WidgetGridSlots({
       freeAreas(layout, columns, rows)
         .filter((area) => area.end || (area.w >= minW && area.h >= minH))
         .map((area): WidgetGridSlotState => {
-          const sizeFor = (item: SizedItem) => {
-            const { minW, maxW, minH, maxH } = limitsOf(
-              { ...item, id: "", x: 0, y: 0 },
-              columns
-            )
-            const clamp = (n: number, low: number, high: number) =>
-              Math.min(Math.max(Math.round(n), low), high)
-            // Below every widget, any height fits: the widget's own size.
-            return area.end
-              ? { w: clamp(item.w, minW, maxW), h: clamp(item.h, minH, maxH) }
-              : { w: clamp(area.w, minW, maxW), h: clamp(area.h, minH, maxH) }
-          }
+          // Below every widget, any height fits: the widget's own size.
+          const sizeFor = (item: SizedItem) =>
+            sizeWithin(item, area.end ? item : area, columns)
           return {
             ...area,
             fits: (size) => size.w <= area.w && (area.end || size.h <= area.h),
@@ -2171,14 +2137,13 @@ type WidgetGridSlotProps = PrimitiveProps<
 
 /**
  * One free space, placed on it: a dashed button reading "Add widget" by
- * default, named after the place ("Add a widget at column 9, row 3, 4 by
+ * default, named after the place ("Add widget at column 9, row 3, 4 by
  * 2"). Open your own list of widgets from it (`render` it as a popover's
  * trigger) and add one with `useWidgetGridSlot().add(…)`. Carries `data-w`,
  * `data-h` and `data-end`.
  */
 function WidgetGridSlot({
   className,
-  style,
   children,
   ...props
 }: WidgetGridSlotProps) {
@@ -2192,14 +2157,10 @@ function WidgetGridSlot({
         "relative flex min-w-0 animate-in items-center justify-center gap-1.5 overflow-hidden rounded-xl border-2 border-dashed border-border bg-background px-2 text-sm text-muted-foreground transition-colors duration-200 fade-in outline-none hover:border-primary/60 hover:bg-[color-mix(in_oklab,var(--primary)_6%,var(--background))] hover:text-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50 data-popup-open:border-primary/60 data-popup-open:bg-[color-mix(in_oklab,var(--primary)_6%,var(--background))] data-popup-open:text-foreground [&_svg]:size-4 [&_svg]:shrink-0",
         className
       ),
-      style: (state: { w: number; h: number; end: boolean }) => ({
-        gridColumn: `${slot.x + 1} / span ${slot.w}`,
-        gridRow: `${slot.y + 1} / span ${slot.h}`,
-        ...(typeof style === "function" ? style(state) : style),
-      }),
     },
     { w: slot.w, h: slot.h, end: slot.end },
     {
+      style: areaOf(slot),
       type: "button",
       "data-slot": "widget-grid-slot",
       "aria-label": root.t("addAt", {
@@ -2260,8 +2221,7 @@ function useWidgetGrid(): WidgetGridControls {
     editable: root.editable,
     movable: root.movable,
     add: (item, options) => root.addWidget(item, options) ?? null,
-    count: (type) =>
-      root.layout.reduce((n, entry) => n + (typeOf(entry) === type ? 1 : 0), 0),
+    count: (type) => countOf(root.layout, type),
     remove: root.remove,
   }
 }
@@ -2292,16 +2252,24 @@ type WidgetGridItemActions = {
 function useWidgetGridItem(): WidgetGridItemActions {
   const { root, value, label } = useItem("useWidgetGridItem")
   const entry = root.byId.get(value)
+  const editable = root.editable && !!entry && !entry.locked
   return {
     value,
     label,
     layout: entry,
-    editable: root.editable && !!entry && !entry.locked,
-    move: (direction) => root.move(value, direction),
+    editable,
+    // The user's actions: only in the edit mode, never on a locked widget.
+    move: (direction) => {
+      if (root.movable && editable) root.move(value, direction)
+    },
     canMove: (direction) =>
-      root.movable && !!entry && !!root.canMove(value, direction),
-    resize: (size) => root.resize(value, size),
-    remove: () => root.remove(value),
+      root.movable && editable && !!root.canMove(value, direction),
+    resize: (size) => {
+      if (editable) root.resize(value, size)
+    },
+    remove: () => {
+      if (editable) root.remove(value)
+    },
   }
 }
 

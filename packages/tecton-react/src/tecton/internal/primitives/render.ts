@@ -9,6 +9,7 @@
  * caller's (`mergeProps`: handlers chained, classes joined).
  */
 import type * as React from "react"
+import { cn } from "cn"
 import { mergeProps } from "@base-ui/react/merge-props"
 import { useRender } from "@base-ui/react/use-render"
 
@@ -59,8 +60,18 @@ function usePrimitive<
   })
 }
 
+/** `base` and the caller's class, which may be a function of the state. */
+function withClass<TState>(
+  base: string,
+  className: string | ((state: TState) => string | undefined) | undefined
+) {
+  return typeof className === "function"
+    ? (state: TState) => cn(base, className(state))
+    : cn(base, className)
+}
+
 /** Leaves a state key out of the `data-*` attributes. */
 const hidden = () => null
 
-export { usePrimitive, hidden }
+export { usePrimitive, hidden, withClass }
 export type { PrimitiveProps }

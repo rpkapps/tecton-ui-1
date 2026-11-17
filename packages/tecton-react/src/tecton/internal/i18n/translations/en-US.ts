@@ -61,9 +61,8 @@ const enUS = {
     atEnd: "To the end, {position}",
     resizeItem: "Resize {itemText}",
     removeItem: "Remove {itemText}",
-    addItem: "Add {itemText}",
     addWidget: "Add widget",
-    addAt: "Add a widget at {position}",
+    addAt: "Add widget at {position}",
     sourceDescription:
       "Press Enter to add it to the grid, or drag it to the place it goes.",
     moved: "{itemText} moved to {position}.",

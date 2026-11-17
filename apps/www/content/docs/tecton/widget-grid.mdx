@@ -82,7 +82,7 @@ type WidgetGridLayoutItem = {
 }
 ```
 
-`onValueChange` hands back the whole new layout after each user change, never mid-drag or on mount. `eventDetails.reason` is `"move"`, `"resize"`, `"add"` or `"remove"`, `eventDetails.item` is the widget's `id`, and `eventDetails.cancel()` refuses the change.
+`onValueChange` hands back the whole new layout after each user change, never mid-drag or on mount. `eventDetails.reason` is `"move"`, `"resize"`, `"add"` or `"remove"`, `eventDetails.item` is the widget's `id`, and `eventDetails.cancel()` refuses the change. Refuse with `cancel()` rather than by not applying the change; either way, nothing is announced.
 
 - **Order:** the layout comes back in reading order. Render it in that order and Tab follows what the user sees.
 - **Repairs:** a saved layout that overlaps, overflows the columns or breaks a size limit is corrected as it shows. The next change hands back the corrected layout.
@@ -207,6 +207,8 @@ Every drag has a single-press alternative, as WCAG 2.5.7 requires. Inside a `Wid
 - `move("up" | "down" | "left" | "right")` and `canMove(direction)`;
 - `resize({ w, h })` for size presets;
 - `remove()`.
+
+They act only in edit mode and never on a locked widget (`widget.editable`), and each change is announced once the layout shows it.
 
 ```tsx
 const widget = useWidgetGridItem()

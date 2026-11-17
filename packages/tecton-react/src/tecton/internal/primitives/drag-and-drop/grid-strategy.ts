@@ -17,6 +17,7 @@
 import type { Translator } from "../../i18n/translations"
 import {
   bottomOf,
+  clamp,
   inReadingOrder,
   resolveLayout,
   sameRect,
@@ -73,9 +74,6 @@ const ARROWS: Record<string, { x: number; y: number }> = {
   ArrowUp: { x: 0, y: -1 },
   ArrowDown: { x: 0, y: 1 },
 }
-
-const clamp = (value: number, min: number, max: number) =>
-  Math.min(Math.max(value, min), max)
 
 function createGridStrategy({
   layout,

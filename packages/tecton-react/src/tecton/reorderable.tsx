@@ -46,6 +46,7 @@ import {
 import {
   hidden,
   usePrimitive,
+  withClass,
   type PrimitiveProps,
 } from "./internal/primitives/render"
 import {
@@ -93,16 +94,6 @@ type ReorderPlace = ListDropPlace | SlotDropPlace
 const isSlot = (
   place: ReorderPlace | null | undefined
 ): place is SlotDropPlace => !!place && "slot" in place
-
-/** `base` and the caller's class, which may be a function of the state. */
-function withClass<TState>(
-  base: string,
-  className: string | ((state: TState) => string | undefined) | undefined
-) {
-  return typeof className === "function"
-    ? (state: TState) => cn(base, className(state))
-    : cn(base, className)
-}
 
 type ReorderableState = {
   orientation: ReorderableOrientation
